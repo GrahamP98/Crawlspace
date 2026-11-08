@@ -1,1 +1,1 @@
-this is a dungeon crawler for mobile devices
+this is a dungeon crawler for mobile devices.
