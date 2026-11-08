@@ -27,78 +27,91 @@ const POTION_HEAL = 40;
 const FOE_GEAR_CHANCE = 0.35;
 const RAGE_BONUS = 3;
 // S = where you arrive, D = stairs down, E = dungeon exit (last floor only)
-// enemies: [x, y, hard] - hard spots roll from the next zone up
-const floors = [
-  {map: [
-    '####D####',
-    '#......C#',
-    '#.##.##.#',
-    '#C......#',
-    '#.#...#.#',
-    '#.#.#.#.#',
-    '#...#..C#',
-    '#.##.##.#',
-    '#.......#',
-    '#...S...#',
-    '#########'
-  ], enemies: [[1, 6, 0], [6, 8, 0], [3, 8, 0], [4, 4, 0], [7, 4, 1], [3, 5, 0], [6, 3, 1], [1, 2, 1], [4, 1, 1]]},
-  {map: [
-    '#########',
-    '#S..#..C#',
-    '#.#.#.#.#',
-    '#.#...#.#',
-    '#.###.#.#',
-    '#...M.#.#',
-    '###.###.#',
-    '#C..#...#',
-    '#.#.#.#.#',
-    '#...#.#D#',
-    '#########'
-  ], enemies: [[3, 2, 0], [5, 2, 0], [1, 5, 0], [3, 7, 1], [6, 1, 0], [7, 4, 1], [6, 7, 1], [5, 8, 0], [7, 8, 1]]},
-  {map: [
-    '#########',
-    '#D#C...S#',
-    '#.#.###.#',
-    '#.#.....#',
-    '#.###.#.#',
-    '#...#.#C#',
-    '#.#.#.###',
-    '#.#.....#',
-    '#C#.#.#.#',
-    '#...#...#',
-    '#########'
-  ], enemies: [[5, 1, 0], [5, 3, 0], [3, 2, 0], [5, 5, 0], [5, 7, 0], [7, 8, 1], [3, 9, 1], [1, 6, 1], [1, 3, 1], [1, 2, 1]]},
-  {map: [
-    '#########',
-    '#C.....C#',
-    '#.#.#.#.#',
-    '#.#N#.#.#',
-    '#.###.#.#',
-    '#S..#...#',
-    '###.#.###',
-    '#...#...#',
-    '#.#####.#',
-    '#C..D...#',
-    '#########'
-  ], enemies: [[1, 3, 0], [4, 1, 0], [7, 3, 0], [5, 4, 0], [6, 5, 1], [3, 7, 0], [7, 7, 1], [6, 9, 1], [3, 9, 1], [5, 9, 1]]},
-  {map: [
-    '####E####',
-    '#C.....C#',
-    '#.##.##.#',
-    '#...#...#',
-    '#.#...#.#',
-    '#.#.#.#.#',
-    '#C..#..C#',
-    '#.##.##.#',
-    '#.......#',
-    '#...S...#',
-    '#########'
-  ], enemies: [[2, 8, 0], [6, 8, 0], [1, 7, 0], [7, 7, 0], [3, 4, 1], [5, 4, 1], [1, 3, 1], [7, 3, 1], [2, 1, 1], [6, 1, 1]]}
-];
-let floor = 0, map = floors[0].map;
+const W = 9, H = 11, FLOORS = 5;
+const FLOOR_SHOPS = [null, 'M', null, 'N', null];
+const CHESTS_PER_FLOOR = 3;
+const ENEMIES_PER_FLOOR = [8, 8, 9, 9, 9]; // plus the stairs guard / boss
+let floor = 0, map = [];
 const colors = {'#': '#555', '.': '#222', 'S': '#222', 'E': '#fc3', 'D': '#3cf',
                 'M': '#a6f', 'N': '#f6c', 'C': '#c80'};
+const FOG = '#000';
 const roll = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const shuffle = a => {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = roll(0, i);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+};
+const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+const openNbrs = (g, x, y) => DIRS.map(([dx, dy]) => [x + dx, y + dy]).filter(([a, b]) => g[b][a] !== '#');
+
+// carve a random maze over the odd-numbered tiles, then knock out a few walls for loops
+function carve() {
+  const g = Array.from({length: H}, () => Array(W).fill('#'));
+  const start = [2 * roll(0, (W - 3) / 2) + 1, 2 * roll(0, (H - 3) / 2) + 1];
+  g[start[1]][start[0]] = '.';
+  const stack = [start];
+  while (stack.length) {
+    const [x, y] = stack[stack.length - 1];
+    const next = shuffle(DIRS.map(([dx, dy]) => [x + 2 * dx, y + 2 * dy, x + dx, y + dy]))
+      .find(([nx, ny]) => nx > 0 && ny > 0 && nx < W - 1 && ny < H - 1 && g[ny][nx] === '#');
+    if (!next) { stack.pop(); continue; }
+    const [nx, ny, wx, wy] = next;
+    g[wy][wx] = g[ny][nx] = '.';
+    stack.push([nx, ny]);
+  }
+  for (let n = 0; n < 5; n++) {
+    const x = roll(1, W - 2), y = roll(1, H - 2);
+    if ((x + y) % 2 === 1) g[y][x] = '.';
+  }
+  return g;
+}
+
+function distances(g, sx, sy) {
+  const dist = new Map([[`${sx},${sy}`, 0]]), q = [[sx, sy]];
+  while (q.length) {
+    const [x, y] = q.shift();
+    for (const [nx, ny] of openNbrs(g, x, y)) {
+      const k = `${nx},${ny}`;
+      if (!dist.has(k)) { dist.set(k, dist.get(`${x},${y}`) + 1); q.push([nx, ny]); }
+    }
+  }
+  return dist;
+}
+
+// stairs/exit go on the dead end farthest from the start, guarded on its only way in
+// enemies: [x, y, hard] - hard spots (far from the start) roll from the next zone up
+function makeFloor(i) {
+  for (;;) {
+    const g = carve();
+    const open = [];
+    g.forEach((r, y) => r.forEach((c, x) => { if (c !== '#') open.push([x, y]); }));
+    const [sx, sy] = open[roll(0, open.length - 1)];
+    const dist = distances(g, sx, sy);
+    const d = ([x, y]) => dist.get(`${x},${y}`);
+    const ends = open.filter(([x, y]) => openNbrs(g, x, y).length === 1 && d([x, y]) >= 6);
+    if (!ends.length) continue;
+    const goal = ends.reduce((a, b) => d(b) > d(a) ? b : a);
+    const [guard] = openNbrs(g, goal[0], goal[1]);
+    const far = d(goal);
+    g[sy][sx] = 'S';
+    g[goal[1]][goal[0]] = i === FLOORS - 1 ? 'E' : 'D';
+    const free = shuffle(open.filter(t =>
+      g[t[1]][t[0]] === '.' && d(t) >= 2 && !(t[0] === guard[0] && t[1] === guard[1])));
+    for (let n = 0; n < CHESTS_PER_FLOOR; n++) {
+      const [x, y] = free.pop();
+      g[y][x] = 'C';
+    }
+    if (FLOOR_SHOPS[i]) {
+      const [x, y] = free.pop();
+      g[y][x] = FLOOR_SHOPS[i];
+    }
+    const enemies = free.slice(0, ENEMIES_PER_FLOOR[i]).map(t => [t[0], t[1], d(t) > far / 2 ? 1 : 0]);
+    if (i < FLOORS - 1) enemies.push([guard[0], guard[1], 1]);
+    return {map: g.map(r => r.join('')), enemies, guard};
+  }
+}
 
 const slots = {
   weapon:  {label: 'Weapon',  items: [['Rusty Sword', 2], ['Iron Sword', 4], ['Steel Sword', 6]]},
@@ -187,24 +200,28 @@ let foes = [], current = null, pending = null;
 let phase = 'explore', over = false;
 let coins = 0, potions = 0;
 const opened = new Set();
-const lastFloor = () => floor === floors.length - 1;
+const visited = new Set();
+const lastFloor = () => floor === FLOORS - 1;
+// you see tiles you've walked on plus the 8 tiles around you
+const visible = (x, y) => visited.has(`${x},${y}`) || (Math.abs(x - p.x) <= 1 && Math.abs(y - p.y) <= 1);
 
 function loadFloor(i) {
   floor = i;
-  map = floors[i].map;
+  const lvl = makeFloor(i);
+  map = lvl.map;
   opened.clear();
-  enemies = floors[i].enemies
-    .filter(([x, y]) => map[y][x] === '.')
-    .map(([x, y, hard]) => ({x, y, zone: Math.min(4, i + hard), group: null}));
-  // on the last floor, tile (4,1) is the only way to the exit, so the boss can't be skipped
+  visited.clear();
+  enemies = lvl.enemies.map(([x, y, hard]) => ({x, y, zone: Math.min(4, i + hard), group: null}));
+  // the exit is a dead end, so the boss on its only way in can't be skipped
   if (lastFloor()) enemies.push({
-    x: 4, y: 1, zone: 4, boss: true,
+    x: lvl.guard[0], y: lvl.guard[1], zone: 4, boss: true,
     group: [{...BOSS, max: BOSS.hp, bonus: 0, items: []}]
   });
   const sy = map.findIndex(r => r.includes('S'));
   p.x = map[sy].indexOf('S');
   p.y = sy;
   prev = {x: p.x, y: p.y};
+  visited.add(`${p.x},${p.y}`);
 }
 loadFloor(0);
 
@@ -271,10 +288,11 @@ function bar(x, y, w, h, hp, max, color) {
 
 function draw() {
   map.forEach((row, y) => [...row].forEach((ch, x) => {
-    ctx.fillStyle = ch === 'C' && opened.has(`${x},${y}`) ? '#432' : colors[ch];
+    ctx.fillStyle = !visible(x, y) ? FOG
+      : ch === 'C' && opened.has(`${x},${y}`) ? '#432' : colors[ch];
     ctx.fillRect(x * T, y * T, T, T);
   }));
-  enemies.filter(e => (e.seen || e.boss) && !e.dead).forEach(e => {
+  enemies.filter(e => (e.seen || e.boss) && !e.dead && visible(e.x, e.y)).forEach(e => {
     ctx.fillStyle = e.group[0].color;
     ctx.fillRect(e.x * T, e.y * T, T, T);
     if (e.boss) {
@@ -289,7 +307,7 @@ function draw() {
   ctx.fillRect(0, 352, 288, 48);
   ctx.fillStyle = '#fff';
   ctx.font = '12px sans-serif';
-  ctx.fillText(`You - Floor ${floor + 1}/${floors.length}`, 8, 368);
+  ctx.fillText(`You - Floor ${floor + 1}/${FLOORS}`, 8, 368);
   bar(8, 374, 120, 12, p.hp, p.max, '#4c4');
   foes.filter(f => f.hp > 0).forEach((f, i) => {
     ctx.fillStyle = '#fff';
@@ -428,6 +446,7 @@ c.addEventListener('pointerdown', e => {
   prev = {x: p.x, y: p.y};
   p.x = nx;
   p.y = ny;
+  visited.add(`${nx},${ny}`);
   msg.textContent = '';
 
   const key = `${nx},${ny}`;
