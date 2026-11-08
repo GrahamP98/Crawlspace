@@ -31,6 +31,9 @@ const W = 9, H = 11, FLOORS = 5;
 const FLOOR_SHOPS = [null, 'M', null, 'N', null];
 const CHESTS_PER_FLOOR = 3;
 const ENEMIES_PER_FLOOR = [8, 8, 9, 9, 9]; // plus the stairs guard / boss
+// [near zone, far zone] per floor - zone 0: Bat/Slime, 1: Goblin/Skeleton,
+// 2: Orc/Troll, 3: Dark Knight/Wraith, 4: Minotaur/Wyvern
+const FLOOR_ZONES = [[0, 1], [1, 1], [2, 3], [3, 4], [4, 4]];
 let floor = 0, map = [];
 const colors = {'#': '#555', '.': '#222', 'S': '#222', 'E': '#fc3', 'D': '#3cf',
                 'M': '#a6f', 'N': '#f6c', 'C': '#c80'};
@@ -211,7 +214,7 @@ function loadFloor(i) {
   map = lvl.map;
   opened.clear();
   visited.clear();
-  enemies = lvl.enemies.map(([x, y, hard]) => ({x, y, zone: Math.min(4, i + hard), group: null}));
+  enemies = lvl.enemies.map(([x, y, hard]) => ({x, y, zone: FLOOR_ZONES[i][hard], group: null}));
   // the exit is a dead end, so the boss on its only way in can't be skipped
   if (lastFloor()) enemies.push({
     x: lvl.guard[0], y: lvl.guard[1], zone: 4, boss: true,
