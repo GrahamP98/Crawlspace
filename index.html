@@ -18,6 +18,11 @@
   <button id="equipBtn">Equip</button>
   <button id="leaveBtn">Leave</button>
 </div>
+<div id="levelBox" hidden>
+  <button id="lvlDmg">+Damage</button>
+  <button id="lvlHp">+Max HP</button>
+  <button id="lvlDef">+Defense</button>
+</div>
 <div id="shop" hidden></div>
 <div id="panel"></div>
 <script>
@@ -26,6 +31,10 @@ const FLEE_CHANCE = 0.25;
 const POTION_HEAL = 40;
 const FOE_GEAR_CHANCE = 0.35;
 const RAGE_BONUS = 3;
+// experience: enemies give XP equal to a fifth of their max HP
+const XP_DIVISOR = 5;
+const xpToNext = lvl => 25 + 20 * (lvl - 1);
+const LEVEL_DMG = 3, LEVEL_HP = 15, LEVEL_DEF = 1;
 // S = where you arrive, D = stairs down, E = dungeon exit (last floor only)
 const W = 9, H = 11, FLOORS = 5;
 const FLOOR_SHOPS = [null, 'M', null, 'N', null];
@@ -126,7 +135,8 @@ const slots = {
 const armor = ['helmet', 'chest', 'bracers', 'greaves'];
 const worn = {};
 const power = k => worn[k] ? worn[k].power : 0;
-const defense = () => armor.reduce((sum, k) => sum + power(k), 0);
+let level = 1, xp = 0, levelUps = 0, bonusDmg = 0, bonusDef = 0;
+const defense = () => armor.reduce((sum, k) => sum + power(k), 0) + bonusDef;
 
 const shops = {
   M: {title: 'Iron Merchant', tier: 1},
@@ -155,7 +165,8 @@ const types = [
   {name: 'Minotaur', zone: 4, hp: 130, dmg: [15, 22], gold: [28, 38], color: '#853'},
   {name: 'Wyvern',   zone: 4, hp: 110, dmg: [14, 21], gold: [26, 36], color: '#3a7'}
 ];
-const BOSS = {name: 'Ogre King', hp: 220, dmg: [16, 22], gold: [80, 100], color: '#900', def: 3, boss: true};
+// every crushEvery-th Ogre King attack ignores your defense (he warns you the turn before)
+const BOSS = {name: 'Ogre King', hp: 260, dmg: [18, 24], gold: [80, 100], color: '#900', def: 4, crushEvery: 3, boss: true};
 const pick = z => {
   const pool = types.filter(t => t.zone === z);
   return pool[roll(0, pool.length - 1)];
@@ -231,7 +242,9 @@ loadFloor(0);
 function showGear() {
   panel.innerHTML = Object.keys(slots).map(k =>
     `${slots[k].label}: ${worn[k] ? `${worn[k].name} (+${worn[k].power})` : 'empty'}`
-  ).join('<br>') + `<br><b>Defense: ${defense()}</b><br>Coins: ${coins}<br>Potions: ${potions}`;
+  ).join('<br>') + `<br><b>Defense: ${defense()}</b>` +
+    `<br>Level ${level} (XP ${xp}/${xpToNext(level)}) - Damage +${bonusDmg}, HP ${p.hp}/${p.max}` +
+    `<br>Coins: ${coins}<br>Potions: ${potions}`;
   potionBtn.textContent = `Potion (${potions})`;
 }
 
@@ -279,8 +292,43 @@ function closeLoot() {
   pending = null;
   lootBox.hidden = true;
   phase = 'explore';
+  showLevelUp();
   showGear();
 }
+
+function gainXp(amount) {
+  xp += amount;
+  while (xp >= xpToNext(level + levelUps)) {
+    xp -= xpToNext(level + levelUps);
+    levelUps++;
+  }
+}
+
+function showLevelUp() {
+  if (!levelUps) return;
+  phase = 'level';
+  levelBox.hidden = false;
+  msg.textContent += ` Level up! You reached level ${level + 1}. Choose a bonus:` +
+    ` +${LEVEL_DMG} damage, +${LEVEL_HP} max HP, or +${LEVEL_DEF} defense.`;
+}
+
+function chooseLevel(kind) {
+  if (phase !== 'level') return;
+  if (kind === 'dmg') bonusDmg += LEVEL_DMG;
+  if (kind === 'hp') { p.max += LEVEL_HP; p.hp += LEVEL_HP; }
+  if (kind === 'def') bonusDef += LEVEL_DEF;
+  level++;
+  levelUps--;
+  msg.textContent = `You are now level ${level}.`;
+  levelBox.hidden = true;
+  phase = 'explore';
+  showLevelUp();
+  showGear();
+  draw();
+}
+lvlDmg.onclick = () => chooseLevel('dmg');
+lvlHp.onclick = () => chooseLevel('hp');
+lvlDef.onclick = () => chooseLevel('def');
 
 function bar(x, y, w, h, hp, max, color) {
   ctx.fillStyle = '#400';
@@ -310,8 +358,9 @@ function draw() {
   ctx.fillRect(0, 352, 288, 48);
   ctx.fillStyle = '#fff';
   ctx.font = '12px sans-serif';
-  ctx.fillText(`You - Floor ${floor + 1}/${FLOORS}`, 8, 368);
+  ctx.fillText(`Lv ${level} - Floor ${floor + 1}/${FLOORS}`, 8, 368);
   bar(8, 374, 120, 12, p.hp, p.max, '#4c4');
+  bar(8, 390, 120, 4, xp, xpToNext(level + levelUps), '#fc3');
   foes.filter(f => f.hp > 0).forEach((f, i) => {
     ctx.fillStyle = '#fff';
     ctx.font = '10px sans-serif';
@@ -323,9 +372,15 @@ function draw() {
 function foesAttack() {
   for (const f of foes.filter(f => f.hp > 0)) {
     const rage = f.raged ? RAGE_BONUS : 0;
-    const hurt = Math.max(1, roll(f.dmg[0], f.dmg[1]) + f.bonus + rage - defense());
+    f.swings = (f.swings || 0) + 1;
+    const crush = f.crushEvery && f.swings % f.crushEvery === 0;
+    const hurt = Math.max(1, roll(f.dmg[0], f.dmg[1]) + f.bonus + rage - (crush ? 0 : defense()));
     p.hp = Math.max(0, p.hp - hurt);
-    msg.textContent += ` ${f.name} hits you for ${hurt}.`;
+    msg.textContent += crush
+      ? ` ${f.name} lands a CRUSHING BLOW through your armor for ${hurt}!`
+      : ` ${f.name} hits you for ${hurt}.`;
+    if (f.crushEvery && (f.swings + 1) % f.crushEvery === 0 && p.hp > 0)
+      msg.textContent += ` The ${f.name} winds up a huge swing...`;
     if (p.hp === 0) {
       over = true;
       msg.textContent = 'You died. Refresh to try again.';
@@ -336,13 +391,15 @@ function foesAttack() {
 
 function attack() {
   const t = foes.find(f => f.hp > 0);
-  const dmg = Math.max(1, roll(8, 14) + power('weapon') - t.def);
+  const dmg = Math.max(1, roll(8, 14) + power('weapon') + bonusDmg - t.def);
   t.hp = Math.max(0, t.hp - dmg);
   msg.textContent = `You hit ${t.name} for ${dmg}.`;
   if (t.hp === 0) {
     const gold = roll(t.gold[0], t.gold[1]);
+    const gained = Math.round(t.max / XP_DIVISOR);
     coins += gold;
-    msg.textContent += ` ${t.name} defeated! +${gold} coins.`;
+    gainXp(gained);
+    msg.textContent += ` ${t.name} defeated! +${gold} coins, +${gained} XP.`;
     showGear();
   } else if (t.boss && !t.raged && t.hp <= t.max / 2) {
     t.raged = true;
