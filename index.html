@@ -26,20 +26,77 @@ const FLEE_CHANCE = 0.25;
 const POTION_HEAL = 40;
 const FOE_GEAR_CHANCE = 0.35;
 const RAGE_BONUS = 3;
-const map = [
-  '####E####',
-  '#......C#',
-  '#.##.##.#',
-  '#C..N...#',
-  '#.#...#.#',
-  '#.#.#.#.#',
-  '#..M#..C#',
-  '#.##.##.#',
-  '#.......#',
-  '#...S...#',
-  '#########'
+// S = where you arrive, D = stairs down, E = dungeon exit (last floor only)
+// enemies: [x, y, hard] - hard spots roll from the next zone up
+const floors = [
+  {map: [
+    '####D####',
+    '#......C#',
+    '#.##.##.#',
+    '#C......#',
+    '#.#...#.#',
+    '#.#.#.#.#',
+    '#...#..C#',
+    '#.##.##.#',
+    '#.......#',
+    '#...S...#',
+    '#########'
+  ], enemies: [[1, 6, 0], [6, 8, 0], [3, 8, 0], [4, 4, 0], [7, 4, 1], [3, 5, 0], [6, 3, 1], [1, 2, 1], [4, 1, 1]]},
+  {map: [
+    '#########',
+    '#S..#..C#',
+    '#.#.#.#.#',
+    '#.#...#.#',
+    '#.###.#.#',
+    '#...M.#.#',
+    '###.###.#',
+    '#C..#...#',
+    '#.#.#.#.#',
+    '#...#.#D#',
+    '#########'
+  ], enemies: [[3, 2, 0], [5, 2, 0], [1, 5, 0], [3, 7, 1], [6, 1, 0], [7, 4, 1], [6, 7, 1], [5, 8, 0], [7, 8, 1]]},
+  {map: [
+    '#########',
+    '#D#C...S#',
+    '#.#.###.#',
+    '#.#.....#',
+    '#.###.#.#',
+    '#...#.#C#',
+    '#.#.#.###',
+    '#.#.....#',
+    '#C#.#.#.#',
+    '#...#...#',
+    '#########'
+  ], enemies: [[5, 1, 0], [5, 3, 0], [3, 2, 0], [5, 5, 0], [5, 7, 0], [7, 8, 1], [3, 9, 1], [1, 6, 1], [1, 3, 1], [1, 2, 1]]},
+  {map: [
+    '#########',
+    '#C.....C#',
+    '#.#.#.#.#',
+    '#.#N#.#.#',
+    '#.###.#.#',
+    '#S..#...#',
+    '###.#.###',
+    '#...#...#',
+    '#.#####.#',
+    '#C..D...#',
+    '#########'
+  ], enemies: [[1, 3, 0], [4, 1, 0], [7, 3, 0], [5, 4, 0], [6, 5, 1], [3, 7, 0], [7, 7, 1], [6, 9, 1], [3, 9, 1], [5, 9, 1]]},
+  {map: [
+    '####E####',
+    '#C.....C#',
+    '#.##.##.#',
+    '#...#...#',
+    '#.#...#.#',
+    '#.#.#.#.#',
+    '#C..#..C#',
+    '#.##.##.#',
+    '#.......#',
+    '#...S...#',
+    '#########'
+  ], enemies: [[2, 8, 0], [6, 8, 0], [1, 7, 0], [7, 7, 0], [3, 4, 1], [5, 4, 1], [1, 3, 1], [7, 3, 1], [2, 1, 1], [6, 1, 1]]}
 ];
-const colors = {'#': '#555', '.': '#222', 'S': '#222', 'E': '#fc3',
+let floor = 0, map = floors[0].map;
+const colors = {'#': '#555', '.': '#222', 'S': '#222', 'E': '#fc3', 'D': '#3cf',
                 'M': '#a6f', 'N': '#f6c', 'C': '#c80'};
 const roll = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
 
@@ -76,10 +133,13 @@ const types = [
   {name: 'Goblin',   zone: 1, hp: 45,  dmg: [5, 9],   gold: [8, 14],  color: '#e94', gearTier: 0},
   {name: 'Skeleton', zone: 1, hp: 55,  dmg: [6, 10],  gold: [9, 16],  color: '#ddd', gearTier: 1},
   {name: 'Orc',      zone: 2, hp: 70,  dmg: [8, 13],  gold: [14, 22], color: '#c33', gearTier: 1, armorMax: 2},
-  {name: 'Troll',    zone: 2, hp: 100, dmg: [10, 16], gold: [18, 28], color: '#a52'}
+  {name: 'Troll',    zone: 2, hp: 100, dmg: [10, 16], gold: [18, 28], color: '#a52'},
+  {name: 'Dark Knight', zone: 3, hp: 85, dmg: [11, 16], gold: [20, 30], color: '#668', gearTier: 2, armorMax: 3},
+  {name: 'Wraith',   zone: 3, hp: 75,  dmg: [12, 18], gold: [18, 28], color: '#9cf'},
+  {name: 'Minotaur', zone: 4, hp: 130, dmg: [15, 22], gold: [28, 38], color: '#853'},
+  {name: 'Wyvern',   zone: 4, hp: 110, dmg: [14, 21], gold: [26, 36], color: '#3a7'}
 ];
-const BOSS = {name: 'Ogre King', hp: 150, dmg: [10, 16], gold: [50, 70], color: '#900', def: 2, boss: true};
-const zoneOf = y => y >= 6 ? 0 : y >= 3 ? 1 : 2;
+const BOSS = {name: 'Ogre King', hp: 220, dmg: [16, 22], gold: [80, 100], color: '#900', def: 3, boss: true};
 const pick = z => {
   const pool = types.filter(t => t.zone === z);
   return pool[roll(0, pool.length - 1)];
@@ -89,7 +149,8 @@ function groupSize(zone) {
   const r = Math.random();
   if (zone === 0) return 1;
   if (zone === 1) return r < 0.3 ? 2 : 1;
-  return r < 0.15 ? 3 : r < 0.55 ? 2 : 1;
+  if (zone === 2) return r < 0.15 ? 3 : r < 0.55 ? 2 : 1;
+  return r < 0.25 ? 3 : r < 0.65 ? 2 : 1;
 }
 
 function equipFoe(f, t) {
@@ -110,7 +171,7 @@ function equipFoe(f, t) {
 
 function makeGroup(zone) {
   return Array.from({length: groupSize(zone)}, (_, i) => {
-    const t = pick(i === 0 ? zone : roll(0, zone));
+    const t = pick(i === 0 ? zone : roll(Math.max(0, zone - 1), zone));
     const f = {...t, max: t.hp, bonus: 0, def: 0, items: []};
     if (t.gearTier !== undefined) equipFoe(f, t);
     return f;
@@ -119,24 +180,33 @@ function makeGroup(zone) {
 
 const describe = f => f.items.length ? `${f.name} (${f.items.join(', ')})` : f.name;
 
-// tile (4,1) is the only way to the exit, so the boss can't be skipped
-const enemies = [
-  [1, 6], [6, 8], [3, 8],
-  [4, 4], [7, 4], [3, 5], [6, 3],
-  [1, 2], [7, 2]
-].filter(([x, y]) => map[y][x] === '.')
- .map(([x, y]) => ({x, y, zone: zoneOf(y), group: null}));
-enemies.push({
-  x: 4, y: 1, zone: 2, boss: true,
-  group: [{...BOSS, max: BOSS.hp, bonus: 0, items: []}]
-});
-
 let p = {x: 4, y: 9, hp: 100, max: 100};
 let prev = {x: 4, y: 9};
+let enemies = [];
 let foes = [], current = null, pending = null;
 let phase = 'explore', over = false;
 let coins = 0, potions = 0;
 const opened = new Set();
+const lastFloor = () => floor === floors.length - 1;
+
+function loadFloor(i) {
+  floor = i;
+  map = floors[i].map;
+  opened.clear();
+  enemies = floors[i].enemies
+    .filter(([x, y]) => map[y][x] === '.')
+    .map(([x, y, hard]) => ({x, y, zone: Math.min(4, i + hard), group: null}));
+  // on the last floor, tile (4,1) is the only way to the exit, so the boss can't be skipped
+  if (lastFloor()) enemies.push({
+    x: 4, y: 1, zone: 4, boss: true,
+    group: [{...BOSS, max: BOSS.hp, bonus: 0, items: []}]
+  });
+  const sy = map.findIndex(r => r.includes('S'));
+  p.x = map[sy].indexOf('S');
+  p.y = sy;
+  prev = {x: p.x, y: p.y};
+}
+loadFloor(0);
 
 function showGear() {
   panel.innerHTML = Object.keys(slots).map(k =>
@@ -172,7 +242,7 @@ function openChest(key) {
   opened.add(key);
   const r = roll(1, 3);
   if (r === 1) {
-    const gold = roll(10, 25);
+    const gold = roll(10, 25) + floor * 5;
     coins += gold;
     showGear();
     return `It holds ${gold} coins!`;
@@ -219,7 +289,7 @@ function draw() {
   ctx.fillRect(0, 352, 288, 48);
   ctx.fillStyle = '#fff';
   ctx.font = '12px sans-serif';
-  ctx.fillText('You', 8, 368);
+  ctx.fillText(`You - Floor ${floor + 1}/${floors.length}`, 8, 368);
   bar(8, 374, 120, 12, p.hp, p.max, '#4c4');
   foes.filter(f => f.hp > 0).forEach((f, i) => {
     ctx.fillStyle = '#fff';
@@ -264,7 +334,7 @@ function attack() {
     if (current.boss) {
       msg.textContent += ' The way to the exit is clear! ' + loot(2, 2);
     } else {
-      msg.textContent += ' ' + loot(current.zone);
+      msg.textContent += ' ' + loot(Math.min(2, current.zone));
     }
     foes = [];
     current = null;
@@ -387,6 +457,11 @@ c.addEventListener('pointerdown', e => {
     msg.textContent = "Merchant: what'll it be?";
   } else if (map[ny][nx] === 'C' && !opened.has(key)) {
     msg.textContent = 'You open a chest! ' + openChest(key);
+  } else if (map[ny][nx] === 'D') {
+    loadFloor(floor + 1);
+    msg.textContent = lastFloor()
+      ? `You descend to floor ${floor + 1}. The air reeks of ogre...`
+      : `You descend to floor ${floor + 1}.`;
   }
   draw();
   if (map[ny][nx] === 'E') setTimeout(() => alert('You escaped the dungeon!'), 50);
