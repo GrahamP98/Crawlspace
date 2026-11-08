@@ -35,6 +35,7 @@ const RAGE_BONUS = 3;
 const XP_DIVISOR = 5;
 const xpToNext = lvl => 25 + 20 * (lvl - 1);
 const LEVEL_DMG = 3, LEVEL_HP = 15, LEVEL_DEF = 1;
+const LEVEL_HEAL = 10; // HP recovered on every level-up
 // S = where you arrive, D = stairs down, E = dungeon exit (last floor only)
 const W = 9, H = 11, FLOORS = 5;
 const FLOOR_SHOPS = [null, 'M', null, 'N', null];
@@ -142,8 +143,14 @@ const shops = {
   M: {title: 'Iron Merchant', tier: 1},
   N: {title: 'Steel Merchant', tier: 2}
 };
+// potion carry upgrades: each one needs the one before it (from = the limit it upgrades)
+const BAGS = [
+  {type: 'bag', name: 'Potion Belt',      from: 5, to: 7,  price: 40, tier: 1},
+  {type: 'bag', name: 'Potion Bandolier', from: 7, to: 10, price: 70, tier: 2}
+];
 const makeStock = tier => [
   {type: 'potion', name: 'Health Potion', price: 10},
+  ...BAGS.filter(b => b.tier <= tier),
   ...Object.keys(slots).map(k => {
     const [name, pow] = slots[k].items[tier];
     return {type: 'gear', slot: k, name, power: pow, price: pow * 5};
@@ -213,6 +220,9 @@ let enemies = [];
 let foes = [], current = null, pending = null;
 let phase = 'explore', over = false;
 let coins = 0, potions = 0;
+let maxPotions = 5;        // most potions you can carry (merchants sell upgrades)
+const SHOP_POTIONS = 5;   // potions each merchant has in stock
+let shopPotionsLeft = SHOP_POTIONS;
 const opened = new Set();
 const visited = new Set();
 const lastFloor = () => floor === FLOORS - 1;
@@ -224,6 +234,7 @@ function loadFloor(i) {
   const lvl = makeFloor(i);
   map = lvl.map;
   opened.clear();
+  shopPotionsLeft = SHOP_POTIONS; // one merchant per floor at most
   visited.clear();
   enemies = lvl.enemies.map(([x, y, hard]) => ({x, y, zone: FLOOR_ZONES[i][hard], group: null}));
   // the exit is a dead end, so the boss on its only way in can't be skipped
@@ -244,8 +255,8 @@ function showGear() {
     `${slots[k].label}: ${worn[k] ? `${worn[k].name} (+${worn[k].power})` : 'empty'}`
   ).join('<br>') + `<br><b>Defense: ${defense()}</b>` +
     `<br>Level ${level} (XP ${xp}/${xpToNext(level)}) - Damage +${bonusDmg}, HP ${p.hp}/${p.max}` +
-    `<br>Coins: ${coins}<br>Potions: ${potions}`;
-  potionBtn.textContent = `Potion (${potions})`;
+    `<br>Coins: ${coins}<br>Potions: ${potions}/${maxPotions}`;
+  potionBtn.textContent = `Potion (${potions}/${maxPotions})`;
 }
 
 function renderShop() {
@@ -253,10 +264,21 @@ function renderShop() {
     const cur = it.type === 'gear' ? worn[it.slot] : null;
     const note = it.type === 'gear'
       ? ` (+${it.power}, now: ${cur ? `${cur.name} +${cur.power}` : 'empty'})`
-      : ` (+${POTION_HEAL} HP)`;
-    const off = coins < it.price || (cur && cur.power >= it.power) ? 'disabled' : '';
+      : it.type === 'bag'
+        ? ` (carry ${it.to} potions` + (maxPotions >= it.to ? ', owned)'
+          : maxPotions < it.from ? `, needs ${BAGS.find(b => b.to === it.from).name} first)` : ')')
+        : ` (+${POTION_HEAL} HP, ${shopPotionsLeft} left` +
+          (potions >= maxPotions ? ', your bag is full)' : ')');
+    const off = !canBuy(it) ? 'disabled' : '';
     return `<button data-i="${i}" ${off}>${it.name}${note} - ${it.price}c</button>`;
   }).join('<br>') + '<br><button id="shopLeave">Leave shop</button>';
+}
+
+function canBuy(it) {
+  if (coins < it.price) return false;
+  if (it.type === 'potion') return shopPotionsLeft > 0 && potions < maxPotions;
+  if (it.type === 'bag') return maxPotions === it.from;
+  return !(worn[it.slot] && worn[it.slot].power >= it.power);
 }
 
 function loot(maxTier = 2, minTier = 0) {
@@ -280,10 +302,16 @@ function openChest(key) {
     showGear();
     return `It holds ${gold} coins!`;
   }
-  if (r === 2) {
+  if (r === 2 && potions < maxPotions) {
     potions++;
     showGear();
     return 'It holds a health potion!';
+  }
+  if (r === 2) {
+    const gold = roll(10, 25) + floor * 5;
+    coins += gold;
+    showGear();
+    return `It holds a health potion, but your bag is full. You take ${gold} coins instead.`;
   }
   return 'It holds equipment. ' + loot();
 }
@@ -319,7 +347,9 @@ function chooseLevel(kind) {
   if (kind === 'def') bonusDef += LEVEL_DEF;
   level++;
   levelUps--;
-  msg.textContent = `You are now level ${level}.`;
+  const healed = Math.min(LEVEL_HEAL, p.max - p.hp);
+  p.hp += healed;
+  msg.textContent = `You are now level ${level}.` + (healed ? ` You recover ${healed} HP.` : '');
   levelBox.hidden = true;
   phase = 'explore';
   showLevelUp();
@@ -443,11 +473,15 @@ shop.onclick = e => {
     return;
   }
   const it = shopStock[b.dataset.i];
-  if (coins < it.price) return;
+  if (!canBuy(it)) return;
   coins -= it.price;
   if (it.type === 'potion') {
     potions++;
+    shopPotionsLeft--;
     msg.textContent = 'Bought a health potion.';
+  } else if (it.type === 'bag') {
+    maxPotions = it.to;
+    msg.textContent = `Bought the ${it.name}. You can now carry ${it.to} potions.`;
   } else {
     worn[it.slot] = {name: it.name, power: it.power};
     msg.textContent = `Bought and equipped ${it.name}.`;
