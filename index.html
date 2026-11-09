@@ -104,7 +104,7 @@
 
     <details>
       <summary>Fighting</summary>
-      <p>Walk into an enemy to start a fight. The view switches to the <b>combat screen</b>: you stand on the left, and the enemies stand in a staggered line on the right, each drawn as its own creature with a green health bar above it. Enemies can come in groups of up to 3 on deeper floors. A <b>*</b> after a name means that enemy carries gear, so it hits harder or has armor.</p>
+      <p>Walk into an enemy to start a fight. The view switches to the <b>combat screen</b>: you stand on the left, facing the enemies, who stand in a staggered line on the right, each drawn as its own creature with a green health bar above it. Enemies can come in groups of up to 3 on deeper floors. A <b>*</b> after a name means that enemy carries gear, so it hits harder or has armor.</p>
       <p><b>Tap an enemy to target it.</b> A yellow ring under an enemy shows your target, and your attacks go to it. When your target falls, the next enemy is targeted for you.</p>
       <p>Damage rises over the one who took it as a <b style="color:#f44">red</b> number, healing as a <b style="color:#4e4">green</b> one. <b>MISS</b> appears over whoever an attack was aimed at, <b style="color:#6df">STUNNED</b> over a stunned enemy, and <b style="color:#fc3">SECOND WIND</b> over you when that perk saves your life.</p>
       <p>You first choose <b>Fight</b> or <b>Flee</b>. Fleeing works 25% of the time and puts you back one step. If it fails, the enemies get a free attack. You can never flee the Ogre King.</p>
@@ -186,7 +186,7 @@
         <li><b>Steel</b>: Steel Sword, Steel Helm, Steel Plate, Steel Bracers, Steel Greaves</li>
       </ul>
       <p>A weapon adds its number to your damage. Armor numbers add up to your <b>Defense</b>, which comes off every enemy hit. Full Steel armor gives 13. Gear drops from fights and chests, and merchants sell it (price = 5 coins per point). Better material also lets you use stronger enchantments.</p>
-      <p>Everything you wear shows on your character in fights, from a rusty sword to a steel great helm. Wear all four armor pieces (helmet, chest, bracers and greaves) and you become a <b>knight</b>, with a blue cape and a tabard bearing a gold cross; with a steel helm you also get a plume. A full set of Steel adds gold trim, and enchanted gear glows in its enchantment's color.</p>
+      <p>Everything you wear shows on your character in fights, from a rusty sword to a steel great helm. You start out in a prisoner's rags: a torn tunic, a bandaged arm and bare feet. Wear all four armor pieces (helmet, chest, bracers and greaves) and you become a <b>knight</b>, with a blue cape and a tabard bearing a gold cross; with a steel helm you also get a plume. A full set of Steel adds gold trim, and enchanted gear glows in its enchantment's color.</p>
     </details>
 
     <details>
@@ -1027,10 +1027,10 @@ const foeSize = f => f.boss ? 70 : sceneFoes.length >= 4 ? 38 : 46;
 // below it a little further right (a lone enemy stands in the middle of the right side)
 function foeSpots() {
   const n = sceneFoes.length, spots = new Map();
-  const gap = n > 1 ? Math.min(95, (304 - 62) / (n - 1)) : 0;   // down the screen
+  const gap = n > 1 ? Math.min(95, (298 - 60) / (n - 1)) : 0;   // down the screen
   const step = n > 1 ? Math.min(30, (246 - 162) / (n - 1)) : 0;  // to the right
-  const x0 = n === 1 ? 200 : 162;
-  sceneFoes.forEach((f, i) => spots.set(f, {x: x0 + i * step, y: 190 + (i - (n - 1) / 2) * gap}));
+  const x0 = n === 1 ? 200 : 162, middle = n >= 4 ? 179 : 190;  // big groups sit higher so the last name clears the status bar
+  sceneFoes.forEach((f, i) => spots.set(f, {x: x0 + i * step, y: middle + (i - (n - 1) / 2) * gap}));
   return spots;
 }
 const spotOf = who => who === 'player'
@@ -1115,163 +1115,570 @@ function shape(x, y, u, pts, color) {
 }
 const BOTH_SIDES = [-1, 1];  // for mirrored parts: wings, ears, horns, tusks
 
-const ENEMY_SHAPES = {
-  'Bat': (x, y, u, c) => {
-    for (const s of BOTH_SIDES) {
-      shape(x, y, u, [[4 * s, -4], [19 * s, -11], [17 * s, 2], [13 * s, -1], [10 * s, 5], [6 * s, 2]], c);  // wing
-      shape(x, y, u, [[1 * s, -7], [3 * s, -13], [5 * s, -6]], c);                                             // ear
-    }
-    oval(x, y, 6 * u, 8 * u, c);
-    eyes(x, y - 3 * u, 2.5 * u, 1.5 * u, '#f44');
-  },
-  'Slime': (x, y, u, c) => {
-    ctx.fillStyle = c;
-    ctx.beginPath();
-    ctx.moveTo(x - 16 * u, y + 12 * u);
-    ctx.bezierCurveTo(x - 18 * u, y - 6 * u, x - 8 * u, y - 14 * u, x, y - 14 * u);
-    ctx.bezierCurveTo(x + 8 * u, y - 14 * u, x + 18 * u, y - 6 * u, x + 16 * u, y + 12 * u);
-    ctx.closePath();
-    ctx.fill();
-    oval(x - 7 * u, y - 6 * u, 3 * u, 4 * u, 'rgba(255,255,255,0.45)');  // shine
-    eyes(x, y + 1 * u, 5 * u, 2.2 * u);
-  },
-  'Little Slime': (x, y, u, c) => ENEMY_SHAPES['Slime'](x, y + 4 * u, u * 0.7, c),
-  'Goblin': (x, y, u, c) => {
-    shape(x, y, u, [[-8, 16], [-6, 2], [6, 2], [8, 16]], c);                         // body
-    for (const s of BOTH_SIDES) shape(x, y, u, [[6 * s, -8], [18 * s, -12], [7 * s, -2]], c);  // pointy ears
-    oval(x, y - 5 * u, 8 * u, 8 * u, c);                                              // head
-    eyes(x, y - 6 * u, 3 * u, 1.6 * u);
-    ctx.strokeStyle = '#000';
-    ctx.lineWidth = 1.2 * u;
-    ctx.beginPath();
-    ctx.arc(x, y - 3 * u, 3.5 * u, 0.3, Math.PI - 0.3);                               // grin
-    ctx.stroke();
-  },
-  'Skeleton': (x, y, u, c) => {
-    ctx.fillStyle = c;
-    ctx.fillRect(x - 1.2 * u, y, 2.4 * u, 16 * u);                                   // spine
-    ctx.strokeStyle = c;
-    ctx.lineWidth = 2 * u;
-    for (const r of [4, 8, 12]) {                                                     // ribs
+// a darker (k < 1) or lighter (k > 1) version of a #rgb or #rrggbb color
+const rgbOf = hex => {
+  let h = hex.replace('#', '');
+  if (h.length === 3) h = [...h].map(ch => ch + ch).join('');
+  const n = parseInt(h, 16);
+  return [n >> 16, (n >> 8) & 255, n & 255];
+};
+function shade(hex, k) {
+  const f = v => Math.max(0, Math.min(255, Math.round(v * k)));
+  return `rgb(${rgbOf(hex).map(f).join(',')})`;
+}
+// blend two colors: q = 0 gives a, q = 1 gives b (used to darken and sour the enemies' map colors)
+function mix(a, b, q) {
+  const A = rgbOf(a), B = rgbOf(b);
+  return `rgb(${A.map((v, i) => Math.round(v + (B[i] - v) * q)).join(',')})`;
+}
+
+// fliers leave the ground; everyone else stands with their feet on it
+const FLYERS = new Set(['Bat', 'Wyvern', 'Wraith']);
+// how far above its resting height a flier is right now (in enemy units, negative = up)
+function hoverOf(name, t) {
+  if (name === 'Bat') return -5 + Math.sin(t * 5) * 2.5;
+  if (name === 'Wyvern') return -6 + Math.sin(t * 2.6) * 2.5;
+  if (name === 'Wraith') return -3 + Math.sin(t * 1.8) * 1.8;
+  return 0;
+}
+const ENEMY_GROUND = 18;   // in enemy units below the center: where the feet meet the floor
+
+// drawing helpers for one enemy, in units of u around (0, 0)
+function enemyKit(u) {
+  const K = {
+    // a dark edge around the shape just drawn, so the silhouette reads against the dungeon
+    edge() { ctx.strokeStyle = 'rgba(0,0,0,0.65)'; ctx.lineWidth = 1.1 * u; ctx.stroke(); },
+    P(pts, color, edged) {                                                     // filled outline
+      ctx.fillStyle = color;
       ctx.beginPath();
-      ctx.moveTo(x - 7 * u, y + r * u);
-      ctx.quadraticCurveTo(x, y + (r - 3) * u, x + 7 * u, y + r * u);
-      ctx.stroke();
-    }
-    oval(x, y - 9 * u, 8 * u, 8 * u, c);                                              // skull
-    ctx.fillStyle = c;
-    ctx.fillRect(x - 5 * u, y - 4 * u, 10 * u, 4 * u);                               // jaw
-    eyes(x, y - 10 * u, 3.2 * u, 2.3 * u);                                            // eye sockets
-    shape(x, y, u, [[0, -7], [-1.2, -4.5], [1.2, -4.5]], '#000');                     // nose
-  },
-  'Orc': (x, y, u, c) => {
-    shape(x, y, u, [[-15, 16], [-13, 2], [13, 2], [15, 16]], c);                     // broad shoulders
-    ctx.fillStyle = c;
-    ctx.fillRect(x - 8 * u, y - 14 * u, 16 * u, 15 * u);                             // head
-    eyes(x, y - 8 * u, 3.5 * u, 1.6 * u);
-    ctx.fillStyle = '#000';
-    ctx.fillRect(x - 6 * u, y - 11 * u, 12 * u, 1.4 * u);                            // heavy brow
-    for (const s of BOTH_SIDES) shape(x, y, u, [[3 * s, -1], [4.5 * s, -6], [6 * s, -1]], '#fff');  // tusks
-  },
-  'Troll': (x, y, u, c) => {
-    ctx.fillStyle = c;
-    for (const s of BOTH_SIDES) ctx.fillRect(x + s * 13 * u - 2.5 * u, y - 2 * u, 5 * u, 18 * u);  // long arms
-    oval(x, y + 4 * u, 13 * u, 12 * u, c);                                            // hunched body
-    oval(x, y - 9 * u, 6.5 * u, 6 * u, c);                                            // small head
-    eyes(x, y - 10 * u, 2.5 * u, 1.3 * u);
-    oval(x, y - 7 * u, 2 * u, 1.6 * u, 'rgba(0,0,0,0.35)');                           // big nose
-  },
-  'Dark Knight': (x, y, u, c) => {
-    shape(x, y, u, [[-14, 16], [-12, 3], [12, 3], [14, 16]], c);                     // plate armor
-    for (const s of BOTH_SIDES) oval(x + s * 11 * u, y + 3 * u, 5 * u, 4 * u, c);   // shoulder plates
-    ctx.fillStyle = c;
-    ctx.beginPath();                                                                  // helmet
-    ctx.moveTo(x - 8 * u, y + 3 * u);
-    ctx.lineTo(x - 8 * u, y - 8 * u);
-    ctx.arc(x, y - 8 * u, 8 * u, Math.PI, 0);
-    ctx.lineTo(x + 8 * u, y + 3 * u);
-    ctx.closePath();
-    ctx.fill();
-    ctx.fillStyle = '#000';
-    ctx.fillRect(x - 6 * u, y - 7 * u, 12 * u, 2.6 * u);                             // visor slit
-    eyes(x, y - 5.7 * u, 2.6 * u, 0.9 * u, '#f44');                                   // glint behind the visor
-    shape(x, y, u, [[-1.5, -16], [0, -22], [1.5, -16]], c);                           // crest
-  },
-  'Wraith': (x, y, u, c) => {
-    ctx.globalAlpha *= 0.9;                                                           // a little see-through
-    ctx.fillStyle = c;
-    ctx.beginPath();                                                                  // hooded ghost, ragged hem
-    ctx.moveTo(x - 11 * u, y - 2 * u);
-    ctx.quadraticCurveTo(x - 11 * u, y - 17 * u, x, y - 17 * u);
-    ctx.quadraticCurveTo(x + 11 * u, y - 17 * u, x + 11 * u, y - 2 * u);
-    for (const [a, b] of [[12, 12], [8, 16], [4, 11], [0, 16], [-4, 11], [-8, 16], [-12, 12]]) ctx.lineTo(x + a * u, y + b * u);
-    ctx.closePath();
-    ctx.fill();
-    oval(x, y - 6 * u, 6 * u, 6.5 * u, '#000');                                       // dark hood opening
-    eyes(x, y - 6 * u, 2.4 * u, 1.3 * u, '#6df');                                     // cold glowing eyes
-  },
-  'Minotaur': (x, y, u, c) => {
-    shape(x, y, u, [[-15, 16], [-13, 3], [13, 3], [15, 16]], c);                     // muscled body
-    for (const s of BOTH_SIDES) {                                                     // curved horns
-      ctx.fillStyle = '#eed';
-      ctx.beginPath();
-      ctx.moveTo(x + s * 6 * u, y - 10 * u);
-      ctx.quadraticCurveTo(x + s * 18 * u, y - 10 * u, x + s * 16 * u, y - 21 * u);
-      ctx.quadraticCurveTo(x + s * 13 * u, y - 14 * u, x + s * 5 * u, y - 13 * u);
+      pts.forEach(([a, b], i) => i ? ctx.lineTo(a * u, b * u) : ctx.moveTo(a * u, b * u));
       ctx.closePath();
       ctx.fill();
+      if (edged) K.edge();
+    },
+    O(x, y, rx, ry, color, edged, rot = 0) {                                    // filled oval
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.ellipse(x * u, y * u, rx * u, ry * u, rot, 0, Math.PI * 2);
+      ctx.fill();
+      if (edged) K.edge();
+    },
+    L(pts, w, color) {                                                          // thick line, like a limb
+      ctx.strokeStyle = color;
+      ctx.lineWidth = w * u;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      pts.forEach(([a, b], i) => i ? ctx.lineTo(a * u, b * u) : ctx.moveTo(a * u, b * u));
+      ctx.stroke();
+    },
+    grad(top, bottom, y0 = -20, y1 = 18) {                                      // lit from the torches above
+      const g = ctx.createLinearGradient(0, y0 * u, 0, y1 * u);
+      g.addColorStop(0, top);
+      g.addColorStop(1, bottom);
+      return g;
+    },
+    // a slanted, glowing eye with a white-hot center
+    eye(x, y, w, color, slant = 0.3, glow = 1) {
+      ctx.save();
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 6 * u * glow;
+      ctx.fillStyle = color;
+      ctx.beginPath(); ctx.ellipse(x * u, y * u, w * u, w * 0.5 * u, slant, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+      ctx.fillStyle = 'rgba(255,255,240,0.85)';
+      ctx.beginPath(); ctx.ellipse(x * u, y * u, w * 0.38 * u, w * 0.2 * u, slant, 0, Math.PI * 2); ctx.fill();
+    },
+    // a row of n sharp teeth from x0 to x1 along y, each h long (negative h points up)
+    teeth(x0, x1, y, h, n, color = '#ece4d0') {
+      ctx.fillStyle = color;
+      const w = (x1 - x0) / n;
+      for (let i = 0; i < n; i++) {
+        const a = x0 + i * w;
+        ctx.beginPath(); ctx.moveTo(a * u, y * u); ctx.lineTo((a + w / 2) * u, (y + h) * u); ctx.lineTo((a + w) * u, y * u); ctx.closePath(); ctx.fill();
+      }
     }
-    ctx.fillStyle = c;
-    ctx.fillRect(x - 8 * u, y - 13 * u, 16 * u, 15 * u);                             // bull head
-    oval(x, y, 6.5 * u, 3.5 * u, 'rgba(255,255,255,0.3)');                            // snout
-    eyes(x, y - 7 * u, 3.5 * u, 1.5 * u, '#f44');
-    ctx.strokeStyle = '#fc3';
-    ctx.lineWidth = 1.2 * u;
-    ctx.beginPath();
-    ctx.arc(x, y + 2.5 * u, 2 * u, 0, Math.PI);                                       // nose ring
-    ctx.stroke();
+  };
+  return K;
+}
+
+// Each enemy is drawn in side view facing right around (0, 0) at scale u, with its feet on the
+// floor at ENEMY_GROUND; drawEnemy flips it to face you. c = the enemy's map color,
+// t = time in seconds for its animation (frozen once it is defeated), K = the drawing helpers.
+const ENEMY_SHAPES = {
+  'Bat': (u, c, t, K) => {
+    ctx.translate(0, hoverOf('Bat', t) * u);
+    const a = Math.sin(t * 14);                                               // -1 wings down .. 1 wings up
+    const fur = K.grad(mix(c, '#2a1f30', 0.35), mix(c, '#0e0a12', 0.72), -14, 8);
+    const membrane = mix(c, '#1a0c1e', 0.6), bones = mix(c, '#d8c8d0', 0.25);
+    const screech = Math.max(0, Math.sin(t * 1.7)) ** 6;                      // now and then it shrieks
+    const twitch = Math.sin(t * 9) * (Math.sin(t * 0.8) > 0.7 ? 1 : 0);
+    const wing = (dx, color) => {
+      const lift = a * 13, mid = a * 7;
+      K.P([[2 + dx, -3], [-5 + dx, -6 - mid], [-12 + dx, -4 - lift], [-18 + dx, -2 - lift * 0.9], [-14 + dx, 1 - lift * 0.35],
+           [-10 + dx, 3 - lift * 0.15], [-6 + dx, 4], [-1 + dx, 4]], color, true);
+      K.L([[1 + dx, -3], [-5 + dx, -6 - mid], [-12 + dx, -4 - lift]], 0.7, bones);
+      K.L([[-5 + dx, -6 - mid], [-18 + dx, -2 - lift * 0.9]], 0.5, bones);
+      K.L([[-5 + dx, -6 - mid], [-14 + dx, 1 - lift * 0.35]], 0.5, bones);
+    };
+    wing(3, mix(c, '#05020a', 0.78));                                         // far wing
+    K.L([[-1, 4.5], [0, 8], [1.4, 8.6]], 0.7, '#120a14');
+    K.L([[2, 4.5], [3, 7.6], [4.2, 8.2]], 0.7, '#120a14');                     // hooked feet
+    K.O(0, 0, 7, 5.5, fur, true, -0.2);                                       // body
+    K.O(7, -3, 4.6, 4.2, fur, true);                                          // head
+    K.P([[5, -6], [4 + twitch, -14.5], [8, -6.5]], fur, true);
+    K.P([[7.5, -6], [10 + twitch, -13], [10.8, -5]], fur, true);              // tall ears
+    K.P([[10.4, -4.4], [14.2, -2.8], [11.6, -0.8], [10.2, -1.6]], mix(c, '#100810', 0.6), true);   // wrinkled snout
+    K.P([[9.6, -1.6], [13.6, -1.2 + screech * 2.6], [9.6, 0.4 + screech * 2]], '#1a0408');          // mouth
+    K.teeth(10, 13.4, -1.4, 1.7 + screech, 2);                                // fangs
+    K.eye(8.7, -4.3, 1.4, '#ff2a2a', 0.5, 1.2);
+    wing(0, membrane);                                                        // near wing
   },
-  'Wyvern': (x, y, u, c) => {
-    for (const s of BOTH_SIDES) shape(x, y, u, [[2 * s, -2], [19 * s, -17], [15 * s, -5], [19 * s, 1], [7 * s, 5]], c);  // wings
-    ctx.strokeStyle = c;
-    ctx.lineWidth = 3 * u;
-    ctx.beginPath();                                                                  // tail
-    ctx.moveTo(x + 2 * u, y + 12 * u);
-    ctx.quadraticCurveTo(x + 14 * u, y + 19 * u, x + 17 * u, y + 8 * u);
-    ctx.stroke();
-    shape(x, y, u, [[15, 9], [20, 5], [18, 11]], c);                                  // tail tip
-    oval(x, y + 5 * u, 7 * u, 9 * u, c);                                              // body
-    ctx.fillStyle = c;
-    ctx.fillRect(x - 2 * u, y - 8 * u, 4 * u, 6 * u);                                // neck
-    oval(x, y - 10 * u, 5 * u, 4.5 * u, c);                                           // head
-    for (const s of BOTH_SIDES) shape(x, y, u, [[2 * s, -13], [5 * s, -18], [4 * s, -12]], c);  // horns
-    eyes(x, y - 10 * u, 2 * u, 1.2 * u, '#fc3');
+  'Slime': (u, c, t, K) => {
+    const s = 1 + Math.sin(t * 3.6) * 0.06;                                   // it jiggles, squashing on the floor
+    ctx.translate(0, ENEMY_GROUND * u);
+    ctx.scale(1 / s, s);
+    ctx.translate(0, -ENEMY_GROUND * u);
+    const rip = k => Math.sin(t * 5 + k) * 0.9;
+    const body = () => {
+      ctx.beginPath();
+      ctx.moveTo(-17 * u, 18 * u);
+      ctx.bezierCurveTo(-19 * u, 4 * u, (-8 + rip(1)) * u, (-9 + rip(2)) * u, 2 * u, (-9 + rip(3)) * u);
+      ctx.bezierCurveTo((12 + rip(4)) * u, -8 * u, 19 * u, 4 * u, 16 * u, 18 * u);
+      ctx.closePath();
+    };
+    const gr = ctx.createRadialGradient(0, 4 * u, 2 * u, 0, 6 * u, 22 * u);      // murky goo, lighter at its heart
+    gr.addColorStop(0, mix(c, '#d8ffd0', 0.15));
+    gr.addColorStop(0.6, mix(c, '#0a1a0a', 0.45));
+    gr.addColorStop(1, mix(c, '#000000', 0.72));
+    ctx.save();
+    ctx.globalAlpha *= 0.92;
+    body(); ctx.fillStyle = gr; ctx.fill();
+    body(); ctx.clip();
+    ctx.globalAlpha *= 0.5;
+    drawSkull(ctx, -5 * u, 9 * u, 1.15 * u, 0.55);                            // a half-digested skull inside it
+    ctx.globalAlpha /= 0.5;
+    for (let k = 0; k < 6; k++) {                                             // bubbles rising through it
+      const by = 18 - ((t * 6 + k * 5.3) % 24), bx = -10 + k * 4 + Math.sin(t * 2 + k) * 1.2;
+      K.O(bx, by, 0.9, 0.9, 'rgba(220,255,200,0.3)');
+    }
+    ctx.restore();
+    body(); K.edge();
+    K.O(-6, -3, 3, 1.6, 'rgba(255,255,255,0.25)', false, -0.4);                // a wet sheen
+    const m = (Math.sin(t * 1.3) + 1) / 2;                                    // the mouth slowly gapes
+    K.P([[4, 4], [14.5, 3], [13, 6 + m * 3], [5, 6.5 + m * 2]], '#040a04');
+    K.teeth(5, 14, 3.4, 1.6, 6);
+    K.teeth(6, 12.6, 6.2 + m * 2.2, -1.1, 4);
+    K.O(6, 7 + m * 2 + ((t * 0.8) % 1) * 9, 0.7, 1.2, 'rgba(190,255,170,0.55)');   // drool
+    const pulse = 0.85 + 0.15 * Math.sin(t * 3);
+    K.eye(5.6, -2.4, 1.7, '#e8ff40', 0.35, pulse);
+    K.eye(11.6, -1.8, 1.5, '#e8ff40', 0.35, pulse);
+    K.L([[3.4, -5.2], [7.8, -3.6]], 1, '#040a04');
+    K.L([[9.8, -4.4], [13.4, -2.8]], 1, '#040a04');                            // angry brows
   },
-  'Ogre King': (x, y, u, c) => {
-    ctx.strokeStyle = '#7a4a20';
-    ctx.lineWidth = 4 * u;
-    ctx.beginPath();                                                                  // club
-    ctx.moveTo(x + 10 * u, y + 8 * u);
-    ctx.lineTo(x + 19 * u, y - 12 * u);
+  'Little Slime': (u, c, t, K) => {
+    ctx.translate(0, ENEMY_GROUND * u);
+    ctx.scale(0.7, 0.7);
+    ctx.translate(0, -ENEMY_GROUND * u);
+    ENEMY_SHAPES['Slime'](u, c, t * 1.4, K);                                  // smaller, and jittery
+  },
+  'Goblin': (u, c, t, K) => {
+    const skin = K.grad(mix(c, '#5a6a20', 0.45), mix(c, '#1a2008', 0.78), -16, 18);
+    const dark = mix(c, '#101404', 0.74);
+    const jab = Math.max(0, Math.sin(t * 2.6)) ** 3 * 3;                     // quick, nasty knife jabs
+    const twitch = Math.sin(t * 7) * (Math.sin(t * 0.9) > 0.6 ? 1.5 : 0);    // the ear twitches now and then
+    const sway = Math.sin(t * 1.8) * 0.8;                                     // shifting its weight
+    const pulse = 0.85 + 0.15 * Math.sin(t * 3.3);
+    K.L([[-3, 10], [-6, 14], [-5, 17.4]], 2.6, dark);                         // far leg
+    K.P([[-7.4, 17], [-2.6, 17], [-2.2, 18.6], [-7.8, 18.6]], dark);
+    K.L([[-2 + sway, -1], [-7, 6], [-5, 10]], 2.2, dark);                     // far arm
+    K.P([[-6 + sway, -2], [5 + sway, -4], [8, 6], [6, 11], [-5, 11]], skin, true);   // crouched body
+    K.P([[-5.5, 7], [6.6, 6.5], [7.4, 12.5], [4.8, 10.4], [3, 13.5], [0.6, 10.6], [-1.8, 13.2], [-4, 10.6], [-6, 12]], '#2e2010', true);   // ragged loincloth
+    K.O(-5.8, 8.6, 2.6, 3, '#4a3018', true);                                  // a pouch of stolen coins
+    K.O(-5.2, 6.4, 1.1, 0.6, '#d4a830');
+    K.L([[3, 10], [7, 13.5], [6, 17.4]], 2.8, skin);                          // near leg, bent
+    K.P([[4.4, 17], [10, 17.2], [10.5, 18.6], [4, 18.6]], dark);
+    K.teeth(8, 10.6, 17.2, -1, 2, '#c8c0a0');                                 // toe claws
+    const hx = 4 + sway, hy = -8;
+    K.P([[hx - 3, hy - 2], [hx - 19, hy - 9 + twitch], [hx - 15, hy - 5], [hx - 4, hy + 3]], skin, true);   // long ear swept back
+    K.P([[hx - 4, hy - 1.5], [hx - 15, hy - 7.5 + twitch], [hx - 6, hy + 1.5]], mix(c, '#3a1010', 0.65));
+    K.O(hx, hy, 7.5, 7, skin, true);                                          // head
+    K.P([[hx + 5, hy - 2], [hx + 12.5, hy + 2.5], [hx + 10, hy + 3.4], [hx + 5.4, hy + 1.2]], skin, true);  // long hooked nose
+    K.P([[hx + 0.5, hy + 3.2], [hx + 9.5, hy + 3.6], [hx + 7.5, hy + 6.4], [hx + 2, hy + 5.6]], '#1a0606');  // wide grin
+    K.teeth(hx + 1.2, hx + 9, hy + 3.4, 1.4, 6);
+    K.teeth(hx + 2.4, hx + 7.6, hy + 5.6, -1.2, 4);
+    K.eye(hx + 3.6, hy - 2.2, 1.7, '#ff9a1a', 0.35, pulse);
+    K.P([[hx + 0.4, hy - 5.2], [hx + 7.6, hy - 3.2], [hx + 7, hy - 2], [hx + 0.6, hy - 3.6]], dark);   // heavy brow
+    K.L([[hx - 3, hy - 3], [hx - 1, hy - 4]], 0.5, dark);                    // wrinkles
+    const hd = [10 + jab, 1];
+    K.L([[2 + sway, 0], [6, 3], hd], 2.4, skin);                              // near arm, jabbing
+    K.P([[hd[0] + 0.5, hd[1] - 1.2], [hd[0] + 9, hd[1] - 0.2], [hd[0] + 0.5, hd[1] + 1.1]], '#b8bcc4', true);   // notched dagger
+    K.P([[hd[0] + 4, hd[1] - 0.8], [hd[0] + 4.8, hd[1] - 0.2], [hd[0] + 5.6, hd[1] - 0.7]], '#1a1a1a');
+    K.L([[hd[0] - 0.4, hd[1] - 2.2], [hd[0] - 0.4, hd[1] + 2.2]], 1.4, '#3a2410');
+    K.O(hd[0], hd[1], 1.6, 1.6, skin);
+  },
+  'Skeleton': (u, c, t, K) => {
+    const bone = K.grad(mix(c, '#ffffff', 0.08), mix(c, '#3a3428', 0.58), -20, 18);
+    const boneDark = mix(c, '#4a4030', 0.45);
+    const rattle = Math.sin(t * 23) * 0.25;                                   // its bones clatter
+    const chatter = Math.max(0, Math.sin(t * 9)) * 1.6;                       // the jaw snaps open and shut
+    const raise = Math.sin(t * 1.6) * 0.15;                                   // the sword sways
+    const glint = 0.7 + 0.3 * Math.sin(t * 13) * Math.sin(t * 2.3);
+    K.P([[-6, -4], [3, -5], [4, 3], [2, 1], [0, 5], [-2, 2], [-4, 6], [-6, 2]], 'rgba(36,32,26,0.9)');   // grave rags
+    K.L([[-2, 10], [-5, 14], [-4, 17.6]], 2, boneDark);
+    K.L([[-1, 10], [3, 14], [3, 17.6]], 2.1, bone);                           // legs
+    K.L([[-5.8, 18], [-1.6, 18]], 1.3, boneDark);
+    K.L([[2, 18], [6.6, 18]], 1.4, bone);                                     // feet
+    K.O(-5, 14, 1.2, 1.2, boneDark);
+    K.O(3, 14, 1.3, 1.3, bone);                                               // knees
+    K.L([[-1, -2], [-4, 4], [-3, 9]], 1.4, boneDark);                         // far arm
+    K.L([[0, -4], [-2, 3], [-1, 10]], 2.1, bone);                             // spine
+    for (const r of [-1, 2.5, 6]) K.L([[-1.6, r - 1], [3.2, r - 2.6], [6.4, r]], 1.5, bone);   // ribs
+    K.O(-1, 10.5, 4, 2, bone, true);                                          // pelvis
+    ctx.save();
+    ctx.translate(rattle * u, 0);
+    K.O(2, -12, 7, 6.6, bone, true);                                          // cracked skull
+    K.L([[0, -17.6], [1.6, -15.4], [0.6, -13.6]], 0.5, 'rgba(40,30,20,0.7)');
+    K.P([[2.5, -6.2 + chatter], [9, -6.6 + chatter], [8.4, -3.6 + chatter], [3, -3.2 + chatter]], bone, true);   // lower jaw
+    K.teeth(4, 9, -7.2, 1.3, 5);
+    K.teeth(4, 8.4, -6.2 + chatter, -1, 4);
+    K.O(5, -12.5, 2.5, 2.3, '#050505');                                       // eye socket
+    K.eye(5.4, -12.4, 0.8, `rgba(255,40,40,${glint})`, 0, 1.4);               // a red glint deep inside
+    K.P([[8.3, -10.4], [9.4, -8.8], [8.1, -8.6]], '#050505');                 // nose hole
+    ctx.restore();
+    ctx.save();
+    ctx.translate(9 * u, 1 * u);
+    ctx.rotate(raise - 0.1);
+    ctx.translate(-9 * u, -1 * u);
+    K.L([[1, -2], [5, 3], [9, 1]], 1.7, bone);                                // sword arm
+    K.P([[9, 0], [10.4, -1], [17.6, -13], [16, -13.8]], K.grad('#8a6038', '#4a2c14', -14, 0), true);   // rusted, notched blade
+    K.P([[13, -7.2], [13.8, -6.4], [14.2, -7.8]], '#1a1a1a');
+    K.L([[7.6, -0.6], [10.8, 2.4]], 1.6, '#2e2014');
+    ctx.restore();
+  },
+  'Orc': (u, c, t, K) => {
+    const skin = K.grad(mix(c, '#5a1a10', 0.28), mix(c, '#1a0604', 0.74), -16, 18);
+    const dark = mix(c, '#120404', 0.76);
+    const br = Math.sin(t * 2) * 0.8;                                         // heavy breathing
+    const snarl = (Math.sin(t * 1.4) + 1) / 2;                                // the jaw works open and shut
+    const lift = Math.sin(t * 1.9) * 0.12;                                    // the axe bobs, ready to come down
+    const pulse = 0.85 + 0.15 * Math.sin(t * 2.6);
+    K.L([[-5, 10], [-7, 14], [-7, 17]], 4, dark);
+    K.L([[3, 10], [5, 14], [5, 17]], 4.2, skin);                              // legs
+    K.P([[-10, 16.6], [-4.4, 16.6], [-4.2, 18.6], [-10.2, 18.6]], '#140c0a');
+    K.P([[2, 16.6], [8.6, 16.6], [8.8, 18.6], [1.8, 18.6]], '#1e1410');       // boots
+    K.L([[-6, -1], [-9, 6], [-8, 10]], 3.6, dark);                            // far arm
+    K.P([[-11, 12], [-12.5, 0], [-7, -6 - br], [7, -5 - br], [10, 3], [9, 12]], skin, true);   // hulking body
+    K.L([[-6, -1], [-2, 2]], 0.6, 'rgba(255,170,150,0.35)');
+    K.L([[1, 4.5], [5, 1.5]], 0.6, 'rgba(255,170,150,0.35)');                 // old scars
+    K.P([[-11.6, 7.6], [9.6, 7.6], [9.8, 10.4], [-11.6, 10.4]], '#22140c');    // belt
+    K.O(4, 9, 1.4, 1.2, '#cfc6b0');                                           // a bone buckle
+    K.O(-2, -5 - br, 7, 4.5, K.grad('#5a5a66', '#1e1e24', -10, -1), true);    // iron shoulder plate
+    for (const sx of [-6, -2.5, 1]) K.P([[sx, -7.6 - br], [sx + 1, -13 - br], [sx + 2.2, -8 - br]], '#6a6a76', true);   // spikes
+    const hx = 8, hy = -8 - br;
+    K.P([[hx - 6, hy - 3], [hx - 11, hy - 7.5], [hx - 4, hy - 5]], skin, true);   // pointed ear
+    K.O(hx, hy, 7.5, 6.6, skin, true);                                        // head, thrust forward
+    K.P([[hx - 4, hy - 4], [hx + 7, hy - 3.6], [hx + 6.6, hy - 1.6], [hx - 3.6, hy - 2]], dark);   // heavy brow
+    K.eye(hx + 3.4, hy - 1.4, 1.6, '#ffc21a', 0.3, pulse);
+    K.P([[hx + 1, hy + 2.5], [hx + 8, hy + 2], [hx + 7.4, hy + 4.5 + snarl * 2.4], [hx + 1.6, hy + 5 + snarl * 2]], '#1a0404');   // snarling mouth
+    K.teeth(hx + 2, hx + 7.6, hy + 2.4, 1.2, 5);
+    K.P([[hx + 5.2, hy + 5 + snarl * 2], [hx + 6.2, hy - 1.6], [hx + 7.4, hy + 4.6 + snarl * 2]], '#f0ead8', true);   // tusk
+    if (snarl > 0.5) K.O(hx + 3, hy + 6 + snarl * 2 + ((t * 0.9) % 1) * 6, 0.6, 1.1, 'rgba(220,230,240,0.55)');   // drool
+    ctx.save();
+    ctx.translate(10 * u, 4 * u);
+    ctx.rotate(lift);
+    ctx.translate(-10 * u, -4 * u);
+    K.L([[3, -2 - br], [10, 4]], 4, skin);                                    // arm
+    K.L([[10, 5], [14, -14]], 2, '#3a2412');                                  // axe haft
+    K.P([[12.6, -12], [21, -17], [22.5, -6], [14.4, -7]], K.grad('#b0b4bc', '#3a3e46', -17, -6), true);   // axe head
+    K.P([[21.2, -12.6], [19.6, -11.6], [21.6, -10.4]], '#141414');            // a notch in the edge
+    K.O(20, -8.6, 1.3, 0.8, 'rgba(110,8,8,0.85)');                            // old blood
+    K.O(10, 4.6, 2.4, 2.4, skin);                                             // fist
+    ctx.restore();
+  },
+  'Troll': (u, c, t, K) => {
+    const skin = K.grad(mix(c, '#3a4a20', 0.3), mix(c, '#100804', 0.75), -12, 18);
+    const dark = mix(c, '#0e0804', 0.76), moss = 'rgba(60,100,44,0.8)';
+    const br = Math.sin(t * 1.6);                                             // slow, heavy breaths
+    const swing = Math.sin(t * 1.2) * 1.5;                                    // long arms swaying
+    const pulse = 0.8 + 0.2 * Math.sin(t * 2);
+    K.L([[-4, 11], [-6, 17]], 5, dark);
+    K.L([[3, 11], [4, 17]], 5, skin);                                         // stumpy legs
+    K.O(-6, 17.8, 3.6, 1.4, dark);
+    K.O(5, 17.8, 3.8, 1.5, mix(c, '#100804', 0.62));                          // flat feet
+    K.L([[-6, -2], [-10 - swing, 8], [-8 - swing, 15]], 4, dark);             // far arm
+    K.O(-2, 2 - br * 0.5, 13.5, 12 + br * 0.4, skin, true);                   // huge hunched body
+    K.O(-6, -7 - br * 0.5, 6.5, 3, moss);
+    K.O(-10.5, -2, 3, 2.4, moss);
+    K.O(-1, -9.4 - br * 0.5, 3, 1.6, moss);                                   // moss growing on its back
+    for (const [wx, wy] of [[-7, 1], [0, -5], [-3, 7], [3, 3]]) K.O(wx, wy, 0.9, 0.9, dark);   // warts
+    const hx = 11, hy = -4;
+    K.O(hx, hy, 5.8, 5.4, skin, true);                                        // head jutting forward, low
+    K.O(hx + 5.6, hy + 1, 3, 2.3, mix(c, '#100804', 0.45), true);             // huge nose
+    K.P([[hx - 2, hy - 3.2], [hx + 4.5, hy - 2.6], [hx + 4.2, hy - 1.4], [hx - 1.6, hy - 2]], dark);   // brow
+    K.eye(hx + 2, hy - 1.5, 1.1, '#ffaa20', 0.25, pulse);
+    K.P([[hx + 1, hy + 3], [hx + 5, hy + 3.6], [hx + 4.6, hy + 5.4], [hx + 1.4, hy + 5]], '#1a0804');   // underbite
+    K.P([[hx + 1.8, hy + 4.6], [hx + 2.4, hy + 1.4], [hx + 3.2, hy + 4.6]], '#e8e0c8');
+    K.P([[hx + 3.8, hy + 4.8], [hx + 4.3, hy + 2], [hx + 5, hy + 4.8]], '#e8e0c8');   // tusks
+    const d = (t * 0.5) % 1;
+    K.L([[hx + 3, hy + 5], [hx + 3, hy + 5 + d * 9]], 0.6, `rgba(200,220,190,${0.6 - d * 0.4})`);   // a strand of drool
+    K.L([[4, -1], [10 + swing * 0.5, 8], [13 + swing, 16]], 4.6, skin);       // near arm
+    K.O(13.5 + swing, 16.6, 3, 2.2, skin, true);                              // knuckles on the floor
+  },
+  'Dark Knight': (u, c, t, K) => {
+    const steel = K.grad(mix(c, '#9aa0b0', 0.2), mix(c, '#050508', 0.78), -20, 18);
+    const dark = mix(c, '#050508', 0.74), rim = mix(c, '#dde0ee', 0.4);
+    const glow = 0.6 + 0.4 * Math.sin(t * 3);                                 // the eyes behind the visor pulse
+    const flutter = k => Math.sin(t * 3 + k) * 1.4;
+    K.P([[-4, -6], [2, -6], [-1, 12], [-4 + flutter(1), 15], [-7 + flutter(2), 12], [-10 + flutter(3), 16], [-12 + flutter(4), 8]], '#16060e', true);   // tattered cape
+    K.L([[-3, 10], [-5, 14], [-5, 17]], 4, dark);
+    K.L([[2, 10], [4, 14], [4, 17]], 4.2, steel);                             // armored legs
+    K.P([[-8, 16.6], [-3, 16.6], [-2.8, 18.6], [-8.4, 18.6]], dark);
+    K.P([[1.8, 16.6], [8, 17], [8.2, 18.6], [1.6, 18.6]], dark);              // sabatons
+    ctx.save();                                                               // a dark sword raised behind the shield
+    ctx.translate(-2 * u, -1 * u);
+    ctx.rotate(Math.sin(t * 1.5) * 0.08);
+    ctx.translate(2 * u, 1 * u);
+    K.L([[-2, -1], [-4, -8]], 3.2, dark);
+    K.P([[-4.6, -8], [-3.4, -8.6], [2, -24], [1, -24.4]], K.grad('#5a6070', '#16181e', -24, -8), true);
+    K.L([[-3.8, -9], [1.4, -23.8]], 0.4, 'rgba(255,40,40,0.75)');            // a red edge
+    K.L([[-6.4, -7.2], [-1.6, -9.4]], 1.2, '#2a2a30');
+    ctx.restore();
+    K.P([[-7, -3], [6, -4], [7, 3], [6.5, 11], [-6, 11]], steel, true);       // plate armor
+    K.L([[-6, 3], [6.6, 2.4]], 0.6, 'rgba(0,0,0,0.5)');
+    K.L([[-6, 7], [6.6, 6.6]], 0.6, 'rgba(0,0,0,0.5)');
+    K.O(-1, -3, 6, 4.4, steel, true);                                         // spiked shoulder plate
+    for (const sx of [-4.5, -1]) K.P([[sx, -6], [sx + 1, -10.5], [sx + 2, -6.4]], dark, true);
+    const hx = 1.5, hy = -11;
+    K.P([[hx - 3, hy - 5], [hx - 11, hy - 15], [hx - 6, hy - 9.5], [hx - 1, hy - 6.4]], '#0c0c10', true);   // horn sweeping back
+    K.O(hx, hy, 7, 7, steel, true);                                           // helm
+    K.P([[hx + 2.4, hy - 4.6], [hx + 8.4, hy - 2.6], [hx + 8.8, hy + 3.6], [hx + 3, hy + 5]], steel, true);   // face plate
+    K.P([[hx + 3.4, hy - 1.6], [hx + 8.7, hy - 1.2], [hx + 8.7, hy + 0.2], [hx + 3.4, hy - 0.1]], '#000');   // visor slit
+    K.eye(hx + 6.8, hy - 0.7, 0.9, `rgba(255,40,30,${glow})`, 0, glow * 1.6);
+    for (let k = 0; k < 3; k++) {                                             // embers drifting off the visor
+      const q = (t * 0.6 + k / 3) % 1;
+      K.O(hx + 7 + q * 2, hy - 1 - q * 10, 0.5 * (1 - q), 0.5 * (1 - q), `rgba(255,80,40,${(1 - q) * 0.65})`);
+    }
+    K.P([[6, -5], [14.5, -5], [14.5, 6], [10.2, 16], [6, 6]], K.grad(mix(c, '#556070', 0.3), '#08080c', -5, 16), true);   // kite shield
+    ctx.strokeStyle = rim;
+    ctx.lineWidth = 0.6 * u;
     ctx.stroke();
-    oval(x + 19 * u, y - 13 * u, 3.5 * u, 4.5 * u, '#7a4a20');
-    ctx.fillStyle = c;
-    for (const s of BOTH_SIDES) ctx.fillRect(x + s * 13 * u - 3 * u, y - 1 * u, 6 * u, 12 * u);  // arms
-    oval(x, y + 6 * u, 14 * u, 11 * u, c);                                            // big belly
-    oval(x, y - 8 * u, 9 * u, 8.5 * u, c);                                            // head
-    eyes(x, y - 10 * u, 3.5 * u, 1.6 * u, '#fc3');
-    for (const s of BOTH_SIDES) shape(x, y, u, [[2 * s, -3], [3.5 * s, -7], [5 * s, -3]], '#fff');  // tusks
-    shape(x, y, u, [[-8, -14], [-8, -21], [-4, -17], [0, -23], [4, -17], [8, -21], [8, -14]], '#fc3');  // crown
+    K.O(10.2, 1.5, 2.8, 1.6, '#5a0808');
+    K.eye(10.2, 1.5, 1, `rgba(255,50,30,${0.6 + glow * 0.4})`, 0, 1);         // a red eye painted on it
+  },
+  'Wraith': (u, c, t, K) => {
+    ctx.translate(0, hoverOf('Wraith', t) * u);
+    const deep = mix(c, '#040410', 0.82), sleeve = mix(c, '#141428', 0.6);
+    const wave = (k, a = 1) => Math.sin(t * 2.6 + k) * a;
+    const aura = ctx.createRadialGradient(0, -2 * u, 2 * u, 0, -2 * u, 24 * u);    // a cold, dark haze
+    aura.addColorStop(0, 'rgba(30,20,60,0.4)');
+    aura.addColorStop(1, 'rgba(30,20,60,0)');
+    ctx.fillStyle = aura;
+    ctx.fillRect(-26 * u, -28 * u, 52 * u, 52 * u);
+    const robe = () => {
+      ctx.beginPath();
+      ctx.moveTo(6 * u, -6 * u);
+      ctx.quadraticCurveTo(7.5 * u, -18 * u, -2 * u, -19 * u);
+      ctx.quadraticCurveTo(-9 * u, -15 * u, -9 * u, -3 * u);
+      for (const [a, b, k] of [[-15, 6, 1], [-11, 9, 2], [-19, 14, 3], [-10, 13, 4], [-14, 19, 5], [-5, 14, 6], [-2, 18, 7], [2, 12, 8], [6, 15, 9], [8, 4, 10]])
+        ctx.lineTo((a + wave(k, 1.4)) * u, (b + wave(k + 3, 0.8)) * u);
+      ctx.closePath();
+    };
+    ctx.save();                                                               // an afterimage trailing behind
+    ctx.globalAlpha *= 0.22;
+    ctx.translate(-4 * u, 1.5 * u);
+    robe(); ctx.fillStyle = deep; ctx.fill();
+    ctx.restore();
+    ctx.globalAlpha *= 0.92;
+    robe(); ctx.fillStyle = K.grad(mix(c, '#e0e8ff', 0.05), deep, -19, 18); ctx.fill(); K.edge();
+    K.O(3.2, -9, 4, 6, '#000');                                               // darkness inside the hood
+    K.O(4, -7.4, 2.4, 2.8, 'rgba(200,210,235,0.16)');                         // a skull's grin, barely seen
+    K.teeth(2.6, 5.8, -5.6, 0.9, 4, 'rgba(220,225,240,0.35)');
+    const flick = 0.7 + 0.3 * Math.sin(t * 11) * Math.sin(t * 3.7);
+    K.eye(4.8, -10.2, 1.1, `rgba(110,230,255,${flick})`, 0.2, 2);
+    K.eye(2.4, -10.6, 0.8, `rgba(110,230,255,${flick * 0.7})`, 0.2, 1.4);
+    K.L([[4, -2], [9, -3], [12.5, -3.5]], 1.8, sleeve);                      // an arm reaching for you
+    [[0, -6], [1, -3.6], [2, -1.2]].forEach(([k, fy]) => {                    // long bony fingers, curling
+      const curl = wave(k * 2, 1.2);
+      K.L([[12.5, -3.5], [15.5, fy + curl * 0.5], [17.2 + curl * 0.4, fy + 1.6 + curl]], 0.7, '#d8dde8');
+    });
+  },
+  'Minotaur': (u, c, t, K) => {
+    const fur = K.grad(mix(c, '#202838', 0.38), mix(c, '#04060c', 0.78), -14, 18);
+    const dark = mix(c, '#04060c', 0.74);
+    const nod = Math.sin(t * 1.6);                                            // the head lowers, ready to charge
+    const scrape = Math.max(0, Math.sin(t * 2.2)) * 2.2;                      // a front hoof scrapes the floor
+    const snort = (t % 2.8) / 2.8;                                            // hot breath every few seconds
+    const pulse = 0.85 + 0.15 * Math.sin(t * 2.8);
+    K.L([[-11, 2], [-15, 8 + Math.sin(t * 2) * 2], [-14, 13]], 1, dark);      // tail swishing
+    K.O(-14, 13.5, 1.4, 2, dark);
+    K.L([[-4, 10], [-6, 14], [-6, 16.6]], 4.6, dark);
+    K.L([[3, 10], [5 + scrape, 14], [6 + scrape, 16.6]], 4.8, fur);           // legs
+    K.P([[-8.2, 16.2], [-3.8, 16.2], [-4, 18.6], [-8.4, 18.6]], '#060606');
+    K.P([[3.8 + scrape, 16.2], [8.2 + scrape, 16.2], [8 + scrape, 18.6], [3.6 + scrape, 18.6]], '#060606');   // hooves
+    K.L([[-3, -3], [-8, 5], [-7, 10]], 4, dark);                              // far arm
+    K.P([[-11, 12], [-12.5, 0], [-6, -7], [6, -6], [9, 3], [8.5, 12]], fur, true);   // muscled body
+    K.L([[2, -2], [5, 2]], 0.6, 'rgba(0,0,0,0.45)');
+    K.L([[-3, 4], [3, 5]], 0.6, 'rgba(0,0,0,0.45)');
+    K.L([[3, -3], [9, 3], [11, 6]], 4.6, fur);                                // near arm
+    K.O(11.5, 7, 2.8, 2.6, dark, true);                                       // fist
+    K.O(8.8, 3.6, 2.4, 1.6, '#2a2a30', true);                                 // spiked bracer
+    for (const sx of [7.4, 9.4]) K.P([[sx, 2.4], [sx + 0.6, 0.2], [sx + 1.2, 2.4]], '#7a7a86');
+    ctx.save();
+    ctx.translate(4 * u, -8 * u);
+    ctx.rotate(nod * 0.06);
+    ctx.translate(-4 * u, 8 * u);
+    const hy = nod;
+    K.P([[0, -11 + hy], [-3.5, -15.5 + hy], [2, -9 + hy]], dark);             // ear
+    K.P([[2, -14 + hy], [9, -13 + hy], [16, -7 + hy], [15.5, -2 + hy], [8, -1 + hy], [3, -5 + hy]], fur, true);   // bull head
+    K.O(15, -4 + hy, 3.3, 2.7, mix(c, '#3a3a44', 0.55), true);                // muzzle
+    K.O(16.4, -4.8 + hy, 0.7, 0.5, '#000');                                   // nostril
+    ctx.strokeStyle = '#d8a830';
+    ctx.lineWidth = 1 * u;
+    ctx.beginPath(); ctx.arc(16 * u, (-2.4 + hy) * u, 1.6 * u, 0.2, Math.PI - 0.2); ctx.stroke();   // nose ring
+    K.P([[5, -12 + hy], [11.5, -10.6 + hy], [11, -9.4 + hy], [5.4, -10.6 + hy]], dark);   // brow
+    K.eye(8.8, -9.6 + hy, 1.3, '#ff2a1a', 0.3, pulse);
+    const horn = far => {                                                     // great horns, darkening to the tips
+      const dx = far ? -2.5 : 0;
+      ctx.fillStyle = K.grad('#d8d0b8', '#1a1410', -12 + hy, -23 + hy);
+      ctx.beginPath();
+      ctx.moveTo((5 + dx) * u, (-13 + hy) * u);
+      ctx.quadraticCurveTo((7 + dx) * u, (-22 + hy) * u, (16 + dx) * u, (-22 + hy) * u);
+      ctx.quadraticCurveTo((9 + dx) * u, (-18.5 + hy) * u, (8 + dx) * u, (-12.5 + hy) * u);
+      ctx.closePath();
+      ctx.fill();
+      K.edge();
+    };
+    horn(true);
+    horn(false);
+    ctx.restore();
+    if (snort < 0.35) {                                                       // a snort of hot breath
+      const q = snort / 0.35;
+      for (let k = 0; k < 3; k++)
+        K.O(18 + q * 6 + k * 1.5, -4 + nod - q * 2 - k, (1 + q * 2.5) * (1 - k * 0.2), 0.8 + q * 1.6, `rgba(230,230,240,${(1 - q) * 0.35})`);
+    }
+  },
+  'Wyvern': (u, c, t, K) => {
+    ctx.translate(0, hoverOf('Wyvern', t) * u);
+    const scale = K.grad(mix(c, '#3a1030', 0.32), mix(c, '#0c0208', 0.78), -16, 14);
+    const dark = mix(c, '#0c0208', 0.76);
+    const a = Math.sin(t * 4.2);                                              // slow, powerful wingbeats
+    const neck = Math.sin(t * 1.5);
+    const jaw = Math.max(0, Math.sin(t * 1.1)) ** 3 * 2.2;                    // the jaw gapes now and then
+    const sw = Math.sin(t * 2) * 3;                                           // the tail swishes
+    const pulse = 0.85 + 0.15 * Math.sin(t * 3);
+    const wing = dx => [[1 + dx, -2], [-4 + dx, -12 - a * 6], [-13 + dx, -18 - a * 9], [-21 + dx, -8 - a * 9], [-16 + dx, -4 - a * 4],
+                        [-12 + dx, -1 - a * 2], [-7 + dx, 1], [-3 + dx, 2]];
+    K.P(wing(3), 'rgba(28,6,20,0.92)', true);                                 // far wing
+    K.L([[-8, 5], [-15, 9 + sw * 0.3], [-21, 4 + sw]], 2.6, scale);           // tail
+    K.P([[-21, 4 + sw], [-26, sw], [-22.5, 7.5 + sw]], dark, true);           // stinger
+    K.O(-25, 2 + sw + ((t * 0.7) % 1) * 8, 0.6, 1, 'rgba(120,255,90,0.7)');   // venom dripping from it
+    K.L([[-2, 8], [-3, 12], [-1, 14]], 2, dark);
+    K.L([[3, 8], [4, 12], [6, 13.5]], 2.2, scale);                            // legs tucked up, talons out
+    K.teeth(-1.6, 0.6, 14, 1.2, 2, '#c8c0a0');
+    K.teeth(5.4, 7.6, 13.6, 1.2, 2, '#c8c0a0');
+    K.O(-1, 4, 9, 6, scale, true);                                            // body
+    K.L([[-6, 6], [-2, 8.6], [3, 8.4]], 0.5, 'rgba(0,0,0,0.45)');             // belly plates
+    K.L([[5, 1], [8 + neck, -6], [9 + neck, -11]], 3.6, scale);              // long neck
+    const hx = 9 + neck, hy = -12;
+    K.P([[hx - 2, hy - 1.6], [hx - 7, hy - 6.5], [hx - 1, hy - 3]], dark, true);
+    K.P([[hx - 0.5, hy - 2], [hx - 4.5, hy - 7.5], [hx + 0.8, hy - 3]], dark, true);   // horns
+    K.P([[hx - 3, hy - 1], [hx + 3, hy - 2], [hx + 9, hy + 1], [hx + 3, hy + 2.4]], scale, true);   // skull and upper jaw
+    K.P([[hx - 1, hy + 2], [hx + 3, hy + 2.4 + jaw], [hx + 8, hy + 2 + jaw * 1.4], [hx + 3, hy + 3.4 + jaw]], dark, true);   // lower jaw
+    K.teeth(hx + 3, hx + 8.4, hy + 1.4, 1.1, 4);
+    if (jaw > 0.2) K.O(hx + 3, hy + 2.6 + jaw / 2, 1.6, 0.8 + jaw * 0.3, `rgba(140,255,80,${jaw / 2.2 * 0.8})`);   // venom glowing in its throat
+    K.eye(hx + 2.4, hy - 0.4, 1, '#ffd21a', 0.3, pulse);
+    K.P(wing(0), mix(c, '#2a0618', 0.7), true);                               // near wing
+    for (const [wa, wb] of [[-4, -12], [-13, -18], [-21, -8]]) K.L([[1, -2], [wa, wb - a * (wb === -12 ? 6 : 9)]], 0.7, dark);   // wing bones
+  },
+  'Ogre King': (u, c, t, K) => {
+    const skin = K.grad(mix(c, '#5a1410', 0.22), mix(c, '#140202', 0.78), -18, 18);
+    const dark = mix(c, '#100202', 0.78);
+    const br = Math.sin(t * 1.7) * 0.9;                                       // heavy breathing
+    const tap = Math.sin(t * 1.3) * 0.1;                                      // the club sways, ready to fall
+    const glow = 0.7 + 0.3 * Math.sin(t * 2.4);
+    K.P([[-6, -8], [-17, 14], [-13, 16.5], [-9, 14.5], [-5, 17]], '#26050a', true);   // tattered royal cloak
+    ctx.save();
+    ctx.translate(-3 * u, 0);
+    ctx.rotate(tap);
+    ctx.translate(3 * u, 0);
+    K.L([[-3, 0], [-12, -18]], 3, '#4a2a12');                                 // club, raised behind him
+    K.O(-13.5, -20.5, 4.4, 5.6, '#3a200c', true);
+    for (const [nx, ny, dx, dy] of [[-17, -22, -2, -1], [-16, -17, -2, 1], [-10, -23, 1.6, -1.4], [-12, -15.5, 0, 2]])
+      K.L([[nx, ny], [nx + dx, ny + dy]], 0.6, '#9aa0aa');                    // nails driven through it
+    K.L([[-2, -4 - br], [-4, 1]], 4.6, dark);                                 // the arm holding it
+    ctx.restore();
+    K.L([[-4, 11], [-6, 17]], 5.2, dark);
+    K.L([[4, 11], [6, 17]], 5.4, skin);                                       // stumpy legs
+    K.O(-6, 17.8, 3.8, 1.4, dark);
+    K.O(7, 17.8, 4, 1.5, mix(c, '#100202', 0.6));
+    K.O(2, 4 - br * 0.3, 14 + br * 0.3, 12 + br * 0.4, skin, true);           // big scarred belly
+    K.L([[-2, 6], [3, 10]], 0.7, 'rgba(255,170,150,0.3)');
+    K.L([[6, 2], [9, 6]], 0.7, 'rgba(255,170,150,0.3)');
+    for (const [sx, sy] of [[0, -3.5], [4, -2.5], [8, -1.2]]) drawSkull(ctx, sx * u, sy * u, 0.55 * u, 0.5);   // a necklace of skulls
+    K.L([[6, -2 - br], [12, 7]], 4.8, skin);                                  // near arm
+    K.O(12.5, 7.5, 2.9, 2.9, dark, true);                                     // fist
+    const hx = 8, hy = -9 - br;
+    K.O(hx, hy, 8, 7.6, skin, true);                                          // head
+    K.O(hx + 6.8, hy + 1, 2.4, 2, mix(c, '#140202', 0.5), true);              // nose
+    K.P([[hx - 3, hy - 4.6], [hx + 7.4, hy - 3], [hx + 7, hy - 1.6], [hx - 2.6, hy - 3]], dark);   // heavy brow
+    K.eye(hx + 3.6, hy - 1.8, 1.6, `rgba(255,200,40,${glow})`, 0.3, glow * 1.6);
+    K.P([[hx + 1, hy + 3.4], [hx + 7.6, hy + 3.2], [hx + 7, hy + 6], [hx + 1.6, hy + 6]], '#1a0202');   // snarl
+    K.teeth(hx + 1.6, hx + 7.2, hy + 3.4, 1.1, 5);
+    K.P([[hx + 2, hy + 6], [hx + 2.8, hy + 1.6], [hx + 3.8, hy + 6]], '#f0e8d0', true);
+    K.P([[hx + 5.4, hy + 6], [hx + 6.2, hy + 2.2], [hx + 7, hy + 6]], '#f0e8d0', true);   // tusks
+    K.O(hx + 4.6, hy + 6.6 + ((t * 0.7) % 1) * 7, 0.6, 1.1, 'rgba(220,230,240,0.5)');     // drool
+    K.P([[hx - 6, hy - 6], [hx - 6.4, hy - 12], [hx - 3, hy - 9], [hx, hy - 14], [hx + 3, hy - 9.2], [hx + 6.4, hy - 12.4], [hx + 6, hy - 6]],
+        K.grad('#e8c050', '#6a4a10', hy - 14, hy - 6), true);                 // a tarnished, spiked crown
+    K.O(hx, hy - 8, 1, 1.2, '#c01818');                                       // a ruby
   }
 };
 
-// draw an enemy's figure; defeated enemies are faded out
-function drawEnemy(f, x, y, size, dead) {
+// how defeated enemies go down: slimes splat into a puddle, the wraith dissipates, fliers drop out
+// of the air and crumple, everyone else topples over backward. LIE_LIFT raises a toppled body so it
+// rests on the floor rather than in it; DROP is how far a flier falls to reach the floor.
+const DEATH_STYLE = {'Slime': 'splat', 'Little Slime': 'splat', 'Wraith': 'fade', 'Bat': 'drop', 'Wyvern': 'drop'};
+const LIE_LIFT = {'Goblin': 8, 'Skeleton': 6, 'Orc': 12, 'Troll': 17, 'Dark Knight': 11, 'Minotaur': 15, 'Ogre King': 17};
+const DROP = {'Bat': 13, 'Wyvern': 9};
+
+// draw an enemy facing you, standing on the floor (or flying above it), with its shadow
+function drawEnemy(f, x, y, size, dead, t) {
+  const u = size / 34, groundY = y + ENEMY_GROUND * u, fly = FLYERS.has(f.name);
+  if (f.animPhase === undefined) f.animPhase = Math.random() * 10;           // so a group doesn't move in step
+  const at = t + f.animPhase;
+  if (dead && f.fellAt === undefined) f.fellAt = t;
+  const fall = dead ? Math.min(1, (t - f.fellAt) / 0.45) : 0;                // 0 standing .. 1 lying on the floor
+  // shadow on the floor: fliers cast a smaller, fainter one the higher they are
+  const lift = fly && !dead ? -hoverOf(f.name, at) : 0;
+  ctx.fillStyle = `rgba(0,0,0,${(0.5 - lift * 0.03) * (1 - fall * 0.6)})`;
+  ctx.beginPath();
+  ctx.ellipse(x, groundY, (f.boss ? 18 : 13) * u * (1 - lift * 0.04), 3 * u, 0, 0, Math.PI * 2);
+  ctx.fill();
+  const paint = ENEMY_SHAPES[f.name], style = DEATH_STYLE[f.name] || 'topple';
   ctx.save();
-  ctx.globalAlpha = dead ? 0.25 : 1;
-  const paint = ENEMY_SHAPES[f.name];
-  if (paint) paint(x, y, size / 34, f.color);
-  else drawFighter(x, y, f.color, size, false);  // any enemy without a shape yet
+  ctx.globalAlpha = style === 'fade' ? 1 - fall : 1 - fall * 0.7;
+  ctx.translate(x, y);
+  ctx.scale(-1, 1);                                                           // drawn facing right, flipped to face you
+  if (fall > 0) {
+    const g = ENEMY_GROUND * u;
+    if (style === 'splat') {                                                  // flattens into a puddle
+      ctx.translate(0, g);
+      ctx.scale(1 + fall * 0.5, 1 - fall * 0.78);
+      ctx.translate(0, -g);
+    } else if (style === 'fade') {                                            // drifts up and dissolves
+      ctx.translate(0, -fall * 10 * u);
+    } else if (style === 'drop') {                                            // falls out of the air, crumples on the floor
+      ctx.translate(0, g);
+      ctx.scale(1 + fall * 0.15, 1 - fall * 0.35);
+      ctx.translate(0, -g + fall * fall * DROP[f.name] * u);
+    } else {                                                                  // topples back onto the floor
+      ctx.translate(0, g - fall * (LIE_LIFT[f.name] || 8) * u);              // (lifted after turning, so it rests on top)
+      ctx.rotate(-Math.PI / 2 * fall * fall);
+      ctx.translate(0, -g);
+    }
+  }
+  if (paint) paint(u, f.color, dead ? f.fellAt + f.animPhase : at, enemyKit(u));
+  else drawFighter(0, 0, f.color, size, false);                              // any enemy without a shape yet
   ctx.restore();
 }
 
@@ -1678,7 +2085,10 @@ function drawArenaLife(t, arena, boss) {
 const ENCH_GLOW = {flaming: '#ff7a1a', vampiric: '#e0203a', balanced: '#e8f0ff', giantslayer: '#ffd040', swift: '#5fe0ff',
   thorns: '#8fe05a', mending: '#5aff8a', fortitude: '#ff6a6a', purity: '#ffffff', fleetfoot: '#8ad8ff', fortune: '#ffcc33'};
 const LOOK = {
-  skin: '#e2b48c', hair: '#5a3a22', tunic: '#3a7bd5', tunicDark: '#2a5aa8', pants: '#4a3a30', shoe: '#2e2219',
+  // skin and clothes worn down by the dungeon: a faded, grimy tunic, torn trousers
+  skin: '#d9a982', hair: '#4a3020', tunic: '#5a7896', tunicDark: '#3c546e', pants: '#4a3a2c', shoe: '#2e2219',
+  rope: '#a89060', bandage: '#d8d0b8', blood: '#8e1c1c', patch: '#6a5030',
+  dirt: 'rgba(55,38,20,0.38)', bruise: 'rgba(110,60,120,0.4)',
   leather: '#8a5a32', leatherDark: '#5e3a1e', cloth: '#d8c8a0', clothDark: '#a8946a',
   iron: '#9aa0aa', ironDark: '#5e646e', steel: '#e4eaf2', steelDark: '#8f9aab', gold: '#e8b830',
   cape: '#1f4fa8', capeDark: '#163a7e', grip: '#4a2e1a'
@@ -1699,7 +2109,7 @@ function sheen(x0, x1, base, dark, shine) {
 function drawHero(x, y, t) {
   const H = tierOf('helmet'), C = tierOf('chest'), B = tierOf('bracers'), G = tierOf('greaves'), Wp = tierOf('weapon');
   const knight = armor.every(k => worn[k]), shining = knight && armor.every(k => worn[k].tier === 2);
-  const b = Math.sin(t * 2.2) * 0.6;                                     // breathing
+  const b = Math.sin(t * 2.2) * 0.6;                                       // breathing (moves the upper body)
   const glowColor = k => worn[k] && worn[k].ench ? ENCH_GLOW[worn[k].ench.id] : null;
   // draw part of a piece with a glow if that piece is enchanted
   const glowing = (k, fn) => {
@@ -1711,113 +2121,223 @@ function drawHero(x, y, t) {
     fn();
     ctx.restore();
   };
+  // every shape below is placed relative to (x, y); you face right, toward the enemies
+  const at = ([px, py]) => [x + px, y + py];
   const fill = (color, path) => { ctx.fillStyle = color; ctx.beginPath(); path(); ctx.fill(); };
-  const poly = (pts, color) => fill(color, () => pts.forEach(([px, py], i) => i ? ctx.lineTo(px, py) : ctx.moveTo(px, py)));
-  const rect = (x0, y0, w, h, color) => { ctx.fillStyle = color; ctx.fillRect(x0, y0, w, h); };
-  const metalOf = (tier, x0, x1) => tier === 2 ? sheen(x0, x1, LOOK.steel, LOOK.steelDark, '#ffffff') : sheen(x0, x1, LOOK.iron, LOOK.ironDark, '#c8ccd4');
+  const trace = pts => pts.forEach((pt, i) => { const [px, py] = at(pt); i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); });
+  const P = (pts, color) => fill(color, () => trace(pts));
+  const R = (px, py, w, h, color) => { ctx.fillStyle = color; ctx.fillRect(x + px, y + py, w, h); };
+  const O = (px, py, rx, ry, color) => fill(color, () => ctx.ellipse(x + px, y + py, rx, ry, 0, 0, Math.PI * 2));
+  const limb = (pts, w, color) => {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = w;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    trace(pts);
+    ctx.stroke();
+  };
+  const mid = (p0, p1, q) => [p0[0] + (p1[0] - p0[0]) * q, p0[1] + (p1[1] - p0[1]) * q];
+  const metalOf = (tier, x0, x1) => tier === 2
+    ? sheen(x + x0, x + x1, LOOK.steel, LOOK.steelDark, '#ffffff')
+    : sheen(x + x0, x + x1, LOOK.iron, LOOK.ironDark, '#c8ccd4');
+  const FAR = 'rgba(0,0,0,0.3)';                                             // the arm and leg on the far side sit in shadow
 
   // shadow on the floor
-  fill('rgba(0,0,0,0.45)', () => ctx.ellipse(x, y + 31, 17, 4.5, 0, 0, Math.PI * 2));
+  O(0, 30, 16, 4, 'rgba(0,0,0,0.45)');
 
-  // -- cape (knights only), swaying behind you
+  // -- cape (knights only), trailing behind you
   if (knight) {
     const sw = k => Math.sin(t * 2 + k) * 1.6;
-    ctx.fillStyle = sheen(x - 16, x + 16, LOOK.cape, LOOK.capeDark, '#3a6cc8');
+    ctx.fillStyle = sheen(x - 19, x + 3, LOOK.cape, LOOK.capeDark, '#3a6cc8');
     ctx.beginPath();
-    ctx.moveTo(x - 10, y - 13 + b);
-    ctx.lineTo(x + 10, y - 13 + b);
-    ctx.lineTo(x + 16 + sw(0), y + 27);
-    ctx.quadraticCurveTo(x + 8, y + 30 + sw(1), x, y + 27 + sw(2) * 0.5);
-    ctx.quadraticCurveTo(x - 8, y + 30 + sw(3), x - 16 + sw(4), y + 27);
+    ctx.moveTo(x - 4, y - 13 + b);
+    ctx.lineTo(x + 2, y - 13 + b);
+    ctx.lineTo(x - 1, y + 26);
+    ctx.quadraticCurveTo(x - 8, y + 29 + sw(1), x - 15 + sw(2), y + 27);
+    ctx.quadraticCurveTo(x - 20 + sw(3), y + 10, x - 8 + sw(4) * 0.5, y - 7 + b);
     ctx.closePath();
     ctx.fill();
-    if (shining) { ctx.strokeStyle = LOOK.gold; ctx.lineWidth = 1.4; ctx.stroke(); }
+    if (shining) { ctx.strokeStyle = LOOK.gold; ctx.lineWidth = 1.2; ctx.stroke(); }
   }
 
-  // -- legs and feet (greaves)
-  glowing('greaves', () => {
-    for (const s of [-1, 1]) {
-      const lx = s < 0 ? x - 8 : x + 2;                                   // each leg is 6 wide
-      if (G === 2) {                                                       // steel leg armor, knee guards, pointed boots
-        rect(lx, y + 7, 6, 20, metalOf(2, lx, lx + 6));
-        fill(metalOf(2, lx - 1, lx + 7), () => ctx.ellipse(lx + 3, y + 15, 3.8, 2.7, 0, 0, Math.PI * 2));
-        poly([[lx - (s < 0 ? 3 : 0), y + 30], [lx - (s < 0 ? 1 : 0), y + 26.5], [lx + 6 + (s > 0 ? 1 : 0), y + 26.5], [lx + 6 + (s > 0 ? 3 : 0), y + 30]], LOOK.steelDark);
-      } else {
-        rect(lx, y + 7, 6, 20, LOOK.pants);
-        if (G === 0) {                                                     // leather boots with a folded cuff
-          rect(lx - 0.5, y + 16, 7, 11, LOOK.leather);
-          rect(lx - 1, y + 16, 8, 2.5, LOOK.leatherDark);
-        }
-        if (G === 1) {                                                     // iron shin plates
-          rect(lx + 0.5, y + 14, 5, 12, metalOf(1, lx, lx + 6));
-          rect(lx + 2.2, y + 14.5, 1.6, 1.6, LOOK.ironDark);
-        }
-        rect(lx - (s < 0 ? 2 : 0), y + 27, 8, 3, G === 0 ? LOOK.leatherDark : LOOK.shoe);   // feet
+  // -- legs, mid-stride (greaves)
+  const LEGS = {far: [[-1.5, 6], [-4.5, 16], [-6, 26]], near: [[2, 6], [5, 16], [6, 26]]};   // hip, knee, ankle
+  const FEET = {far: [[-8.5, 26], [-2, 26], [-1.5, 29], [-9, 29]], near: [[3.5, 26], [10.5, 26.6], [11.2, 29], [3, 29]]};
+  for (const side of ['far', 'near']) {
+    const [hip, knee, ankle] = LEGS[side], foot = FEET[side];
+    glowing('greaves', () => {
+      if (G === 2) {                                                          // steel legs, a knee guard, a pointed boot
+        limb([hip, knee, ankle], 5.2, metalOf(2, -9, 9));
+        O(knee[0], knee[1], 3.3, 2.7, metalOf(2, -9, 9));
+        P(foot.map(([a, c], i) => i === 1 ? [a + 1.6, c + 0.7] : [a, c]), LOOK.steelDark);
+        return;
       }
+      limb([hip, knee, ankle], 5.2, LOOK.pants);                              // trousers
+      if (G === -1) {                                                         // torn off above the ankle: bare, filthy shins and feet
+        const m = mid(knee, ankle, 0.55);
+        limb([m, ankle], 4, LOOK.skin);
+        P([[m[0] - 2.6, m[1] - 0.6], [m[0] - 1.3, m[1] + 1.7], [m[0], m[1] - 0.3], [m[0] + 1.3, m[1] + 1.9], [m[0] + 2.6, m[1] - 0.6]], LOOK.pants);
+        P(foot, LOOK.skin);
+        O((foot[0][0] + foot[1][0]) / 2, 27.6, 3, 1.3, LOOK.dirt);
+        if (side === 'near') O(knee[0], knee[1] - 1, 2.1, 1.7, LOOK.patch); // a patched knee
+      } else if (G === 0) {                                                   // leather boots with a folded cuff
+        limb([mid(knee, ankle, 0.3), ankle], 5.8, LOOK.leather);
+        limb([mid(knee, ankle, 0.3), mid(knee, ankle, 0.4)], 6.4, LOOK.leatherDark);
+        P(foot, LOOK.leatherDark);
+      } else {                                                                // iron shin plates over the trousers
+        limb([mid(knee, ankle, 0.1), mid(knee, ankle, 0.92)], 5.6, metalOf(1, -9, 9));
+        O(knee[0] + 0.5, knee[1] + 1.5, 0.8, 0.8, LOOK.ironDark);
+        P(foot, LOOK.shoe);
+      }
+    });
+    if (side === 'far') { limb([hip, knee, ankle], 5.4, FAR); P(foot, FAR); }
+  }
+
+  // -- arms: sleeves come from the chest piece, forearms and hands from the bracers
+  const ARM = {far: [[-1, -11 + b], [-4, -2 + b], [-2, 5 + b]], near: [[1.5, -11 + b], [6, -3 + b], [12, -7 + b]]};  // shoulder, elbow, hand
+  const sleeve = C === 2 ? metalOf(2, -8, 14) : C === 1 ? metalOf(1, -8, 14) : LOOK.tunic;
+  const fore = B === 2 ? metalOf(2, -8, 14) : B === 1 ? metalOf(1, -8, 14) : B === 0 ? LOOK.cloth : LOOK.skin;
+  const hand = B === 2 ? LOOK.steelDark : LOOK.skin;
+  const drawArm = side => {
+    const [sh, el, hd] = ARM[side];
+    limb([sh, el], 4.4, LOOK.skin);
+    if (C >= 1) limb([sh, el], 4.6, sleeve);                                  // mail or steel sleeve
+    else limb([sh, mid(sh, el, 0.55)], 5, LOOK.tunic);                        // a short, torn tunic sleeve
+    glowing('bracers', () => limb([el, hd], 4.4, fore));
+    if (B >= 0) {                                                             // wraps get stripes, iron and steel a rim
+      const vx = hd[0] - el[0], vy = hd[1] - el[1], vl = Math.hypot(vx, vy), px = -vy / vl * 2.3, py = vx / vl * 2.3;
+      ctx.strokeStyle = B === 0 ? LOOK.clothDark : 'rgba(30,32,40,0.6)';
+      ctx.lineWidth = 0.8;
+      const n = B === 0 ? 3 : 1;
+      for (let k = 1; k <= n; k++) {
+        const [mx, my] = at(mid(el, hd, k / (n + 1)));
+        ctx.beginPath(); ctx.moveTo(mx - px, my - py); ctx.lineTo(mx + px + vx / vl, my + py + vy / vl); ctx.stroke();
+      }
+    } else if (side === 'near') {                                             // a bloodied bandage round the sword arm
+      for (const q of [0.28, 0.5, 0.72]) { const m = mid(el, hd, q); limb([[m[0] - 1.6, m[1] - 2.1], [m[0] + 1.6, m[1] + 2.1]], 1.5, LOOK.bandage); }
+      const m = mid(el, hd, 0.5);
+      O(m[0] + 0.4, m[1] + 0.3, 1, 0.9, LOOK.blood);
+    } else {                                                                  // scratches on the other arm
+      limb([mid(el, hd, 0.3), mid(el, hd, 0.6)].map(([a, c], i) => [a + (i ? 1.2 : -0.6), c]), 0.6, 'rgba(170,40,40,0.75)');
+    }
+    O(hd[0], hd[1], 2.6, 2.6, hand);
+    if (side === 'far') limb([sh, el, hd], 4.6, FAR);
+  };
+  drawArm('far');
+
+  // -- body (chest piece)
+  const TORSO = [[-5, -13 + b], [4, -13.5 + b], [7, -6 + b], [6, 2], [5.5, 7], [-5.5, 7]];
+  const HEM = [[-6, 6], [6, 6], [6.8, 11], [4.8, 9.4], [3, 12.6], [1, 10], [-1, 12.2], [-3, 9.8], [-4.6, 12.4], [-6.6, 10]];  // ragged tunic hem
+  glowing('chest', () => {
+    if (C === 1) fill(metalOf(1, -6, 8), () => trace(TORSO));
+    else if (C === 2) fill(metalOf(2, -6, 8), () => trace(TORSO));
+    else {
+      P(HEM, LOOK.tunicDark);
+      fill(sheen(x - 6, x + 8, LOOK.tunic, LOOK.tunicDark, '#7d97b2'), () => trace(TORSO));
     }
   });
-
-  // -- body (chest piece), then a belt
-  const torso = () => { ctx.moveTo(x - 11, y - 13 + b); ctx.lineTo(x + 11, y - 13 + b); ctx.lineTo(x + 9, y + 7); ctx.lineTo(x - 9, y + 7); ctx.closePath(); };
-  glowing('chest', () => {
-    if (C === 1) fill(metalOf(1, x - 11, x + 11), torso);
-    else if (C === 2) fill(metalOf(2, x - 11, x + 11), torso);
-    else fill(sheen(x - 11, x + 11, LOOK.tunic, LOOK.tunicDark, '#5a95e8'), torso);
-  });
-  if (C === -1 || C === 0) poly([[x - 3, y - 13 + b], [x + 3, y - 13 + b], [x, y - 9 + b]], LOOK.skin);   // neckline
-  if (C === 0) {                                                           // leather vest with lacing
-    for (const s of [-1, 1]) poly([[x + s * 11, y - 13 + b], [x + s * 3, y - 13 + b], [x + s * 2, y + 7], [x + s * 9, y + 7]], LOOK.leather);
+  if (C <= 0) {                                                               // the old prisoner's tunic: patched, torn and filthy
+    P([[2, -13.5 + b], [5, -13.5 + b], [4, -10 + b]], LOOK.skin);             // torn neckline
+    R(-3.5, -9 + b, 4, 4, LOOK.patch);
     ctx.strokeStyle = LOOK.cloth;
-    ctx.lineWidth = 0.8;
-    for (let k = 0; k < 4; k++) { const ly = y - 8 + k * 4 + b; ctx.beginPath(); ctx.moveTo(x - 2, ly); ctx.lineTo(x + 2, ly + 2); ctx.moveTo(x + 2, ly); ctx.lineTo(x - 2, ly + 2); ctx.stroke(); }
+    ctx.lineWidth = 0.5;
+    for (const [sx, sy] of [[-3.5, -9], [0.5, -9], [-3.5, -5], [0.5, -5]]) {   // stitches round the patch
+      const [px, py] = at([sx, sy + b]);
+      ctx.beginPath(); ctx.moveTo(px - 0.7, py - 0.7); ctx.lineTo(px + 0.7, py + 0.7); ctx.stroke();
+    }
+    O(2.5, 1, 2.5, 1.5, LOOK.dirt);
+    O(-3, -2 + b, 1.8, 2.4, LOOK.dirt);
+    O(5.5, 9, 1.6, 1.2, LOOK.dirt);
+    limb([[4.6, -4 + b], [5.6, -1.2 + b]], 0.7, 'rgba(0,0,0,0.5)');           // a tear
   }
-  if (C === 1) {                                                           // chainmail rings
+  if (C === 0) {                                                              // a scuffed leather vest over the tunic
+    P([[-5, -13 + b], [2.6, -13.5 + b], [3.6, -4 + b], [3.2, 7], [-5.5, 7]], LOOK.leather);
+    limb([[-3, -6 + b], [-1, -5 + b]], 0.6, LOOK.leatherDark);
+    limb([[-4, 1], [-2.4, 2.4]], 0.6, LOOK.leatherDark);
+    for (let k = 0; k < 4; k++) O(3.1, -10 + k * 3.6 + b, 0.5, 0.5, LOOK.cloth);   // lacing
+  }
+  if (C === 1) {                                                              // chainmail rings, and a mail skirt
+    P([[-6, 6], [6.2, 6], [6.6, 10.6], [-6.6, 10.6]], metalOf(1, -7, 7));
     ctx.save();
-    ctx.beginPath(); torso(); ctx.clip();
+    ctx.beginPath(); trace(TORSO); trace([[-6.6, 6], [6.6, 6], [6.6, 10.6], [-6.6, 10.6]]); ctx.clip();
     ctx.strokeStyle = 'rgba(30,32,40,0.45)';
     ctx.lineWidth = 0.7;
-    for (let ry = y - 13 + b, row = 0; ry < y + 8; ry += 2.6, row++)
-      for (let rx = x - 12 + (row % 2) * 1.5; rx < x + 12; rx += 3) { ctx.beginPath(); ctx.arc(rx, ry, 1.3, 0, Math.PI); ctx.stroke(); }
+    for (let ry = -13 + b, row = 0; ry < 11; ry += 2.6, row++)
+      for (let rx = -7 + (row % 2) * 1.5; rx < 8; rx += 3) { const [px, py] = at([rx, ry]); ctx.beginPath(); ctx.arc(px, py, 1.3, 0, Math.PI); ctx.stroke(); }
     ctx.restore();
   }
-  if (C === 2) {                                                           // breastplate ridge and the plates over the hips
-    rect(x - 0.5, y - 12 + b, 1, 15, 'rgba(255,255,255,0.7)');
-    rect(x - 9, y + 2, 18, 1, 'rgba(40,46,60,0.6)');
+  if (C === 2) {                                                              // breastplate ridge, plates over the hips
+    limb([[5.8, -11 + b], [6.6, -5 + b], [5.6, 3]], 0.8, 'rgba(255,255,255,0.8)');
+    P([[-6, 6], [6.2, 6], [6.4, 10], [-6.2, 10]], metalOf(2, -7, 7));
+    limb([[-6, 8], [6.3, 8]], 0.6, 'rgba(40,46,60,0.6)');
   }
-  rect(x - 9, y + 5, 18, 3, LOOK.leatherDark);                             // belt
-  rect(x - 1.5, y + 5.3, 3, 2.4, shining ? LOOK.gold : '#b8a060');         // buckle
-  if (knight) {                                                            // tabard with a gold cross
-    rect(x - 5, y - 12 + b, 10, 27 - b, LOOK.cape);
-    rect(x - 0.8, y - 9 + b, 1.6, 12, LOOK.gold);
-    rect(x - 3.5, y - 5 + b, 7, 1.6, LOOK.gold);
-    if (shining) { ctx.strokeStyle = LOOK.gold; ctx.lineWidth = 0.8; ctx.strokeRect(x - 5, y - 12 + b, 10, 27 - b); }
+  if (C === -1) {                                                             // a frayed rope for a belt
+    limb([[-5.6, 6.2], [6, 6]], 1.8, LOOK.rope);
+    O(5.6, 6.1, 1.2, 1.2, LOOK.rope);
+    limb([[5.6, 6.2], [6.6, 10.2]], 1, LOOK.rope);
+  } else {
+    R(-5.6, 5, 11.8, 2.8, LOOK.leatherDark);                                  // a proper belt
+    R(3.6, 5.2, 2.4, 2.4, shining ? LOOK.gold : '#b8a060');
   }
+  if (knight) {                                                               // tabard with a gold cross
+    P([[0.5, -12.6 + b], [5.6, -12.8 + b], [6.8, -6 + b], [6.4, 15], [1.2, 15]], LOOK.cape);
+    R(3, -10 + b, 1.5, 12, LOOK.gold);
+    R(1.4, -6 + b, 4.8, 1.5, LOOK.gold);
+    if (shining) { ctx.strokeStyle = LOOK.gold; ctx.lineWidth = 0.7; ctx.beginPath(); trace([[0.5, -12.6 + b], [5.6, -12.8 + b], [6.8, -6 + b], [6.4, 15], [1.2, 15]]); ctx.closePath(); ctx.stroke(); }
+  }
+  if (C === 2) O(0.5, -11.5 + b, 5.6, 4.2, metalOf(2, -6, 7));               // shoulder plate
 
-  // -- arms: sleeve color comes from the chest piece, forearms and hands from the bracers
-  const sleeve = C === 2 ? metalOf(2, x - 15, x + 15) : C === 1 ? metalOf(1, x - 15, x + 15) : LOOK.tunic;
-  const fore = B === 2 ? metalOf(2, x - 15, x + 22) : B === 1 ? metalOf(1, x - 15, x + 22) : B === 0 ? LOOK.cloth : LOOK.skin;
-  const hand = B === 2 ? LOOK.steelDark : LOOK.skin;
-  const bracerMarks = (x0, y0, x1, y1) => {                                // wraps get stripes, iron and steel get a rim
-    if (B < 0) return;
-    ctx.strokeStyle = B === 0 ? LOOK.clothDark : 'rgba(30,32,40,0.6)';
-    ctx.lineWidth = 0.8;
-    const n = B === 0 ? 3 : 1;
-    for (let k = 1; k <= n; k++) {
-      const q = k / (n + 1), mx = x0 + (x1 - x0) * q, my = y0 + (y1 - y0) * q;
-      ctx.beginPath(); ctx.moveTo(mx - 2.2, my - 1); ctx.lineTo(mx + 2.2, my + 1); ctx.stroke();
+  // -- head, in profile
+  R(0.5, -16 + b, 4, 4, LOOK.skin);                                           // neck
+  O(2.5, -22 + b, 7.2, 7.2, LOOK.skin);
+  if (H <= 0) O(0.4, -21.6 + b, 1.6, 2.4, '#b58262');                         // ear (helmets cover it)
+  if (H < 2) {
+    P([[8.6, -24.2 + b], [11.4, -20.6 + b], [8.8, -19.8 + b]], LOOK.skin);    // nose
+    limb([[9.2, -21.5 + b], [10.6, -20.6 + b]], 0.5, 'rgba(120,70,50,0.5)');
+    O(6.1, -23.4 + b, 1, 1.05, '#1a1410');                                    // eye, on the enemy
+    R(4.6, -25.5 + b, 3.2, 0.8, LOOK.hair);                                   // brow
+    R(7, -17.9 + b, 2.2, 0.6, '#7a4a38');                                     // mouth
+    // a face that has seen the dungeon: stubble, a bruise, a scratch, dirt
+    for (const [sx, sy] of [[4, -17.8], [4.5, -16.8], [5.6, -16.3], [6.8, -16.4], [7.9, -16.9], [8.6, -17.7]]) R(sx, sy + b, 0.6, 0.6, 'rgba(40,28,20,0.6)');
+    O(5.4, -21.3 + b, 1.5, 1, LOOK.bruise);
+    limb([[1.6, -19.6 + b], [3.4, -17.6 + b]], 0.6, 'rgba(170,40,40,0.75)');
+    O(3.2, -20 + b, 2.2, 1.2, LOOK.dirt);
+  }
+  glowing('helmet', () => {
+    if (H === -1) {                                                           // messy, matted hair
+      P([[9.2, -25.6], [7.4, -29], [5, -27.8], [3.4, -31.2], [0.8, -28.4], [-1.8, -30.8], [-3.4, -27.2], [-6.4, -27.8], [-5.2, -24.2],
+         [-7, -21.6], [-4.6, -20.6], [-5, -17.6], [-2.4, -19.6], [-0.2, -23], [3.6, -24.8], [7, -24]].map(([a, c]) => [a, c + b]), LOOK.hair);
+      limb([[6, -28.5 + b], [8.6, -31 + b]], 0.7, LOOK.hair);
+      limb([[-4, -28 + b], [-6.5, -31 + b]], 0.7, LOOK.hair);
+    } else if (H === 0) {                                                     // a battered leather cap
+      P([[-4.8, -19], [-5.8, -25], [-3, -29.6], [2.6, -30.7], [7.6, -28.6], [9.2, -25], [12.4, -24.1], [8.6, -23.1], [3, -24.6], [-0.6, -24], [-2.4, -21]].map(([a, c]) => [a, c + b]), LOOK.leather);
+      limb([[-2, -28 + b], [3, -29.3 + b], [7, -27.5 + b]], 0.5, LOOK.cloth);
+      limb([[0, -26.5 + b], [2, -25.8 + b]], 0.5, LOOK.leatherDark);
+    } else if (H === 1) {                                                     // iron helm with a nose guard
+      P([[-5.2, -18.5], [-6, -25.5], [-3.2, -30.2], [2.5, -31.3], [7.8, -29.2], [9.8, -25], [9.8, -23.4], [-0.4, -24.4], [-2.6, -21.6]].map(([a, c]) => [a, c + b]), metalOf(1, -7, 11));
+      P([[-5.2, -18.5], [-2.6, -21.6], [0.8, -21.6], [0.4, -16.4], [-4.6, -16]].map(([a, c]) => [a, c + b]), LOOK.iron);   // cheek and neck guard
+      limb([[-2.6, -21.6 + b], [-0.4, -24.4 + b], [9.8, -23.4 + b]], 1.2, LOOK.ironDark);
+      R(8.6, -24.8 + b, 1.6, 6.6, LOOK.ironDark);                             // nose guard
+      for (const [sx, sy] of [[-2.5, -26], [1, -27.4], [5, -27.6]]) R(sx, sy + b, 1, 1, '#d8dce4');   // rivets
+    } else {                                                                  // steel great helm
+      P([[-5.5, -15], [-6, -26], [-3, -31], [3, -32], [8.4, -30], [10.6, -25], [10.9, -19], [9.3, -15.2], [4, -14.3]].map(([a, c]) => [a, c + b]), metalOf(2, -7, 12));
+      P([[4.5, -24.8], [10.8, -24.2], [10.8, -22.6], [4.5, -23.1]].map(([a, c]) => [a, c + b]), '#0c0c10');   // visor slit
+      for (const [sx, sy] of [[7.6, -19], [9, -19], [8.3, -17.6]]) R(sx, sy + b, 0.8, 0.8, '#0c0c10');           // breathing holes
+      limb([[-2, -30.4 + b], [3, -31.4 + b], [8, -29.4 + b]], 0.8, 'rgba(255,255,255,0.8)');                     // ridge catching the light
+      if (shining) limb([[-5.4, -17 + b], [9.6, -16.6 + b]], 1, LOOK.gold);
     }
-  };
-  // left arm, hanging
-  rect(x - 14, y - 12 + b, 4, 10, sleeve);
-  glowing('bracers', () => rect(x - 14, y - 2 + b, 4, 8, fore));
-  bracerMarks(x - 12, y - 2 + b, x - 12, y + 6 + b);
-  fill(hand, () => ctx.arc(x - 12, y + 8 + b, 2.6, 0, Math.PI * 2));
-  if (C === 2) for (const s of [-1, 1]) fill(metalOf(2, x + s * 11.5 - 5, x + s * 11.5 + 5), () => ctx.ellipse(x + s * 11.5, y - 11 + b, 5, 3.8, 0, 0, Math.PI * 2));  // shoulder plates
+  });
+  if (knight && H === 2) {                                                    // the knight's plume, streaming back
+    const sw = Math.sin(t * 2.4) * 1.2;
+    fill(LOOK.cape, () => { ctx.moveTo(x + 1, y - 31.5 + b); ctx.quadraticCurveTo(x - 4, y - 38 + b, x - 15 + sw, y - 35 + b); ctx.quadraticCurveTo(x - 8, y - 31.5 + b, x - 2, y - 29.5 + b); ctx.closePath(); });
+    fill('#3a6cc8', () => { ctx.moveTo(x + 0.5, y - 31.8 + b); ctx.quadraticCurveTo(x - 4, y - 36.5 + b, x - 11 + sw, y - 34.6 + b); ctx.quadraticCurveTo(x - 6, y - 32.8 + b, x - 1, y - 30.8 + b); ctx.closePath(); });
+  }
 
-  // -- the weapon, held up toward the enemies
-  const hx = x + 20, hy = y - 4 + b;                                       // your sword hand
+  // -- the weapon, raised toward the enemies, then the sword arm over it
+  const hx = x + ARM.near[2][0], hy = y + ARM.near[2][1];                    // your sword hand
   if (Wp >= 0) {
-    const dx = 0.469, dy = -0.883, nx = 0.883, ny = 0.469;                 // blade direction and its sideways
+    const dx = 0.574, dy = -0.819, nx = 0.819, ny = 0.574;                   // blade direction and its sideways
     const len = [16, 21, 25][Wp], w = [1.7, 2, 2.3][Wp], guard = [3.5, 4.5, 5.5][Wp];
     const sx = hx + dx * 3.5, sy = hy + dy * 3.5, tx = sx + dx * len, ty = sy + dy * len;
     const blade = () => {
@@ -1829,87 +2349,48 @@ function drawHero(x, y, t) {
       ctx.closePath();
     };
     const ench = worn.weapon.ench && worn.weapon.ench.id;
-    if (ench === 'swift') {                                                // a blurred afterimage
+    if (ench === 'swift') {                                                   // a blurred afterimage
       ctx.save(); ctx.globalAlpha *= 0.35; ctx.translate(-nx * 3.5, -ny * 3.5); fill('#5fe0ff', blade); ctx.restore();
     }
     glowing('weapon', () => fill(['#a8743c', '#c4c8d0', '#eef3fa'][Wp], blade));
     if (Wp === 0) for (const q of [0.3, 0.55, 0.8]) fill('#6e4220', () => ctx.arc(sx + dx * len * q + nx * 0.6, sy + dy * len * q + ny * 0.6, 0.9, 0, Math.PI * 2));  // rust
     if (Wp >= 1) { ctx.strokeStyle = Wp === 2 ? '#b8c4d4' : '#8a909a'; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(tx - dx * 5, ty - dy * 5); ctx.stroke(); }  // fuller
-    ctx.strokeStyle = ['#6a4a2a', '#4a4e56', LOOK.gold][Wp];               // crossguard
+    ctx.strokeStyle = ['#6a4a2a', '#4a4e56', LOOK.gold][Wp];                 // crossguard
     ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(hx + nx * guard + dx, hy + ny * guard + dy); ctx.lineTo(hx - nx * guard + dx, hy - ny * guard + dy); ctx.stroke();
-    ctx.strokeStyle = LOOK.grip;                                           // grip
+    ctx.strokeStyle = LOOK.grip;                                             // grip
     ctx.lineWidth = 2.2;
-    ctx.beginPath(); ctx.moveTo(hx - dx * 1, hy - dy * 1); ctx.lineTo(hx - dx * 5, hy - dy * 5); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(hx - dx, hy - dy); ctx.lineTo(hx - dx * 5, hy - dy * 5); ctx.stroke();
     fill(['#6a4a2a', '#4a4e56', LOOK.gold][Wp], () => ctx.arc(hx - dx * 6, hy - dy * 6, 1.6, 0, Math.PI * 2));   // pommel
-    if (ench === 'flaming') for (let k = 0; k < 4; k++) {                   // flames licking up the blade
+    if (ench === 'flaming') for (let k = 0; k < 4; k++) {                     // flames licking up the blade
       const q = 0.2 + k * 0.2, fx = sx + dx * len * q, fy = sy + dy * len * q, fl = 3 + Math.sin(t * 12 + k * 2) * 1.2;
       fill('rgba(255,120,30,0.85)', () => { ctx.moveTo(fx - 1.6, fy); ctx.quadraticCurveTo(fx, fy - fl * 1.6, fx + Math.sin(t * 9 + k), fy - fl * 2); ctx.quadraticCurveTo(fx + 0.4, fy - fl, fx + 1.6, fy); });
     }
-    if (ench === 'vampiric') {                                             // a drop of blood sliding off the tip
+    if (ench === 'vampiric') {                                               // a drop of blood sliding off the tip
       const q = (t % 1.8) / 1.8;
       fill(`rgba(200,20,40,${1 - q})`, () => ctx.ellipse(tx, ty + q * 18, 1.1, 1.7, 0, 0, Math.PI * 2));
     }
-    if (ench === 'balanced') {                                             // a glint running along the blade
+    if (ench === 'balanced') {                                               // a glint running along the blade
       const q = (t % 1.6) / 1.6;
       fill('rgba(255,255,255,0.9)', () => ctx.arc(sx + dx * len * q, sy + dy * len * q, 1.4, 0, Math.PI * 2));
     }
-    if (ench === 'giantslayer') for (let k = 0; k < 3; k++) {               // glowing runes
+    if (ench === 'giantslayer') for (let k = 0; k < 3; k++) {                 // glowing runes
       ctx.save(); ctx.shadowColor = '#ffd040'; ctx.shadowBlur = 5;
       fill(`rgba(255,215,80,${0.6 + 0.4 * Math.sin(t * 4 + k)})`, () => ctx.rect(sx + dx * len * (0.25 + k * 0.2) - 0.8, sy + dy * len * (0.25 + k * 0.2) - 0.8, 1.6, 1.6));
       ctx.restore();
     }
   }
-  // right arm, raised to hold the sword
-  const arm = (x0, y0, x1, y1, color) => { ctx.strokeStyle = color; ctx.lineWidth = 4.4; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); ctx.lineCap = 'butt'; };
-  arm(x + 11, y - 11 + b, x + 15, y - 1 + b, sleeve);
-  glowing('bracers', () => arm(x + 15, y - 1 + b, hx, hy, fore));
-  bracerMarks(x + 15, y - 1 + b, hx, hy);
-  fill(hand, () => ctx.arc(hx, hy, 2.6, 0, Math.PI * 2));
-
-  // -- head: hair or a helmet
-  rect(x - 2.5, y - 16 + b, 5, 4, LOOK.skin);                              // neck
-  fill(LOOK.skin, () => ctx.arc(x, y - 22 + b, 7.5, 0, Math.PI * 2));
-  if (H < 2) {                                                             // face (a great helm hides it)
-    fill('#1a1410', () => ctx.arc(x - 2.6, y - 22 + b, 1, 0, Math.PI * 2));
-    fill('#1a1410', () => ctx.arc(x + 2.6, y - 22 + b, 1, 0, Math.PI * 2));
-    rect(x - 1.5, y - 18.6 + b, 3, 0.8, '#8a5a40');
-  }
-  glowing('helmet', () => {
-    if (H === -1) {                                                        // hair
-      fill(LOOK.hair, () => { ctx.arc(x, y - 23 + b, 8, Math.PI, Math.PI * 2); ctx.lineTo(x + 8, y - 21 + b); ctx.lineTo(x + 4, y - 25 + b); ctx.lineTo(x - 2, y - 23 + b); ctx.lineTo(x - 8, y - 20 + b); });
-    } else if (H === 0) {                                                  // leather cap
-      fill(LOOK.leather, () => ctx.arc(x, y - 23 + b, 8.3, Math.PI, Math.PI * 2));
-      rect(x - 9.5, y - 24.2 + b, 19, 2.4, LOOK.leatherDark);
-      ctx.strokeStyle = LOOK.cloth; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.arc(x, y - 23 + b, 5.5, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke();
-    } else if (H === 1) {                                                  // iron helm with a nose guard
-      fill(metalOf(1, x - 9, x + 9), () => ctx.arc(x, y - 23 + b, 8.6, Math.PI, Math.PI * 2));
-      rect(x - 8.6, y - 23 + b, 3, 7, LOOK.iron);
-      rect(x + 5.6, y - 23 + b, 3, 7, LOOK.iron);
-      rect(x - 8.8, y - 24 + b, 17.6, 1.8, LOOK.ironDark);
-      rect(x - 1, y - 25 + b, 2, 7, LOOK.ironDark);
-      for (const s of [-5, 0, 5]) rect(x + s - 0.6, y - 28 + b, 1.2, 1.2, '#d8dce4');
-    } else {                                                               // steel great helm
-      fill(metalOf(2, x - 9, x + 9), () => { ctx.moveTo(x - 8.5, y - 14 + b); ctx.lineTo(x - 8.5, y - 25 + b); ctx.arc(x, y - 25 + b, 8.5, Math.PI, Math.PI * 2); ctx.lineTo(x + 8.5, y - 14 + b); ctx.closePath(); });
-      rect(x - 6.5, y - 24 + b, 13, 1.9, '#0c0c10');                       // visor slit
-      for (const s of [-3, -1, 1, 3]) rect(x + s - 0.4, y - 19 + b, 0.8, 0.8, '#0c0c10');   // breathing holes
-      rect(x - 0.4, y - 33 + b, 0.8, 18, 'rgba(255,255,255,0.75)');        // ridge
-      if (shining) rect(x - 8.5, y - 21.5 + b, 17, 1, LOOK.gold);
-    }
-  });
-  if (knight && H === 2) {                                                 // a plume on the knight's great helm
-    const sw = Math.sin(t * 2.4) * 1.2;
-    fill(LOOK.cape, () => { ctx.moveTo(x - 1, y - 33 + b); ctx.quadraticCurveTo(x - 4, y - 44 + b, x - 15 + sw, y - 39 + b); ctx.quadraticCurveTo(x - 7, y - 37 + b, x + 1.5, y - 32 + b); ctx.closePath(); });
-    fill('#3a6cc8', () => { ctx.moveTo(x - 1, y - 34 + b); ctx.quadraticCurveTo(x - 4, y - 42 + b, x - 11 + sw, y - 39 + b); ctx.quadraticCurveTo(x - 6, y - 38 + b, x, y - 33 + b); ctx.closePath(); });
-  }
+  drawArm('near');
+  ctx.lineCap = 'butt';
+  ctx.lineJoin = 'miter';
 
   // -- enchanted armor sparkles
-  const ANCHOR = {helmet: [x, y - 26], chest: [x, y - 3], bracers: [x - 12, y + 2], greaves: [x, y + 19]};
+  const ANCHOR = {helmet: [2, -27], chest: [1, -3], bracers: [6, -3], greaves: [1, 18]};
   for (const k of armor) {
     const c = glowColor(k);
     if (!c) continue;
     for (let i = 0; i < 2; i++) {
-      const a = t * 1.3 + i * 3.1 + k.length, sx = ANCHOR[k][0] + Math.cos(a) * 10, sy = ANCHOR[k][1] + Math.sin(a * 1.3) * 6;
+      const a = t * 1.3 + i * 3.1 + k.length, sx = x + ANCHOR[k][0] + Math.cos(a) * 10, sy = y + ANCHOR[k][1] + Math.sin(a * 1.3) * 6;
       const s = 1.2 + Math.max(0, Math.sin(t * 5 + i * 2)) * 1.6;
       ctx.fillStyle = c;
       ctx.fillRect(sx - s, sy - 0.4, s * 2, 0.8);
@@ -1947,24 +2428,24 @@ function drawCombat() {
 
   // the enemies; the target stands on a yellow ring
   const spots = foeSpots(), tgt = liveTarget();
-  sceneFoes.forEach((f, i) => {
-    const {x, y: y0} = spots.get(f), size = foeSize(f), dead = f.hp <= 0;
-    const y = dead ? y0 : y0 + Math.sin(t * 2.4 + i * 1.7) * 1.2;   // living enemies sway a little
+  sceneFoes.forEach(f => {
+    const {x, y} = spots.get(f), size = foeSize(f), dead = f.hp <= 0;
+    // the target's ring lies still on the floor at its feet, whatever the enemy is doing
     if (f === tgt && phase !== 'loot') {
       ctx.strokeStyle = '#fc3';
       ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.ellipse(x, y + size / 2 + 3, size / 2 + 6, 6, 0, 0, Math.PI * 2);
+      ctx.ellipse(x, y + ENEMY_GROUND * size / 34 + 1, size / 2 + 6, 6, 0, 0, Math.PI * 2);
       ctx.stroke();
       ctx.lineWidth = 1;
     }
-    drawEnemy(f, x, y, size, dead);
-    // green health bar above (higher for the Ogre King, so it clears his crown)
-    if (!dead) bar(x - 24, y - size / 2 - (f.boss ? 16 : 10), 48, 5, f.hp, f.max, '#4c4');
+    drawEnemy(f, x, y, size, dead, t);
+    // green health bar above (higher for the Ogre King, so it clears his crown and raised club)
+    if (!dead) bar(x - 24, y - size / 2 - (f.boss ? 22 : 10), 48, 5, f.hp, f.max, '#4c4');
     ctx.font = `600 12px ${GAME_FONT}`;
     const label = f.name + (f.items.length ? '*' : '') + (f.burn > 0 && !dead ? ' (burning)' : '');
     // keep the name on screen even for the enemy furthest right
-    outlinedText(label, Math.min(x, 284 - ctx.measureText(label).width / 2), y0 + size / 2 + 23, dead ? '#777' : '#fff');
+    outlinedText(label, Math.min(x, 284 - ctx.measureText(label).width / 2), y + size / 2 + 23, dead ? '#777' : '#fff');
   });
   ctx.textAlign = 'left';
 }
