@@ -104,7 +104,7 @@
 
     <details>
       <summary>Fighting</summary>
-      <p>Walk into an enemy to start a fight. The view switches to the <b>combat screen</b>: you stand on the left and the enemies on the right, each with a health bar. Enemies can come in groups of up to 3 on deeper floors. A <b>*</b> after a name means that enemy carries gear, so it hits harder or has armor.</p>
+      <p>Walk into an enemy to start a fight. The view switches to the <b>combat screen</b>: you stand on the left, and the enemies stand in a staggered line on the right, each drawn as its own creature with a green health bar above it. Enemies can come in groups of up to 3 on deeper floors. A <b>*</b> after a name means that enemy carries gear, so it hits harder or has armor.</p>
       <p><b>Tap an enemy to target it.</b> A yellow ring under an enemy shows your target, and your attacks go to it. When your target falls, the next enemy is targeted for you.</p>
       <p>Damage rises over the one who took it as a <b style="color:#f44">red</b> number, healing as a <b style="color:#4e4">green</b> one. <b>MISS</b> appears over whoever an attack was aimed at, <b style="color:#6df">STUNNED</b> over a stunned enemy, and <b style="color:#fc3">SECOND WIND</b> over you when that perk saves your life.</p>
       <p>You first choose <b>Fight</b> or <b>Flee</b>. Fleeing works 25% of the time and puts you back one step. If it fails, the enemies get a free attack. You can never flee the Ogre King.</p>
@@ -115,7 +115,7 @@
         <li><b>Block</b>: you don't attack, but you take only a quarter of the damage, and each hit on your shield has a 10% chance to stun that enemy so it skips its next attack.</li>
       </ul>
       <p>Enemies miss 10% of the time too, and 10% of their hits are critical hits for 1.5 times the damage. Your armor takes points off every hit, but a hit always does at least 1.</p>
-      <p>When a fight ends you get coins and XP for each enemy, and the group drops a piece of gear. You can <b>Equip</b> it or <b>Leave</b> it.</p>
+      <p>When a fight ends you get coins and XP for each enemy, and the group drops a piece of gear. You can <b>Equip</b> it or <b>Leave</b> it, and either one takes you back to the map.</p>
     </details>
 
     <details>
@@ -186,6 +186,7 @@
         <li><b>Steel</b>: Steel Sword, Steel Helm, Steel Plate, Steel Bracers, Steel Greaves</li>
       </ul>
       <p>A weapon adds its number to your damage. Armor numbers add up to your <b>Defense</b>, which comes off every enemy hit. Full Steel armor gives 13. Gear drops from fights and chests, and merchants sell it (price = 5 coins per point). Better material also lets you use stronger enchantments.</p>
+      <p>Everything you wear shows on your character in fights, from a rusty sword to a steel great helm. Wear all four armor pieces (helmet, chest, bracers and greaves) and you become a <b>knight</b>, with a blue cape and a tabard bearing a gold cross; with a steel helm you also get a plume. A full set of Steel adds gold trim, and enchanted gear glows in its enchantment's color.</p>
     </details>
 
     <details>
@@ -262,6 +263,13 @@
 <div id="panel"></div>
 <script>
 const ctx = c.getContext('2d'), T = 32;
+// the game is laid out on a 288 x 400 canvas, but drawn at the screen's full resolution
+// (2-3x on most phones) so the fine detail stays sharp; draw() scales everything to match
+const CANVAS_W = 288, CANVAS_H = 400, DPR = Math.min(3, window.devicePixelRatio || 1);
+c.width = CANVAS_W * DPR;
+c.height = CANVAS_H * DPR;
+c.style.width = CANVAS_W + 'px';
+c.style.height = CANVAS_H + 'px';
 const GAME_FONT = '"EB Garamond", Garamond, Georgia, serif'; // same as --text-font (canvas status bar)
 const FLEE_CHANCE = 0.25;
 const POTION_HEAL = 45;
@@ -908,6 +916,7 @@ function closeLoot() {
   combatView = false;  // the fight is over: back to the map
   showLevelUp();
   showGear();
+  draw();              // show the map right away, not a frozen arena
 }
 
 function gainXp(amount) {
@@ -1012,14 +1021,16 @@ const liveTarget = () => {
   if (!(target && target.hp > 0 && foes.includes(target))) target = foes.find(f => f.hp > 0) || null;
   return target;
 };
-// where each enemy stands: one column of up to 4, two columns for bigger groups
+// how big an enemy is drawn: the Ogre King is large, big groups are drawn a bit smaller to fit
+const foeSize = f => f.boss ? 70 : sceneFoes.length >= 4 ? 38 : 46;
+// where each enemy stands: a staggered line, the top one closest to the middle and each one
+// below it a little further right (a lone enemy stands in the middle of the right side)
 function foeSpots() {
-  const n = sceneFoes.length, cols = n > 4 ? 2 : 1, rows = Math.ceil(n / cols);
-  const spots = new Map();
-  sceneFoes.forEach((f, i) => {
-    const col = cols === 1 ? 0 : i % 2, row = cols === 1 ? i : Math.floor(i / 2);
-    spots.set(f, {x: cols === 1 ? 214 : 182 + col * 66, y: 60 + (row + 0.5) * (280 / rows)});
-  });
+  const n = sceneFoes.length, spots = new Map();
+  const gap = n > 1 ? Math.min(95, (304 - 62) / (n - 1)) : 0;   // down the screen
+  const step = n > 1 ? Math.min(30, (246 - 162) / (n - 1)) : 0;  // to the right
+  const x0 = n === 1 ? 200 : 162;
+  sceneFoes.forEach((f, i) => spots.set(f, {x: x0 + i * step, y: 190 + (i - (n - 1) / 2) * gap}));
   return spots;
 }
 const spotOf = who => who === 'player'
@@ -1029,13 +1040,22 @@ const spotOf = who => who === 'player'
 // a floating number or word; kind = 'dmg' (red), 'heal' (green), 'miss' (white), 'stun' (blue) or 'gold'
 function popup(who, text, kind) {
   pops.push({who, text: String(text), color: POP_COLORS[kind], t0: performance.now()});
-  if (!popping) { popping = true; requestAnimationFrame(animatePops); }
+  requestFrames();
 }
-let popping = false;
-function animatePops() {
-  draw();
-  if (pops.length) requestAnimationFrame(animatePops);
-  else { popping = false; draw(); }
+
+// ---- animation: keep redrawing while numbers float or a fight is on screen (torches, fog, drips) ----
+const FRAME_MS = 33;  // about 30 frames a second is plenty and easy on phone batteries
+let looping = false, lastFrame = 0;
+const wantFrames = () => pops.length > 0 || (inCombatScene() && !over);
+function requestFrames() {
+  if (looping || !wantFrames()) return;
+  looping = true;
+  requestAnimationFrame(frameLoop);
+}
+function frameLoop(now) {
+  if (!wantFrames()) { looping = false; draw(); return; }
+  if (now - lastFrame >= FRAME_MS) { lastFrame = now; draw(); }
+  requestAnimationFrame(frameLoop);
 }
 
 function drawPops() {
@@ -1076,68 +1096,902 @@ function drawFighter(x, y, color, size, faded) {
   ctx.globalAlpha = 1;
 }
 
-function drawCombat() {
-  // a dark flagstone floor
-  ctx.fillStyle = '#1b1a20';
-  ctx.fillRect(0, 0, 288, 352);
-  ctx.strokeStyle = '#26242c';
-  for (let y = 0; y < 352; y += 32) {
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(288, y); ctx.stroke();
-    for (let x = (y / 32) % 2 ? 24 : 0; x < 288; x += 48) { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + 32); ctx.stroke(); }
-  }
-  // a line down the middle separates your side from theirs
-  ctx.strokeStyle = '#3a3742';
-  ctx.setLineDash([4, 6]);
-  ctx.beginPath(); ctx.moveTo(128, 20); ctx.lineTo(128, 340); ctx.stroke();
-  ctx.setLineDash([]);
+// ---- enemy figures: a drawn shape for each enemy, in its map color ----
+// each one is drawn around its center (x, y) at scale u (1 = normal size, about 34 pixels tall)
+function oval(x, y, rx, ry, color) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+  ctx.fill();
+}
+const eyes = (x, y, apart, r, color = '#000') => { oval(x - apart, y, r, r, color); oval(x + apart, y, r, r, color); };
+// a filled outline from points given relative to the center, in units of u
+function shape(x, y, u, pts, color) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  pts.forEach(([a, b], i) => i ? ctx.lineTo(x + a * u, y + b * u) : ctx.moveTo(x + a * u, y + b * u));
+  ctx.closePath();
+  ctx.fill();
+}
+const BOTH_SIDES = [-1, 1];  // for mirrored parts: wings, ears, horns, tusks
 
-  // you
-  drawFighter(PLAYER_SPOT.x, PLAYER_SPOT.y, '#4af', 40, false);
-  ctx.fillStyle = '#ccc';
-  ctx.fillRect(PLAYER_SPOT.x + 22, PLAYER_SPOT.y - 26, 4, 34);  // sword
-  bar(PLAYER_SPOT.x - 26, PLAYER_SPOT.y - 34, 52, 6, p.hp, p.max, poison ? '#a5d' : '#4c4');
-  ctx.fillStyle = '#fff';
+const ENEMY_SHAPES = {
+  'Bat': (x, y, u, c) => {
+    for (const s of BOTH_SIDES) {
+      shape(x, y, u, [[4 * s, -4], [19 * s, -11], [17 * s, 2], [13 * s, -1], [10 * s, 5], [6 * s, 2]], c);  // wing
+      shape(x, y, u, [[1 * s, -7], [3 * s, -13], [5 * s, -6]], c);                                             // ear
+    }
+    oval(x, y, 6 * u, 8 * u, c);
+    eyes(x, y - 3 * u, 2.5 * u, 1.5 * u, '#f44');
+  },
+  'Slime': (x, y, u, c) => {
+    ctx.fillStyle = c;
+    ctx.beginPath();
+    ctx.moveTo(x - 16 * u, y + 12 * u);
+    ctx.bezierCurveTo(x - 18 * u, y - 6 * u, x - 8 * u, y - 14 * u, x, y - 14 * u);
+    ctx.bezierCurveTo(x + 8 * u, y - 14 * u, x + 18 * u, y - 6 * u, x + 16 * u, y + 12 * u);
+    ctx.closePath();
+    ctx.fill();
+    oval(x - 7 * u, y - 6 * u, 3 * u, 4 * u, 'rgba(255,255,255,0.45)');  // shine
+    eyes(x, y + 1 * u, 5 * u, 2.2 * u);
+  },
+  'Little Slime': (x, y, u, c) => ENEMY_SHAPES['Slime'](x, y + 4 * u, u * 0.7, c),
+  'Goblin': (x, y, u, c) => {
+    shape(x, y, u, [[-8, 16], [-6, 2], [6, 2], [8, 16]], c);                         // body
+    for (const s of BOTH_SIDES) shape(x, y, u, [[6 * s, -8], [18 * s, -12], [7 * s, -2]], c);  // pointy ears
+    oval(x, y - 5 * u, 8 * u, 8 * u, c);                                              // head
+    eyes(x, y - 6 * u, 3 * u, 1.6 * u);
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 1.2 * u;
+    ctx.beginPath();
+    ctx.arc(x, y - 3 * u, 3.5 * u, 0.3, Math.PI - 0.3);                               // grin
+    ctx.stroke();
+  },
+  'Skeleton': (x, y, u, c) => {
+    ctx.fillStyle = c;
+    ctx.fillRect(x - 1.2 * u, y, 2.4 * u, 16 * u);                                   // spine
+    ctx.strokeStyle = c;
+    ctx.lineWidth = 2 * u;
+    for (const r of [4, 8, 12]) {                                                     // ribs
+      ctx.beginPath();
+      ctx.moveTo(x - 7 * u, y + r * u);
+      ctx.quadraticCurveTo(x, y + (r - 3) * u, x + 7 * u, y + r * u);
+      ctx.stroke();
+    }
+    oval(x, y - 9 * u, 8 * u, 8 * u, c);                                              // skull
+    ctx.fillStyle = c;
+    ctx.fillRect(x - 5 * u, y - 4 * u, 10 * u, 4 * u);                               // jaw
+    eyes(x, y - 10 * u, 3.2 * u, 2.3 * u);                                            // eye sockets
+    shape(x, y, u, [[0, -7], [-1.2, -4.5], [1.2, -4.5]], '#000');                     // nose
+  },
+  'Orc': (x, y, u, c) => {
+    shape(x, y, u, [[-15, 16], [-13, 2], [13, 2], [15, 16]], c);                     // broad shoulders
+    ctx.fillStyle = c;
+    ctx.fillRect(x - 8 * u, y - 14 * u, 16 * u, 15 * u);                             // head
+    eyes(x, y - 8 * u, 3.5 * u, 1.6 * u);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(x - 6 * u, y - 11 * u, 12 * u, 1.4 * u);                            // heavy brow
+    for (const s of BOTH_SIDES) shape(x, y, u, [[3 * s, -1], [4.5 * s, -6], [6 * s, -1]], '#fff');  // tusks
+  },
+  'Troll': (x, y, u, c) => {
+    ctx.fillStyle = c;
+    for (const s of BOTH_SIDES) ctx.fillRect(x + s * 13 * u - 2.5 * u, y - 2 * u, 5 * u, 18 * u);  // long arms
+    oval(x, y + 4 * u, 13 * u, 12 * u, c);                                            // hunched body
+    oval(x, y - 9 * u, 6.5 * u, 6 * u, c);                                            // small head
+    eyes(x, y - 10 * u, 2.5 * u, 1.3 * u);
+    oval(x, y - 7 * u, 2 * u, 1.6 * u, 'rgba(0,0,0,0.35)');                           // big nose
+  },
+  'Dark Knight': (x, y, u, c) => {
+    shape(x, y, u, [[-14, 16], [-12, 3], [12, 3], [14, 16]], c);                     // plate armor
+    for (const s of BOTH_SIDES) oval(x + s * 11 * u, y + 3 * u, 5 * u, 4 * u, c);   // shoulder plates
+    ctx.fillStyle = c;
+    ctx.beginPath();                                                                  // helmet
+    ctx.moveTo(x - 8 * u, y + 3 * u);
+    ctx.lineTo(x - 8 * u, y - 8 * u);
+    ctx.arc(x, y - 8 * u, 8 * u, Math.PI, 0);
+    ctx.lineTo(x + 8 * u, y + 3 * u);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#000';
+    ctx.fillRect(x - 6 * u, y - 7 * u, 12 * u, 2.6 * u);                             // visor slit
+    eyes(x, y - 5.7 * u, 2.6 * u, 0.9 * u, '#f44');                                   // glint behind the visor
+    shape(x, y, u, [[-1.5, -16], [0, -22], [1.5, -16]], c);                           // crest
+  },
+  'Wraith': (x, y, u, c) => {
+    ctx.globalAlpha *= 0.9;                                                           // a little see-through
+    ctx.fillStyle = c;
+    ctx.beginPath();                                                                  // hooded ghost, ragged hem
+    ctx.moveTo(x - 11 * u, y - 2 * u);
+    ctx.quadraticCurveTo(x - 11 * u, y - 17 * u, x, y - 17 * u);
+    ctx.quadraticCurveTo(x + 11 * u, y - 17 * u, x + 11 * u, y - 2 * u);
+    for (const [a, b] of [[12, 12], [8, 16], [4, 11], [0, 16], [-4, 11], [-8, 16], [-12, 12]]) ctx.lineTo(x + a * u, y + b * u);
+    ctx.closePath();
+    ctx.fill();
+    oval(x, y - 6 * u, 6 * u, 6.5 * u, '#000');                                       // dark hood opening
+    eyes(x, y - 6 * u, 2.4 * u, 1.3 * u, '#6df');                                     // cold glowing eyes
+  },
+  'Minotaur': (x, y, u, c) => {
+    shape(x, y, u, [[-15, 16], [-13, 3], [13, 3], [15, 16]], c);                     // muscled body
+    for (const s of BOTH_SIDES) {                                                     // curved horns
+      ctx.fillStyle = '#eed';
+      ctx.beginPath();
+      ctx.moveTo(x + s * 6 * u, y - 10 * u);
+      ctx.quadraticCurveTo(x + s * 18 * u, y - 10 * u, x + s * 16 * u, y - 21 * u);
+      ctx.quadraticCurveTo(x + s * 13 * u, y - 14 * u, x + s * 5 * u, y - 13 * u);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.fillStyle = c;
+    ctx.fillRect(x - 8 * u, y - 13 * u, 16 * u, 15 * u);                             // bull head
+    oval(x, y, 6.5 * u, 3.5 * u, 'rgba(255,255,255,0.3)');                            // snout
+    eyes(x, y - 7 * u, 3.5 * u, 1.5 * u, '#f44');
+    ctx.strokeStyle = '#fc3';
+    ctx.lineWidth = 1.2 * u;
+    ctx.beginPath();
+    ctx.arc(x, y + 2.5 * u, 2 * u, 0, Math.PI);                                       // nose ring
+    ctx.stroke();
+  },
+  'Wyvern': (x, y, u, c) => {
+    for (const s of BOTH_SIDES) shape(x, y, u, [[2 * s, -2], [19 * s, -17], [15 * s, -5], [19 * s, 1], [7 * s, 5]], c);  // wings
+    ctx.strokeStyle = c;
+    ctx.lineWidth = 3 * u;
+    ctx.beginPath();                                                                  // tail
+    ctx.moveTo(x + 2 * u, y + 12 * u);
+    ctx.quadraticCurveTo(x + 14 * u, y + 19 * u, x + 17 * u, y + 8 * u);
+    ctx.stroke();
+    shape(x, y, u, [[15, 9], [20, 5], [18, 11]], c);                                  // tail tip
+    oval(x, y + 5 * u, 7 * u, 9 * u, c);                                              // body
+    ctx.fillStyle = c;
+    ctx.fillRect(x - 2 * u, y - 8 * u, 4 * u, 6 * u);                                // neck
+    oval(x, y - 10 * u, 5 * u, 4.5 * u, c);                                           // head
+    for (const s of BOTH_SIDES) shape(x, y, u, [[2 * s, -13], [5 * s, -18], [4 * s, -12]], c);  // horns
+    eyes(x, y - 10 * u, 2 * u, 1.2 * u, '#fc3');
+  },
+  'Ogre King': (x, y, u, c) => {
+    ctx.strokeStyle = '#7a4a20';
+    ctx.lineWidth = 4 * u;
+    ctx.beginPath();                                                                  // club
+    ctx.moveTo(x + 10 * u, y + 8 * u);
+    ctx.lineTo(x + 19 * u, y - 12 * u);
+    ctx.stroke();
+    oval(x + 19 * u, y - 13 * u, 3.5 * u, 4.5 * u, '#7a4a20');
+    ctx.fillStyle = c;
+    for (const s of BOTH_SIDES) ctx.fillRect(x + s * 13 * u - 3 * u, y - 1 * u, 6 * u, 12 * u);  // arms
+    oval(x, y + 6 * u, 14 * u, 11 * u, c);                                            // big belly
+    oval(x, y - 8 * u, 9 * u, 8.5 * u, c);                                            // head
+    eyes(x, y - 10 * u, 3.5 * u, 1.6 * u, '#fc3');
+    for (const s of BOTH_SIDES) shape(x, y, u, [[2 * s, -3], [3.5 * s, -7], [5 * s, -3]], '#fff');  // tusks
+    shape(x, y, u, [[-8, -14], [-8, -21], [-4, -17], [0, -23], [4, -17], [8, -21], [8, -14]], '#fc3');  // crown
+  }
+};
+
+// draw an enemy's figure; defeated enemies are faded out
+function drawEnemy(f, x, y, size, dead) {
+  ctx.save();
+  ctx.globalAlpha = dead ? 0.25 : 1;
+  const paint = ENEMY_SHAPES[f.name];
+  if (paint) paint(x, y, size / 34, f.color);
+  else drawFighter(x, y, f.color, size, false);  // any enemy without a shape yet
+  ctx.restore();
+}
+
+// ======================================================================
+// ---- the dungeon arena: the room every fight takes place in ----
+// The still parts (stone walls, the prison cell, the door, the floor, rocks and bones) are drawn
+// once per floor into a hidden canvas and reused. Torches, embers, fog, the water drip and the
+// eyes in the cell are drawn live every frame.
+// ======================================================================
+const WALL_H = 150;  // where the back wall meets the floor
+// one look per floor: stone color, moss, torchlight, fog tint and the color of the eyes in the cell
+const ARENA_THEMES = [
+  {stone: [70, 76, 92], moss: '61,92,58', light: '255,170,80', fog: '170,185,210', eyes: '255,200,60'},   // 1: cellar
+  {stone: [96, 86, 70], moss: '90,90,52', light: '255,170,80', fog: '210,198,178', eyes: '255,200,60'},   // 2: catacombs
+  {stone: [62, 80, 70], moss: '60,110,60', light: '255,160,70', fog: '170,215,185', eyes: '200,255,90'},  // 3: prison
+  {stone: [74, 64, 96], moss: '90,66,130', light: '255,150,95', fog: '195,175,230', eyes: '230,120,255'}, // 4: caverns
+  {stone: [92, 58, 56], moss: '100,46,46', light: '255,120,60', fog: '235,165,150', eyes: '255,70,50'}    // 5: throne hall
+];
+const TORCHES = [{x: 112, y: 62}, {x: 216, y: 62}];   // where each torch flame sits
+const CELL = {x0: 16, x1: 100, top: 30};               // the barred prison cell in the left wall
+const DOOR = {x0: 234, x1: 278, top: 52};              // the cell door in the right wall
+const NICHE = {x0: 134, x1: 194, y0: 22, y1: 60};      // the skull niche (banners in the Ogre King's hall)
+const DRIP = {x: 128, top: 34, bottom: 334};           // water drips from a stalactite into a puddle
+const arenaSeed = Math.floor(Math.random() * 1e6);     // each run's arenas look a little different
+const arenaCache = new Map();
+
+// a seeded random, so a floor's arena keeps the same layout for every fight on it
+function seededRandom(seed) {
+  let s = seed >>> 0;
+  return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+}
+
+// a skull, on any canvas: s = size, light = how brightly it is lit
+function drawSkull(g, x, y, s, light) {
+  const c = Math.round(190 * light + 30);
+  g.fillStyle = `rgb(${c},${c - 8},${c - 26})`;
+  g.beginPath(); g.arc(x, y, 4.5 * s, Math.PI * 0.95, Math.PI * 2.05); g.fill();   // cranium
+  g.fillRect(x - 3.2 * s, y - 0.5 * s, 6.4 * s, 4 * s);                               // jaw
+  g.fillStyle = '#0a0a0c';
+  for (const side of [-1, 1]) { g.beginPath(); g.arc(x + side * 1.8 * s, y + 0.4 * s, 1.3 * s, 0, Math.PI * 2); g.fill(); }  // eye sockets
+  g.fillRect(x - 0.4 * s, y + 2 * s, 0.8 * s, 1.2 * s);                              // nose
+}
+
+function buildArena(theme, seed, boss) {
+  const cv = document.createElement('canvas');
+  cv.width = 288 * DPR;
+  cv.height = 352 * DPR;
+  const g = cv.getContext('2d');
+  g.scale(DPR, DPR);                                  // full screen resolution, same layout
+  const R = seededRandom(seed);
+  const stone = (k, a = 1) => `rgba(${theme.stone.map(v => Math.round(Math.min(255, v * k))).join(',')},${a})`;
+  const line = (x0, y0, x1, y1) => { g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); };
+  const blob = (x, y, rx, ry, color) => { g.fillStyle = color; g.beginPath(); g.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); g.fill(); };
+
+  // -- back wall: rows of uneven stone blocks, darker toward the ceiling, moss creeping up from the floor
+  g.fillStyle = stone(0.4);
+  g.fillRect(0, 0, 288, WALL_H);
+  for (let row = 0; row * 16 < WALL_H; row++) {
+    const y = row * 16;
+    for (let x = row % 2 ? -18 : 0; x < 288;) {
+      const w = 28 + Math.floor(R() * 14);
+      g.fillStyle = stone(0.55 + R() * 0.3 - (y < 48 ? 0.14 : 0));
+      g.fillRect(x + 1, y + 1, w - 2, 14);
+      g.fillStyle = 'rgba(255,255,255,0.05)';
+      g.fillRect(x + 1, y + 1, w - 2, 2);                                 // worn top edge
+      g.fillStyle = 'rgba(0,0,0,0.18)';
+      g.fillRect(x + 1, y + 13, w - 2, 2);                                // shadowed bottom edge
+      if (R() < 0.12) {                                                    // a crack
+        const cx = x + 4 + R() * (w - 8);
+        g.strokeStyle = 'rgba(0,0,0,0.5)';
+        g.lineWidth = 1;
+        g.beginPath(); g.moveTo(cx, y + 2); g.lineTo(cx + 3, y + 6); g.lineTo(cx - 1, y + 10); g.lineTo(cx + 2, y + 14); g.stroke();
+      }
+      if (y > WALL_H - 56 && R() < 0.35) blob(x + R() * w, y + 13, 5 + R() * 9, 3 + R() * 3, `rgba(${theme.moss},0.6)`);
+      x += w;
+    }
+  }
+
+  // -- the prison cell: a stone arch, a dark inside with chains and an old prisoner, iron bars
+  const cxm = (CELL.x0 + CELL.x1) / 2, r = (CELL.x1 - CELL.x0) / 2, arcY = CELL.top + r;
+  const arch = grow => {
+    g.beginPath();
+    g.moveTo(CELL.x0 - grow, WALL_H);
+    g.lineTo(CELL.x0 - grow, arcY);
+    g.arc(cxm, arcY, r + grow, Math.PI, 0);
+    g.lineTo(CELL.x1 + grow, WALL_H);
+    g.closePath();
+  };
+  arch(6);
+  g.fillStyle = stone(0.95);
+  g.fill();
+  g.strokeStyle = 'rgba(0,0,0,0.4)';
+  g.lineWidth = 1;
+  for (let a = Math.PI; a <= Math.PI * 2 + 0.01; a += Math.PI / 7)        // joints between the arch stones
+    line(cxm + Math.cos(a) * r, arcY + Math.sin(a) * r, cxm + Math.cos(a) * (r + 6), arcY + Math.sin(a) * (r + 6));
+  arch(0);
+  const inside = g.createLinearGradient(0, CELL.top, 0, WALL_H);
+  inside.addColorStop(0, '#050507');
+  inside.addColorStop(1, '#16161a');
+  g.fillStyle = inside;
+  g.fill();
+  g.save();
+  arch(0);
+  g.clip();
+  g.strokeStyle = 'rgba(120,120,132,0.55)';                              // chains on the back wall
+  g.lineWidth = 1.2;
+  for (const chx of [cxm - 24, cxm + 26]) {
+    for (let cy = CELL.top + 26, k = 0; cy < WALL_H - 40; cy += 5, k++) {
+      g.beginPath(); g.ellipse(chx, cy, k % 2 ? 0.8 : 1.8, 2.7, 0, 0, Math.PI * 2); g.stroke();
+    }
+    g.beginPath(); g.arc(chx, WALL_H - 36, 4, 0, Math.PI * 2); g.stroke();  // shackle
+  }
+  g.strokeStyle = 'rgba(190,160,80,0.35)';                               // straw on the cell floor
+  for (let i = 0; i < 26; i++) {
+    const sx = CELL.x0 + R() * (CELL.x1 - CELL.x0), sy = WALL_H - 1 - R() * 6;
+    line(sx, sy, sx + (R() - 0.5) * 10, sy - R() * 3);
+  }
+  g.fillStyle = 'rgba(200,190,170,0.3)';                                  // an old prisoner, slumped
+  g.beginPath(); g.arc(cxm + 8, WALL_H - 23, 5, 0, Math.PI * 2); g.fill();
+  g.fillRect(cxm + 5, WALL_H - 17, 6, 10);
+  g.strokeStyle = 'rgba(200,190,170,0.28)';
+  g.lineWidth = 1.5;
+  line(cxm + 5, WALL_H - 7, cxm - 4, WALL_H - 2);
+  line(cxm + 11, WALL_H - 7, cxm + 18, WALL_H - 2);
+  g.restore();
+  for (let bx = CELL.x0 + 7; bx < CELL.x1 - 3; bx += 10) {                // the bars
+    const by = arcY - Math.sqrt(Math.max(0, r * r - (bx - cxm) ** 2));
+    g.fillStyle = '#26262c';
+    g.fillRect(bx - 1.5, by, 3, WALL_H - by);
+    g.fillStyle = 'rgba(165,165,180,0.35)';
+    g.fillRect(bx - 1.5, by, 1, WALL_H - by);
+  }
+  for (const yy of [arcY + 4, WALL_H - 28]) {
+    g.fillStyle = '#26262c';
+    g.fillRect(CELL.x0 + 2, yy, CELL.x1 - CELL.x0 - 4, 3);
+    g.fillStyle = 'rgba(165,165,180,0.3)';
+    g.fillRect(CELL.x0 + 2, yy, CELL.x1 - CELL.x0 - 4, 1);
+  }
+  g.fillStyle = stone(1.15);
+  g.fillRect(cxm - 5, CELL.top - 8, 10, 10);                             // keystone
+
+  // -- a heavy cell door with a barred window in the right wall
+  g.fillStyle = stone(1.0);
+  g.fillRect(DOOR.x0 - 5, DOOR.top - 5, DOOR.x1 - DOOR.x0 + 10, WALL_H - DOOR.top + 5);
+  const wood = g.createLinearGradient(DOOR.x0, 0, DOOR.x1, 0);
+  wood.addColorStop(0, '#34200f');
+  wood.addColorStop(0.5, '#4e321c');
+  wood.addColorStop(1, '#34200f');
+  g.fillStyle = wood;
+  g.fillRect(DOOR.x0, DOOR.top, DOOR.x1 - DOOR.x0, WALL_H - DOOR.top);
+  g.strokeStyle = 'rgba(0,0,0,0.45)';
+  for (let px = DOOR.x0 + 9; px < DOOR.x1; px += 9) line(px, DOOR.top, px, WALL_H);   // planks
+  for (const by of [DOOR.top + 6, WALL_H - 22]) {                         // iron bands with studs
+    g.fillStyle = '#2a2a30';
+    g.fillRect(DOOR.x0, by, DOOR.x1 - DOOR.x0, 4);
+    g.fillStyle = '#8a8a96';
+    for (let sx = DOOR.x0 + 4; sx < DOOR.x1; sx += 8) g.fillRect(sx, by + 1, 2, 2);
+  }
+  const wx = (DOOR.x0 + DOOR.x1) / 2 - 10, wy = DOOR.top + 18;            // the barred window
+  g.fillStyle = '#060608';
+  g.fillRect(wx, wy, 20, 16);
+  g.fillStyle = '#2a2a30';
+  for (let k = 0; k < 4; k++) g.fillRect(wx + 3 + k * 5, wy, 2, 16);
+  g.strokeStyle = '#1e1e24';
+  g.lineWidth = 2;
+  g.beginPath(); g.arc(DOOR.x1 - 9, WALL_H - 44, 4, 0, Math.PI * 2); g.stroke();   // ring handle
+
+  if (boss) {
+    // -- the Ogre King's hall: two crimson banners with a gold crown
+    for (const bx of [NICHE.x0 + 2, NICHE.x1 - 22]) {
+      g.fillStyle = '#5c0e14';
+      g.beginPath(); g.moveTo(bx, 8); g.lineTo(bx + 20, 8); g.lineTo(bx + 20, 96); g.lineTo(bx + 10, 86); g.lineTo(bx, 96); g.closePath();
+      g.fill();
+      g.strokeStyle = '#c99a2e';
+      g.lineWidth = 1.5;
+      g.stroke();
+      g.fillStyle = '#e8b830';
+      g.beginPath();
+      [[3, 46], [3, 37], [6.5, 41], [10, 33], [13.5, 41], [17, 37], [17, 46]].forEach(([a, c], i) => i ? g.lineTo(bx + a, c) : g.moveTo(bx + a, c));
+      g.closePath();
+      g.fill();
+      g.fillStyle = '#3a2a1a';
+      g.fillRect(bx - 3, 5, 26, 3);                                       // banner pole
+    }
+  } else {
+    // -- a niche in the wall stacked with skulls
+    g.fillStyle = stone(1.05);
+    g.fillRect(NICHE.x0 - 4, NICHE.y0 - 4, NICHE.x1 - NICHE.x0 + 8, NICHE.y1 - NICHE.y0 + 8);
+    g.fillStyle = '#08080a';
+    g.fillRect(NICHE.x0, NICHE.y0, NICHE.x1 - NICHE.x0, NICHE.y1 - NICHE.y0);
+    for (let i = 0; i < 9; i++) {
+      const sx = NICHE.x0 + 8 + (i % 5) * 11 + (i >= 5 ? 5 : 0), sy = i < 5 ? NICHE.y1 - 8 : NICHE.y1 - 21;
+      drawSkull(g, sx, sy, 0.95 + R() * 0.2, 0.55 + R() * 0.3);
+    }
+  }
+
+  // -- torch sconces (the flames are drawn live)
+  for (const tc of TORCHES) {
+    g.fillStyle = '#1e1e22';
+    g.fillRect(tc.x - 5, tc.y + 14, 10, 4);                               // wall plate
+    g.fillStyle = '#5a3a1e';
+    g.fillRect(tc.x - 2, tc.y + 1, 4, 15);                                // wooden handle
+    g.fillStyle = '#2a2a30';
+    g.fillRect(tc.x - 4, tc.y + 1, 8, 3);                                 // iron cup
+  }
+
+  // -- the floor: flagstones in perspective, lit near the wall and dark toward you
+  const fl = g.createLinearGradient(0, WALL_H, 0, 352);
+  fl.addColorStop(0, stone(0.62));
+  fl.addColorStop(1, stone(0.24));
+  g.fillStyle = fl;
+  g.fillRect(0, WALL_H, 288, 352 - WALL_H);
+  g.strokeStyle = 'rgba(0,0,0,0.42)';
+  g.lineWidth = 1;
+  for (let i = 1; i <= 7; i++) { const yy = WALL_H + (352 - WALL_H) * Math.pow(i / 7, 1.6); line(0, yy, 288, yy); }
+  const vx = 144, vy = WALL_H - 170;
+  for (let i = -7; i <= 7; i++) { const bx = 144 + i * 48; line(vx + (bx - vx) * (WALL_H - vy) / (352 - vy), WALL_H, bx, 352); }
+  for (let i = 0; i < 40; i++) blob(R() * 288, WALL_H + 6 + R() * 196, 4 + R() * 12, 2 + R() * 4, `rgba(0,0,0,${0.08 + R() * 0.12})`);  // stains
+  for (let i = 0; i < 10; i++) blob(R() * 288, WALL_H + 4 + R() * 40, 4 + R() * 10, 1.5 + R() * 2, `rgba(${theme.moss},0.35)`);      // moss
+  const seam = g.createLinearGradient(0, WALL_H, 0, WALL_H + 16);       // shadow where the wall meets the floor
+  seam.addColorStop(0, 'rgba(0,0,0,0.55)');
+  seam.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = seam;
+  g.fillRect(0, WALL_H, 288, 16);
+  g.fillStyle = stone(0.85);
+  g.fillRect(0, WALL_H - 3, 288, 3);                                      // worn stone ledge
+
+  // -- a puddle under the dripping stalactite
+  blob(DRIP.x, DRIP.bottom, 22, 6, 'rgba(18,28,42,0.85)');
+  blob(DRIP.x - 4, DRIP.bottom - 1.5, 12, 2, 'rgba(150,180,220,0.2)');
+
+  // -- rock spikes: stalactites hanging from the ceiling, stalagmites rising from the floor
+  const spike = (x, base, len, w, up) => {
+    const dir = up ? -1 : 1;
+    const gr = g.createLinearGradient(x - w, 0, x + w, 0);
+    gr.addColorStop(0, stone(1.25));
+    gr.addColorStop(0.4, stone(0.85));
+    gr.addColorStop(1, stone(0.38));
+    g.fillStyle = gr;
+    g.beginPath();
+    g.moveTo(x - w, base);
+    g.quadraticCurveTo(x - w * 0.35, base + dir * len * 0.55, x, base + dir * len);
+    g.quadraticCurveTo(x + w * 0.35, base + dir * len * 0.55, x + w, base);
+    g.closePath();
+    g.fill();
+    g.strokeStyle = 'rgba(255,220,170,0.25)';                              // torchlight catching one edge
+    g.lineWidth = 1;
+    g.beginPath();
+    g.moveTo(x - w * 0.9, base);
+    g.quadraticCurveTo(x - w * 0.3, base + dir * len * 0.55, x, base + dir * len);
+    g.stroke();
+    g.strokeStyle = 'rgba(0,0,0,0.25)';
+    g.lineWidth = 1;
+    for (let k = 1; k < 4; k++) { const yy = base + dir * len * k / 5, ww = w * (1 - k / 5) * 0.8; line(x - ww, yy, x + ww, yy); }  // mineral rings
+  };
+  for (const [x, len, w] of [[6, 22, 8], [42, 14, 6], [DRIP.x, DRIP.top, 7], [158, 16, 6], [198, 12, 5], [250, 28, 8], [284, 16, 6]])
+    spike(x, 0, len, w, false);
+  for (const [x, len, w] of [[10, 76, 15], [34, 46, 11], [2, 42, 8], [282, 60, 12], [266, 30, 8]]) spike(x, 356, len, w, true);
+
+  // -- a pile of skulls and scattered bones
+  for (const [sx, sy, s] of [[84, 341, 1.25], [97, 342, 1.35], [110, 341, 1.2], [90, 331, 1.25], [104, 331, 1.3], [97, 320, 1.25]])
+    drawSkull(g, sx, sy, s, 0.5 + R() * 0.2);
+  const bone = (x, y, len, ang) => {
+    g.save();
+    g.translate(x, y);
+    g.rotate(ang);
+    g.fillStyle = 'rgba(205,195,170,0.6)';
+    g.fillRect(-len / 2, -1, len, 2);
+    for (const e of [-len / 2, len / 2]) for (const s of [-1.3, 1.3]) { g.beginPath(); g.arc(e, s, 1.6, 0, Math.PI * 2); g.fill(); }
+    g.restore();
+  };
+  for (const [x, y, l, a] of [[40, 262, 14, 0.4], [52, 271, 12, -0.6], [148, 312, 12, 1.2], [118, 278, 10, -0.3], [258, 244, 12, 0.8], [196, 343, 14, -0.2]])
+    bone(x, y, l, a);
+
+  // -- cobwebs in the top corners
+  const web = (cx, cy, dir) => {
+    g.strokeStyle = 'rgba(220,220,230,0.22)';
+    g.lineWidth = 0.8;
+    for (let k = 0; k <= 4; k++) { const a = k / 4 * Math.PI / 2; line(cx, cy, cx + dir * Math.cos(a) * 36, cy + Math.sin(a) * 36); }
+    for (let rr = 9; rr <= 36; rr += 9) {
+      g.beginPath();
+      for (let k = 0; k <= 4; k++) { const a = k / 4 * Math.PI / 2, px = cx + dir * Math.cos(a) * rr, py = cy + Math.sin(a) * rr; k ? g.lineTo(px, py) : g.moveTo(px, py); }
+      g.stroke();
+    }
+  };
+  web(0, 0, 1);
+  web(288, 0, -1);
+
+  // -- darkness closing in at the edges
+  const vg = g.createRadialGradient(144, 196, 70, 144, 196, 250);
+  vg.addColorStop(0, 'rgba(0,0,0,0)');
+  vg.addColorStop(1, 'rgba(0,0,0,0.7)');
+  g.fillStyle = vg;
+  g.fillRect(0, 0, 288, 352);
+  // where the eyes peek out of the cell (they blink in the live layer)
+  return {canvas: cv, eyes: {x: CELL.x0 + 26 + R() * 34, y: CELL.top + 46 + R() * 26}};
+}
+
+function arenaFor(boss) {
+  const key = floor + (boss ? 'boss' : '');
+  if (!arenaCache.has(key)) arenaCache.set(key, buildArena(ARENA_THEMES[floor], arenaSeed + 7919 * (floor + 1) + (boss ? 13 : 0), boss));
+  return arenaCache.get(key);
+}
+
+// a soft round glow squashed into an ellipse (fog puffs, pools of light)
+function softEllipse(x, y, rx, ry, rgb, alpha) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(1, ry / rx);
+  const gr = ctx.createRadialGradient(0, 0, 1, 0, 0, rx);
+  gr.addColorStop(0, `rgba(${rgb},${alpha})`);
+  gr.addColorStop(1, `rgba(${rgb},0)`);
+  ctx.fillStyle = gr;
+  ctx.beginPath(); ctx.arc(0, 0, rx, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+// a torch flame: three layers (red, orange, white-hot) that flicker and sway
+function drawFlame(x, y, t) {
+  const sway = Math.sin(t * 7) * 1.4 + Math.sin(t * 13.3) * 0.8;
+  const h = 14 + Math.sin(t * 11) * 2 + Math.sin(t * 17.5) * 1.3;
+  const layer = (w, hh, color) => {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(x - w, y);
+    ctx.quadraticCurveTo(x - w * 1.1, y - hh * 0.55, x + sway * hh / 14, y - hh);
+    ctx.quadraticCurveTo(x + w * 1.1, y - hh * 0.55, x + w, y);
+    ctx.quadraticCurveTo(x, y + w * 0.9, x - w, y);
+    ctx.fill();
+  };
+  layer(6, h, 'rgba(255,80,20,0.9)');
+  layer(4.2, h * 0.74, 'rgba(255,165,40,0.95)');
+  layer(2.3, h * 0.45, 'rgba(255,245,200,0.95)');
+}
+
+// everything in the arena that moves: torchlight, flames, embers, the eyes, the drip, the fog
+function drawArenaLife(t, arena, boss) {
+  const theme = ARENA_THEMES[floor], L = theme.light;
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';                              // light adds up
+  TORCHES.forEach((tc, i) => {
+    const flick = 1 + 0.07 * Math.sin(t * 9.3 + i * 2) + 0.04 * Math.sin(t * 23.7 + i * 5);
+    softEllipse(tc.x, tc.y - 6, 92 * flick, 92 * flick, L, 0.28);         // glow on the wall
+    softEllipse(tc.x, WALL_H + 14, 84 * flick, 30 * flick, L, 0.16);      // pool of light on the floor
+  });
+  if (boss) softEllipse(200, 352, 250, 170, '255,40,20', 0.12 + 0.05 * Math.sin(t * 1.6));  // the throne hall glows red
+  ctx.restore();
+  TORCHES.forEach((tc, i) => {
+    drawFlame(tc.x, tc.y, t + i * 1.7);
+    for (let k = 0; k < 6; k++) {                                          // embers drifting up
+      const q = (t * 0.45 + k / 6 + i * 0.37) % 1;
+      ctx.fillStyle = `rgba(255,${150 + k * 15},60,${(1 - q) * 0.85})`;
+      ctx.fillRect(tc.x + Math.sin(t * 2.1 + k * 2.3) * 7 * q + (k - 2.5), tc.y - 10 - q * 64, 1.6, 1.6);
+    }
+  });
+  // eyes watching from the dark cell, blinking now and then
+  const blink = (t % 5.3) > 5.12 || (t % 11.7) > 11.55;
+  if (!blink) {
+    const ex = arena.eyes.x + Math.sin(t * 0.4) * 4;
+    ctx.save();
+    ctx.shadowColor = `rgba(${theme.eyes},0.9)`;
+    ctx.shadowBlur = 6;
+    ctx.fillStyle = `rgba(${theme.eyes},0.9)`;
+    ctx.fillRect(ex - 4, arena.eyes.y, 2.6, 1.6);
+    ctx.fillRect(ex + 2, arena.eyes.y, 2.6, 1.6);
+    ctx.restore();
+  }
+  // a drop of water falls from the stalactite into the puddle, then ripples
+  const ph = (t % 2.6) / 2.6;
+  if (ph < 0.55) {
+    const q = ph / 0.55;
+    ctx.fillStyle = 'rgba(170,205,240,0.75)';
+    ctx.beginPath(); ctx.ellipse(DRIP.x, DRIP.top + (DRIP.bottom - DRIP.top) * q * q, 1.4, 2.4, 0, 0, Math.PI * 2); ctx.fill();
+  } else {
+    const q = (ph - 0.55) / 0.45;
+    ctx.strokeStyle = `rgba(170,205,240,${(1 - q) * 0.6})`;
+    ctx.lineWidth = 1;
+    for (const k of [1, 0.6]) { ctx.beginPath(); ctx.ellipse(DRIP.x, DRIP.bottom, 3 + q * 18 * k, 1 + q * 4.5 * k, 0, 0, Math.PI * 2); ctx.stroke(); }
+  }
+  // fog drifting low over the floor, both ways, at different speeds
+  for (let i = 0; i < 8; i++) {
+    const v = (i % 2 ? 1 : -1) * (5 + i * 1.6), span = 288 + 220;
+    const fx = ((((t * v + i * 97) % span) + span) % span) - 110;
+    softEllipse(fx, 226 + (i % 4) * 32 + Math.sin(t * 0.35 + i) * 6, 72 + (i % 3) * 24, 15 + (i % 2) * 8, theme.fog, 0.22);
+  }
+  for (let i = 0; i < 3; i++) {                                            // thin wisps curling along the base of the wall
+    const span = 288 + 160, fx = (((t * (9 + i * 4) + i * 151) % span) + span) % span - 80;
+    softEllipse(fx, WALL_H + 6 + i * 5, 46, 7, theme.fog, 0.16);
+  }
+  const bank = ctx.createLinearGradient(0, 280, 0, 352);                  // a bank of ground fog along the bottom
+  bank.addColorStop(0, `rgba(${theme.fog},0)`);
+  bank.addColorStop(1, `rgba(${theme.fog},${0.2 + 0.05 * Math.sin(t * 0.7)})`);
+  ctx.fillStyle = bank;
+  ctx.fillRect(0, 280, 288, 72);
+}
+
+// ======================================================================
+// ---- your character in combat, built from the gear you wear ----
+// Every slot shows: weapon, helmet, chest, bracers and greaves each look different as Basic,
+// Iron or Steel. Wear all four armor pieces and you become a knight: a blue cape and a tabard
+// with a gold cross (and a plume on a steel helm). A full Steel set adds gold trim.
+// Enchanted gear glows in its enchantment's color.
+// ======================================================================
+const ENCH_GLOW = {flaming: '#ff7a1a', vampiric: '#e0203a', balanced: '#e8f0ff', giantslayer: '#ffd040', swift: '#5fe0ff',
+  thorns: '#8fe05a', mending: '#5aff8a', fortitude: '#ff6a6a', purity: '#ffffff', fleetfoot: '#8ad8ff', fortune: '#ffcc33'};
+const LOOK = {
+  skin: '#e2b48c', hair: '#5a3a22', tunic: '#3a7bd5', tunicDark: '#2a5aa8', pants: '#4a3a30', shoe: '#2e2219',
+  leather: '#8a5a32', leatherDark: '#5e3a1e', cloth: '#d8c8a0', clothDark: '#a8946a',
+  iron: '#9aa0aa', ironDark: '#5e646e', steel: '#e4eaf2', steelDark: '#8f9aab', gold: '#e8b830',
+  cape: '#1f4fa8', capeDark: '#163a7e', grip: '#4a2e1a'
+};
+const tierOf = k => worn[k] ? worn[k].tier : -1;   // -1 = nothing in that slot
+const HERO_SCALE = 1.3;                            // how much larger than its drawing your character appears
+// a metal sheen across a shape's width: dark edges and a bright stripe where the torchlight hits
+function sheen(x0, x1, base, dark, shine) {
+  const gr = ctx.createLinearGradient(x0, 0, x1, 0);
+  gr.addColorStop(0, dark);
+  gr.addColorStop(0.35, base);
+  gr.addColorStop(0.5, shine);
+  gr.addColorStop(0.65, base);
+  gr.addColorStop(1, dark);
+  return gr;
+}
+
+function drawHero(x, y, t) {
+  const H = tierOf('helmet'), C = tierOf('chest'), B = tierOf('bracers'), G = tierOf('greaves'), Wp = tierOf('weapon');
+  const knight = armor.every(k => worn[k]), shining = knight && armor.every(k => worn[k].tier === 2);
+  const b = Math.sin(t * 2.2) * 0.6;                                     // breathing
+  const glowColor = k => worn[k] && worn[k].ench ? ENCH_GLOW[worn[k].ench.id] : null;
+  // draw part of a piece with a glow if that piece is enchanted
+  const glowing = (k, fn) => {
+    const c = glowColor(k);
+    if (!c) return fn();
+    ctx.save();
+    ctx.shadowColor = c;
+    ctx.shadowBlur = 7 + 3 * Math.sin(t * 3 + k.length);
+    fn();
+    ctx.restore();
+  };
+  const fill = (color, path) => { ctx.fillStyle = color; ctx.beginPath(); path(); ctx.fill(); };
+  const poly = (pts, color) => fill(color, () => pts.forEach(([px, py], i) => i ? ctx.lineTo(px, py) : ctx.moveTo(px, py)));
+  const rect = (x0, y0, w, h, color) => { ctx.fillStyle = color; ctx.fillRect(x0, y0, w, h); };
+  const metalOf = (tier, x0, x1) => tier === 2 ? sheen(x0, x1, LOOK.steel, LOOK.steelDark, '#ffffff') : sheen(x0, x1, LOOK.iron, LOOK.ironDark, '#c8ccd4');
+
+  // shadow on the floor
+  fill('rgba(0,0,0,0.45)', () => ctx.ellipse(x, y + 31, 17, 4.5, 0, 0, Math.PI * 2));
+
+  // -- cape (knights only), swaying behind you
+  if (knight) {
+    const sw = k => Math.sin(t * 2 + k) * 1.6;
+    ctx.fillStyle = sheen(x - 16, x + 16, LOOK.cape, LOOK.capeDark, '#3a6cc8');
+    ctx.beginPath();
+    ctx.moveTo(x - 10, y - 13 + b);
+    ctx.lineTo(x + 10, y - 13 + b);
+    ctx.lineTo(x + 16 + sw(0), y + 27);
+    ctx.quadraticCurveTo(x + 8, y + 30 + sw(1), x, y + 27 + sw(2) * 0.5);
+    ctx.quadraticCurveTo(x - 8, y + 30 + sw(3), x - 16 + sw(4), y + 27);
+    ctx.closePath();
+    ctx.fill();
+    if (shining) { ctx.strokeStyle = LOOK.gold; ctx.lineWidth = 1.4; ctx.stroke(); }
+  }
+
+  // -- legs and feet (greaves)
+  glowing('greaves', () => {
+    for (const s of [-1, 1]) {
+      const lx = s < 0 ? x - 8 : x + 2;                                   // each leg is 6 wide
+      if (G === 2) {                                                       // steel leg armor, knee guards, pointed boots
+        rect(lx, y + 7, 6, 20, metalOf(2, lx, lx + 6));
+        fill(metalOf(2, lx - 1, lx + 7), () => ctx.ellipse(lx + 3, y + 15, 3.8, 2.7, 0, 0, Math.PI * 2));
+        poly([[lx - (s < 0 ? 3 : 0), y + 30], [lx - (s < 0 ? 1 : 0), y + 26.5], [lx + 6 + (s > 0 ? 1 : 0), y + 26.5], [lx + 6 + (s > 0 ? 3 : 0), y + 30]], LOOK.steelDark);
+      } else {
+        rect(lx, y + 7, 6, 20, LOOK.pants);
+        if (G === 0) {                                                     // leather boots with a folded cuff
+          rect(lx - 0.5, y + 16, 7, 11, LOOK.leather);
+          rect(lx - 1, y + 16, 8, 2.5, LOOK.leatherDark);
+        }
+        if (G === 1) {                                                     // iron shin plates
+          rect(lx + 0.5, y + 14, 5, 12, metalOf(1, lx, lx + 6));
+          rect(lx + 2.2, y + 14.5, 1.6, 1.6, LOOK.ironDark);
+        }
+        rect(lx - (s < 0 ? 2 : 0), y + 27, 8, 3, G === 0 ? LOOK.leatherDark : LOOK.shoe);   // feet
+      }
+    }
+  });
+
+  // -- body (chest piece), then a belt
+  const torso = () => { ctx.moveTo(x - 11, y - 13 + b); ctx.lineTo(x + 11, y - 13 + b); ctx.lineTo(x + 9, y + 7); ctx.lineTo(x - 9, y + 7); ctx.closePath(); };
+  glowing('chest', () => {
+    if (C === 1) fill(metalOf(1, x - 11, x + 11), torso);
+    else if (C === 2) fill(metalOf(2, x - 11, x + 11), torso);
+    else fill(sheen(x - 11, x + 11, LOOK.tunic, LOOK.tunicDark, '#5a95e8'), torso);
+  });
+  if (C === -1 || C === 0) poly([[x - 3, y - 13 + b], [x + 3, y - 13 + b], [x, y - 9 + b]], LOOK.skin);   // neckline
+  if (C === 0) {                                                           // leather vest with lacing
+    for (const s of [-1, 1]) poly([[x + s * 11, y - 13 + b], [x + s * 3, y - 13 + b], [x + s * 2, y + 7], [x + s * 9, y + 7]], LOOK.leather);
+    ctx.strokeStyle = LOOK.cloth;
+    ctx.lineWidth = 0.8;
+    for (let k = 0; k < 4; k++) { const ly = y - 8 + k * 4 + b; ctx.beginPath(); ctx.moveTo(x - 2, ly); ctx.lineTo(x + 2, ly + 2); ctx.moveTo(x + 2, ly); ctx.lineTo(x - 2, ly + 2); ctx.stroke(); }
+  }
+  if (C === 1) {                                                           // chainmail rings
+    ctx.save();
+    ctx.beginPath(); torso(); ctx.clip();
+    ctx.strokeStyle = 'rgba(30,32,40,0.45)';
+    ctx.lineWidth = 0.7;
+    for (let ry = y - 13 + b, row = 0; ry < y + 8; ry += 2.6, row++)
+      for (let rx = x - 12 + (row % 2) * 1.5; rx < x + 12; rx += 3) { ctx.beginPath(); ctx.arc(rx, ry, 1.3, 0, Math.PI); ctx.stroke(); }
+    ctx.restore();
+  }
+  if (C === 2) {                                                           // breastplate ridge and the plates over the hips
+    rect(x - 0.5, y - 12 + b, 1, 15, 'rgba(255,255,255,0.7)');
+    rect(x - 9, y + 2, 18, 1, 'rgba(40,46,60,0.6)');
+  }
+  rect(x - 9, y + 5, 18, 3, LOOK.leatherDark);                             // belt
+  rect(x - 1.5, y + 5.3, 3, 2.4, shining ? LOOK.gold : '#b8a060');         // buckle
+  if (knight) {                                                            // tabard with a gold cross
+    rect(x - 5, y - 12 + b, 10, 27 - b, LOOK.cape);
+    rect(x - 0.8, y - 9 + b, 1.6, 12, LOOK.gold);
+    rect(x - 3.5, y - 5 + b, 7, 1.6, LOOK.gold);
+    if (shining) { ctx.strokeStyle = LOOK.gold; ctx.lineWidth = 0.8; ctx.strokeRect(x - 5, y - 12 + b, 10, 27 - b); }
+  }
+
+  // -- arms: sleeve color comes from the chest piece, forearms and hands from the bracers
+  const sleeve = C === 2 ? metalOf(2, x - 15, x + 15) : C === 1 ? metalOf(1, x - 15, x + 15) : LOOK.tunic;
+  const fore = B === 2 ? metalOf(2, x - 15, x + 22) : B === 1 ? metalOf(1, x - 15, x + 22) : B === 0 ? LOOK.cloth : LOOK.skin;
+  const hand = B === 2 ? LOOK.steelDark : LOOK.skin;
+  const bracerMarks = (x0, y0, x1, y1) => {                                // wraps get stripes, iron and steel get a rim
+    if (B < 0) return;
+    ctx.strokeStyle = B === 0 ? LOOK.clothDark : 'rgba(30,32,40,0.6)';
+    ctx.lineWidth = 0.8;
+    const n = B === 0 ? 3 : 1;
+    for (let k = 1; k <= n; k++) {
+      const q = k / (n + 1), mx = x0 + (x1 - x0) * q, my = y0 + (y1 - y0) * q;
+      ctx.beginPath(); ctx.moveTo(mx - 2.2, my - 1); ctx.lineTo(mx + 2.2, my + 1); ctx.stroke();
+    }
+  };
+  // left arm, hanging
+  rect(x - 14, y - 12 + b, 4, 10, sleeve);
+  glowing('bracers', () => rect(x - 14, y - 2 + b, 4, 8, fore));
+  bracerMarks(x - 12, y - 2 + b, x - 12, y + 6 + b);
+  fill(hand, () => ctx.arc(x - 12, y + 8 + b, 2.6, 0, Math.PI * 2));
+  if (C === 2) for (const s of [-1, 1]) fill(metalOf(2, x + s * 11.5 - 5, x + s * 11.5 + 5), () => ctx.ellipse(x + s * 11.5, y - 11 + b, 5, 3.8, 0, 0, Math.PI * 2));  // shoulder plates
+
+  // -- the weapon, held up toward the enemies
+  const hx = x + 20, hy = y - 4 + b;                                       // your sword hand
+  if (Wp >= 0) {
+    const dx = 0.469, dy = -0.883, nx = 0.883, ny = 0.469;                 // blade direction and its sideways
+    const len = [16, 21, 25][Wp], w = [1.7, 2, 2.3][Wp], guard = [3.5, 4.5, 5.5][Wp];
+    const sx = hx + dx * 3.5, sy = hy + dy * 3.5, tx = sx + dx * len, ty = sy + dy * len;
+    const blade = () => {
+      ctx.moveTo(sx + nx * w, sy + ny * w);
+      ctx.lineTo(tx - dx * 4 + nx * w * 0.8, ty - dy * 4 + ny * w * 0.8);
+      ctx.lineTo(tx, ty);
+      ctx.lineTo(tx - dx * 4 - nx * w * 0.8, ty - dy * 4 - ny * w * 0.8);
+      ctx.lineTo(sx - nx * w, sy - ny * w);
+      ctx.closePath();
+    };
+    const ench = worn.weapon.ench && worn.weapon.ench.id;
+    if (ench === 'swift') {                                                // a blurred afterimage
+      ctx.save(); ctx.globalAlpha *= 0.35; ctx.translate(-nx * 3.5, -ny * 3.5); fill('#5fe0ff', blade); ctx.restore();
+    }
+    glowing('weapon', () => fill(['#a8743c', '#c4c8d0', '#eef3fa'][Wp], blade));
+    if (Wp === 0) for (const q of [0.3, 0.55, 0.8]) fill('#6e4220', () => ctx.arc(sx + dx * len * q + nx * 0.6, sy + dy * len * q + ny * 0.6, 0.9, 0, Math.PI * 2));  // rust
+    if (Wp >= 1) { ctx.strokeStyle = Wp === 2 ? '#b8c4d4' : '#8a909a'; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(tx - dx * 5, ty - dy * 5); ctx.stroke(); }  // fuller
+    ctx.strokeStyle = ['#6a4a2a', '#4a4e56', LOOK.gold][Wp];               // crossguard
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(hx + nx * guard + dx, hy + ny * guard + dy); ctx.lineTo(hx - nx * guard + dx, hy - ny * guard + dy); ctx.stroke();
+    ctx.strokeStyle = LOOK.grip;                                           // grip
+    ctx.lineWidth = 2.2;
+    ctx.beginPath(); ctx.moveTo(hx - dx * 1, hy - dy * 1); ctx.lineTo(hx - dx * 5, hy - dy * 5); ctx.stroke();
+    fill(['#6a4a2a', '#4a4e56', LOOK.gold][Wp], () => ctx.arc(hx - dx * 6, hy - dy * 6, 1.6, 0, Math.PI * 2));   // pommel
+    if (ench === 'flaming') for (let k = 0; k < 4; k++) {                   // flames licking up the blade
+      const q = 0.2 + k * 0.2, fx = sx + dx * len * q, fy = sy + dy * len * q, fl = 3 + Math.sin(t * 12 + k * 2) * 1.2;
+      fill('rgba(255,120,30,0.85)', () => { ctx.moveTo(fx - 1.6, fy); ctx.quadraticCurveTo(fx, fy - fl * 1.6, fx + Math.sin(t * 9 + k), fy - fl * 2); ctx.quadraticCurveTo(fx + 0.4, fy - fl, fx + 1.6, fy); });
+    }
+    if (ench === 'vampiric') {                                             // a drop of blood sliding off the tip
+      const q = (t % 1.8) / 1.8;
+      fill(`rgba(200,20,40,${1 - q})`, () => ctx.ellipse(tx, ty + q * 18, 1.1, 1.7, 0, 0, Math.PI * 2));
+    }
+    if (ench === 'balanced') {                                             // a glint running along the blade
+      const q = (t % 1.6) / 1.6;
+      fill('rgba(255,255,255,0.9)', () => ctx.arc(sx + dx * len * q, sy + dy * len * q, 1.4, 0, Math.PI * 2));
+    }
+    if (ench === 'giantslayer') for (let k = 0; k < 3; k++) {               // glowing runes
+      ctx.save(); ctx.shadowColor = '#ffd040'; ctx.shadowBlur = 5;
+      fill(`rgba(255,215,80,${0.6 + 0.4 * Math.sin(t * 4 + k)})`, () => ctx.rect(sx + dx * len * (0.25 + k * 0.2) - 0.8, sy + dy * len * (0.25 + k * 0.2) - 0.8, 1.6, 1.6));
+      ctx.restore();
+    }
+  }
+  // right arm, raised to hold the sword
+  const arm = (x0, y0, x1, y1, color) => { ctx.strokeStyle = color; ctx.lineWidth = 4.4; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); ctx.lineCap = 'butt'; };
+  arm(x + 11, y - 11 + b, x + 15, y - 1 + b, sleeve);
+  glowing('bracers', () => arm(x + 15, y - 1 + b, hx, hy, fore));
+  bracerMarks(x + 15, y - 1 + b, hx, hy);
+  fill(hand, () => ctx.arc(hx, hy, 2.6, 0, Math.PI * 2));
+
+  // -- head: hair or a helmet
+  rect(x - 2.5, y - 16 + b, 5, 4, LOOK.skin);                              // neck
+  fill(LOOK.skin, () => ctx.arc(x, y - 22 + b, 7.5, 0, Math.PI * 2));
+  if (H < 2) {                                                             // face (a great helm hides it)
+    fill('#1a1410', () => ctx.arc(x - 2.6, y - 22 + b, 1, 0, Math.PI * 2));
+    fill('#1a1410', () => ctx.arc(x + 2.6, y - 22 + b, 1, 0, Math.PI * 2));
+    rect(x - 1.5, y - 18.6 + b, 3, 0.8, '#8a5a40');
+  }
+  glowing('helmet', () => {
+    if (H === -1) {                                                        // hair
+      fill(LOOK.hair, () => { ctx.arc(x, y - 23 + b, 8, Math.PI, Math.PI * 2); ctx.lineTo(x + 8, y - 21 + b); ctx.lineTo(x + 4, y - 25 + b); ctx.lineTo(x - 2, y - 23 + b); ctx.lineTo(x - 8, y - 20 + b); });
+    } else if (H === 0) {                                                  // leather cap
+      fill(LOOK.leather, () => ctx.arc(x, y - 23 + b, 8.3, Math.PI, Math.PI * 2));
+      rect(x - 9.5, y - 24.2 + b, 19, 2.4, LOOK.leatherDark);
+      ctx.strokeStyle = LOOK.cloth; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.arc(x, y - 23 + b, 5.5, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke();
+    } else if (H === 1) {                                                  // iron helm with a nose guard
+      fill(metalOf(1, x - 9, x + 9), () => ctx.arc(x, y - 23 + b, 8.6, Math.PI, Math.PI * 2));
+      rect(x - 8.6, y - 23 + b, 3, 7, LOOK.iron);
+      rect(x + 5.6, y - 23 + b, 3, 7, LOOK.iron);
+      rect(x - 8.8, y - 24 + b, 17.6, 1.8, LOOK.ironDark);
+      rect(x - 1, y - 25 + b, 2, 7, LOOK.ironDark);
+      for (const s of [-5, 0, 5]) rect(x + s - 0.6, y - 28 + b, 1.2, 1.2, '#d8dce4');
+    } else {                                                               // steel great helm
+      fill(metalOf(2, x - 9, x + 9), () => { ctx.moveTo(x - 8.5, y - 14 + b); ctx.lineTo(x - 8.5, y - 25 + b); ctx.arc(x, y - 25 + b, 8.5, Math.PI, Math.PI * 2); ctx.lineTo(x + 8.5, y - 14 + b); ctx.closePath(); });
+      rect(x - 6.5, y - 24 + b, 13, 1.9, '#0c0c10');                       // visor slit
+      for (const s of [-3, -1, 1, 3]) rect(x + s - 0.4, y - 19 + b, 0.8, 0.8, '#0c0c10');   // breathing holes
+      rect(x - 0.4, y - 33 + b, 0.8, 18, 'rgba(255,255,255,0.75)');        // ridge
+      if (shining) rect(x - 8.5, y - 21.5 + b, 17, 1, LOOK.gold);
+    }
+  });
+  if (knight && H === 2) {                                                 // a plume on the knight's great helm
+    const sw = Math.sin(t * 2.4) * 1.2;
+    fill(LOOK.cape, () => { ctx.moveTo(x - 1, y - 33 + b); ctx.quadraticCurveTo(x - 4, y - 44 + b, x - 15 + sw, y - 39 + b); ctx.quadraticCurveTo(x - 7, y - 37 + b, x + 1.5, y - 32 + b); ctx.closePath(); });
+    fill('#3a6cc8', () => { ctx.moveTo(x - 1, y - 34 + b); ctx.quadraticCurveTo(x - 4, y - 42 + b, x - 11 + sw, y - 39 + b); ctx.quadraticCurveTo(x - 6, y - 38 + b, x, y - 33 + b); ctx.closePath(); });
+  }
+
+  // -- enchanted armor sparkles
+  const ANCHOR = {helmet: [x, y - 26], chest: [x, y - 3], bracers: [x - 12, y + 2], greaves: [x, y + 19]};
+  for (const k of armor) {
+    const c = glowColor(k);
+    if (!c) continue;
+    for (let i = 0; i < 2; i++) {
+      const a = t * 1.3 + i * 3.1 + k.length, sx = ANCHOR[k][0] + Math.cos(a) * 10, sy = ANCHOR[k][1] + Math.sin(a * 1.3) * 6;
+      const s = 1.2 + Math.max(0, Math.sin(t * 5 + i * 2)) * 1.6;
+      ctx.fillStyle = c;
+      ctx.fillRect(sx - s, sy - 0.4, s * 2, 0.8);
+      ctx.fillRect(sx - 0.4, sy - s, 0.8, s * 2);
+    }
+  }
+}
+
+// text with a dark outline, so it reads over the busy dungeon
+function outlinedText(text, x, y, color) {
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+  ctx.strokeText(text, x, y);
+  ctx.fillStyle = color;
+  ctx.fillText(text, x, y);
+}
+
+function drawCombat() {
+  const t = performance.now() / 1000;
+  // the dungeon: the still room, then everything that moves in it
+  const boss = sceneFoes.some(f => f.boss), arena = arenaFor(boss);
+  ctx.drawImage(arena.canvas, 0, 0, 288, 352);
+  drawArenaLife(t, arena, boss);
+
+  // you, dressed in whatever you're wearing (drawn a bit larger than life: you're the hero)
+  ctx.save();
+  ctx.translate(PLAYER_SPOT.x, PLAYER_SPOT.y);
+  ctx.scale(HERO_SCALE, HERO_SCALE);
+  drawHero(0, 0, t);
+  ctx.restore();
+  bar(PLAYER_SPOT.x - 26, PLAYER_SPOT.y - 64, 52, 6, p.hp, p.max, poison ? '#a5d' : '#4c4');
   ctx.font = `600 13px ${GAME_FONT}`;
   ctx.textAlign = 'center';
-  ctx.fillText(`${p.hp}/${p.max}`, PLAYER_SPOT.x, PLAYER_SPOT.y + 38);
+  outlinedText(`${p.hp}/${p.max}`, PLAYER_SPOT.x, PLAYER_SPOT.y + 56, '#fff');
 
   // the enemies; the target stands on a yellow ring
   const spots = foeSpots(), tgt = liveTarget();
-  for (const f of sceneFoes) {
-    const {x, y} = spots.get(f), size = f.boss ? 50 : 34, dead = f.hp <= 0;
+  sceneFoes.forEach((f, i) => {
+    const {x, y: y0} = spots.get(f), size = foeSize(f), dead = f.hp <= 0;
+    const y = dead ? y0 : y0 + Math.sin(t * 2.4 + i * 1.7) * 1.2;   // living enemies sway a little
     if (f === tgt && phase !== 'loot') {
       ctx.strokeStyle = '#fc3';
       ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.ellipse(x, y + size / 2 + 4, size / 2 + 8, 7, 0, 0, Math.PI * 2);
+      ctx.ellipse(x, y + size / 2 + 3, size / 2 + 6, 6, 0, 0, Math.PI * 2);
       ctx.stroke();
       ctx.lineWidth = 1;
     }
-    drawFighter(x, y, f.color, size, dead);
-    if (f.boss) { ctx.strokeStyle = '#fff'; ctx.strokeRect(x - size / 2, y - size / 2, size, size); }
-    if (!dead) bar(x - 24, y - size / 2 - 10, 48, 5, f.hp, f.max, f.color);
-    ctx.fillStyle = dead ? '#666' : '#fff';
+    drawEnemy(f, x, y, size, dead);
+    // green health bar above (higher for the Ogre King, so it clears his crown)
+    if (!dead) bar(x - 24, y - size / 2 - (f.boss ? 16 : 10), 48, 5, f.hp, f.max, '#4c4');
     ctx.font = `600 12px ${GAME_FONT}`;
-    ctx.fillText(f.name + (f.items.length ? '*' : '') + (f.burn > 0 && !dead ? ' (burning)' : ''), x, y + size / 2 + 22);
-  }
+    const label = f.name + (f.items.length ? '*' : '') + (f.burn > 0 && !dead ? ' (burning)' : '');
+    // keep the name on screen even for the enemy furthest right
+    outlinedText(label, Math.min(x, 284 - ctx.measureText(label).width / 2), y0 + size / 2 + 23, dead ? '#777' : '#fff');
+  });
   ctx.textAlign = 'left';
 }
 
 // tap an enemy on the combat screen to target it
 function tapTarget(cx, cy) {
   const spots = foeSpots();
+  let best = null, bestDist = Infinity;
   for (const f of sceneFoes) {
-    const s = spots.get(f), half = (f.boss ? 50 : 34) / 2 + 10;
-    if (f.hp > 0 && Math.abs(cx - s.x) <= half && Math.abs(cy - s.y) <= half + 12) {
-      target = f;
-      msg.textContent = `You turn to face the ${f.name}.`;
-      draw();
-      return;
+    const s = spots.get(f), half = foeSize(f) / 2 + 10, dist = Math.hypot(cx - s.x, cy - s.y);
+    // the nearest living enemy whose area you tapped (areas can overlap in a staggered line)
+    if (f.hp > 0 && Math.abs(cx - s.x) <= half && Math.abs(cy - s.y) <= half + 12 && dist < bestDist) {
+      best = f;
+      bestDist = dist;
     }
   }
+  if (!best) return;
+  target = best;
+  msg.textContent = `You turn to face the ${best.name}.`;
+  draw();
 }
 
+let shownView = 'map';  // what the canvas is showing right now: 'map' or 'combat'
 function draw() {
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);  // draw in layout units at the screen's full resolution
+  shownView = inCombatScene() ? 'combat' : 'map';
+  if (inCombatScene()) requestFrames();    // keep the torches and fog moving
   if (inCombatScene()) {
     drawCombat();
     drawHud();
@@ -1179,10 +2033,15 @@ function drawHud() {
   bar(8, 374, 120, 12, p.hp, p.max, poison ? '#a5d' : '#4c4'); // purple while poisoned
   bar(8, 390, 120, 4, xp, xpToNext(level + levelUps), '#fc3');
   ctx.font = `600 13px ${GAME_FONT}`;
-  ctx.fillText(`HP ${p.hp}/${p.max}`, 140, 384);
+  // the last argument squeezes the text to fit if a wider backup font is showing
+  ctx.fillText(`HP ${p.hp}/${p.max}`, 140, 384, 144);
   if (inCombatScene() && phase === 'fight') {
     ctx.fillStyle = '#fc3';
-    ctx.fillText('Tap an enemy to target it', 140, 368);
+    ctx.fillText('Tap an enemy to target it', 140, 368, 144);
+  }
+  if (inCombatScene() && phase === 'loot') {
+    ctx.fillStyle = '#fc3';
+    ctx.fillText('Equip or Leave below', 140, 368, 144);
   }
 }
 
@@ -1564,18 +2423,21 @@ leaveBtn.onclick = () => {
 
 c.addEventListener('pointerdown', e => {
   if (over) return;
+  // if the screen is out of date (say, still showing the arena), a tap only refreshes it:
+  // never move or act on a view the player can't see
+  if (shownView !== (inCombatScene() ? 'combat' : 'map')) { draw(); return; }
   // on the combat screen a tap picks which enemy you attack
   if (inCombatScene()) {
     if (phase === 'fight' || phase === 'choice') {
       const r = c.getBoundingClientRect();
-      tapTarget((e.clientX - r.left) * c.width / r.width, (e.clientY - r.top) * c.height / r.height);
+      tapTarget((e.clientX - r.left) * CANVAS_W / r.width, (e.clientY - r.top) * CANVAS_H / r.height);
     }
     return;
   }
   if (phase !== 'explore') return;
 
   const r = c.getBoundingClientRect();
-  const dx = e.clientX - r.left - c.width / 2;
+  const dx = e.clientX - r.left - CANVAS_W / 2;
   const dy = e.clientY - r.top - 176;
   let nx = p.x, ny = p.y;
   if (Math.abs(dx) > Math.abs(dy)) nx += Math.sign(dx);
