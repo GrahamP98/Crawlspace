@@ -105,9 +105,10 @@
     <details>
       <summary>Fighting</summary>
       <p>Walk into an enemy to start a fight. The view switches to the <b>combat screen</b>: you stand on the left, facing the enemies, who stand in a staggered line on the right, each drawn as its own creature with a green health bar above it. Enemies can come in groups of up to 3 on deeper floors. A <b>*</b> after a name means that enemy carries gear, so it hits harder or has armor.</p>
+      <p>Enemies wear the gear they carry, just like you. A sword in hand means it hits harder; a helmet, body armor, bracers or greaves mean it takes less damage. Leather is brown, iron is grey and steel shines silver. Only Goblins, Skeletons, Orcs and Dark Knights carry gear. Every other enemy fights with teeth, claws and fists.</p>
       <p><b>Tap an enemy to target it.</b> A yellow ring under an enemy shows your target, and your attacks go to it. When your target falls, the next enemy is targeted for you.</p>
       <p>Damage rises over the one who took it as a <b style="color:#f44">red</b> number, healing as a <b style="color:#4e4">green</b> one. <b>MISS</b> appears over whoever an attack was aimed at, <b style="color:#6df">STUNNED</b> over a stunned enemy, and <b style="color:#fc3">SECOND WIND</b> over you when that perk saves your life.</p>
-      <p>You first choose <b>Fight</b> or <b>Flee</b>. Fleeing works 25% of the time and puts you back one step. If it fails, the enemies get a free attack. You can never flee the Ogre King.</p>
+      <p>You first choose <b>Fight</b> or <b>Flee</b>. Fleeing works 25% of the time (up to 65% with Fleetfoot gear) and puts you back one step. If it fails, the enemies get a free attack. You can never flee the Ogre King.</p>
       <p>Each turn of a fight, pick one move. The enemies then take their turn.</p>
       <ul>
         <li><b>Normal</b>: your reliable hit, 8-14 damage plus your weapon and bonuses, minus the enemy's armor. It misses 10% of the time, and 10% of hits are critical hits for double damage.</li>
@@ -168,7 +169,7 @@
       </ul>
       <h4>Specials</h4>
       <ul>
-        <li><b>Pathfinder</b>: see 1 more tile around you, and enemies within sight show on the map before you meet them. Your first hit on an enemy you spotted first is an <b>Ambush</b> for +50% damage.</li>
+        <li><b>Pathfinder</b>: see 1 more tile around you, and enemies within sight show on the map before you meet them. Your first hit in every fight is an <b>Ambush</b> for +50% damage (a miss doesn't use it up).</li>
         <li><b>Executioner</b>: +50% damage to enemies below half health.</li>
         <li><b>Antidote</b>: potions heal 10 more, and poison is weaker and shorter.</li>
         <li><b>Shield Bash</b>: when you Block, you also bash your target for 4 damage, and the stun chance rises to 20%.</li>
@@ -186,7 +187,7 @@
         <li><b>Steel</b>: Steel Sword, Steel Helm, Steel Plate, Steel Bracers, Steel Greaves</li>
       </ul>
       <p>A weapon adds its number to your damage. Armor numbers add up to your <b>Defense</b>, which comes off every enemy hit. Full Steel armor gives 13. Gear drops from fights and chests, and merchants sell it (price = 5 coins per point). Better material also lets you use stronger enchantments.</p>
-      <p>Everything you wear shows on your character in fights, from a rusty sword to a steel great helm. You start out in a prisoner's rags: a torn tunic, a bandaged arm and bare feet. Wear all four armor pieces (helmet, chest, bracers and greaves) and you become a <b>knight</b>, with a blue cape and a tabard bearing a gold cross; with a steel helm you also get a plume. A full set of Steel adds gold trim, and enchanted gear glows in its enchantment's color.</p>
+      <p>Everything you wear shows on your character in fights, from a rusty sword to a steel great helm. You start out in a prisoner's rags: a torn tunic, a bandaged arm and bare feet. Wear all four armor pieces (helmet, chest, bracers and greaves) with a steel helm, and a knight's blue plume streams from it. A full set of Steel adds gold trim, and enchanted gear glows in its enchantment's color. Enemies show their gear the same way (see Fighting).</p>
     </details>
 
     <details>
@@ -207,7 +208,7 @@
         <li><b>Mending</b>: heal 3 / 5 / 8 after every fight you win.</li>
         <li><b>Fortitude</b>: +10 / 20 / 30 max health.</li>
         <li><b>Purity</b>: poison lasts 1 / 2 / 3 fewer turns, and Wraith drain is cut 25% / 50% / 75%.</li>
-        <li><b>Fleetfoot</b>: +10% / 15% / 20% chance to flee.</li>
+        <li><b>Fleetfoot</b>: +6% / 8% / 10% chance to flee. Four Major pieces take you to 65%, the most you can reach.</li>
         <li><b>Fortune</b>: +10% / 20% / 30% gold.</li>
       </ul>
       <h4>Where to get them</h4>
@@ -300,7 +301,7 @@ const REDRAW_COST = 10;         // coins; each extra redraw in the same level-up
 const ATTACK_DMG = 2;                                // Attack: +2 damage
 const VITALITY_HP = 25, VITALITY_BLOCK_KEEP = 0.85;  // Vitality: +25 max HP, Block lets 15% less through
 const FOCUS_CRIT = 0.03, FOCUS_MISS_KEEP = 0.92;     // Focus: +3% crit, miss chance x0.92
-const AMBUSH_TOP = 1.0;                              // Pathfinder: first hit on a spotted enemy +50%, 67%, 75%...
+const AMBUSH_TOP = 1.0;                              // Pathfinder: your first hit in each fight +50%, 67%, 75%...
 const EXEC_THRESHOLD = 0.50, EXEC_TOP = 1.0;         // Executioner: +50%, 67%, 75%... vs enemies under 50% HP
 const ANTIDOTE_HEAL_TOP = 20;                        // Antidote: potions heal +10, 13, 15...
 const BASH_TOP = 0.30, BASH_DMG_TOP = 12;            // Shield Bash: stun 20%, 25%, 28%...; bash 4, 6, 7...
@@ -338,7 +339,7 @@ const PERKS = {
     info: k => `Crit chance ${pct(critChance(k))}, and you miss ${pct(1 - missKeep(k))} less often.`},
   pathfinder: {name: 'Pathfinder', rarity: 'uncommon',
     card: k => `See ${sight(k)}, ambush +${pct(ambushBonus(k))}`,
-    info: k => `See ${sight(k)} tiles around you and spot enemies in sight. Your first hit on an enemy you spotted first deals ${pct(ambushBonus(k))} more.`},
+    info: k => `See ${sight(k)} tiles around you and spot enemies in sight. Your first hit in every fight is an Ambush for ${pct(ambushBonus(k))} more damage.`},
   executioner: {name: 'Executioner', rarity: 'uncommon',
     card: k => `+${pct(execBonus(k))} finishers`,
     info: k => `Deal ${pct(execBonus(k))} more damage to enemies under ${pct(EXEC_THRESHOLD)} HP.`},
@@ -387,7 +388,8 @@ const ENCHANTS = {
                 text: v => `+${v} max HP`},
   purity:      {name: 'Purity', slot: 'armor', vals: [1, 2, 3], desc: 'resists poison and drain',
                 text: v => `poison lasts ${v} fewer turns and Wraith drain is cut ${pct(PURITY_DRAIN[v - 1])}`},
-  fleetfoot:   {name: 'Fleetfoot', slot: 'armor', vals: [0.10, 0.15, 0.20], desc: 'easier to flee',
+  // four Major pieces (the most you can wear) take fleeing from 25% to 65%
+  fleetfoot:   {name: 'Fleetfoot', slot: 'armor', vals: [0.06, 0.08, 0.10], desc: 'easier to flee',
                 text: v => `+${pct(v)} chance to flee`},
   fortune:     {name: 'Fortune', slot: 'armor', vals: [0.10, 0.20, 0.30], desc: 'more gold',
                 text: v => `+${pct(v)} gold from kills and chests`}
@@ -582,18 +584,21 @@ function groupSize(zone) {
   return r < 0.25 ? 3 : r < 0.65 ? 2 : 1;
 }
 
+// f.gear remembers each item's tier by slot (0 Rusty/Leather, 1 Iron, 2 Steel) so it can be drawn on the enemy
 function equipFoe(f, t) {
   if (Math.random() < FOE_GEAR_CHANCE) {
-    const [name, pow] = slots.weapon.items[roll(0, t.gearTier)];
+    const tier = roll(0, t.gearTier), [name, pow] = slots.weapon.items[tier];
     f.items.push(name);
+    f.gear.weapon = tier;
     f.bonus = Math.ceil(pow / 2);
   }
   const free = [...armor];
   for (let n = 0; n < (t.armorMax || 1); n++) {
     if (Math.random() >= FOE_GEAR_CHANCE) continue;
     const k = free.splice(roll(0, free.length - 1), 1)[0];
-    const [name, pow] = slots[k].items[roll(0, t.gearTier)];
+    const tier = roll(0, t.gearTier), [name, pow] = slots[k].items[tier];
     f.items.push(name);
+    f.gear[k] = tier;
     f.def += pow;
   }
 }
@@ -601,7 +606,7 @@ function equipFoe(f, t) {
 function makeGroup(zone) {
   return Array.from({length: groupSize(zone)}, (_, i) => {
     const t = pick(i === 0 ? zone : roll(Math.max(0, zone - 1), zone));
-    const f = {...t, max: t.hp, bonus: 0, def: 0, items: []};
+    const f = {...t, max: t.hp, bonus: 0, def: 0, items: [], gear: {}};
     if (t.gearTier !== undefined) equipFoe(f, t);
     return f;
   });
@@ -1202,9 +1207,200 @@ function enemyKit(u) {
   return K;
 }
 
+// ---- an enemy's gear: the same items you find, worn on its own body ----
+// Only Goblins, Skeletons, Orcs and Dark Knights carry gear (see equipFoe); every other enemy
+// fights with what it was born with. f.gear holds a tier per slot: 0 is a Rusty Sword or Leather
+// (Cloth Wraps for bracers), 1 is Iron, 2 is Steel. Each shape calls these where the piece
+// belongs, so it sits on the right body part and in front of or behind the right limbs. Points
+// are in enemy units; dim < 1 darkens a piece on the far side of the body. A call for a slot
+// the enemy has nothing in draws nothing and returns false.
+const FOE_MATERIAL = [
+  {hi: '#94643a', lo: '#3a2410', line: '#22150a'},   // leather
+  {hi: '#a9afb9', lo: '#3c4048', line: '#1e2126'},   // iron
+  {hi: '#f4f7fc', lo: '#78839a', line: '#363e4c'}    // steel
+];
+const FOE_WRAPS = {hi: '#d2c4a0', lo: '#7c6c4a', line: '#5a4a30'};   // Cloth Wraps
+const FOE_HILT = ['#5a3c20', '#4a4e56', '#c8a040'];                  // crossguard and pommel, by tier
+function foeGear(f, u, K) {
+  const gear = (f && f.gear) || {};
+  const tone = (m, dim) => dim < 1 ? {hi: shade(m.hi, dim), lo: shade(m.lo, dim), line: m.line} : m;
+  const along = (a, b, q) => [a[0] + (b[0] - a[0]) * q, a[1] + (b[1] - a[1]) * q];
+  const span = pts => { const ys = pts.map(p => p[1]); return [Math.min(...ys) - 1, Math.max(...ys) + 1]; };
+  const clipTo = (pts, fn) => {
+    ctx.save();
+    ctx.beginPath();
+    pts.forEach(([a, b], i) => i ? ctx.lineTo(a * u, b * u) : ctx.moveTo(a * u, b * u));
+    ctx.closePath();
+    ctx.clip();
+    fn();
+    ctx.restore();
+  };
+  return {
+    has: k => gear[k] !== undefined,
+    // a sword gripped at (hx, hy), pointing along angle a (0 = straight at you, negative = up)
+    sword(hx, hy, a) {
+      const tier = gear.weapon;
+      if (tier === undefined) return false;
+      const dx = Math.cos(a), dy = Math.sin(a), nx = -dy, ny = dx, at = d => [hx + dx * d, hy + dy * d];
+      const len = [11, 13, 15][tier], w = [1.15, 1.3, 1.45][tier], gw = [2.4, 2.8, 3.2][tier];
+      const [bx, by] = at(2), [tx, ty] = at(2 + len);
+      K.L([at(-2.2), at(1)], 1.3, '#2e1e10');                                   // grip
+      K.O(...at(-2.7), 1, 1, FOE_HILT[tier]);                                   // pommel
+      const blade = [[bx + nx * w, by + ny * w], [tx - dx * 2.6 + nx * w * 0.8, ty - dy * 2.6 + ny * w * 0.8], [tx, ty],
+                     [tx - dx * 2.6 - nx * w * 0.8, ty - dy * 2.6 - ny * w * 0.8], [bx - nx * w, by - ny * w]];
+      const metal = [['#b8a088', '#5a4434'], ['#cdd1d8', '#5c626c'], ['#ffffff', '#8c98aa']][tier];
+      K.P(blade, K.grad(metal[0], metal[1], ...span(blade)), true);
+      if (tier === 0) {                                                         // Rusty Sword: rust spots and a notch
+        for (const q of [0.25, 0.5, 0.72]) { const [rx, ry] = at(2 + len * q); K.O(rx + nx * 0.3, ry + ny * 0.3, 0.65, 0.65, '#9a4c18'); }
+        const [kx, ky] = at(2 + len * 0.45);
+        K.P([[kx + nx * w, ky + ny * w], [kx + nx * w * 0.2 + dx * 0.6, ky + ny * w * 0.2 + dy * 0.6], [kx + nx * w + dx * 1.3, ky + ny * w + dy * 1.3]], '#141414');
+      } else {                                                                  // Iron and Steel: a fuller down the blade
+        K.L([at(2.5), at(len - 1)], 0.4, tier === 2 ? 'rgba(255,255,255,0.85)' : 'rgba(40,44,52,0.6)');
+      }
+      K.L([[hx + dx * 1.6 + nx * gw, hy + dy * 1.6 + ny * gw], [hx + dx * 1.6 - nx * gw, hy + dy * 1.6 - ny * gw]], 1.1, FOE_HILT[tier]);   // crossguard
+      return true;
+    },
+    // a helmet on a head drawn as an oval at (hx, hy) with radii rx, ry. brow = the height of its
+    // front edge, just above the eyes; eye = the color that glows through a Steel Helm's visor
+    helm(hx, hy, rx, ry, brow, eye) {
+      const tier = gear.helmet;
+      if (tier === undefined) return false;
+      const m = FOE_MATERIAL[tier];
+      const finish = () => { ctx.closePath(); ctx.fillStyle = K.grad(m.hi, m.lo, hy - ry - 1, hy + ry + 1); ctx.fill(); K.edge(); };
+      ctx.beginPath();
+      if (tier === 2) {                                                         // Steel Helm: a great helm over the whole head
+        ctx.moveTo((hx - rx - 0.6) * u, (hy + ry + 0.4) * u);
+        ctx.ellipse(hx * u, hy * u, (rx + 0.8) * u, (ry + 0.9) * u, 0, Math.PI, Math.PI * 2);
+        ctx.lineTo((hx + rx + 0.9) * u, (hy + ry * 0.7) * u);
+        ctx.lineTo((hx + rx * 0.5) * u, (hy + ry + 1.1) * u);
+        finish();
+        const sy = brow + 1.2;                                                  // the visor slit, at eye level
+        K.P([[hx + rx * 0.1, sy - 0.7], [hx + rx + 0.9, sy - 0.9], [hx + rx + 0.9, sy + 0.5], [hx + rx * 0.1, sy + 0.6]], '#07070a');
+        if (eye) K.eye(hx + rx * 0.68, sy - 0.1, 0.8, eye, 0, 1.4);
+        for (const [q, d] of [[0.55, 2.6], [0.8, 2.6], [0.68, 3.7]]) K.O(hx + rx * q + 0.4, sy + d, 0.35, 0.35, '#07070a');   // breathing holes
+        K.L([[hx - rx * 0.6, hy - ry * 0.8], [hx + rx * 0.1, hy - ry - 0.6], [hx + rx * 0.7, hy - ry * 0.75]], 0.6, 'rgba(255,255,255,0.8)');   // ridge
+        return true;
+      }
+      ctx.moveTo((hx - rx - 0.6) * u, (hy + ry * 0.3) * u);                     // a cap or helm over the top of the head,
+      ctx.ellipse(hx * u, hy * u, (rx + 0.7) * u, (ry + 0.8) * u, 0, Math.PI * 0.94, Math.PI * 1.96);   // low at the back,
+      ctx.lineTo((hx + rx + 0.5) * u, brow * u);                                // down to the brow in front
+      finish();
+      const nape = [hx - rx - 0.5, hy + ry * 0.28], front = [hx + rx + 0.4, brow];
+      if (tier === 0) {                                                         // Leather Cap: a stitched seam and a short peak
+        K.L([[hx - rx * 0.7, hy - ry * 0.55], [hx, hy - ry - 0.2], [hx + rx * 0.7, hy - ry * 0.5]], 0.4, 'rgba(216,200,160,0.7)');
+        K.P([[hx + rx * 0.55, brow - 0.6], [hx + rx + 2.4, brow + 0.6], [hx + rx * 0.6, brow + 0.5]], m.lo, true);
+      } else {                                                                  // Iron Helm: a rim, rivets and a nose guard
+        K.L([nape, front], 0.9, m.line);
+        for (const q of [0.25, 0.5, 0.75]) { const [rx2, ry2] = along(nape, front, q); K.O(rx2, ry2 - 1.1, 0.4, 0.4, '#dfe3ea'); }
+        K.P([[front[0] - 0.5, brow - 0.4], [front[0] + 0.8, brow - 0.4], [front[0] + 0.6, brow + 3.8], [front[0] - 0.2, brow + 3.8]],
+            K.grad(m.hi, m.lo, brow - 1, brow + 4.5), true);
+      }
+      return true;
+    },
+    // body armor over the torso outline pts. front = its front edge [top, bottom], for the vest's
+    // lacing and the plate's shine; shoulder = [x, y, rx, ry] for a pauldron on Iron or Steel
+    chest(pts, front, shoulder) {
+      const tier = gear.chest;
+      if (tier === undefined) return false;
+      const m = FOE_MATERIAL[tier], [y0, y1] = span(pts), [top, bot] = front;
+      const inset = (q, by) => { const [x, y] = along(top, bot, q); return [x - by, y]; };
+      K.P(pts, K.grad(m.hi, m.lo, y0, y1), true);
+      if (tier === 0) {                                                         // Leather Vest: a seam and lacing down the front
+        K.L([inset(0.12, 1.3), inset(0.85, 1.3)], 0.35, m.line);
+        for (const q of [0.22, 0.46, 0.7]) K.O(...inset(q, 1.3), 0.45, 0.45, '#d8c8a0');
+      } else if (tier === 1) {                                                  // Chainmail: rows of little rings
+        const xs = pts.map(p => p[0]), x0 = Math.min(...xs) - 1, x1 = Math.max(...xs) + 1;
+        clipTo(pts, () => {
+          ctx.strokeStyle = 'rgba(20,22,28,0.55)';
+          ctx.lineWidth = 0.35 * u;
+          for (let ry = y0, row = 0; ry < y1; ry += 1.5, row++)
+            for (let rx = x0 + (row % 2) * 0.9; rx < x1; rx += 1.8) { ctx.beginPath(); ctx.arc(rx * u, ry * u, 0.75 * u, 0, Math.PI); ctx.stroke(); }
+        });
+      } else {                                                                  // Steel Plate: a bright ridge and a seam across
+        K.L([inset(0.08, 1), inset(0.86, 1)], 0.6, 'rgba(255,255,255,0.85)');
+        const seam = y0 + (y1 - y0) * 0.6;
+        clipTo(pts, () => K.L([[-30, seam], [30, seam]], 0.5, 'rgba(30,36,48,0.65)'));
+      }
+      if (shoulder && tier >= 1) {
+        const [sx, sy, srx, sry] = shoulder;
+        K.O(sx, sy, srx, sry, K.grad(m.hi, m.lo, sy - sry - 1, sy + sry + 1), true);
+      }
+      return true;
+    },
+    // bracers on the forearm from elbow el to hand hd, on an arm w thick
+    bracer(el, hd, w, dim = 1) {
+      const tier = gear.bracers;
+      if (tier === undefined) return false;
+      const m = tone(tier === 0 ? FOE_WRAPS : FOE_MATERIAL[tier], dim);
+      const a = along(el, hd, 0.2), b = along(el, hd, 0.85), bw = w + 0.8;
+      K.L([a, b], bw, K.grad(m.hi, m.lo, Math.min(a[1], b[1]) - bw, Math.max(a[1], b[1]) + bw));
+      const vx = b[0] - a[0], vy = b[1] - a[1], vl = Math.hypot(vx, vy) || 1;
+      const px = -vy / vl * bw / 2, py = vx / vl * bw / 2, ux = vx / vl, uy = vy / vl;
+      const across = (q, lean, lw, color) => {
+        const [mx, my] = along(a, b, q);
+        K.L([[mx - px - ux * lean, my - py - uy * lean], [mx + px + ux * lean, my + py + uy * lean]], lw, color);
+      };
+      if (tier === 0) for (const q of [0.15, 0.5, 0.85]) across(q, 0.6, 0.4, m.line);   // the wraps wind round
+      else {
+        across(0, 0, 0.5, m.line);
+        across(1, 0, 0.5, m.line);                                              // rims at both ends
+        if (tier === 2) K.L([[a[0] - px * 0.45, a[1] - py * 0.45], [b[0] - px * 0.45, b[1] - py * 0.45]], 0.35, 'rgba(255,255,255,0.8)');
+      }
+      return true;
+    },
+    // greaves (or boots) on the shin from knee kn to ankle an, a leg w thick; foot = its outline
+    greave(kn, an, foot, w, dim = 1) {
+      const tier = gear.greaves;
+      if (tier === undefined) return false;
+      const m = tone(FOE_MATERIAL[tier], dim);
+      const top = along(kn, an, [0.35, 0.08, 0][tier]);
+      const metal = K.grad(m.hi, m.lo, Math.min(top[1], an[1]) - 1, Math.max(top[1], an[1]) + 2);
+      K.L([top, an], w + 0.8, metal);
+      if (tier === 0) {                                                         // Leather Boots with a folded cuff
+        K.L([top, along(kn, an, 0.47)], w + 1.4, tone(FOE_MATERIAL[0], dim * 0.75).lo);
+        K.P(foot, shade(FOE_MATERIAL[0].lo, dim), true);
+      } else if (tier === 1) {                                                  // Iron Greaves over plain shoes
+        K.O(...along(kn, an, 0.22), 0.45, 0.45, '#dfe3ea');
+        K.P(foot, shade('#2a1e14', dim), true);
+      } else {                                                                  // Steel Greaves: a knee guard and a pointed foot
+        K.O(kn[0], kn[1], w * 0.62 + 0.4, w * 0.55 + 0.3, metal, true);
+        const toe = foot.reduce((best, pt) => pt[0] > best[0] ? pt : best);
+        const shod = foot.map(pt => pt === toe ? [pt[0] + 1.2, pt[1] + 0.3] : pt);
+        K.P(shod, K.grad(m.hi, m.lo, ...span(shod)), true);
+      }
+      return true;
+    }
+  };
+}
+
+// a skull broken in two down the middle: the big Slime carries a half-digested one, and when it
+// splits each Little Slime carries off one half (piece 0 the back of it, piece 1 the face)
+function brokenSkull(u, piece, K) {
+  const crack = [[-4.6, 2], [-5.6, 4.5], [-4.5, 7], [-5.4, 9.5], [-4.4, 12], [-5.2, 15.5]];
+  const outside = piece ? [[1.5, 15.5], [1.5, 2]] : [[-11.5, 15.5], [-11.5, 2]];
+  const cx = piece ? -2.4 : -7.6;                                             // the middle of this half
+  ctx.save();
+  ctx.globalAlpha = Math.min(1, ctx.globalAlpha * 1.5);                       // a little clearer than the big one's, it's small
+  ctx.translate((-3 - cx) * u, 0);                                            // drifted toward the middle of the little body,
+  ctx.translate(cx * u, 9 * u);
+  ctx.rotate(piece ? 0.35 : -0.35);                                           // tumbling slowly in the goo,
+  ctx.scale(1.3, 1.3);                                                        // and drawn a bit larger so it still reads
+  ctx.translate(-cx * u, -9 * u);
+  ctx.save();
+  ctx.beginPath();
+  [...crack, ...outside].forEach(([a, b], i) => i ? ctx.lineTo(a * u, b * u) : ctx.moveTo(a * u, b * u));
+  ctx.closePath();
+  ctx.clip();
+  drawSkull(ctx, -5 * u, 9 * u, 1.15 * u, 0.55);
+  ctx.restore();
+  K.L(crack.slice(1, 5), 0.35, 'rgba(240,232,205,0.55)');                     // the broken edge
+  ctx.restore();
+}
+
 // Each enemy is drawn in side view facing right around (0, 0) at scale u, with its feet on the
 // floor at ENEMY_GROUND; drawEnemy flips it to face you. c = the enemy's map color,
-// t = time in seconds for its animation (frozen once it is defeated), K = the drawing helpers.
+// t = time in seconds for its animation (frozen once it is defeated), K = the drawing helpers,
+// f = the enemy itself (its gear, and for a Little Slime which piece of skull it carries).
 const ENEMY_SHAPES = {
   'Bat': (u, c, t, K) => {
     ctx.translate(0, hoverOf('Bat', t) * u);
@@ -1234,7 +1430,7 @@ const ENEMY_SHAPES = {
     K.eye(8.7, -4.3, 1.4, '#ff2a2a', 0.5, 1.2);
     wing(0, membrane);                                                        // near wing
   },
-  'Slime': (u, c, t, K) => {
+  'Slime': (u, c, t, K, f) => {
     const s = 1 + Math.sin(t * 3.6) * 0.06;                                   // it jiggles, squashing on the floor
     ctx.translate(0, ENEMY_GROUND * u);
     ctx.scale(1 / s, s);
@@ -1256,7 +1452,8 @@ const ENEMY_SHAPES = {
     body(); ctx.fillStyle = gr; ctx.fill();
     body(); ctx.clip();
     ctx.globalAlpha *= 0.5;
-    drawSkull(ctx, -5 * u, 9 * u, 1.15 * u, 0.55);                            // a half-digested skull inside it
+    if (f && f.piece !== undefined) brokenSkull(u, f.piece, K);              // a Little Slime: one half of the skull
+    else drawSkull(ctx, -5 * u, 9 * u, 1.15 * u, 0.55);                       // a half-digested skull inside it
     ctx.globalAlpha /= 0.5;
     for (let k = 0; k < 6; k++) {                                             // bubbles rising through it
       const by = 18 - ((t * 6 + k * 5.3) % 24), bx = -10 + k * 4 + Math.sin(t * 2 + k) * 1.2;
@@ -1265,40 +1462,40 @@ const ENEMY_SHAPES = {
     ctx.restore();
     body(); K.edge();
     K.O(-6, -3, 3, 1.6, 'rgba(255,255,255,0.25)', false, -0.4);                // a wet sheen
-    const m = (Math.sin(t * 1.3) + 1) / 2;                                    // the mouth slowly gapes
-    K.P([[4, 4], [14.5, 3], [13, 6 + m * 3], [5, 6.5 + m * 2]], '#040a04');
-    K.teeth(5, 14, 3.4, 1.6, 6);
-    K.teeth(6, 12.6, 6.2 + m * 2.2, -1.1, 4);
-    K.O(6, 7 + m * 2 + ((t * 0.8) % 1) * 9, 0.7, 1.2, 'rgba(190,255,170,0.55)');   // drool
     const pulse = 0.85 + 0.15 * Math.sin(t * 3);
     K.eye(5.6, -2.4, 1.7, '#e8ff40', 0.35, pulse);
     K.eye(11.6, -1.8, 1.5, '#e8ff40', 0.35, pulse);
     K.L([[3.4, -5.2], [7.8, -3.6]], 1, '#040a04');
     K.L([[9.8, -4.4], [13.4, -2.8]], 1, '#040a04');                            // angry brows
   },
-  'Little Slime': (u, c, t, K) => {
+  'Little Slime': (u, c, t, K, f) => {
     ctx.translate(0, ENEMY_GROUND * u);
     ctx.scale(0.7, 0.7);
     ctx.translate(0, -ENEMY_GROUND * u);
-    ENEMY_SHAPES['Slime'](u, c, t * 1.4, K);                                  // smaller, and jittery
+    ENEMY_SHAPES['Slime'](u, c, t * 1.4, K, {piece: f && f.piece !== undefined ? f.piece : 0});   // smaller, and jittery
   },
-  'Goblin': (u, c, t, K) => {
+  'Goblin': (u, c, t, K, f) => {
+    const G = foeGear(f, u, K);
     const skin = K.grad(mix(c, '#5a6a20', 0.45), mix(c, '#1a2008', 0.78), -16, 18);
     const dark = mix(c, '#101404', 0.74);
-    const jab = Math.max(0, Math.sin(t * 2.6)) ** 3 * 3;                     // quick, nasty knife jabs
+    const jab = Math.max(0, Math.sin(t * 2.6)) ** 3 * 3;                     // quick, nasty jabs
     const twitch = Math.sin(t * 7) * (Math.sin(t * 0.9) > 0.6 ? 1.5 : 0);    // the ear twitches now and then
     const sway = Math.sin(t * 1.8) * 0.8;                                     // shifting its weight
     const pulse = 0.85 + 0.15 * Math.sin(t * 3.3);
+    const farFoot = [[-7.4, 17], [-2.6, 17], [-2.2, 18.6], [-7.8, 18.6]], nearFoot = [[4.4, 17], [10, 17.2], [10.5, 18.6], [4, 18.6]];
     K.L([[-3, 10], [-6, 14], [-5, 17.4]], 2.6, dark);                         // far leg
-    K.P([[-7.4, 17], [-2.6, 17], [-2.2, 18.6], [-7.8, 18.6]], dark);
+    K.P(farFoot, dark);
+    G.greave([-6, 14], [-5, 17.4], farFoot, 2.6, 0.6);
     K.L([[-2 + sway, -1], [-7, 6], [-5, 10]], 2.2, dark);                     // far arm
+    G.bracer([-7, 6], [-5, 10], 2.2, 0.6);
     K.P([[-6 + sway, -2], [5 + sway, -4], [8, 6], [6, 11], [-5, 11]], skin, true);   // crouched body
+    G.chest([[-6 + sway, -2], [5 + sway, -4], [7.8, 5.6], [-5.6, 7]], [[5 + sway, -4], [7.8, 5.6]]);
     K.P([[-5.5, 7], [6.6, 6.5], [7.4, 12.5], [4.8, 10.4], [3, 13.5], [0.6, 10.6], [-1.8, 13.2], [-4, 10.6], [-6, 12]], '#2e2010', true);   // ragged loincloth
     K.O(-5.8, 8.6, 2.6, 3, '#4a3018', true);                                  // a pouch of stolen coins
     K.O(-5.2, 6.4, 1.1, 0.6, '#d4a830');
     K.L([[3, 10], [7, 13.5], [6, 17.4]], 2.8, skin);                          // near leg, bent
-    K.P([[4.4, 17], [10, 17.2], [10.5, 18.6], [4, 18.6]], dark);
-    K.teeth(8, 10.6, 17.2, -1, 2, '#c8c0a0');                                 // toe claws
+    K.P(nearFoot, dark);
+    if (!G.greave([7, 13.5], [6, 17.4], nearFoot, 2.8)) K.teeth(8, 10.6, 17.2, -1, 2, '#c8c0a0');   // bare feet: toe claws
     const hx = 4 + sway, hy = -8;
     K.P([[hx - 3, hy - 2], [hx - 19, hy - 9 + twitch], [hx - 15, hy - 5], [hx - 4, hy + 3]], skin, true);   // long ear swept back
     K.P([[hx - 4, hy - 1.5], [hx - 15, hy - 7.5 + twitch], [hx - 6, hy + 1.5]], mix(c, '#3a1010', 0.65));
@@ -1310,30 +1507,37 @@ const ENEMY_SHAPES = {
     K.eye(hx + 3.6, hy - 2.2, 1.7, '#ff9a1a', 0.35, pulse);
     K.P([[hx + 0.4, hy - 5.2], [hx + 7.6, hy - 3.2], [hx + 7, hy - 2], [hx + 0.6, hy - 3.6]], dark);   // heavy brow
     K.L([[hx - 3, hy - 3], [hx - 1, hy - 4]], 0.5, dark);                    // wrinkles
+    G.helm(hx, hy, 7.5, 7, hy - 4.2);
     const hd = [10 + jab, 1];
     K.L([[2 + sway, 0], [6, 3], hd], 2.4, skin);                              // near arm, jabbing
-    K.P([[hd[0] + 0.5, hd[1] - 1.2], [hd[0] + 9, hd[1] - 0.2], [hd[0] + 0.5, hd[1] + 1.1]], '#b8bcc4', true);   // notched dagger
-    K.P([[hd[0] + 4, hd[1] - 0.8], [hd[0] + 4.8, hd[1] - 0.2], [hd[0] + 5.6, hd[1] - 0.7]], '#1a1a1a');
-    K.L([[hd[0] - 0.4, hd[1] - 2.2], [hd[0] - 0.4, hd[1] + 2.2]], 1.4, '#3a2410');
+    G.bracer([6, 3], hd, 2.4);
+    if (!G.sword(hd[0], hd[1], -0.95))                                        // no weapon: it rakes with hooked claws
+      for (const [dx, dy] of [[3.2, -1.6], [3.6, -0.2], [3, 1.2]])
+        K.P([[hd[0] + 0.6, hd[1] + dy * 0.5 - 0.5], [hd[0] + dx, hd[1] + dy], [hd[0] + 0.8, hd[1] + dy * 0.5 + 0.4]], '#d8d0b0');
     K.O(hd[0], hd[1], 1.6, 1.6, skin);
   },
-  'Skeleton': (u, c, t, K) => {
+  'Skeleton': (u, c, t, K, f) => {
+    const G = foeGear(f, u, K);
     const bone = K.grad(mix(c, '#ffffff', 0.08), mix(c, '#3a3428', 0.58), -20, 18);
     const boneDark = mix(c, '#4a4030', 0.45);
     const rattle = Math.sin(t * 23) * 0.25;                                   // its bones clatter
     const chatter = Math.max(0, Math.sin(t * 9)) * 1.6;                       // the jaw snaps open and shut
-    const raise = Math.sin(t * 1.6) * 0.15;                                   // the sword sways
+    const raise = Math.sin(t * 1.6) * 0.15;                                   // the arm sways, ready to strike
     const glint = 0.7 + 0.3 * Math.sin(t * 13) * Math.sin(t * 2.3);
     K.P([[-6, -4], [3, -5], [4, 3], [2, 1], [0, 5], [-2, 2], [-4, 6], [-6, 2]], 'rgba(36,32,26,0.9)');   // grave rags
-    K.L([[-2, 10], [-5, 14], [-4, 17.6]], 2, boneDark);
-    K.L([[-1, 10], [3, 14], [3, 17.6]], 2.1, bone);                           // legs
+    K.L([[-2, 10], [-5, 14], [-4, 17.6]], 2, boneDark);                       // far leg, foot and knee
     K.L([[-5.8, 18], [-1.6, 18]], 1.3, boneDark);
-    K.L([[2, 18], [6.6, 18]], 1.4, bone);                                     // feet
     K.O(-5, 14, 1.2, 1.2, boneDark);
-    K.O(3, 14, 1.3, 1.3, bone);                                               // knees
+    G.greave([-5, 14], [-4, 17.6], [[-6.4, 17.2], [-1.4, 17.2], [-1.2, 18.7], [-6.6, 18.7]], 2, 0.6);
+    K.L([[-1, 10], [3, 14], [3, 17.6]], 2.1, bone);                           // near leg, foot and knee
+    K.L([[2, 18], [6.6, 18]], 1.4, bone);
+    K.O(3, 14, 1.3, 1.3, bone);
+    G.greave([3, 14], [3, 17.6], [[1.6, 17.2], [6.8, 17.3], [7, 18.7], [1.4, 18.7]], 2.1);
     K.L([[-1, -2], [-4, 4], [-3, 9]], 1.4, boneDark);                         // far arm
+    G.bracer([-4, 4], [-3, 9], 1.4, 0.6);
     K.L([[0, -4], [-2, 3], [-1, 10]], 2.1, bone);                             // spine
     for (const r of [-1, 2.5, 6]) K.L([[-1.6, r - 1], [3.2, r - 2.6], [6.4, r]], 1.5, bone);   // ribs
+    G.chest([[-3, -5], [3.8, -5.4], [7, 0.4], [6.8, 7], [-3.2, 7.4]], [[5, -3.4], [6.8, 6.6]], [0.5, -4.2, 3, 2.2]);   // worn over the bones
     K.O(-1, 10.5, 4, 2, bone, true);                                          // pelvis
     ctx.save();
     ctx.translate(rattle * u, 0);
@@ -1345,36 +1549,43 @@ const ENEMY_SHAPES = {
     K.O(5, -12.5, 2.5, 2.3, '#050505');                                       // eye socket
     K.eye(5.4, -12.4, 0.8, `rgba(255,40,40,${glint})`, 0, 1.4);               // a red glint deep inside
     K.P([[8.3, -10.4], [9.4, -8.8], [8.1, -8.6]], '#050505');                 // nose hole
+    G.helm(2, -12, 7, 6.6, -15.2, `rgba(255,40,40,${glint})`);
     ctx.restore();
     ctx.save();
     ctx.translate(9 * u, 1 * u);
     ctx.rotate(raise - 0.1);
     ctx.translate(-9 * u, -1 * u);
-    K.L([[1, -2], [5, 3], [9, 1]], 1.7, bone);                                // sword arm
-    K.P([[9, 0], [10.4, -1], [17.6, -13], [16, -13.8]], K.grad('#8a6038', '#4a2c14', -14, 0), true);   // rusted, notched blade
-    K.P([[13, -7.2], [13.8, -6.4], [14.2, -7.8]], '#1a1a1a');
-    K.L([[7.6, -0.6], [10.8, 2.4]], 1.6, '#2e2014');
+    K.L([[1, -2], [5, 3], [9, 1]], 1.7, bone);                                // near arm
+    G.bracer([5, 3], [9, 1], 1.7);
+    if (!G.sword(9, 1, -0.98))                                                // no weapon: long finger bones, clawing
+      for (const [dx, dy] of [[2.8, -2.2], [3.4, -0.6], [2.8, 1]])
+        K.L([[9, 1], [9 + dx * 0.55, 1 + dy * 0.5 - 0.5], [9 + dx, 1 + dy]], 0.7, bone);
+    K.O(9, 1, 1.1, 1.1, bone);                                                // knuckles
     ctx.restore();
   },
-  'Orc': (u, c, t, K) => {
+  'Orc': (u, c, t, K, f) => {
+    const G = foeGear(f, u, K);
     const skin = K.grad(mix(c, '#5a1a10', 0.28), mix(c, '#1a0604', 0.74), -16, 18);
     const dark = mix(c, '#120404', 0.76);
     const br = Math.sin(t * 2) * 0.8;                                         // heavy breathing
     const snarl = (Math.sin(t * 1.4) + 1) / 2;                                // the jaw works open and shut
-    const lift = Math.sin(t * 1.9) * 0.12;                                    // the axe bobs, ready to come down
+    const lift = Math.sin(t * 1.9) * 0.12;                                    // the arm bobs, ready to come down
     const pulse = 0.85 + 0.15 * Math.sin(t * 2.6);
-    K.L([[-5, 10], [-7, 14], [-7, 17]], 4, dark);
-    K.L([[3, 10], [5, 14], [5, 17]], 4.2, skin);                              // legs
-    K.P([[-10, 16.6], [-4.4, 16.6], [-4.2, 18.6], [-10.2, 18.6]], '#140c0a');
-    K.P([[2, 16.6], [8.6, 16.6], [8.8, 18.6], [1.8, 18.6]], '#1e1410');       // boots
+    const farFoot = [[-10, 16.6], [-4.4, 16.6], [-4.2, 18.6], [-10.2, 18.6]], nearFoot = [[2, 16.6], [8.6, 16.6], [8.8, 18.6], [1.8, 18.6]];
+    K.L([[-5, 10], [-7, 14], [-7, 17]], 4, dark);                             // far leg, bare foot
+    K.P(farFoot, mix(c, '#120404', 0.82));
+    G.greave([-7, 14], [-7, 17], farFoot, 4, 0.6);
+    K.L([[3, 10], [5, 14], [5, 17]], 4.2, skin);                              // near leg, bare foot
+    K.P(nearFoot, mix(c, '#1a0604', 0.62));
+    if (!G.greave([5, 14], [5, 17], nearFoot, 4.2)) K.teeth(6.2, 8.8, 16.8, -1, 2, '#c8b898');   // toe claws
     K.L([[-6, -1], [-9, 6], [-8, 10]], 3.6, dark);                            // far arm
+    G.bracer([-9, 6], [-8, 10], 3.6, 0.6);
     K.P([[-11, 12], [-12.5, 0], [-7, -6 - br], [7, -5 - br], [10, 3], [9, 12]], skin, true);   // hulking body
     K.L([[-6, -1], [-2, 2]], 0.6, 'rgba(255,170,150,0.35)');
     K.L([[1, 4.5], [5, 1.5]], 0.6, 'rgba(255,170,150,0.35)');                 // old scars
+    G.chest([[-11.6, 7.8], [-12.5, 0.4], [-7, -6 - br], [7, -5 - br], [9.9, 3], [9.7, 7.8]], [[7, -5 - br], [9.7, 7.6]], [-2, -5 - br, 6.5, 4.2]);
     K.P([[-11.6, 7.6], [9.6, 7.6], [9.8, 10.4], [-11.6, 10.4]], '#22140c');    // belt
     K.O(4, 9, 1.4, 1.2, '#cfc6b0');                                           // a bone buckle
-    K.O(-2, -5 - br, 7, 4.5, K.grad('#5a5a66', '#1e1e24', -10, -1), true);    // iron shoulder plate
-    for (const sx of [-6, -2.5, 1]) K.P([[sx, -7.6 - br], [sx + 1, -13 - br], [sx + 2.2, -8 - br]], '#6a6a76', true);   // spikes
     const hx = 8, hy = -8 - br;
     K.P([[hx - 6, hy - 3], [hx - 11, hy - 7.5], [hx - 4, hy - 5]], skin, true);   // pointed ear
     K.O(hx, hy, 7.5, 6.6, skin, true);                                        // head, thrust forward
@@ -1384,16 +1595,16 @@ const ENEMY_SHAPES = {
     K.teeth(hx + 2, hx + 7.6, hy + 2.4, 1.2, 5);
     K.P([[hx + 5.2, hy + 5 + snarl * 2], [hx + 6.2, hy - 1.6], [hx + 7.4, hy + 4.6 + snarl * 2]], '#f0ead8', true);   // tusk
     if (snarl > 0.5) K.O(hx + 3, hy + 6 + snarl * 2 + ((t * 0.9) % 1) * 6, 0.6, 1.1, 'rgba(220,230,240,0.55)');   // drool
+    G.helm(hx, hy, 7.5, 6.6, hy - 3.4);
     ctx.save();
     ctx.translate(10 * u, 4 * u);
     ctx.rotate(lift);
     ctx.translate(-10 * u, -4 * u);
-    K.L([[3, -2 - br], [10, 4]], 4, skin);                                    // arm
-    K.L([[10, 5], [14, -14]], 2, '#3a2412');                                  // axe haft
-    K.P([[12.6, -12], [21, -17], [22.5, -6], [14.4, -7]], K.grad('#b0b4bc', '#3a3e46', -17, -6), true);   // axe head
-    K.P([[21.2, -12.6], [19.6, -11.6], [21.6, -10.4]], '#141414');            // a notch in the edge
-    K.O(20, -8.6, 1.3, 0.8, 'rgba(110,8,8,0.85)');                            // old blood
+    K.L([[3, -2 - br], [10, 4]], 4, skin);                                    // near arm
+    G.bracer([6.5, 1 - br / 2], [10, 4], 4);
+    G.sword(10, 4.6, -1.36);                                                  // a sword held high, or just a big fist
     K.O(10, 4.6, 2.4, 2.4, skin);                                             // fist
+    K.L([[11.2, 3], [12, 4.6], [11.2, 6.2]], 0.5, 'rgba(0,0,0,0.45)');        // knuckles
     ctx.restore();
   },
   'Troll': (u, c, t, K) => {
@@ -1425,46 +1636,62 @@ const ENEMY_SHAPES = {
     K.L([[4, -1], [10 + swing * 0.5, 8], [13 + swing, 16]], 4.6, skin);       // near arm
     K.O(13.5 + swing, 16.6, 3, 2.2, skin, true);                              // knuckles on the floor
   },
-  'Dark Knight': (u, c, t, K) => {
-    const steel = K.grad(mix(c, '#9aa0b0', 0.2), mix(c, '#050508', 0.78), -20, 18);
-    const dark = mix(c, '#050508', 0.74), rim = mix(c, '#dde0ee', 0.4);
-    const glow = 0.6 + 0.4 * Math.sin(t * 3);                                 // the eyes behind the visor pulse
+  // a fallen knight risen from the grave: with no gear, a gaunt corpse in a black quilted gambeson
+  // and a tattered cape, a cursed horn growing from its skull. Whatever it carries goes on top.
+  'Dark Knight': (u, c, t, K, f) => {
+    const G = foeGear(f, u, K);
+    const cloth = K.grad(mix(c, '#34323f', 0.5), mix(c, '#050508', 0.82), -6, 16);
+    const dark = mix(c, '#050508', 0.8);
+    const dead = K.grad(mix(c, '#9a9cac', 0.35), mix(c, '#1a1a22', 0.55), -18, -4);   // grey, dead skin
+    const glow = 0.6 + 0.4 * Math.sin(t * 3);                                 // the burning eyes pulse
     const flutter = k => Math.sin(t * 3 + k) * 1.4;
+    const guard = Math.sin(t * 1.5) * 0.08;                                   // its arm rises and falls, ready to strike back
     K.P([[-4, -6], [2, -6], [-1, 12], [-4 + flutter(1), 15], [-7 + flutter(2), 12], [-10 + flutter(3), 16], [-12 + flutter(4), 8]], '#16060e', true);   // tattered cape
-    K.L([[-3, 10], [-5, 14], [-5, 17]], 4, dark);
-    K.L([[2, 10], [4, 14], [4, 17]], 4.2, steel);                             // armored legs
-    K.P([[-8, 16.6], [-3, 16.6], [-2.8, 18.6], [-8.4, 18.6]], dark);
-    K.P([[1.8, 16.6], [8, 17], [8.2, 18.6], [1.6, 18.6]], dark);              // sabatons
-    ctx.save();                                                               // a dark sword raised behind the shield
-    ctx.translate(-2 * u, -1 * u);
-    ctx.rotate(Math.sin(t * 1.5) * 0.08);
-    ctx.translate(2 * u, 1 * u);
-    K.L([[-2, -1], [-4, -8]], 3.2, dark);
-    K.P([[-4.6, -8], [-3.4, -8.6], [2, -24], [1, -24.4]], K.grad('#5a6070', '#16181e', -24, -8), true);
-    K.L([[-3.8, -9], [1.4, -23.8]], 0.4, 'rgba(255,40,40,0.75)');            // a red edge
-    K.L([[-6.4, -7.2], [-1.6, -9.4]], 1.2, '#2a2a30');
-    ctx.restore();
-    K.P([[-7, -3], [6, -4], [7, 3], [6.5, 11], [-6, 11]], steel, true);       // plate armor
-    K.L([[-6, 3], [6.6, 2.4]], 0.6, 'rgba(0,0,0,0.5)');
-    K.L([[-6, 7], [6.6, 6.6]], 0.6, 'rgba(0,0,0,0.5)');
-    K.O(-1, -3, 6, 4.4, steel, true);                                         // spiked shoulder plate
-    for (const sx of [-4.5, -1]) K.P([[sx, -6], [sx + 1, -10.5], [sx + 2, -6.4]], dark, true);
+    const farFoot = [[-8, 16.6], [-3, 16.6], [-2.8, 18.6], [-8.4, 18.6]], nearFoot = [[1.8, 16.6], [8, 17], [8.2, 18.6], [1.6, 18.6]];
+    K.L([[-3, 10], [-5, 14], [-5, 17]], 3.8, dark);                           // far leg, a rag-wrapped foot
+    K.P(farFoot, '#0c0a10');
+    G.greave([-5, 14], [-5, 17], farFoot, 3.8, 0.55);
+    K.L([[2, 10], [4, 14], [4, 17]], 4, cloth);                               // near leg
+    K.P(nearFoot, '#16141c');
+    K.L([[2.6, 17.2], [7.2, 17.6]], 0.45, 'rgba(0,0,0,0.6)');                 // the rags wound round it
+    G.greave([4, 14], [4, 17], nearFoot, 4);
+    K.L([[-2, -2], [-5, 4], [-4, 9]], 3, dark);                               // far arm
+    K.O(-4, 9.4, 1.5, 1.5, '#1a1a22');
+    G.bracer([-5, 4], [-4, 9], 3, 0.55);
+    K.P([[-7, -3], [6, -4], [7, 3], [6.5, 11], [-6, 11]], cloth, true);       // a black quilted gambeson
+    for (const qx of [-3.4, 0, 3.4]) K.L([[qx, -3.4], [qx + 0.5, 10.6]], 0.45, 'rgba(0,0,0,0.5)');
+    for (const qy of [1, 5.5]) K.L([[-6.6, qy], [6.8, qy - 0.4]], 0.45, 'rgba(0,0,0,0.5)');
+    G.chest([[-7, -3], [6, -4], [7, 3], [6.7, 9.2], [-6.3, 9.4]], [[6, -4], [6.8, 9]], [-1, -3, 5.6, 4.2]);
+    K.L([[-6.3, 9.6], [6.6, 9.2]], 1.3, '#3a0a12');                           // a blood-red sash
     const hx = 1.5, hy = -11;
-    K.P([[hx - 3, hy - 5], [hx - 11, hy - 15], [hx - 6, hy - 9.5], [hx - 1, hy - 6.4]], '#0c0c10', true);   // horn sweeping back
-    K.O(hx, hy, 7, 7, steel, true);                                           // helm
-    K.P([[hx + 2.4, hy - 4.6], [hx + 8.4, hy - 2.6], [hx + 8.8, hy + 3.6], [hx + 3, hy + 5]], steel, true);   // face plate
-    K.P([[hx + 3.4, hy - 1.6], [hx + 8.7, hy - 1.2], [hx + 8.7, hy + 0.2], [hx + 3.4, hy - 0.1]], '#000');   // visor slit
-    K.eye(hx + 6.8, hy - 0.7, 0.9, `rgba(255,40,30,${glow})`, 0, glow * 1.6);
-    for (let k = 0; k < 3; k++) {                                             // embers drifting off the visor
+    K.L([[0.4, -7.6], [1.4, -4.2]], 3, dark);                                 // neck
+    K.P([[hx - 3, hy - 5], [hx - 11, hy - 15], [hx - 6, hy - 9.5], [hx - 1, hy - 6.4]], '#0c0c10', true);   // a cursed horn sweeping back
+    K.O(hx, hy, 6.4, 6.8, dead, true);                                        // a gaunt, dead head
+    K.P([[hx + 2.6, hy + 2], [hx + 6.6, hy + 1.2], [hx + 6, hy + 5.6], [hx + 2.4, hy + 6]], dead, true);   // long jaw
+    K.L([[hx + 1, hy + 1.4], [hx + 3, hy + 3.6]], 0.6, 'rgba(0,0,0,0.5)');    // a sunken cheek
+    K.P([[hx + 3.2, hy + 3.6], [hx + 6.4, hy + 3.2], [hx + 6.2, hy + 4.4], [hx + 3.4, hy + 4.6]], '#050505');   // a grim mouth
+    K.teeth(hx + 3.6, hx + 6.2, hy + 3.4, 0.8, 4, '#c8c4b8');
+    K.P([[hx + 6, hy - 1.4], [hx + 7.4, hy + 1.2], [hx + 6, hy + 1.4]], dead);  // nose
+    K.P([[hx + 0.8, hy - 3.6], [hx + 6.6, hy - 2.8], [hx + 6.4, hy - 1.8], [hx + 1, hy - 2.2]], dark);   // heavy brow
+    K.O(hx + 4.2, hy - 0.8, 1.9, 1.4, '#000');                                // a sunken eye socket
+    K.eye(hx + 4.4, hy - 0.8, 1, `rgba(255,40,30,${glow})`, 0, glow * 1.6);
+    G.helm(hx, hy, 6.4, 6.8, hy - 2.8, `rgba(255,40,30,${glow})`);
+    for (let k = 0; k < 3; k++) {                                             // embers drifting off its eyes
       const q = (t * 0.6 + k / 3) % 1;
-      K.O(hx + 7 + q * 2, hy - 1 - q * 10, 0.5 * (1 - q), 0.5 * (1 - q), `rgba(255,80,40,${(1 - q) * 0.65})`);
+      K.O(hx + 5 + q * 2, hy - 1 - q * 10, 0.5 * (1 - q), 0.5 * (1 - q), `rgba(255,80,40,${(1 - q) * 0.65})`);
     }
-    K.P([[6, -5], [14.5, -5], [14.5, 6], [10.2, 16], [6, 6]], K.grad(mix(c, '#556070', 0.3), '#08080c', -5, 16), true);   // kite shield
-    ctx.strokeStyle = rim;
-    ctx.lineWidth = 0.6 * u;
-    ctx.stroke();
-    K.O(10.2, 1.5, 2.8, 1.6, '#5a0808');
-    K.eye(10.2, 1.5, 1, `rgba(255,50,30,${0.6 + glow * 0.4})`, 0, 1);         // a red eye painted on it
+    ctx.save();
+    ctx.translate(2 * u, -3 * u);
+    ctx.rotate(guard);
+    ctx.translate(-2 * u, 3 * u);
+    const hd = [9.4, -2.6];
+    K.L([[2, -3], [5.6, 2.4], hd], 3.2, cloth);                               // near arm, raised to strike back
+    G.bracer([5.6, 2.4], hd, 3.2);
+    if (!G.sword(hd[0], hd[1], -1.15))                                        // no weapon: long black claws
+      for (const [dx, dy] of [[2.8, -2.8], [3.4, -1.2], [3, 0.4]])
+        K.L([hd, [hd[0] + dx * 0.55, hd[1] + dy * 0.6 - 0.5], [hd[0] + dx, hd[1] + dy]], 0.7, '#0e0e14');
+    K.O(hd[0], hd[1], 1.7, 1.7, '#1e1e28');                                   // hand
+    ctx.restore();
   },
   'Wraith': (u, c, t, K) => {
     ctx.translate(0, hoverOf('Wraith', t) * u);
@@ -1522,8 +1749,6 @@ const ENEMY_SHAPES = {
     K.L([[-3, 4], [3, 5]], 0.6, 'rgba(0,0,0,0.45)');
     K.L([[3, -3], [9, 3], [11, 6]], 4.6, fur);                                // near arm
     K.O(11.5, 7, 2.8, 2.6, dark, true);                                       // fist
-    K.O(8.8, 3.6, 2.4, 1.6, '#2a2a30', true);                                 // spiked bracer
-    for (const sx of [7.4, 9.4]) K.P([[sx, 2.4], [sx + 0.6, 0.2], [sx + 1.2, 2.4]], '#7a7a86');
     ctx.save();
     ctx.translate(4 * u, -8 * u);
     ctx.rotate(nod * 0.06);
@@ -1595,18 +1820,16 @@ const ENEMY_SHAPES = {
     const skin = K.grad(mix(c, '#5a1410', 0.22), mix(c, '#140202', 0.78), -18, 18);
     const dark = mix(c, '#100202', 0.78);
     const br = Math.sin(t * 1.7) * 0.9;                                       // heavy breathing
-    const tap = Math.sin(t * 1.3) * 0.1;                                      // the club sways, ready to fall
+    const tap = Math.sin(t * 1.3) * 0.1;                                      // the raised fist sways, ready to fall
     const glow = 0.7 + 0.3 * Math.sin(t * 2.4);
     K.P([[-6, -8], [-17, 14], [-13, 16.5], [-9, 14.5], [-5, 17]], '#26050a', true);   // tattered royal cloak
-    ctx.save();
-    ctx.translate(-3 * u, 0);
+    ctx.save();                                                               // a huge fist cocked back to smash down
+    ctx.translate(-2 * u, -4 * u);
     ctx.rotate(tap);
-    ctx.translate(3 * u, 0);
-    K.L([[-3, 0], [-12, -18]], 3, '#4a2a12');                                 // club, raised behind him
-    K.O(-13.5, -20.5, 4.4, 5.6, '#3a200c', true);
-    for (const [nx, ny, dx, dy] of [[-17, -22, -2, -1], [-16, -17, -2, 1], [-10, -23, 1.6, -1.4], [-12, -15.5, 0, 2]])
-      K.L([[nx, ny], [nx + dx, ny + dy]], 0.6, '#9aa0aa');                    // nails driven through it
-    K.L([[-2, -4 - br], [-4, 1]], 4.6, dark);                                 // the arm holding it
+    ctx.translate(2 * u, 4 * u);
+    K.L([[-2, -4 - br], [-10, -11], [-9.5, -18]], 4.6, dark);                 // the far arm, raised
+    K.O(-9.5, -19.6, 3.6, 3.4, dark, true);                                   // fist
+    K.L([[-12, -21], [-7.4, -21.8]], 0.6, 'rgba(0,0,0,0.6)');                 // knuckles
     ctx.restore();
     K.L([[-4, 11], [-6, 17]], 5.2, dark);
     K.L([[4, 11], [6, 17]], 5.4, skin);                                       // stumpy legs
@@ -1677,7 +1900,7 @@ function drawEnemy(f, x, y, size, dead, t) {
       ctx.translate(0, -g);
     }
   }
-  if (paint) paint(u, f.color, dead ? f.fellAt + f.animPhase : at, enemyKit(u));
+  if (paint) paint(u, f.color, dead ? f.fellAt + f.animPhase : at, enemyKit(u), f);
   else drawFighter(0, 0, f.color, size, false);                              // any enemy without a shape yet
   ctx.restore();
 }
@@ -2078,9 +2301,8 @@ function drawArenaLife(t, arena, boss) {
 // ======================================================================
 // ---- your character in combat, built from the gear you wear ----
 // Every slot shows: weapon, helmet, chest, bracers and greaves each look different as Basic,
-// Iron or Steel. Wear all four armor pieces and you become a knight: a blue cape and a tabard
-// with a gold cross (and a plume on a steel helm). A full Steel set adds gold trim.
-// Enchanted gear glows in its enchantment's color.
+// Iron or Steel. Wear all four armor pieces with a steel helm and a knight's plume streams
+// from it. A full Steel set adds gold trim. Enchanted gear glows in its enchantment's color.
 // ======================================================================
 const ENCH_GLOW = {flaming: '#ff7a1a', vampiric: '#e0203a', balanced: '#e8f0ff', giantslayer: '#ffd040', swift: '#5fe0ff',
   thorns: '#8fe05a', mending: '#5aff8a', fortitude: '#ff6a6a', purity: '#ffffff', fleetfoot: '#8ad8ff', fortune: '#ffcc33'};
@@ -2091,7 +2313,7 @@ const LOOK = {
   dirt: 'rgba(55,38,20,0.38)', bruise: 'rgba(110,60,120,0.4)',
   leather: '#8a5a32', leatherDark: '#5e3a1e', cloth: '#d8c8a0', clothDark: '#a8946a',
   iron: '#9aa0aa', ironDark: '#5e646e', steel: '#e4eaf2', steelDark: '#8f9aab', gold: '#e8b830',
-  cape: '#1f4fa8', capeDark: '#163a7e', grip: '#4a2e1a'
+  plume: '#1f4fa8', grip: '#4a2e1a'
 };
 const tierOf = k => worn[k] ? worn[k].tier : -1;   // -1 = nothing in that slot
 const HERO_SCALE = 1.3;                            // how much larger than its drawing your character appears
@@ -2145,21 +2367,6 @@ function drawHero(x, y, t) {
 
   // shadow on the floor
   O(0, 30, 16, 4, 'rgba(0,0,0,0.45)');
-
-  // -- cape (knights only), trailing behind you
-  if (knight) {
-    const sw = k => Math.sin(t * 2 + k) * 1.6;
-    ctx.fillStyle = sheen(x - 19, x + 3, LOOK.cape, LOOK.capeDark, '#3a6cc8');
-    ctx.beginPath();
-    ctx.moveTo(x - 4, y - 13 + b);
-    ctx.lineTo(x + 2, y - 13 + b);
-    ctx.lineTo(x - 1, y + 26);
-    ctx.quadraticCurveTo(x - 8, y + 29 + sw(1), x - 15 + sw(2), y + 27);
-    ctx.quadraticCurveTo(x - 20 + sw(3), y + 10, x - 8 + sw(4) * 0.5, y - 7 + b);
-    ctx.closePath();
-    ctx.fill();
-    if (shining) { ctx.strokeStyle = LOOK.gold; ctx.lineWidth = 1.2; ctx.stroke(); }
-  }
 
   // -- legs, mid-stride (greaves)
   const LEGS = {far: [[-1.5, 6], [-4.5, 16], [-6, 26]], near: [[2, 6], [5, 16], [6, 26]]};   // hip, knee, ankle
@@ -2280,12 +2487,6 @@ function drawHero(x, y, t) {
     R(-5.6, 5, 11.8, 2.8, LOOK.leatherDark);                                  // a proper belt
     R(3.6, 5.2, 2.4, 2.4, shining ? LOOK.gold : '#b8a060');
   }
-  if (knight) {                                                               // tabard with a gold cross
-    P([[0.5, -12.6 + b], [5.6, -12.8 + b], [6.8, -6 + b], [6.4, 15], [1.2, 15]], LOOK.cape);
-    R(3, -10 + b, 1.5, 12, LOOK.gold);
-    R(1.4, -6 + b, 4.8, 1.5, LOOK.gold);
-    if (shining) { ctx.strokeStyle = LOOK.gold; ctx.lineWidth = 0.7; ctx.beginPath(); trace([[0.5, -12.6 + b], [5.6, -12.8 + b], [6.8, -6 + b], [6.4, 15], [1.2, 15]]); ctx.closePath(); ctx.stroke(); }
-  }
   if (C === 2) O(0.5, -11.5 + b, 5.6, 4.2, metalOf(2, -6, 7));               // shoulder plate
 
   // -- head, in profile
@@ -2330,7 +2531,7 @@ function drawHero(x, y, t) {
   });
   if (knight && H === 2) {                                                    // the knight's plume, streaming back
     const sw = Math.sin(t * 2.4) * 1.2;
-    fill(LOOK.cape, () => { ctx.moveTo(x + 1, y - 31.5 + b); ctx.quadraticCurveTo(x - 4, y - 38 + b, x - 15 + sw, y - 35 + b); ctx.quadraticCurveTo(x - 8, y - 31.5 + b, x - 2, y - 29.5 + b); ctx.closePath(); });
+    fill(LOOK.plume, () => { ctx.moveTo(x + 1, y - 31.5 + b); ctx.quadraticCurveTo(x - 4, y - 38 + b, x - 15 + sw, y - 35 + b); ctx.quadraticCurveTo(x - 8, y - 31.5 + b, x - 2, y - 29.5 + b); ctx.closePath(); });
     fill('#3a6cc8', () => { ctx.moveTo(x + 0.5, y - 31.8 + b); ctx.quadraticCurveTo(x - 4, y - 36.5 + b, x - 11 + sw, y - 34.6 + b); ctx.quadraticCurveTo(x - 6, y - 32.8 + b, x - 1, y - 30.8 + b); ctx.closePath(); });
   }
 
@@ -2674,7 +2875,8 @@ function killFoe(t) {
   }
   if (t.split) {
     // foes is the encounter's group, so the halves stay if you flee and come back
-    foes.push(...[0, 1].map(() => ({...LITTLE_SLIME, max: LITTLE_SLIME.hp, bonus: 0, def: 0, items: []})));
+    // piece: which half of the big slime's half-skull each little one carries off
+    foes.push(...[0, 1].map(piece => ({...LITTLE_SLIME, max: LITTLE_SLIME.hp, bonus: 0, def: 0, items: [], piece})));
     msg.textContent += ` The ${t.name} splits in two!`;
   }
   showGear();
@@ -2941,7 +3143,8 @@ c.addEventListener('pointerdown', e => {
     current = hit;
     foes = hit.group;
     foes.forEach(f => f.fresh = true); // a new fight: the Minotaur gets to charge again
-    // Pathfinder: an enemy you spotted before walking into it can be ambushed (once)
+    // Pathfinder: your first hit in the fight is an ambush (with Pathfinder you always see an
+    // enemy before you can walk into it, so every encounter gets one; a miss doesn't use it up)
     hit.ambushReady = !!(hit.spottedEarly && perkN('pathfinder') && !hit.ambushed);
     // switch to the combat screen
     combatView = true;
