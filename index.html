@@ -85,12 +85,14 @@ const BASICS = ['attack', 'vitality', 'focus'];
 const RARITY_WEIGHT = {common: 10, uncommon: 6, rare: 3}; // how often a perk is dealt
 const OWNED_WEIGHT_MULT = 1.5;  // specials you already have turn up a bit more often
 const REDRAW_COST = 10;         // coins; each extra redraw in the same level-up costs this much more
-const ATTACK_DMG = 3;                                // Attack: +3 damage
-const VITALITY_HP = 30, VITALITY_BLOCK_KEEP = 0.85;  // Vitality: +30 max HP, Block lets 15% less through
-const FOCUS_CRIT = 0.04, FOCUS_MISS_KEEP = 0.90;     // Focus: +4% crit, miss chance x0.90
-const EXEC_THRESHOLD = 0.30, EXEC_TOP = 0.60;        // Executioner: 30%, 40%, 45%... vs enemies under 30% HP
-const BASH_TOP = 0.30;                               // Shield Bash: stun 20%, 25%, 28%...
-const PURSE_TOP = 0.40;                              // Tight Purse: gold +20%, 27%, 30%...
+const ATTACK_DMG = 2;                                // Attack: +2 damage
+const VITALITY_HP = 25, VITALITY_BLOCK_KEEP = 0.85;  // Vitality: +25 max HP, Block lets 15% less through
+const FOCUS_CRIT = 0.03, FOCUS_MISS_KEEP = 0.92;     // Focus: +3% crit, miss chance x0.92
+const AMBUSH_TOP = 1.0;                              // Pathfinder: first hit on a spotted enemy +50%, 67%, 75%...
+const EXEC_THRESHOLD = 0.50, EXEC_TOP = 1.0;         // Executioner: +50%, 67%, 75%... vs enemies under 50% HP
+const ANTIDOTE_HEAL_TOP = 20;                        // Antidote: potions heal +10, 13, 15...
+const BASH_TOP = 0.30, BASH_DMG_TOP = 12;            // Shield Bash: stun 20%, 25%, 28%...; bash 4, 6, 7...
+const PURSE_TOP = 0.60;                              // Tight Purse: gold +30%, 40%, 45%...
 
 // k = how many times the perk is taken; each helper defaults to your current count
 const perkN = id => perks[id] || 0;
@@ -105,6 +107,10 @@ const poisonScale = (k = perkN('antidote')) => 2 / (k + 2);
 const poisonDmg = (k = perkN('antidote')) => Math.max(1, Math.round(POISON_DMG * poisonScale(k)));
 const poisonTurns = (k = perkN('antidote')) => Math.max(1, Math.round(POISON_TURNS * poisonScale(k)));
 const stunChance = (k = perkN('shieldbash')) => STUN_CHANCE + curve(BASH_TOP, 2, k);
+const bashDmg = (k = perkN('shieldbash')) => Math.round(curve(BASH_DMG_TOP, 2, k));
+const ambushBonus = (k = perkN('pathfinder')) => curve(AMBUSH_TOP, 1, k);
+const potionBonus = (k = perkN('antidote')) => Math.round(curve(ANTIDOTE_HEAL_TOP, 1, k));
+const potionHeal = () => POTION_HEAL + potionBonus();
 const purseBonus = (k = perkN('purse')) => curve(PURSE_TOP, 1, k);
 
 // card = short text on the button, info = the full sentence under the cards (k = count after taking it)
@@ -119,17 +125,17 @@ const PERKS = {
     card: k => `Crit ${pct(critChance(k))}`,
     info: k => `Crit chance ${pct(critChance(k))}, and you miss ${pct(1 - missKeep(k))} less often.`},
   pathfinder: {name: 'Pathfinder', rarity: 'uncommon',
-    card: k => `See ${sight(k)} tiles`,
-    info: k => `See ${sight(k)} tiles around you, and spot enemies in sight before you meet them.`},
+    card: k => `See ${sight(k)}, ambush +${pct(ambushBonus(k))}`,
+    info: k => `See ${sight(k)} tiles around you and spot enemies in sight. Your first hit on an enemy you spotted first deals ${pct(ambushBonus(k))} more.`},
   executioner: {name: 'Executioner', rarity: 'uncommon',
     card: k => `+${pct(execBonus(k))} finishers`,
     info: k => `Deal ${pct(execBonus(k))} more damage to enemies under ${pct(EXEC_THRESHOLD)} HP.`},
   antidote: {name: 'Antidote', rarity: 'uncommon',
-    card: k => `Poison ${poisonDmg(k)} x ${poisonTurns(k)}`,
-    info: k => `Poison deals ${poisonDmg(k)} damage for ${poisonTurns(k)} turns (normally ${POISON_DMG} for ${POISON_TURNS}).`},
+    card: k => `Potions +${potionBonus(k)}, poison less`,
+    info: k => `Potions heal ${potionBonus(k)} more. Poison deals ${poisonDmg(k)} damage for ${poisonTurns(k)} turns (normally ${POISON_DMG} for ${POISON_TURNS}).`},
   shieldbash: {name: 'Shield Bash', rarity: 'uncommon',
-    card: k => `Block stun ${pct(stunChance(k))}`,
-    info: k => `Each hit on your Block has a ${pct(stunChance(k))} chance to stun the attacker.`},
+    card: k => `Bash ${bashDmg(k)}, stun ${pct(stunChance(k))}`,
+    info: k => `When you Block, you bash the front enemy for ${bashDmg(k)}, and each hit on your shield has a ${pct(stunChance(k))} chance to stun.`},
   secondwind: {name: 'Second Wind', rarity: 'rare',
     card: k => '+1 save',
     info: k => 'The next blow that would kill you leaves you at 1 HP instead. Used up when it saves you.'},
@@ -199,7 +205,7 @@ const ENEMIES_PER_FLOOR = [8, 8, 9, 9, 9]; // plus the stairs guard / boss
 const FLOOR_ZONES = [[0, 1], [1, 1], [2, 3], [3, 4], [4, 4]];
 let floor = 0, map = [];
 const colors = {'#': '#555', '.': '#222', 'S': '#222', 'E': '#fc3', 'D': '#3cf',
-                'M': '#a6f', 'N': '#f6c', 'X': '#2cb', 'C': '#c80'};
+                'M': '#a6f', 'N': '#a6f', 'X': '#2cb', 'C': '#c80'};
 const FOG = '#000';
 const roll = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
 const shuffle = a => {
@@ -320,14 +326,14 @@ let shopStock = [], shopTitle = '';
 const types = [
   {name: 'Bat',      zone: 0, hp: 16,  dmg: [3, 7],   gold: [2, 4],   color: '#98a', evasion: 0.30},
   {name: 'Slime',    zone: 0, hp: 28,  dmg: [2, 6],   gold: [2, 5],   color: '#6c6', split: true},
-  {name: 'Goblin',   zone: 1, hp: 45,  dmg: [5, 9],   gold: [4, 7],   color: '#e94', gearTier: 0, thief: true},
+  {name: 'Goblin',   zone: 1, hp: 45,  dmg: [5, 9],   gold: [4, 7],   color: '#ee4', gearTier: 0, thief: true},
   {name: 'Skeleton', zone: 1, hp: 50,  dmg: [6, 10],  gold: [4, 8],   color: '#ddd', gearTier: 1, reassemble: true, minFloor: 2},
   {name: 'Orc',      zone: 2, hp: 70,  dmg: [8, 13],  gold: [5, 8],  color: '#c33', gearTier: 1, armorMax: 2, bloodlust: 4},
   {name: 'Troll',    zone: 2, hp: 100, dmg: [10, 16], gold: [6, 9],  color: '#a52', regen: 6},
   {name: 'Dark Knight', zone: 3, hp: 85, dmg: [11, 16], gold: [6, 10], color: '#668', gearTier: 2, armorMax: 3, riposte: true},
-  {name: 'Wraith',   zone: 3, hp: 75,  dmg: [12, 18], gold: [6, 9],  color: '#9cf', drain: 0.25},
-  {name: 'Minotaur', zone: 4, hp: 130, dmg: [15, 22], gold: [7, 11], color: '#853', charge: true},
-  {name: 'Wyvern',   zone: 4, hp: 110, dmg: [14, 21], gold: [7, 10], color: '#3a7', poison: true}
+  {name: 'Wraith',   zone: 3, hp: 75,  dmg: [12, 18], gold: [6, 9],  color: '#bbf', drain: 0.25},
+  {name: 'Minotaur', zone: 4, hp: 130, dmg: [15, 22], gold: [7, 11], color: '#35b', charge: true},
+  {name: 'Wyvern',   zone: 4, hp: 110, dmg: [14, 21], gold: [7, 10], color: '#d4a', poison: true}
 ];
 // special abilities (set on each enemy type above):
 //   evasion    - your chance to miss it (instead of PLAYER_MISS)
@@ -518,7 +524,7 @@ function renderShop() {
           : maxPotions < it.from ? `, needs ${BAGS.find(b => b.to === it.from).name} first)` : ')')
         : it.type === 'satchel'
           ? ` (carry ${BAG_SLOTS + 1} scrolls` + (bagSlots > BAG_SLOTS ? ', owned)' : ')')
-          : ` (+${POTION_HEAL} HP, ${shopPotionsLeft} left` +
+          : ` (+${potionHeal()} HP, ${shopPotionsLeft} left` +
             (potions >= maxPotions ? ', your bag is full)' : ')');
     const off = !canBuy(it) ? 'disabled' : '';
     return `<button data-i="${i}" ${off}>${it.name}${note} - ${it.price}c</button>`;
@@ -793,6 +799,7 @@ function draw() {
   }));
   // Pathfinder spots enemies in sight before you bump into them
   const spotted = e => perkN('pathfinder') && inSight(e.x, e.y);
+  enemies.forEach(e => { if (spotted(e) && e !== current) e.spottedEarly = true; }); // you can ambush it
   enemies.filter(e => (e.seen || e.boss || spotted(e)) && !e.dead && visible(e.x, e.y)).forEach(e => {
     if (!e.group) e.group = makeGroup(e.zone);
     ctx.fillStyle = e.group.find(f => f.hp > 0)?.color || e.group[0].color;
@@ -1024,13 +1031,19 @@ function strike(t, heavy, label) {
   if (heavy) dmg = Math.round(dmg * HEAVY_MULT);
   const finisher = perkN('executioner') && t.hp < t.max * EXEC_THRESHOLD;
   if (finisher) dmg = Math.round(dmg * (1 + execBonus()));
+  const ambush = current && current.ambushReady;
+  if (ambush) {
+    current.ambushReady = false;
+    current.ambushed = true;
+    dmg = Math.round(dmg * (1 + ambushBonus()));
+  }
   const giant = t.max >= GIANT_HP && enchSum('giantslayer') > 0;
   if (giant) dmg = Math.round(dmg * (1 + enchSum('giantslayer')));
   if (result === 'crit') { dmg *= PLAYER_CRIT_MULT; run.crits++; }
   run.biggest = Math.max(run.biggest, dmg);
   msg.textContent += label + (result === 'crit' ? 'CRITICAL HIT! ' : '') +
     (heavy ? `You smash ${t.name} for ${dmg}.` : `You hit ${t.name} for ${dmg}.`) +
-    (finisher ? ' (Executioner)' : '') + (giant ? ' (Giantslayer)' : '');
+    (ambush ? ' (Ambush)' : '') + (finisher ? ' (Executioner)' : '') + (giant ? ' (Giantslayer)' : '');
   if (result === 'crit' && t.regen && dmg < t.hp) {
     t.noRegen = true;
     msg.textContent += ` The ${t.name}'s wounds stop closing.`;
@@ -1055,7 +1068,13 @@ function act(kind) {
   if (over || phase !== 'fight') return;
   if (kind === 'block') {
     msg.textContent = 'You raise your guard.';
-    foesAttack(blockMult(), true);
+    const front = foes.find(f => f.hp > 0);
+    if (perkN('shieldbash') && front) {
+      msg.textContent += ` You bash the ${front.name} for ${Math.min(bashDmg(), front.hp)}.`;
+      damageFoe(front, bashDmg(), false);
+    }
+    if (foes.some(f => f.hp > 0)) foesAttack(blockMult(), true);
+    else endFight();
     draw();
     return;
   }
@@ -1090,7 +1109,7 @@ potionBtn.onclick = () => {
   if (p.hp === p.max && !poison) { msg.textContent = 'Already at full health.'; return; }
   potions--;
   run.potions++;
-  const heal = Math.min(POTION_HEAL, p.max - p.hp);
+  const heal = Math.min(potionHeal(), p.max - p.hp);
   p.hp += heal;
   msg.textContent = `You drink a potion and heal ${heal}.`;
   if (poison) {
@@ -1200,6 +1219,8 @@ c.addEventListener('pointerdown', e => {
     current = hit;
     foes = hit.group;
     foes.forEach(f => f.fresh = true); // a new fight: the Minotaur gets to charge again
+    // Pathfinder: an enemy you spotted before walking into it can be ambushed (once)
+    hit.ambushReady = !!(hit.spottedEarly && perkN('pathfinder') && !hit.ambushed);
     phase = 'choice';
     choice.hidden = false;
     const live = foes.filter(f => f.hp > 0);
