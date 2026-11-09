@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Crawlspace</title>
 <link rel="apple-touch-icon" href="goblin-icon.png">
@@ -6,36 +7,132 @@
   button { font-size: 18px; padding: 10px 20px; }
   #shop button { font-size: 14px; padding: 8px 12px; margin: 3px 0; }
   canvas { touch-action: manipulation; }
+  #summary {
+    box-sizing: border-box; width: 288px; margin-top: 8px; padding: 14px 16px;
+    background: #111; color: #ddd; font: 14px/1.4 sans-serif;
+    border-top: 4px solid #c33;
+  }
+  #summary.won { border-top-color: #fc3; }
+  #summary h2 { margin: 0; font-size: 20px; color: #fff; }
+  #summary .cause { margin: 2px 0 10px; color: #aaa; }
+  #summary dl { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; margin: 0 0 10px; }
+  #summary dt { color: #aaa; }
+  #summary dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; color: #fff; }
+  #summary .kills { margin: 0 0 12px; color: #aaa; font-size: 13px; }
+  #summary button { width: 100%; }
+  [hidden] { display: none !important; }
+  /* level-up cards: 3 perks + Redraw in a 2-column grid, rarity shown on the left edge */
+  #levelBox { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; width: 288px; }
+  #levelBox button {
+    font-size: 15px; padding: 6px 8px; text-align: left;
+    background: #eee; border: 1px solid #999; border-left: 5px solid #888;
+  }
+  #levelBox button small { display: block; font-size: 12px; color: #444; }
+  #levelBox button:disabled small { color: #999; }
+  #levelBox .uncommon { border-left-color: #4af; }
+  #levelBox .rare { border-left-color: #fc3; }
+  #levelBox p { grid-column: 1 / -1; margin: 4px 0 0; font: 13px/1.4 sans-serif; }
 </style>
 <canvas id="c" width="288" height="400"></canvas>
+<div id="summary" hidden></div>
 <p id="msg"></p>
 <button id="potionBtn">Potion (0)</button>
 <div id="choice" hidden>
   <button id="fightBtn">Fight</button>
   <button id="fleeBtn">Flee</button>
 </div>
+<div id="fightBox" hidden>
+  <button id="normalBtn">Normal</button>
+  <button id="heavyBtn">Heavy</button>
+  <button id="blockBtn">Block</button>
+</div>
 <div id="lootBox" hidden>
   <button id="equipBtn">Equip</button>
   <button id="leaveBtn">Leave</button>
 </div>
-<div id="levelBox" hidden>
-  <button id="lvlDmg">+Damage</button>
-  <button id="lvlHp">+Max HP</button>
-  <button id="lvlDef">+Defense</button>
-</div>
+<div id="levelBox" hidden></div>
 <div id="shop" hidden></div>
 <div id="panel"></div>
 <script>
 const ctx = c.getContext('2d'), T = 32;
 const FLEE_CHANCE = 0.25;
-const POTION_HEAL = 40;
+const POTION_HEAL = 45;
+// coins in a chest: roll in this range, plus more on deeper floors
+const CHEST_GOLD = [5, 12], CHEST_GOLD_PER_FLOOR = 1;
 const FOE_GEAR_CHANCE = 0.35;
 const RAGE_BONUS = 3;
+// misses and critical hits (crit multiplies the damage that gets through armor)
+const PLAYER_MISS = 0.10, PLAYER_CRIT = 0.10, PLAYER_CRIT_MULT = 2;
+const FOE_MISS = 0.10, FOE_CRIT = 0.10, FOE_CRIT_MULT = 1.5;
+// one roll decides miss / crit / normal hit
+const swingResult = (miss, crit) => {
+  const r = Math.random();
+  return r < miss ? 'miss' : r < miss + crit ? 'crit' : 'hit';
+};
 // experience: enemies give XP equal to a fifth of their max HP
 const XP_DIVISOR = 5;
 const xpToNext = lvl => 25 + 20 * (lvl - 1);
-const LEVEL_DMG = 3, LEVEL_HP = 15, LEVEL_DEF = 1;
-const LEVEL_HEAL = 10; // HP recovered on every level-up
+const LEVEL_HEAL = 20; // HP recovered on every level-up
+
+// ---- level-up perks: each level-up deals HAND_SIZE cards, one of them always a basic ----
+// Perks can be taken any number of times. The specials grow by less with each repeat.
+const HAND_SIZE = 3;
+const BASICS = ['attack', 'vitality', 'focus'];
+const RARITY_WEIGHT = {common: 10, uncommon: 6, rare: 3}; // how often a perk is dealt
+const OWNED_WEIGHT_MULT = 1.5;  // specials you already have turn up a bit more often
+const REDRAW_COST = 10;         // coins; each extra redraw in the same level-up costs this much more
+const ATTACK_DMG = 3;                                // Attack: +3 damage
+const VITALITY_HP = 30, VITALITY_BLOCK_KEEP = 0.85;  // Vitality: +30 max HP, Block lets 15% less through
+const FOCUS_CRIT = 0.04, FOCUS_MISS_KEEP = 0.90;     // Focus: +4% crit, miss chance x0.90
+const EXEC_THRESHOLD = 0.30, EXEC_TOP = 0.60;        // Executioner: 30%, 40%, 45%... vs enemies under 30% HP
+const BASH_TOP = 0.30;                               // Shield Bash: stun 20%, 25%, 28%...
+const PURSE_TOP = 0.40;                              // Tight Purse: gold +20%, 27%, 30%...
+
+// k = how many times the perk is taken; each helper defaults to your current count
+const perkN = id => perks[id] || 0;
+const curve = (top, c, k) => top * k / (k + c);  // grows by less with every repeat
+const pct = x => `${Math.round(x * 100)}%`;
+const blockMult = (k = perkN('vitality')) => BLOCK_MULT * VITALITY_BLOCK_KEEP ** k;
+const critChance = (k = perkN('focus')) => PLAYER_CRIT + FOCUS_CRIT * k;
+const missKeep = (k = perkN('focus')) => FOCUS_MISS_KEEP ** k;
+const sight = (k = perkN('pathfinder')) => 1 + k;
+const execBonus = (k = perkN('executioner')) => curve(EXEC_TOP, 1, k);
+const poisonScale = (k = perkN('antidote')) => 2 / (k + 2);
+const poisonDmg = (k = perkN('antidote')) => Math.max(1, Math.round(POISON_DMG * poisonScale(k)));
+const poisonTurns = (k = perkN('antidote')) => Math.max(1, Math.round(POISON_TURNS * poisonScale(k)));
+const stunChance = (k = perkN('shieldbash')) => STUN_CHANCE + curve(BASH_TOP, 2, k);
+const purseBonus = (k = perkN('purse')) => curve(PURSE_TOP, 1, k);
+
+// card = short text on the button, info = the full sentence under the cards (k = count after taking it)
+const PERKS = {
+  attack: {name: 'Attack', rarity: 'common',
+    card: k => `+${ATTACK_DMG} damage`,
+    info: k => `+${ATTACK_DMG} damage on every hit (total +${ATTACK_DMG * k}).`},
+  vitality: {name: 'Vitality', rarity: 'common',
+    card: k => `+${VITALITY_HP} HP, Block ${pct(1 - blockMult(k))}`,
+    info: k => `+${VITALITY_HP} max HP and heal ${VITALITY_HP}. Block stops ${pct(1 - blockMult(k))} of damage.`},
+  focus: {name: 'Focus', rarity: 'common',
+    card: k => `Crit ${pct(critChance(k))}`,
+    info: k => `Crit chance ${pct(critChance(k))}, and you miss ${pct(1 - missKeep(k))} less often.`},
+  pathfinder: {name: 'Pathfinder', rarity: 'uncommon',
+    card: k => `See ${sight(k)} tiles`,
+    info: k => `See ${sight(k)} tiles around you, and spot enemies in sight before you meet them.`},
+  executioner: {name: 'Executioner', rarity: 'uncommon',
+    card: k => `+${pct(execBonus(k))} finishers`,
+    info: k => `Deal ${pct(execBonus(k))} more damage to enemies under ${pct(EXEC_THRESHOLD)} HP.`},
+  antidote: {name: 'Antidote', rarity: 'uncommon',
+    card: k => `Poison ${poisonDmg(k)} x ${poisonTurns(k)}`,
+    info: k => `Poison deals ${poisonDmg(k)} damage for ${poisonTurns(k)} turns (normally ${POISON_DMG} for ${POISON_TURNS}).`},
+  shieldbash: {name: 'Shield Bash', rarity: 'uncommon',
+    card: k => `Block stun ${pct(stunChance(k))}`,
+    info: k => `Each hit on your Block has a ${pct(stunChance(k))} chance to stun the attacker.`},
+  secondwind: {name: 'Second Wind', rarity: 'rare',
+    card: k => '+1 save',
+    info: k => 'The next blow that would kill you leaves you at 1 HP instead. Used up when it saves you.'},
+  purse: {name: 'Tight Purse', rarity: 'uncommon',
+    card: k => `Gold +${pct(purseBonus(k))}`,
+    info: k => `Goblins can't steal from you, and you find ${pct(purseBonus(k))} more gold.`}
+};
 // S = where you arrive, D = stairs down, E = dungeon exit (last floor only)
 const W = 9, H = 11, FLOORS = 5;
 const FLOOR_SHOPS = [null, 'M', null, 'N', null];
@@ -136,8 +233,10 @@ const slots = {
 const armor = ['helmet', 'chest', 'bracers', 'greaves'];
 const worn = {};
 const power = k => worn[k] ? worn[k].power : 0;
-let level = 1, xp = 0, levelUps = 0, bonusDmg = 0, bonusDef = 0;
-const defense = () => armor.reduce((sum, k) => sum + power(k), 0) + bonusDef;
+let level = 1, xp = 0, levelUps = 0, bonusDmg = 0;
+const perks = {};          // perk id -> times taken
+let hand = [], redraws = 0, secondWinds = 0;
+const defense = () => armor.reduce((sum, k) => sum + power(k), 0);
 
 const shops = {
   M: {title: 'Iron Merchant', tier: 1},
@@ -161,21 +260,41 @@ let shopStock = [], shopTitle = '';
 // gearTier = highest item tier the enemy can carry (leave it out for no gear)
 // armorMax = most armor pieces it can wear (defaults to 1)
 const types = [
-  {name: 'Bat',      zone: 0, hp: 20,  dmg: [3, 7],   gold: [3, 7],   color: '#98a'},
-  {name: 'Slime',    zone: 0, hp: 35,  dmg: [2, 6],   gold: [4, 9],   color: '#6c6'},
-  {name: 'Goblin',   zone: 1, hp: 45,  dmg: [5, 9],   gold: [8, 14],  color: '#e94', gearTier: 0},
-  {name: 'Skeleton', zone: 1, hp: 55,  dmg: [6, 10],  gold: [9, 16],  color: '#ddd', gearTier: 1},
-  {name: 'Orc',      zone: 2, hp: 70,  dmg: [8, 13],  gold: [14, 22], color: '#c33', gearTier: 1, armorMax: 2},
-  {name: 'Troll',    zone: 2, hp: 100, dmg: [10, 16], gold: [18, 28], color: '#a52'},
-  {name: 'Dark Knight', zone: 3, hp: 85, dmg: [11, 16], gold: [20, 30], color: '#668', gearTier: 2, armorMax: 3},
-  {name: 'Wraith',   zone: 3, hp: 75,  dmg: [12, 18], gold: [18, 28], color: '#9cf'},
-  {name: 'Minotaur', zone: 4, hp: 130, dmg: [15, 22], gold: [28, 38], color: '#853'},
-  {name: 'Wyvern',   zone: 4, hp: 110, dmg: [14, 21], gold: [26, 36], color: '#3a7'}
+  {name: 'Bat',      zone: 0, hp: 16,  dmg: [3, 7],   gold: [2, 4],   color: '#98a', evasion: 0.30},
+  {name: 'Slime',    zone: 0, hp: 28,  dmg: [2, 6],   gold: [2, 5],   color: '#6c6', split: true},
+  {name: 'Goblin',   zone: 1, hp: 45,  dmg: [5, 9],   gold: [4, 7],   color: '#e94', gearTier: 0, thief: true},
+  {name: 'Skeleton', zone: 1, hp: 50,  dmg: [6, 10],  gold: [4, 8],   color: '#ddd', gearTier: 1, reassemble: true, minFloor: 2},
+  {name: 'Orc',      zone: 2, hp: 70,  dmg: [8, 13],  gold: [5, 8],  color: '#c33', gearTier: 1, armorMax: 2, bloodlust: 4},
+  {name: 'Troll',    zone: 2, hp: 100, dmg: [10, 16], gold: [6, 9],  color: '#a52', regen: 6},
+  {name: 'Dark Knight', zone: 3, hp: 85, dmg: [11, 16], gold: [6, 10], color: '#668', gearTier: 2, armorMax: 3, riposte: true},
+  {name: 'Wraith',   zone: 3, hp: 75,  dmg: [12, 18], gold: [6, 9],  color: '#9cf', drain: 0.25},
+  {name: 'Minotaur', zone: 4, hp: 130, dmg: [15, 22], gold: [7, 11], color: '#853', charge: true},
+  {name: 'Wyvern',   zone: 4, hp: 110, dmg: [14, 21], gold: [7, 10], color: '#3a7', poison: true}
 ];
+// special abilities (set on each enemy type above):
+//   evasion    - your chance to miss it (instead of PLAYER_MISS)
+//   split      - turns into two Little Slimes when killed
+//   thief      - may steal coins once, fights THIEF_TURNS more turns, then runs off with them
+//   reassemble - may rise again once after dying, unless the killing blow was a crit
+//   bloodlust  - extra damage while you're below half HP
+//   regen      - heals this much each turn, except the turn after you crit it
+//   riposte    - hits back for free when you miss it
+//   drain      - heals itself for this share of the damage it deals
+//   charge     - its first attack of each fight deals double damage
+//   poison     - hits may poison you (POISON_DMG per turn or step, cured by a potion)
+const LITTLE_SLIME = {name: 'Little Slime', hp: 14, dmg: [1, 4], gold: [1, 2], color: '#9e9'};
+const THIEF_CHANCE = 0.33, THIEF_STEAL = [3, 6], THIEF_TURNS = 3;
+const REASSEMBLE_CHANCE = 0.33, REASSEMBLE_HP = 0.25;
+const POISON_CHANCE = 0.35, POISON_DMG = 3, POISON_TURNS = 4;
+// your combat moves: Heavy hits harder but misses more often and leaves you open
+// (enemies hit 20% harder in their next attacks); Block cuts incoming damage by 75%
+const HEAVY_MULT = 1.75, HEAVY_MISS = 0.35, HEAVY_EXPOSED = 1.20, BLOCK_MULT = 0.25;
+const STUN_CHANCE = 0.10; // chance a blocked hit stuns that enemy for its next turn
 // every crushEvery-th Ogre King attack ignores your defense (he warns you the turn before)
-const BOSS = {name: 'Ogre King', hp: 260, dmg: [18, 24], gold: [80, 100], color: '#900', def: 4, crushEvery: 3, boss: true};
+const BOSS = {name: 'Ogre King', hp: 260, dmg: [18, 24], gold: [40, 60], color: '#900', def: 4, crushEvery: 3, boss: true};
+// minFloor keeps an enemy off the floors above it (floor numbers start at 1)
 const pick = z => {
-  const pool = types.filter(t => t.zone === z);
+  const pool = types.filter(t => t.zone === z && floor + 1 >= (t.minFloor || 1));
   return pool[roll(0, pool.length - 1)];
 };
 
@@ -223,11 +342,64 @@ let coins = 0, potions = 0;
 let maxPotions = 5;        // most potions you can carry (merchants sell upgrades)
 const SHOP_POTIONS = 5;   // potions each merchant has in stock
 let shopPotionsLeft = SHOP_POTIONS;
+let poison = 0; // turns of poison left
+
+// numbers for the end-of-run summary
+const run = {start: Date.now(), kills: {}, gold: 0, dealt: 0, taken: 0, crits: 0,
+             misses: 0, biggest: 0, potions: 0, chests: 0, steps: 0};
+// adds Tight Purse's bonus; returns the coins you actually got
+function earn(gold) {
+  const got = gold + Math.round(gold * purseBonus());
+  coins += got;
+  run.gold += got;
+  return got;
+}
+const perkList = () => Object.keys(PERKS).filter(perkN)
+  .map(id => `${PERKS[id].name} &times;${perkN(id)}`).join(', ');
+
+function endRun(won, killer) {
+  over = true;
+  ['choice', 'fightBox', 'lootBox', 'levelBox', 'shop'].forEach(id => document.getElementById(id).hidden = true);
+  potionBtn.hidden = true;
+  showGear();
+  const secs = Math.round((Date.now() - run.start) / 1000);
+  const time = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
+  const total = Object.values(run.kills).reduce((a, b) => a + b, 0);
+  const killList = Object.entries(run.kills).sort((a, b) => b[1] - a[1])
+    .map(([name, n]) => `${name} &times;${n}`).join(', ');
+  const rows = [
+    ['Floor reached', `${floor + 1} / ${FLOORS}`],
+    ['Level', level],
+    ['Enemies defeated', total],
+    ['Gold earned', run.gold],
+    ['Damage dealt', run.dealt],
+    ['Damage taken', run.taken],
+    ['Critical hits', run.crits],
+    ['Misses', run.misses],
+    ['Biggest hit', run.biggest],
+    ['Potions drunk', run.potions],
+    ['Chests opened', run.chests],
+    ['Steps taken', run.steps],
+    ['Time', time]
+  ];
+  summary.className = won ? 'won' : '';
+  summary.innerHTML =
+    `<h2>${won ? 'You escaped the dungeon!' : `Slain on floor ${floor + 1}`}</h2>` +
+    `<p class="cause">${won ? `The ${BOSS.name} has fallen.`
+      : `Killed by ${killer === BOSS.name ? 'the' : /^[AEIOU]/.test(killer) ? 'an' : 'a'} ${killer}.`}</p>` +
+    `<dl>${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>` +
+    (killList ? `<p class="kills">Defeated: ${killList}</p>` : '') +
+    (perkList() ? `<p class="kills">Perks: ${perkList()}</p>` : '') +
+    `<button id="againBtn">Play again</button>`;
+  summary.hidden = false;
+  summary.querySelector('#againBtn').onclick = () => location.reload();
+}
 const opened = new Set();
 const visited = new Set();
 const lastFloor = () => floor === FLOORS - 1;
-// you see tiles you've walked on plus the 8 tiles around you
-const visible = (x, y) => visited.has(`${x},${y}`) || (Math.abs(x - p.x) <= 1 && Math.abs(y - p.y) <= 1);
+// you see tiles you've walked on plus the tiles around you (1 away, more with Pathfinder)
+const inSight = (x, y) => Math.abs(x - p.x) <= sight() && Math.abs(y - p.y) <= sight();
+const visible = (x, y) => visited.has(`${x},${y}`) || inSight(x, y);
 
 function loadFloor(i) {
   floor = i;
@@ -255,7 +427,9 @@ function showGear() {
     `${slots[k].label}: ${worn[k] ? `${worn[k].name} (+${worn[k].power})` : 'empty'}`
   ).join('<br>') + `<br><b>Defense: ${defense()}</b>` +
     `<br>Level ${level} (XP ${xp}/${xpToNext(level)}) - Damage +${bonusDmg}, HP ${p.hp}/${p.max}` +
-    `<br>Coins: ${coins}<br>Potions: ${potions}/${maxPotions}`;
+    `<br>Coins: ${coins}<br>Potions: ${potions}/${maxPotions}` +
+    `<br>Perks: ${perkList() || 'none'}` + (secondWinds ? ` (Second Wind saves left: ${secondWinds})` : '') +
+    (poison ? `<br><b>Poisoned</b> (${poison} turns, a potion cures it)` : '');
   potionBtn.textContent = `Potion (${potions}/${maxPotions})`;
 }
 
@@ -295,12 +469,12 @@ function loot(maxTier = 2, minTier = 0) {
 
 function openChest(key) {
   opened.add(key);
+  run.chests++;
   const r = roll(1, 3);
   if (r === 1) {
-    const gold = roll(10, 25) + floor * 5;
-    coins += gold;
+    const got = earn(roll(CHEST_GOLD[0], CHEST_GOLD[1]) + floor * CHEST_GOLD_PER_FLOOR);
     showGear();
-    return `It holds ${gold} coins!`;
+    return `It holds ${got} coins!`;
   }
   if (r === 2 && potions < maxPotions) {
     potions++;
@@ -308,10 +482,9 @@ function openChest(key) {
     return 'It holds a health potion!';
   }
   if (r === 2) {
-    const gold = roll(10, 25) + floor * 5;
-    coins += gold;
+    const got = earn(roll(CHEST_GOLD[0], CHEST_GOLD[1]) + floor * CHEST_GOLD_PER_FLOOR);
     showGear();
-    return `It holds a health potion, but your bag is full. You take ${gold} coins instead.`;
+    return `It holds a health potion, but your bag is full. You take ${got} coins instead.`;
   }
   return 'It holds equipment. ' + loot();
 }
@@ -332,33 +505,77 @@ function gainXp(amount) {
   }
 }
 
+// deal a hand: one random basic, then cards drawn by rarity (no duplicates in a hand)
+function dealHand() {
+  const basic = BASICS[roll(0, BASICS.length - 1)];
+  const pool = Object.keys(PERKS).filter(id => id !== basic);
+  hand = [basic];
+  while (hand.length < HAND_SIZE && pool.length) {
+    const weights = pool.map(id => RARITY_WEIGHT[PERKS[id].rarity] *
+      (perkN(id) && !BASICS.includes(id) ? OWNED_WEIGHT_MULT : 1));
+    let r = Math.random() * weights.reduce((a, b) => a + b, 0), i = 0;
+    while (i < pool.length - 1 && r >= weights[i]) r -= weights[i++];
+    hand.push(pool.splice(i, 1)[0]);
+  }
+}
+
+const redrawCost = () => REDRAW_COST * (redraws + 1);
+
+function renderLevelBox() {
+  levelBox.innerHTML = hand.map(id => {
+    const P = PERKS[id];
+    return `<button data-up="${id}" class="${P.rarity}">${P.name}<small>${P.card(perkN(id) + 1)}</small></button>`;
+  }).join('') +
+    `<button data-up="redraw"${coins < redrawCost() ? ' disabled' : ''}>Redraw<small>${redrawCost()} coins</small></button>` +
+    `<p>${hand.map(id => `<b>${PERKS[id].name}:</b> ${PERKS[id].info(perkN(id) + 1)}`).join('<br>')}</p>`;
+}
+
 function showLevelUp() {
   if (!levelUps) return;
   phase = 'level';
+  redraws = 0;
+  dealHand();
+  renderLevelBox();
   levelBox.hidden = false;
-  msg.textContent += ` Level up! You reached level ${level + 1}. Choose a bonus:` +
-    ` +${LEVEL_DMG} damage, +${LEVEL_HP} max HP, or +${LEVEL_DEF} defense.`;
+  msg.textContent += ` Level up! You reached level ${level + 1}. Pick a perk:`;
 }
 
-function chooseLevel(kind) {
-  if (phase !== 'level') return;
-  if (kind === 'dmg') bonusDmg += LEVEL_DMG;
-  if (kind === 'hp') { p.max += LEVEL_HP; p.hp += LEVEL_HP; }
-  if (kind === 'def') bonusDef += LEVEL_DEF;
+function redraw() {
+  const cost = redrawCost();
+  if (phase !== 'level' || coins < cost) return;
+  coins -= cost;
+  redraws++;
+  dealHand();
+  renderLevelBox();
+  msg.textContent = `You pay ${cost} coins and redraw the cards. Pick a perk:`;
+  showGear();
+}
+
+function takePerk(id) {
+  if (phase !== 'level' || !hand.includes(id)) return;
+  perks[id] = perkN(id) + 1;
+  if (id === 'attack') bonusDmg += ATTACK_DMG;
+  if (id === 'vitality') { p.max += VITALITY_HP; p.hp += VITALITY_HP; }
+  if (id === 'secondwind') secondWinds++;
   level++;
   levelUps--;
   const healed = Math.min(LEVEL_HEAL, p.max - p.hp);
   p.hp += healed;
-  msg.textContent = `You are now level ${level}.` + (healed ? ` You recover ${healed} HP.` : '');
+  msg.textContent = `You take ${PERKS[id].name} (${PERKS[id].card(perks[id])}). You are now level ${level}.` +
+    (healed ? ` You recover ${healed} HP.` : '');
   levelBox.hidden = true;
   phase = 'explore';
   showLevelUp();
   showGear();
   draw();
 }
-lvlDmg.onclick = () => chooseLevel('dmg');
-lvlHp.onclick = () => chooseLevel('hp');
-lvlDef.onclick = () => chooseLevel('def');
+
+levelBox.onclick = e => {
+  const b = e.target.closest('button[data-up]');
+  if (!b || b.disabled) return;
+  if (b.dataset.up === 'redraw') redraw();
+  else takePerk(b.dataset.up);
+};
 
 function bar(x, y, w, h, hp, max, color) {
   ctx.fillStyle = '#400';
@@ -373,8 +590,11 @@ function draw() {
       : ch === 'C' && opened.has(`${x},${y}`) ? '#432' : colors[ch];
     ctx.fillRect(x * T, y * T, T, T);
   }));
-  enemies.filter(e => (e.seen || e.boss) && !e.dead && visible(e.x, e.y)).forEach(e => {
-    ctx.fillStyle = e.group[0].color;
+  // Pathfinder spots enemies in sight before you bump into them
+  const spotted = e => perkN('pathfinder') && inSight(e.x, e.y);
+  enemies.filter(e => (e.seen || e.boss || spotted(e)) && !e.dead && visible(e.x, e.y)).forEach(e => {
+    if (!e.group) e.group = makeGroup(e.zone);
+    ctx.fillStyle = e.group.find(f => f.hp > 0)?.color || e.group[0].color;
     ctx.fillRect(e.x * T, e.y * T, T, T);
     if (e.boss) {
       ctx.strokeStyle = '#fff';
@@ -389,75 +609,241 @@ function draw() {
   ctx.fillStyle = '#fff';
   ctx.font = '12px sans-serif';
   ctx.fillText(`Lv ${level} - Floor ${floor + 1}/${FLOORS}`, 8, 368);
-  bar(8, 374, 120, 12, p.hp, p.max, '#4c4');
+  bar(8, 374, 120, 12, p.hp, p.max, poison ? '#a5d' : '#4c4'); // purple while poisoned
   bar(8, 390, 120, 4, xp, xpToNext(level + levelUps), '#fc3');
-  foes.filter(f => f.hp > 0).forEach((f, i) => {
+  const live = foes.filter(f => f.hp > 0);
+  const gap = live.length > 3 ? 10 : 14;
+  live.forEach((f, i) => {
     ctx.fillStyle = '#fff';
     ctx.font = '10px sans-serif';
-    ctx.fillText(f.name + (f.items.length ? '*' : ''), 150, 364 + i * 14);
-    bar(200, 356 + i * 14, 80, 8, f.hp, f.max, f.color);
+    ctx.fillText(f.name + (f.items.length ? '*' : ''), 140, 364 + i * gap);
+    bar(204, 356 + i * gap, 76, 8, f.hp, f.max, f.color);
   });
+  fightBox.hidden = over || phase !== 'fight';
 }
 
-function foesAttack() {
-  for (const f of foes.filter(f => f.hp > 0)) {
-    const rage = f.raged ? RAGE_BONUS : 0;
-    f.swings = (f.swings || 0) + 1;
-    const crush = f.crushEvery && f.swings % f.crushEvery === 0;
-    const hurt = Math.max(1, roll(f.dmg[0], f.dmg[1]) + f.bonus + rage - (crush ? 0 : defense()));
+// ends the run if you're dead; returns true while you're still alive
+function checkDeath(killer, text) {
+  if (p.hp > 0) return true;
+  if (secondWinds > 0) {
+    secondWinds--;
+    p.hp = 1;
+    msg.textContent += ' SECOND WIND! You refuse to fall and stand back up with 1 HP.';
+    showGear();
+    return true;
+  }
+  msg.textContent = text;
+  endRun(false, killer);
+  draw();
+  return false;
+}
+
+// poison ticks once per combat turn and once per step
+function tickPoison() {
+  if (!poison) return true;
+  poison--;
+  const hurt = Math.min(poisonDmg(), p.hp);
+  p.hp -= hurt;
+  run.taken += hurt;
+  msg.textContent += ` Poison burns you for ${hurt}` + (poison ? ` (${poison} more).` : '. The poison wears off.');
+  showGear();
+  return checkDeath("Wyvern's poison", 'The poison was too much. You collapse.');
+}
+
+// one enemy swing; mult comes from your stance (Block lowers it, Heavy raises it)
+function foeStrike(f, mult) {
+  const rage = f.raged ? RAGE_BONUS : 0;
+  f.swings = (f.swings || 0) + 1;
+  const crush = f.crushEvery && f.swings % f.crushEvery === 0;
+  const charge = f.charge && f.fresh;
+  f.fresh = false;
+  // the Crushing Blow and the Charge always land, and never crit
+  const result = crush || charge ? 'hit' : swingResult(FOE_MISS, FOE_CRIT);
+  f.landed = result !== 'miss';
+  if (result === 'miss') {
+    msg.textContent += ` ${f.name} misses you.`;
+  } else {
+    const lust = f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0;
+    let hurt = Math.max(1, roll(f.dmg[0], f.dmg[1]) + f.bonus + rage + lust - (crush ? 0 : defense()));
+    if (result === 'crit') hurt = Math.round(hurt * FOE_CRIT_MULT);
+    if (charge) hurt *= 2;
+    hurt = Math.max(1, Math.round(hurt * mult));
+    run.taken += Math.min(hurt, p.hp);
     p.hp = Math.max(0, p.hp - hurt);
     msg.textContent += crush
       ? ` ${f.name} lands a CRUSHING BLOW through your armor for ${hurt}!`
-      : ` ${f.name} hits you for ${hurt}.`;
-    if (f.crushEvery && (f.swings + 1) % f.crushEvery === 0 && p.hp > 0)
-      msg.textContent += ` The ${f.name} winds up a huge swing...`;
-    if (p.hp === 0) {
-      over = true;
-      msg.textContent = 'You died. Refresh to try again.';
-      return;
+      : charge
+        ? ` The ${f.name} CHARGES into you for ${hurt}!`
+        : result === 'crit'
+          ? ` ${f.name} lands a CRITICAL HIT for ${hurt}!`
+          : ` ${f.name} ${lust ? 'hits you in a bloodlust' : 'hits you'} for ${hurt}.`;
+    if (f.drain && p.hp > 0) {
+      const heal = Math.min(Math.round(hurt * f.drain), f.max - f.hp);
+      if (heal > 0) {
+        f.hp += heal;
+        msg.textContent += ` It drains ${heal} HP from you.`;
+      }
     }
+    if (f.poison && p.hp > 0 && Math.random() < POISON_CHANCE) {
+      poison = poisonTurns();
+      msg.textContent += ' You are poisoned!';
+    }
+    if (f.thief && !f.stolen && !perkN('purse') && p.hp > 0 && coins > 0 && Math.random() < THIEF_CHANCE) {
+      f.stolen = Math.min(coins, roll(THIEF_STEAL[0], THIEF_STEAL[1]));
+      f.fleeIn = THIEF_TURNS;
+      coins -= f.stolen;
+      msg.textContent += ` The ${f.name} snatches ${f.stolen} coins!`;
+    }
+    showGear();
   }
+  if (f.crushEvery && (f.swings + 1) % f.crushEvery === 0 && p.hp > 0)
+    msg.textContent += ` The ${f.name} winds up a huge swing...`;
+  return checkDeath(f.name, `You were slain by the ${f.name}.`);
 }
 
-function attack() {
+function foesAttack(mult = 1, blocking = false) {
+  for (const f of foes.filter(f => f.hp > 0)) {
+    if (f.regen) {
+      if (f.noRegen) {
+        f.noRegen = false;
+      } else if (f.hp < f.max) {
+        const heal = Math.min(f.regen, f.max - f.hp);
+        f.hp += heal;
+        msg.textContent += ` The ${f.name} regenerates ${heal} HP.`;
+      }
+    }
+    if (f.fleeIn !== undefined) {
+      if (f.fleeIn === 0) {
+        f.hp = 0;
+        f.fled = true;
+        msg.textContent += ` The ${f.name} runs off with your ${f.stolen} coins!`;
+        continue;
+      }
+      f.fleeIn--;
+    }
+    if (f.stunned) {
+      f.stunned = false;
+      msg.textContent += ` The ${f.name} is stunned and can't attack.`;
+      continue;
+    }
+    if (!foeStrike(f, mult)) return;
+    // a hit that lands on your raised shield may stun the attacker for its next turn
+    if (blocking && f.landed && f.hp > 0 && Math.random() < stunChance()) {
+      f.stunned = true;
+      msg.textContent += ` The ${f.name} staggers off your shield, stunned!`;
+    }
+  }
+  if (!tickPoison()) return;
+  if (!foes.some(f => f.hp > 0)) endFight();
+}
+
+function killFoe(t) {
+  const got = earn(roll(t.gold[0], t.gold[1]));
+  const gained = Math.round(t.max / XP_DIVISOR);
+  gainXp(gained);
+  run.kills[t.name] = (run.kills[t.name] || 0) + 1;
+  msg.textContent += ` ${t.name} defeated! +${got} coins, +${gained} XP.`;
+  if (t.stolen) {
+    coins += t.stolen;
+    msg.textContent += ` You get your ${t.stolen} coins back.`;
+  }
+  if (t.split) {
+    // foes is the encounter's group, so the halves stay if you flee and come back
+    foes.push(...[0, 1].map(() => ({...LITTLE_SLIME, max: LITTLE_SLIME.hp, bonus: 0, def: 0, items: []})));
+    msg.textContent += ` The ${t.name} splits in two!`;
+  }
+  showGear();
+}
+
+// everyone is dead or gone: loot if you killed anything, otherwise just walk on
+function endFight() {
+  const killedAny = foes.some(f => !f.fled);
+  current.dead = true;
+  if (current.boss) {
+    msg.textContent += ' The way to the exit is clear! ' + loot(2, 2);
+  } else if (killedAny) {
+    msg.textContent += ' ' + loot(Math.min(2, current.zone));
+  } else {
+    phase = 'explore';
+  }
+  foes = [];
+  current = null;
+}
+
+// kind: 'normal', 'heavy' or 'block'
+function act(kind) {
+  if (over || phase !== 'fight') return;
+  if (kind === 'block') {
+    msg.textContent = 'You raise your guard.';
+    foesAttack(blockMult(), true);
+    draw();
+    return;
+  }
+  const heavy = kind === 'heavy';
+  const exposed = heavy ? HEAVY_EXPOSED : 1;
   const t = foes.find(f => f.hp > 0);
-  const dmg = Math.max(1, roll(8, 14) + power('weapon') + bonusDmg - t.def);
+  // Focus shrinks every miss chance (normal, Heavy and Bat evasion alike)
+  const missChance = ((t.evasion ?? PLAYER_MISS) + (heavy ? HEAVY_MISS : 0)) * missKeep();
+  const result = swingResult(missChance, critChance());
+  let dmg = 0;
+  if (result === 'miss') {
+    run.misses++;
+    msg.textContent = heavy ? `Your heavy swing misses the ${t.name}.` : `You swing at ${t.name} and miss.`;
+  } else {
+    dmg = Math.max(1, roll(8, 14) + power('weapon') + bonusDmg - t.def);
+    if (heavy) dmg = Math.round(dmg * HEAVY_MULT);
+    const finisher = perkN('executioner') && t.hp < t.max * EXEC_THRESHOLD;
+    if (finisher) dmg = Math.round(dmg * (1 + execBonus()));
+    if (result === 'crit') { dmg *= PLAYER_CRIT_MULT; run.crits++; }
+    run.dealt += Math.min(dmg, t.hp);
+    run.biggest = Math.max(run.biggest, dmg);
+    msg.textContent = (result === 'crit' ? 'CRITICAL HIT! ' : '') +
+      (heavy ? `You smash ${t.name} for ${dmg}.` : `You hit ${t.name} for ${dmg}.`) +
+      (finisher ? ' (Executioner)' : '');
+    if (result === 'crit' && t.regen && dmg < t.hp) {
+      t.noRegen = true;
+      msg.textContent += ` The ${t.name}'s wounds stop closing.`;
+    }
+  }
   t.hp = Math.max(0, t.hp - dmg);
-  msg.textContent = `You hit ${t.name} for ${dmg}.`;
-  if (t.hp === 0) {
-    const gold = roll(t.gold[0], t.gold[1]);
-    const gained = Math.round(t.max / XP_DIVISOR);
-    coins += gold;
-    gainXp(gained);
-    msg.textContent += ` ${t.name} defeated! +${gold} coins, +${gained} XP.`;
-    showGear();
+  if (t.hp === 0 && t.reassemble && !t.rose && result !== 'crit' && Math.random() < REASSEMBLE_CHANCE) {
+    t.rose = true;
+    t.hp = Math.round(t.max * REASSEMBLE_HP);
+    msg.textContent += ` The ${t.name}'s bones rattle back together!`;
+  } else if (t.hp === 0) {
+    killFoe(t);
   } else if (t.boss && !t.raged && t.hp <= t.max / 2) {
     t.raged = true;
     msg.textContent += ` The ${t.name} roars in a rage!`;
   }
+  if (result === 'miss' && t.riposte && !t.stunned) {
+    msg.textContent += ` The ${t.name} ripostes!`;
+    if (!foeStrike(t, exposed)) return;
+  }
   if (foes.some(f => f.hp > 0)) {
-    foesAttack();
+    foesAttack(exposed);
   } else {
-    current.dead = true;
-    if (current.boss) {
-      msg.textContent += ' The way to the exit is clear! ' + loot(2, 2);
-    } else {
-      msg.textContent += ' ' + loot(Math.min(2, current.zone));
-    }
-    foes = [];
-    current = null;
+    endFight();
   }
   draw();
 }
+normalBtn.onclick = () => act('normal');
+heavyBtn.onclick = () => act('heavy');
+blockBtn.onclick = () => act('block');
 
 potionBtn.onclick = () => {
   if (over || (phase !== 'explore' && phase !== 'fight')) return;
   if (!potions) { msg.textContent = 'No potions left.'; return; }
-  if (p.hp === p.max) { msg.textContent = 'Already at full health.'; return; }
+  if (p.hp === p.max && !poison) { msg.textContent = 'Already at full health.'; return; }
   potions--;
+  run.potions++;
   const heal = Math.min(POTION_HEAL, p.max - p.hp);
   p.hp += heal;
   msg.textContent = `You drink a potion and heal ${heal}.`;
+  if (poison) {
+    poison = 0;
+    msg.textContent += ' The poison is cured.';
+  }
   if (phase === 'fight') foesAttack();
   showGear();
   draw();
@@ -493,7 +879,7 @@ shop.onclick = e => {
 fightBtn.onclick = () => {
   choice.hidden = true;
   phase = 'fight';
-  msg.textContent = 'Tap to attack.';
+  msg.textContent = 'Normal, Heavy or Block?';
   draw();
 };
 
@@ -510,7 +896,7 @@ fleeBtn.onclick = () => {
     phase = 'fight';
     msg.textContent = 'Flee failed!';
     foesAttack();
-    if (!over) msg.textContent += ' Tap to attack.';
+    if (!over && phase === 'fight') msg.textContent += ' Normal, Heavy or Block?';
   }
   draw();
 };
@@ -528,7 +914,7 @@ leaveBtn.onclick = () => {
 
 c.addEventListener('pointerdown', e => {
   if (over || (phase !== 'explore' && phase !== 'fight')) return;
-  if (phase === 'fight') return attack();
+  if (phase === 'fight') return act('normal'); // tapping the map is a normal attack
 
   const r = c.getBoundingClientRect();
   const dx = e.clientX - r.left - c.width / 2;
@@ -541,7 +927,9 @@ c.addEventListener('pointerdown', e => {
   p.x = nx;
   p.y = ny;
   visited.add(`${nx},${ny}`);
+  run.steps++;
   msg.textContent = '';
+  if (!tickPoison()) return;
 
   const key = `${nx},${ny}`;
   const hit = enemies.find(e => e.x === nx && e.y === ny && !e.dead);
@@ -551,6 +939,7 @@ c.addEventListener('pointerdown', e => {
     hit.seen = true;
     current = hit;
     foes = hit.group;
+    foes.forEach(f => f.fresh = true); // a new fight: the Minotaur gets to charge again
     phase = 'choice';
     choice.hidden = false;
     const live = foes.filter(f => f.hp > 0);
@@ -576,8 +965,11 @@ c.addEventListener('pointerdown', e => {
       ? `You descend to floor ${floor + 1}. The air reeks of ogre...`
       : `You descend to floor ${floor + 1}.`;
   }
+  if (map[ny][nx] === 'E') {
+    msg.textContent = 'You step into daylight.';
+    endRun(true);
+  }
   draw();
-  if (map[ny][nx] === 'E') setTimeout(() => alert('You escaped the dungeon!'), 50);
 });
 
 draw();
