@@ -5,11 +5,11 @@
 <link rel="icon" href="goblin-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;600&family=UnifrakturMaguntia&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;600&family=Pirata+One&display=swap">
 <style>
   /* blackletter for buttons and titles, a classic serif for everything you read; each falls back to a serif */
   :root {
-    --title-font: "UnifrakturMaguntia", "Old English Text MT", Georgia, serif;
+    --title-font: "Pirata One", "Old English Text MT", Georgia, serif;
     --text-font: "EB Garamond", Garamond, Georgia, serif;
   }
   body { font-family: var(--text-font); font-size: 17px; }
@@ -34,6 +34,9 @@
   #summary button { width: 100%; }
   #scrollBox button { font-size: 15px; padding: 8px 12px; margin: 3px 0; }
   #potionBtn, #bagBtn { font-size: 16px; padding: 8px 14px; }
+  /* numbers always use the reading serif (Pirata One draws 0 with a slash through it):
+     wrap any number shown in the title font in <span class="num"> */
+  .num { font-family: var(--text-font); font-weight: 600; }
   [hidden] { display: none !important; }
   /* title screen and How to Play: covers the game until you press Play */
   #title {
@@ -101,11 +104,13 @@
 
     <details>
       <summary>Fighting</summary>
-      <p>Walk into an enemy to start a fight. Enemies can come in groups of up to 3 on deeper floors, and you always attack the first one in the list under the map. A <b>*</b> after a name means that enemy carries gear, so it hits harder or has armor.</p>
+      <p>Walk into an enemy to start a fight. The view switches to the <b>combat screen</b>: you stand on the left and the enemies on the right, each with a health bar. Enemies can come in groups of up to 3 on deeper floors. A <b>*</b> after a name means that enemy carries gear, so it hits harder or has armor.</p>
+      <p><b>Tap an enemy to target it.</b> A yellow ring under an enemy shows your target, and your attacks go to it. When your target falls, the next enemy is targeted for you.</p>
+      <p>Damage rises over the one who took it as a <b style="color:#f44">red</b> number, healing as a <b style="color:#4e4">green</b> one. <b>MISS</b> appears over whoever an attack was aimed at, <b style="color:#6df">STUNNED</b> over a stunned enemy, and <b style="color:#fc3">SECOND WIND</b> over you when that perk saves your life.</p>
       <p>You first choose <b>Fight</b> or <b>Flee</b>. Fleeing works 25% of the time and puts you back one step. If it fails, the enemies get a free attack. You can never flee the Ogre King.</p>
       <p>Each turn of a fight, pick one move. The enemies then take their turn.</p>
       <ul>
-        <li><b>Normal</b>: your reliable hit, 8-14 damage plus your weapon and bonuses, minus the enemy's armor. It misses 10% of the time, and 10% of hits are critical hits for double damage. Tapping the map also does a Normal attack.</li>
+        <li><b>Normal</b>: your reliable hit, 8-14 damage plus your weapon and bonuses, minus the enemy's armor. It misses 10% of the time, and 10% of hits are critical hits for double damage.</li>
         <li><b>Heavy</b>: 1.75 times the damage, but it misses 45% of the time, and enemies hit you 20% harder that turn. Use it to finish a fight faster when you can afford the risk.</li>
         <li><b>Block</b>: you don't attack, but you take only a quarter of the damage, and each hit on your shield has a 10% chance to stun that enemy so it skips its next attack.</li>
       </ul>
@@ -116,21 +121,21 @@
     <details>
       <summary>Enemies and their tricks</summary>
       <p>Every enemy has a special ability. The message log tells you when it happens.</p>
-      <h4>Floors 1-2</h4>
+      <h4>Floors <span class="num">1-2</span></h4>
       <ul>
         <li><span class="sw" style="background:#98a"></span><b>Bat</b>: hard to hit. You miss it 30% of the time instead of 10%, so Heavy is a poor choice.</li>
         <li><span class="sw" style="background:#6c6"></span><b>Slime</b>: when killed it splits into two <b>Little Slimes</b> (weak, but they still hit you).</li>
         <li><span class="sw" style="background:#ee4"></span><b>Goblin</b>: each hit has a 33% chance to steal 3-6 of your coins (once). Three turns later it runs off with them. Kill it first to get your coins back.</li>
         <li><span class="sw" style="background:#ddd"></span><b>Skeleton</b> (floor 2 on): the first time it dies it may pull itself back together (33%) with a quarter of its health, unless the killing blow was a critical hit.</li>
       </ul>
-      <h4>Floors 3-4</h4>
+      <h4>Floors <span class="num">3-4</span></h4>
       <ul>
         <li><span class="sw" style="background:#c33"></span><b>Orc</b>: bloodlust. Hits 4 harder while you are below half health, so heal before it gets going.</li>
         <li><span class="sw" style="background:#a52"></span><b>Troll</b>: regenerates 6 health every turn. A critical hit stops it for one turn, and fire stops it while the Troll burns. Finish Trolls fast.</li>
         <li><span class="sw" style="background:#668"></span><b>Dark Knight</b>: often well armored. Whenever you miss it, it counterattacks for free, so a Heavy miss is costly.</li>
         <li><span class="sw" style="background:#bbf"></span><b>Wraith</b>: heals itself for a quarter of the damage it deals to you.</li>
       </ul>
-      <h4>Floors 4-5</h4>
+      <h4>Floors <span class="num">4-5</span></h4>
       <ul>
         <li><span class="sw" style="background:#35b"></span><b>Minotaur</b>: its first attack in a fight is a charge that never misses and deals double damage. Block it.</li>
         <li><span class="sw" style="background:#d4a"></span><b>Wyvern</b>: each hit has a 35% chance to poison you: 3 damage every turn and every step for 4 turns. A potion cures poison. Your health bar turns purple while you are poisoned.</li>
@@ -166,7 +171,7 @@
         <li><b>Pathfinder</b>: see 1 more tile around you, and enemies within sight show on the map before you meet them. Your first hit on an enemy you spotted first is an <b>Ambush</b> for +50% damage.</li>
         <li><b>Executioner</b>: +50% damage to enemies below half health.</li>
         <li><b>Antidote</b>: potions heal 10 more, and poison is weaker and shorter.</li>
-        <li><b>Shield Bash</b>: when you Block, you also bash the first enemy for 4 damage, and the stun chance rises to 20%.</li>
+        <li><b>Shield Bash</b>: when you Block, you also bash your target for 4 damage, and the stun chance rises to 20%.</li>
         <li><b>Second Wind</b> (rare): the next blow that would kill you leaves you at 1 health instead. Used up when it saves you; each pick gives one save.</li>
         <li><b>Tight Purse</b>: Goblins can't steal from you, and you find 30% more gold.</li>
       </ul>
@@ -236,8 +241,8 @@
 <canvas id="c" width="288" height="400"></canvas>
 <div id="summary" hidden></div>
 <p id="msg"></p>
-<button id="potionBtn">Potion (0)</button>
-<button id="bagBtn">Scrolls (0/2)</button>
+<button id="potionBtn">Potion <span class="num">(0/5)</span></button>
+<button id="bagBtn">Scrolls <span class="num">(0/2)</span></button>
 <div id="scrollBox" hidden></div>
 <div id="choice" hidden>
   <button id="fightBtn">Fight</button>
@@ -334,7 +339,7 @@ const PERKS = {
     info: k => `Potions heal ${potionBonus(k)} more. Poison deals ${poisonDmg(k)} damage for ${poisonTurns(k)} turns (normally ${POISON_DMG} for ${POISON_TURNS}).`},
   shieldbash: {name: 'Shield Bash', rarity: 'uncommon',
     card: k => `Bash ${bashDmg(k)}, stun ${pct(stunChance(k))}`,
-    info: k => `When you Block, you bash the front enemy for ${bashDmg(k)}, and each hit on your shield has a ${pct(stunChance(k))} chance to stun.`},
+    info: k => `When you Block, you bash your target for ${bashDmg(k)}, and each hit on your shield has a ${pct(stunChance(k))} chance to stun.`},
   secondwind: {name: 'Second Wind', rarity: 'rare',
     card: k => '+1 save',
     info: k => 'The next blow that would kill you leaves you at 1 HP instead. Used up when it saves you.'},
@@ -652,7 +657,7 @@ function endRun(won, killer) {
   ];
   summary.className = won ? 'won' : '';
   summary.innerHTML =
-    `<h2>${won ? 'You escaped the dungeon!' : `Slain on floor ${floor + 1}`}</h2>` +
+    `<h2>${won ? 'You escaped the dungeon!' : `Slain on floor <span class="num">${floor + 1}</span>`}</h2>` +
     `<p class="cause">${won ? `The ${BOSS.name} has fallen.`
       : `Killed by ${killer === BOSS.name ? 'the' : /^[AEIOU]/.test(killer) ? 'an' : 'a'} ${killer}.`}</p>` +
     `<dl>${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>` +
@@ -709,8 +714,8 @@ function showGear() {
     `<br>Coins: ${coins}<br>Potions: ${potions}/${maxPotions}` +
     `<br>Perks: ${perkList() || 'none'}` + (secondWinds ? ` (Second Wind saves left: ${secondWinds})` : '') +
     (poison ? `<br><b>Poisoned</b> (${poison} turns, a potion cures it)` : '');
-  potionBtn.textContent = `Potion (${potions}/${maxPotions})`;
-  bagBtn.textContent = `Scrolls (${scrolls.length}/${bagSlots})`;
+  potionBtn.innerHTML = `Potion <span class="num">(${potions}/${maxPotions})</span>`;
+  bagBtn.innerHTML = `Scrolls <span class="num">(${scrolls.length}/${bagSlots})</span>`;
 }
 
 function renderShop() {
@@ -900,6 +905,7 @@ function closeLoot() {
   pending = null;
   lootBox.hidden = true;
   phase = 'explore';
+  combatView = false;  // the fight is over: back to the map
   showLevelUp();
   showGear();
 }
@@ -962,12 +968,13 @@ function takePerk(id) {
   if (phase !== 'level' || !hand.includes(id)) return;
   perks[id] = perkN(id) + 1;
   if (id === 'attack') bonusDmg += ATTACK_DMG;
-  if (id === 'vitality') { p.base += VITALITY_HP; refreshMax(); }
+  if (id === 'vitality') { p.base += VITALITY_HP; refreshMax(); popup('player', `+${VITALITY_HP}`, 'heal'); }
   if (id === 'secondwind') secondWinds++;
   level++;
   levelUps--;
   const healed = Math.min(LEVEL_HEAL, p.max - p.hp);
   p.hp += healed;
+  if (healed > 0) popup('player', `+${healed}`, 'heal');
   msg.textContent = `You take ${PERKS[id].name} (${PERKS[id].card(perks[id])}). You are now level ${level}.` +
     (healed ? ` You recover ${healed} HP.` : '');
   levelBox.hidden = true;
@@ -991,7 +998,153 @@ function bar(x, y, w, h, hp, max, color) {
   ctx.fillRect(x, y, w * hp / max, h);
 }
 
+// ---- combat screen: you on the left, the enemies on the right, floating numbers over everyone ----
+const POP_MS = 1000;                 // how long a floating number stays up
+const POP_COLORS = {dmg: '#f44', heal: '#4e4', miss: '#ddd', stun: '#6df', gold: '#fc3'}; // stun = lightning blue
+const PLAYER_SPOT = {x: 64, y: 190};
+let combatView = false;              // true from walking into an enemy until the loot is handled
+let sceneFoes = [];                  // the whole group, dead ones too, so nobody jumps around mid-fight
+let target = null;                   // the enemy your attacks go to (tap one to pick it)
+let pops = [];                       // floating numbers: {who, text, color, t0}
+
+const inCombatScene = () => combatView && ['choice', 'fight', 'loot'].includes(phase);
+const liveTarget = () => {
+  if (!(target && target.hp > 0 && foes.includes(target))) target = foes.find(f => f.hp > 0) || null;
+  return target;
+};
+// where each enemy stands: one column of up to 4, two columns for bigger groups
+function foeSpots() {
+  const n = sceneFoes.length, cols = n > 4 ? 2 : 1, rows = Math.ceil(n / cols);
+  const spots = new Map();
+  sceneFoes.forEach((f, i) => {
+    const col = cols === 1 ? 0 : i % 2, row = cols === 1 ? i : Math.floor(i / 2);
+    spots.set(f, {x: cols === 1 ? 214 : 182 + col * 66, y: 60 + (row + 0.5) * (280 / rows)});
+  });
+  return spots;
+}
+const spotOf = who => who === 'player'
+  ? (inCombatScene() ? PLAYER_SPOT : {x: p.x * T + T / 2, y: p.y * T + 6})
+  : (inCombatScene() ? foeSpots().get(who) : null);
+
+// a floating number or word; kind = 'dmg' (red), 'heal' (green), 'miss' (white), 'stun' (blue) or 'gold'
+function popup(who, text, kind) {
+  pops.push({who, text: String(text), color: POP_COLORS[kind], t0: performance.now()});
+  if (!popping) { popping = true; requestAnimationFrame(animatePops); }
+}
+let popping = false;
+function animatePops() {
+  draw();
+  if (pops.length) requestAnimationFrame(animatePops);
+  else { popping = false; draw(); }
+}
+
+function drawPops() {
+  const now = performance.now();
+  pops = pops.filter(q => now - q.t0 < POP_MS);
+  const stack = new Map();
+  // newest first, so the latest number sits lowest and older ones are pushed up above it
+  for (const q of [...pops].reverse()) {
+    const at = spotOf(q.who);
+    if (!at) continue;
+    const n = stack.get(q.who) || 0;
+    stack.set(q.who, n + 1);
+    const age = (now - q.t0) / POP_MS;
+    ctx.globalAlpha = Math.max(0, 1 - age * age);
+    ctx.font = `600 ${q.text.length > 4 ? 14 : 18}px ${GAME_FONT}`;
+    ctx.textAlign = 'center';
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#000';
+    // start on the figure itself (on the map: over your tile) and drift up a little
+    const y = at.y + 6 - n * 20 - age * 18;
+    ctx.strokeText(q.text, at.x, y);
+    ctx.fillStyle = q.color;
+    ctx.fillText(q.text, at.x, y);
+    ctx.globalAlpha = 1;
+    ctx.textAlign = 'left';
+  }
+}
+
+// a simple figure: a body block with eyes; big = the Ogre King
+function drawFighter(x, y, color, size, faded) {
+  ctx.globalAlpha = faded ? 0.25 : 1;
+  ctx.fillStyle = color;
+  ctx.fillRect(x - size / 2, y - size / 2, size, size);
+  ctx.fillStyle = '#000';
+  const e = Math.max(3, size / 9);
+  ctx.fillRect(x - size / 4 - e / 2, y - size / 6, e, e);
+  ctx.fillRect(x + size / 4 - e / 2, y - size / 6, e, e);
+  ctx.globalAlpha = 1;
+}
+
+function drawCombat() {
+  // a dark flagstone floor
+  ctx.fillStyle = '#1b1a20';
+  ctx.fillRect(0, 0, 288, 352);
+  ctx.strokeStyle = '#26242c';
+  for (let y = 0; y < 352; y += 32) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(288, y); ctx.stroke();
+    for (let x = (y / 32) % 2 ? 24 : 0; x < 288; x += 48) { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + 32); ctx.stroke(); }
+  }
+  // a line down the middle separates your side from theirs
+  ctx.strokeStyle = '#3a3742';
+  ctx.setLineDash([4, 6]);
+  ctx.beginPath(); ctx.moveTo(128, 20); ctx.lineTo(128, 340); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // you
+  drawFighter(PLAYER_SPOT.x, PLAYER_SPOT.y, '#4af', 40, false);
+  ctx.fillStyle = '#ccc';
+  ctx.fillRect(PLAYER_SPOT.x + 22, PLAYER_SPOT.y - 26, 4, 34);  // sword
+  bar(PLAYER_SPOT.x - 26, PLAYER_SPOT.y - 34, 52, 6, p.hp, p.max, poison ? '#a5d' : '#4c4');
+  ctx.fillStyle = '#fff';
+  ctx.font = `600 13px ${GAME_FONT}`;
+  ctx.textAlign = 'center';
+  ctx.fillText(`${p.hp}/${p.max}`, PLAYER_SPOT.x, PLAYER_SPOT.y + 38);
+
+  // the enemies; the target stands on a yellow ring
+  const spots = foeSpots(), tgt = liveTarget();
+  for (const f of sceneFoes) {
+    const {x, y} = spots.get(f), size = f.boss ? 50 : 34, dead = f.hp <= 0;
+    if (f === tgt && phase !== 'loot') {
+      ctx.strokeStyle = '#fc3';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.ellipse(x, y + size / 2 + 4, size / 2 + 8, 7, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.lineWidth = 1;
+    }
+    drawFighter(x, y, f.color, size, dead);
+    if (f.boss) { ctx.strokeStyle = '#fff'; ctx.strokeRect(x - size / 2, y - size / 2, size, size); }
+    if (!dead) bar(x - 24, y - size / 2 - 10, 48, 5, f.hp, f.max, f.color);
+    ctx.fillStyle = dead ? '#666' : '#fff';
+    ctx.font = `600 12px ${GAME_FONT}`;
+    ctx.fillText(f.name + (f.items.length ? '*' : '') + (f.burn > 0 && !dead ? ' (burning)' : ''), x, y + size / 2 + 22);
+  }
+  ctx.textAlign = 'left';
+}
+
+// tap an enemy on the combat screen to target it
+function tapTarget(cx, cy) {
+  const spots = foeSpots();
+  for (const f of sceneFoes) {
+    const s = spots.get(f), half = (f.boss ? 50 : 34) / 2 + 10;
+    if (f.hp > 0 && Math.abs(cx - s.x) <= half && Math.abs(cy - s.y) <= half + 12) {
+      target = f;
+      msg.textContent = `You turn to face the ${f.name}.`;
+      draw();
+      return;
+    }
+  }
+}
+
 function draw() {
+  if (inCombatScene()) {
+    drawCombat();
+    drawHud();
+    drawPops();
+    fightBox.hidden = over || phase !== 'fight';
+    return;
+  }
   map.forEach((row, y) => [...row].forEach((ch, x) => {
     ctx.fillStyle = !visible(x, y) ? FOG
       : ch === 'C' && opened.has(`${x},${y}`) ? '#432' : colors[ch];
@@ -1011,7 +1164,13 @@ function draw() {
   });
   ctx.fillStyle = '#4af';
   ctx.fillRect(p.x * T + 8, p.y * T + 8, T - 16, T - 16);
+  drawHud();
+  drawPops();
+  fightBox.hidden = over || phase !== 'fight';
+}
 
+// the status bar under the map: level, floor, your health and XP
+function drawHud() {
   ctx.fillStyle = '#111';
   ctx.fillRect(0, 352, 288, 48);
   ctx.fillStyle = '#fff';
@@ -1019,15 +1178,12 @@ function draw() {
   ctx.fillText(`Lv ${level} - Floor ${floor + 1}/${FLOORS}`, 8, 368);
   bar(8, 374, 120, 12, p.hp, p.max, poison ? '#a5d' : '#4c4'); // purple while poisoned
   bar(8, 390, 120, 4, xp, xpToNext(level + levelUps), '#fc3');
-  const live = foes.filter(f => f.hp > 0);
-  const gap = live.length > 3 ? 10 : 14;
-  live.forEach((f, i) => {
-    ctx.fillStyle = '#fff';
-    ctx.font = `600 12px ${GAME_FONT}`;
-    ctx.fillText(f.name + (f.items.length ? '*' : ''), 140, 364 + i * gap);
-    bar(204, 356 + i * gap, 76, 8, f.hp, f.max, f.color);
-  });
-  fightBox.hidden = over || phase !== 'fight';
+  ctx.font = `600 13px ${GAME_FONT}`;
+  ctx.fillText(`HP ${p.hp}/${p.max}`, 140, 384);
+  if (inCombatScene() && phase === 'fight') {
+    ctx.fillStyle = '#fc3';
+    ctx.fillText('Tap an enemy to target it', 140, 368);
+  }
 }
 
 // ends the run if you're dead; returns true while you're still alive
@@ -1036,6 +1192,7 @@ function checkDeath(killer, text) {
   if (secondWinds > 0) {
     secondWinds--;
     p.hp = 1;
+    popup('player', 'SECOND WIND', 'gold');
     msg.textContent += ' SECOND WIND! You refuse to fall and stand back up with 1 HP.';
     showGear();
     return true;
@@ -1053,6 +1210,7 @@ function tickPoison() {
   const hurt = Math.min(poisonDmg(), p.hp);
   p.hp -= hurt;
   run.taken += hurt;
+  popup('player', hurt, 'dmg');
   msg.textContent += ` Poison burns you for ${hurt}` + (poison ? ` (${poison} more).` : '. The poison wears off.');
   showGear();
   return checkDeath("Wyvern's poison", 'The poison was too much. You collapse.');
@@ -1069,6 +1227,7 @@ function foeStrike(f, mult) {
   const result = crush || charge ? 'hit' : swingResult(FOE_MISS, FOE_CRIT);
   f.landed = result !== 'miss';
   if (result === 'miss') {
+    popup('player', 'MISS', 'miss');
     msg.textContent += ` ${f.name} misses you.`;
   } else {
     const lust = f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0;
@@ -1078,6 +1237,7 @@ function foeStrike(f, mult) {
     hurt = Math.max(1, Math.round(hurt * mult));
     run.taken += Math.min(hurt, p.hp);
     p.hp = Math.max(0, p.hp - hurt);
+    popup('player', hurt, 'dmg');
     msg.textContent += crush
       ? ` ${f.name} lands a CRUSHING BLOW through your armor for ${hurt}!`
       : charge
@@ -1089,6 +1249,7 @@ function foeStrike(f, mult) {
       const heal = Math.min(Math.round(hurt * f.drain * purityKeep()), f.max - f.hp);
       if (heal > 0) {
         f.hp += heal;
+        popup(f, `+${heal}`, 'heal');
         msg.textContent += ` It drains ${heal} HP from you.`;
       }
     }
@@ -1131,6 +1292,7 @@ function foesAttack(mult = 1, blocking = false) {
       } else if (f.hp < f.max) {
         const heal = Math.min(f.regen, f.max - f.hp);
         f.hp += heal;
+        popup(f, `+${heal}`, 'heal');
         msg.textContent += ` The ${f.name} regenerates ${heal} HP.`;
       }
     }
@@ -1152,6 +1314,7 @@ function foesAttack(mult = 1, blocking = false) {
     // a hit that lands on your raised shield may stun the attacker for its next turn
     if (blocking && f.landed && f.hp > 0 && Math.random() < stunChance()) {
       f.stunned = true;
+      popup(f, 'STUNNED', 'stun');
       msg.textContent += ` The ${f.name} staggers off your shield, stunned!`;
     }
   }
@@ -1184,6 +1347,7 @@ function endFight() {
   const mend = Math.min(enchSum('mending'), p.max - p.hp);
   if (killedAny && mend > 0) {
     p.hp += mend;
+    popup('player', `+${mend}`, 'heal');
     msg.textContent += ` Your gear mends ${mend} HP.`;
   }
   if (current.boss) {
@@ -1192,6 +1356,7 @@ function endFight() {
     msg.textContent += ' ' + loot(Math.min(2, current.zone));
   } else {
     phase = 'explore';
+    combatView = false;  // nothing to loot: straight back to the map
   }
   foes = [];
   current = null;
@@ -1203,9 +1368,11 @@ function damageFoe(t, amount, crit) {
   const dealt = Math.min(amount, t.hp);
   t.hp -= dealt;
   run.dealt += dealt;
+  if (dealt > 0) popup(t, dealt, 'dmg');
   if (t.hp === 0 && t.reassemble && !t.rose && !crit && Math.random() < REASSEMBLE_CHANCE) {
     t.rose = true;
     t.hp = Math.round(t.max * REASSEMBLE_HP);
+    popup(t, `+${t.hp}`, 'heal');
     msg.textContent += ` The ${t.name}'s bones rattle back together!`;
   } else if (t.hp === 0) {
     killFoe(t);
@@ -1224,6 +1391,7 @@ function strike(t, heavy, label) {
   const result = swingResult(missChance, critChance());
   if (result === 'miss') {
     run.misses++;
+    popup(t, 'MISS', 'miss');
     msg.textContent += label + (heavy ? `Your heavy swing misses the ${t.name}.` : `You swing at ${t.name} and miss.`);
     return result;
   }
@@ -1258,6 +1426,7 @@ function strike(t, heavy, label) {
   const leech = Math.min(Math.round(dealt * enchSum('vampiric')), p.max - p.hp);
   if (leech > 0) {
     p.hp += leech;
+    popup('player', `+${leech}`, 'heal');
     msg.textContent += ` You drain ${leech} HP.`;
   }
   return result;
@@ -1268,7 +1437,7 @@ function act(kind) {
   if (over || phase !== 'fight') return;
   if (kind === 'block') {
     msg.textContent = 'You raise your guard.';
-    const front = foes.find(f => f.hp > 0);
+    const front = liveTarget();
     if (perkN('shieldbash') && front) {
       msg.textContent += ` You bash the ${front.name} for ${Math.min(bashDmg(), front.hp)}.`;
       damageFoe(front, bashDmg(), false);
@@ -1280,12 +1449,12 @@ function act(kind) {
   }
   const heavy = kind === 'heavy';
   const exposed = heavy ? HEAVY_EXPOSED : 1;
-  const t = foes.find(f => f.hp > 0);
+  const t = liveTarget();
   msg.textContent = '';
   const result = strike(t, heavy, '');
-  // a Swift weapon may strike again (the same enemy, or the next one if the first fell)
+  // a Swift weapon may strike again (your target, or the next enemy if your target fell)
   if (result !== 'miss' && Math.random() < enchSum('swift')) {
-    const next = foes.find(f => f.hp > 0);
+    const next = liveTarget();
     if (next) strike(next, heavy, ' Swift strike! ');
   }
   if (result === 'miss' && t.riposte && !t.stunned && t.hp > 0) {
@@ -1311,6 +1480,7 @@ potionBtn.onclick = () => {
   run.potions++;
   const heal = Math.min(potionHeal(), p.max - p.hp);
   p.hp += heal;
+  if (heal > 0) popup('player', `+${heal}`, 'heal');
   msg.textContent = `You drink a potion and heal ${heal}.`;
   if (poison) {
     poison = 0;
@@ -1368,6 +1538,7 @@ fleeBtn.onclick = () => {
     foes = [];
     current = null;
     phase = 'explore';
+    combatView = false;
     msg.textContent = 'You slipped away!';
   } else {
     phase = 'fight';
@@ -1392,8 +1563,16 @@ leaveBtn.onclick = () => {
 };
 
 c.addEventListener('pointerdown', e => {
-  if (over || (phase !== 'explore' && phase !== 'fight')) return;
-  if (phase === 'fight') return act('normal'); // tapping the map is a normal attack
+  if (over) return;
+  // on the combat screen a tap picks which enemy you attack
+  if (inCombatScene()) {
+    if (phase === 'fight' || phase === 'choice') {
+      const r = c.getBoundingClientRect();
+      tapTarget((e.clientX - r.left) * c.width / r.width, (e.clientY - r.top) * c.height / r.height);
+    }
+    return;
+  }
+  if (phase !== 'explore') return;
 
   const r = c.getBoundingClientRect();
   const dx = e.clientX - r.left - c.width / 2;
@@ -1421,6 +1600,11 @@ c.addEventListener('pointerdown', e => {
     foes.forEach(f => f.fresh = true); // a new fight: the Minotaur gets to charge again
     // Pathfinder: an enemy you spotted before walking into it can be ambushed (once)
     hit.ambushReady = !!(hit.spottedEarly && perkN('pathfinder') && !hit.ambushed);
+    // switch to the combat screen
+    combatView = true;
+    sceneFoes = foes;
+    target = foes.find(f => f.hp > 0);
+    pops = [];
     phase = 'choice';
     choice.hidden = false;
     const live = foes.filter(f => f.hp > 0);
