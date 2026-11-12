@@ -74,19 +74,19 @@
 
     <details>
       <summary>Moving and the map</summary>
-      <p>Tap the side of the map you want to step toward: top, bottom, left or right of the middle. You only see the tiles right around you and the path you have already walked. Everything else stays dark, including chests, shops and enemies, so explore to find them.</p>
+      <p>Tap the side of the map you want to step toward: top, bottom, left or right of the middle. Small gold arrows at the edges of the map show which ways are open. Your torch lights the tiles right around you, and the path you have already walked stays on the map, dim. Everything else stays dark, including chests, shops and enemies, so explore to find them. Each floor has its own look, and its name shows under the map.</p>
       <p>The bar along the top of the screen shows your level and floor, your health (the number sits on the bar) and the thin gold XP bar under it, your gold next to the coin, and your potions next to the flask. On a phone the game fills the screen; hold it upright. A bigger phone shows the same map, just larger.</p>
       <p>Your buttons sit at the bottom of the screen, within reach of your thumb. They change with the moment: <b>Fight</b> and <b>Flee</b> when you meet enemies, <b>Normal</b>, <b>Heavy</b> and <b>Block</b> in a fight, <b>Equip</b> and <b>Leave</b> when you find gear. <b>Hero</b> and <b>Bag</b> are always there.</p>
       <p>The line just under the map is the <b>message log</b>. It shows what just happened, one message at a time (the dots on its right show how many there were). Tap it to read the whole history; <b>Older</b> and <b>Newer</b> page through it.</p>
       <ul>
-        <li><span class="sw" style="background:#4af"></span><b>You</b> (the small blue square)</li>
-        <li><span class="sw" style="background:#c80"></span><b>Chest</b>: coins, a potion, a piece of gear or a scroll. It turns dark once opened.</li>
-        <li><span class="sw" style="background:#3cf"></span><b>Stairs down</b>. Step on them to go to the next floor.</li>
-        <li><span class="sw" style="background:#a6f"></span><b>Merchant</b>: floor 2 (Iron gear) and floor 4 (Steel gear)</li>
-        <li><span class="sw" style="background:#2cb"></span><b>Enchanter</b>: floor 3 only</li>
-        <li><span class="sw" style="background:#fc3"></span><b>The exit</b>: floor 5</li>
+        <li><b>You</b>: a small figure with a torch, wearing your gear</li>
+        <li><span class="sw" style="background:#c80"></span><b>Chest</b>: coins, a potion, a piece of gear or a scroll. Its lid stands open once looted.</li>
+        <li><span class="sw" style="background:#3cf"></span><b>Stairs down</b>, glowing faintly blue. Step on them to go to the next floor.</li>
+        <li><span class="sw" style="background:#a6f"></span><b>Merchant</b>, hooded, with a lantern: floor 2 (Iron gear) and floor 4 (Steel gear)</li>
+        <li><span class="sw" style="background:#2cb"></span><b>Enchanter</b>, in a pointed hat in a circle of runes: floor 3 only</li>
+        <li><span class="sw" style="background:#fc3"></span><b>The exit</b>, a doorway full of daylight: floor 5</li>
       </ul>
-      <p>An enemy you have met stays marked on the map in its color. A white outline marks the Ogre King.</p>
+      <p>An enemy you have met stays on the map, standing on a ring in its color, with a number if it is a group. A white ring marks the Ogre King.</p>
     </details>
 
     <details>
@@ -423,9 +423,6 @@ const ENEMIES_PER_FLOOR = [8, 8, 9, 9, 9]; // plus the stairs guard / boss
 // 2: Orc/Troll, 3: Dark Knight/Wraith, 4: Minotaur/Wyvern
 const FLOOR_ZONES = [[0, 1], [1, 1], [2, 3], [3, 4], [4, 4]];
 let floor = 0, map = [];
-const colors = {'#': '#555', '.': '#222', 'S': '#222', 'E': '#fc3', 'D': '#3cf',
-                'M': '#a6f', 'N': '#a6f', 'X': '#2cb', 'C': '#c80'};
-const FOG = '#000';
 const roll = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
 const shuffle = a => {
   for (let i = a.length - 1; i > 0; i--) {
@@ -991,7 +988,7 @@ function popup(who, text, kind) {
 // ---- animation: keep redrawing while numbers float or a fight is on screen (torches, fog, drips) ----
 const FRAME_MS = 33;  // about 30 frames a second is plenty and easy on phone batteries
 let looping = false, lastFrame = 0;
-const wantFrames = () => pops.length > 0 || (inCombatScene() && !over) || uiAnimating();
+const wantFrames = () => pops.length > 0 || (inCombatScene() && !over) || uiAnimating() || mapLive();
 function requestFrames() {
   if (looping || !wantFrames()) return;
   looping = true;
@@ -2905,7 +2902,402 @@ function drawDoll(g, x, y, h, gear, glows, weapon, t) {
   g.restore();
 }
 
-return {drawFight, drawDoll, roomFor, ROOM_OF_FLOOR, KINDS};
+// ======================================================================
+// THE MAP: the maze from above, in the same low poly + pixel art + light as the fights. Each floor is
+// drawn once (its stone and props, themed like that floor's fight room, its stairs, its shopkeeper) into a
+// picture at one unit per pixel, snapped to the palette. Each frame lays the chests, the creatures and you
+// over it, then the light: the torch you carry, the torches on the walls and everything that glows, and the
+// dark over all you can't see (the path you have walked stays, dim and cold).
+// ======================================================================
+const MT = 32, MW = 9, MH = 11, MAP_W = MW * MT, MAP_H = MH * MT;
+const MAP_THEMES = {
+  gate:  {wall: [100, 96, 110], floor: [92, 88, 100], grout: [24, 22, 28], kind: 'flag', torch: 0.2,
+          props: {crack: 0.18, rubble: 0.14, bone: 0.06}},
+  crypt: {wall: [74, 92, 100], floor: [70, 86, 92], grout: [16, 24, 28], kind: 'flag', torch: 0.14,
+          props: {puddle: 0.16, crack: 0.12, bone: 0.08, moss: 0.3}},
+  cave:  {wall: [86, 76, 104], floor: [78, 72, 90], grout: [20, 16, 26], kind: 'rock', torch: 0.08,
+          props: {crystal: 0.2, mushroom: 0.12, rubble: 0.12}},
+  deep:  {wall: [86, 62, 56], floor: [76, 54, 48], grout: [22, 10, 8], kind: 'rock', torch: 0.12,
+          props: {lava: 0.16, rubble: 0.14, crack: 0.1}},
+  feast: {wall: [118, 98, 82], floor: [124, 84, 50], grout: [34, 20, 12], kind: 'wood', torch: 0.22,
+          props: {carpet: 0.4, bone: 0.05, banner: 0.18}}
+};
+const mapCanvas = (w = MAP_W, h = MAP_H) => { const cv = document.createElement('canvas'); cv.width = w; cv.height = h; return cv; };
+const shrinkPts = (pts, d) => { const c = cen(pts); return pts.map(([x, y]) => { const dx = c[0] - x, dy = c[1] - y, l = Math.hypot(dx, dy) || 1; return [x + dx / l * d, y + dy / l * d]; }); };
+const ell = (g, x, y, rx, ry, fill) => { g.beginPath(); g.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); g.fillStyle = fill; g.fill(); };
+// a flagstone: four low facets meeting off-center, gently lit from the upper left
+function slab(g, x, y, w, h, C, r) {
+  const x0 = x + 0.8, y0 = y + 0.8, x1 = x + w - 0.8, y1 = y + h - 0.8;
+  const mx = lerp(x0, x1, 0.35 + r() * 0.3), my = lerp(y0, y1, 0.35 + r() * 0.3);
+  tri(g, [[x0, y0], [x1, y0], [mx, my]], C, 1.08);
+  tri(g, [[x0, y1], [x0, y0], [mx, my]], C, 1.0);
+  tri(g, [[x1, y0], [x1, y1], [mx, my]], C, 0.9);
+  tri(g, [[x1, y1], [x0, y1], [mx, my]], C, 0.82);
+}
+function floorTile(g, X, Y, th, r) {
+  g.fillStyle = rgb(th.grout); g.fillRect(X, Y, MT, MT);
+  if (th.kind === 'flag') {
+    for (const [ox, oy] of [[0, 0], [16, 0], [0, 16], [16, 16]]) slab(g, X + ox, Y + oy, 16, 16, stoneShade(th.floor, r, 0.8, 0.32), r);
+  } else if (th.kind === 'rock') {
+    // plates of bare rock; the corners on the tile's edge stay put so neighbours meet along the grout
+    const P = [];
+    for (let j = 0; j <= 2; j++) for (let i = 0; i <= 2; i++) {
+      const inside = i === 1 && j === 1;
+      P.push([X + i * 16 + (inside ? (r() - 0.5) * 10 : 0), Y + j * 16 + (inside ? (r() - 0.5) * 10 : 0)]);
+    }
+    const at = (i, j) => P[j * 3 + i];
+    for (let j = 0; j < 2; j++) for (let i = 0; i < 2; i++) {
+      const a = at(i, j), b = at(i + 1, j), c = at(i, j + 1), d = at(i + 1, j + 1);
+      for (const t of r() < 0.5 ? [[a, b, d], [a, d, c]] : [[a, b, c], [b, d, c]]) {
+        const C = stoneShade(th.floor, r, 0.76, 0.36), q = shrinkPts(t, 0.9), k = 0.86 + r() * 0.22;
+        tri(g, q, C, k);
+        tri(g, [q[0], q[1], cen(q)], C, k * 1.08);
+      }
+    }
+  } else {
+    // wooden boards, four to a tile, each of its own length and shade
+    for (let row = 0; row < 4; row++) {
+      let x = X - r() * 14;
+      while (x < X + MT) {
+        const len = 12 + r() * 18, a = Math.max(X, x), b = Math.min(X + MT, x + len), y = Y + row * 8, C = stoneShade(th.floor, r, 0.78, 0.34);
+        if (b - a > 1.5) {
+          g.fillStyle = rgb(C, 0.95); g.fillRect(a + 0.6, y + 0.6, b - a - 1.2, 6.8);
+          g.fillStyle = rgb(C, 1.12); g.fillRect(a + 0.6, y + 0.6, b - a - 1.2, 1.2);       // the lit edge
+          g.fillStyle = rgb(C, 0.78); g.fillRect(a + 0.6, y + 6.2, b - a - 1.2, 1.2);       // the shaded edge
+          if (r() < 0.5) { g.fillStyle = rgb(C, 0.82); g.fillRect(a + 2 + r() * (b - a - 5), y + 3 + r() * 2, 3 + r() * 4, 0.8); }   // grain
+          if (r() < 0.25) { g.fillStyle = 'rgba(20,12,8,0.8)'; g.fillRect(a + 1.5, y + 3.3, 1, 1); g.fillRect(b - 2.5, y + 3.3, 1, 1); }   // nails
+        }
+        x += len;
+      }
+    }
+  }
+}
+// a wall: a mass of chiseled blocks seen from above; where it meets an open tile below it shows a face of brick
+function wallTile(g, X, Y, th, r, face) {
+  const top = face ? MT - 11 : MT;
+  g.fillStyle = rgb(th.wall, 0.18); g.fillRect(X, Y, MT, top);
+  const rows = face ? [[0, 10.5], [10.5, top - 10.5]] : [[0, 16], [16, 16]];
+  rows.forEach(([oy, h], i) => {
+    const shift = (i + (Y / MT)) % 2 ? 8 : 0;
+    for (let ox = -shift; ox < MT; ox += 16) {
+      const a = Math.max(0, ox), b = Math.min(MT, ox + 16);
+      stoneBlock(g, X + a, Y + oy, b - a, h, stoneShade(th.wall, r, 0.72, 0.3), 0.4, r);   // kept dark, so the open floor reads at a glance
+    }
+  });
+  if (!face) return;
+  const fy = Y + top;
+  g.fillStyle = rgb(th.grout, 1.2); g.fillRect(X, fy, MT, 11);
+  for (let course = 0; course < 2; course++) {
+    const y = fy + 0.6 + course * 5.4;
+    for (let x = X - (course ? 6 : 0) - r() * 4; x < X + MT; ) {
+      const w = 9 + r() * 5, a = Math.max(X, x), b = Math.min(X + MT, x + w), C = stoneShade(th.wall, r, 0.62, 0.26);
+      if (b - a > 1) {
+        g.fillStyle = rgb(C, 0.78); g.fillRect(a + 0.5, y, b - a - 1, 4.6);
+        g.fillStyle = rgb(C, 0.98); g.fillRect(a + 0.5, y, b - a - 1, 1);
+      }
+      x += w;
+    }
+  }
+  g.fillStyle = rgb(th.wall, 1.05); g.fillRect(X, fy - 0.6, MT, 1.2);                          // the lit lip along the top of the face
+}
+
+// ---- the special tiles ----
+function stairsDown(g, X, Y, th) {
+  g.fillStyle = '#060508'; g.fillRect(X + 4, Y + 3, 24, 26);
+  for (let k = 0; k < 5; k++) {
+    const y = Y + 5 + k * 4.8, inset = 5 + k * 0.9, d = 1 - k * 0.17;
+    g.fillStyle = rgb(th.floor, 1.05 * d); g.fillRect(X + inset, y, MT - inset * 2, 2.4);       // the tread
+    g.fillStyle = rgb(th.floor, 0.6 * d); g.fillRect(X + inset, y + 2.4, MT - inset * 2, 2.4);  // the riser
+  }
+  g.fillStyle = rgb(th.wall, 0.85); g.fillRect(X + 3, Y + 2, 2, 27);                             // the side walls
+  g.fillStyle = rgb(th.wall, 0.5); g.fillRect(X + 27, Y + 2, 2, 27);
+  g.fillStyle = rgb(th.wall, 1.1); g.fillRect(X + 3, Y + 2, 26, 1.6);                            // the lip at the top
+}
+function exitDoor(g, X, Y, th, r) {
+  const cx = X + 16;
+  path(g, [[X + 3, Y + 30], [X + 3, Y + 12], ...Array.from({length: 9}, (_, i) => { const a = Math.PI + i / 8 * Math.PI; return [cx + Math.cos(a) * 13, Y + 12 + Math.sin(a) * 10]; }), [X + 29, Y + 12], [X + 29, Y + 30]]);
+  g.fillStyle = rgb(th.wall, 0.7); g.fill();
+  for (let i = 0; i < 7; i++) {                                                                 // the arch's stones
+    const a0 = Math.PI + i / 7 * Math.PI, a1 = Math.PI + (i + 1) / 7 * Math.PI;
+    tri(g, [[cx + Math.cos(a0) * 13, Y + 12 + Math.sin(a0) * 10], [cx + Math.cos(a1) * 13, Y + 12 + Math.sin(a1) * 10], [cx + Math.cos((a0 + a1) / 2) * 8.5, Y + 12 + Math.sin((a0 + a1) / 2) * 6.5]], stoneShade(th.wall, r, 0.85, 0.3), 1.05);
+  }
+  const gr = g.createLinearGradient(0, Y + 6, 0, Y + 30);                                       // daylight through the doorway
+  gr.addColorStop(0, '#fffbe8'); gr.addColorStop(0.6, '#fff0a0'); gr.addColorStop(1, '#f2b84a');
+  path(g, [[X + 8, Y + 30], [X + 8, Y + 13], ...Array.from({length: 7}, (_, i) => { const a = Math.PI + i / 6 * Math.PI; return [cx + Math.cos(a) * 8, Y + 13 + Math.sin(a) * 6]; }), [X + 24, Y + 13], [X + 24, Y + 30]]);
+  g.fillStyle = gr; g.fill();
+  g.fillStyle = 'rgba(242,184,74,0.55)'; g.fillRect(X + 6, Y + 29, 20, 3);                      // light spilling onto the floor
+}
+function trapdoor(g, X, Y) {
+  g.fillStyle = '#120c08'; g.fillRect(X + 7, Y + 8, 18, 18);
+  for (let k = 0; k < 4; k++) { g.fillStyle = rgb([118, 80, 46], 0.9 + (k % 2) * 0.12); g.fillRect(X + 8 + k * 4.1, Y + 9, 3.6, 16); }
+  g.fillStyle = '#3a3238'; g.fillRect(X + 8, Y + 12, 16, 1.6); g.fillRect(X + 8, Y + 21, 16, 1.6);   // iron bands
+  g.strokeStyle = '#8a8490'; g.lineWidth = 1.1; g.beginPath(); g.arc(X + 16, Y + 17, 2.4, 0, Math.PI * 2); g.stroke();   // the ring
+}
+// a shopkeeper: a robed figure with a lantern on a pole (the merchants) or a pointed hat and a glowing staff (the Enchanter)
+function robed(g, cx, by, C, wizard) {
+  ell(g, cx, by, 10, 2.6, 'rgba(0,0,0,0.5)');
+  path(g, [[cx - 8, by], [cx - 4, by - 15], [cx + 4, by - 15], [cx + 8, by]]); g.fillStyle = rgb(C, 0.85); g.fill();
+  path(g, [[cx + 0.5, by], [cx + 0.5, by - 15], [cx + 4, by - 15], [cx + 8, by]]); g.fillStyle = rgb(C, 0.6); g.fill();
+  g.fillStyle = rgb(C, 0.45); g.fillRect(cx - 7, by - 1.5, 14, 1.5);                             // the hem
+  if (wizard) {
+    path(g, [[cx - 7, by - 14], [cx + 2, by - 29], [cx + 7, by - 14]]); g.fillStyle = rgb(C, 0.95); g.fill();
+    path(g, [[cx - 8, by - 14], [cx + 8, by - 14], [cx + 7, by - 12], [cx - 7, by - 12]]); g.fillStyle = rgb(C, 0.7); g.fill();   // the brim
+  } else {
+    ell(g, cx, by - 17, 5.4, 5, rgb(C, 0.95));
+    path(g, [[cx, by - 22], [cx + 5.4, by - 17], [cx + 3, by - 13]]); g.fillStyle = rgb(C, 0.68); g.fill();
+  }
+  ell(g, cx + 0.8, by - (wizard ? 10.5 : 16), 2.8, 2.2, '#100c12');                             // the face in shadow
+  g.fillStyle = wizard ? '#9ff8ec' : '#ffd890'; g.fillRect(cx - 0.6, by - (wizard ? 11 : 16.5), 1, 1); g.fillRect(cx + 1.6, by - (wizard ? 11 : 16.5), 1, 1);
+  if (wizard) {
+    g.strokeStyle = '#5a4630'; g.lineWidth = 1.4; g.beginPath(); g.moveTo(cx - 9, by); g.lineTo(cx - 10, by - 24); g.stroke();   // the staff
+    ell(g, cx - 10, by - 25.5, 2.2, 2.4, '#7ff0e0');
+  } else {
+    g.fillStyle = rgb([96, 66, 40]); g.fillRect(cx - 11, by - 13, 5, 7);                          // a pack of wares
+    g.strokeStyle = '#4a3a2a'; g.lineWidth = 1.2; g.beginPath(); g.moveTo(cx + 8, by); g.lineTo(cx + 10, by - 24); g.lineTo(cx + 13, by - 24); g.stroke();
+    g.fillStyle = '#3a3030'; g.fillRect(cx + 11.4, by - 23.5, 3.2, 1);
+    g.fillStyle = '#ffd070'; g.fillRect(cx + 11.6, by - 22.5, 2.8, 3.4);                          // the lantern
+  }
+}
+function torchBracket(g, x, y) {
+  g.fillStyle = '#1e1a1c'; g.fillRect(x - 0.8, y, 1.6, 6);
+  path(g, [[x - 2.6, y], [x + 2.6, y], [x + 1.6, y + 2.6], [x - 1.6, y + 2.6]]); g.fillStyle = '#4a4246'; g.fill();
+}
+
+// ---- one floor's picture, drawn once ----
+const mapHash = rows => rows.join('').split('').reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7);
+let mapMemo = null;
+function mapFor(key, rows) {
+  const id = key + '|' + rows.join('/');
+  if (mapMemo && mapMemo.id === id) return mapMemo;
+  const th = MAP_THEMES[key] || MAP_THEMES.gate, r = rngSeed(mapHash(rows) + key.length * 977);
+  const base = mapCanvas(), g = base.getContext('2d');
+  const wall = (x, y) => !rows[y] || rows[y][x] === undefined || rows[y][x] === '#';
+  ACTIVE_LIGHTS = [[MAP_W / 2, MAP_H / 2, 1e6, 0.85]];                                         // even light: the real light comes each frame
+  const torches = [], glows = [], carpet = new Set();
+  // carpet runs the length of a north-south corridor, or not at all
+  if (th.props.carpet) for (let x = 0; x < MW; x++) for (let y = 0; y < MH; ) {
+    if (wall(x, y)) { y++; continue; }
+    let y1 = y;
+    while (!wall(x, y1 + 1) && y1 + 1 < MH) y1++;
+    if (y1 > y && r() < th.props.carpet * 1.5) for (let k = y; k <= y1; k++) carpet.add(`${x},${k}`);
+    y = y1 + 1;
+  }
+  // the floors, then the walls over them, then the shadows the walls cast
+  for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (!wall(x, y)) floorTile(g, x * MT, y * MT, th, r);
+  for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
+    if (!wall(x, y)) continue;
+    const face = !wall(x, y + 1), X = x * MT, Y = y * MT;
+    wallTile(g, X, Y, th, r, face);
+    if (!face) continue;
+    if (r() < th.torch) { torchBracket(g, X + 16, Y + MT - 9); torches.push({tx: x, ty: y, x: X + 16, y: Y + MT - 9}); }
+    else if (th.props.crystal && r() < th.props.crystal * 2) {
+      const C = r() < 0.5 ? [90, 216, 208] : [200, 144, 255];
+      crystal(g, X + 6 + r() * 20, Y + MT - 1, 7 + r() * 4, C, r);
+      glows.push({tx: x, ty: y + 1, x: X + 16, y: Y + MT - 4, col: C.join(','), reach: 34, a: 0.55});
+    } else if (th.props.moss && r() < th.props.moss) {
+      for (let k = 0; k < 7; k++) { g.fillStyle = rgb([70, 112, 52], 0.8 + r() * 0.4); g.fillRect(X + r() * 30, Y + MT - 11 + r() * 10, 1.4 + r() * 2, 1.2); }
+    } else if (th.props.banner && r() < th.props.banner) {
+      const bx = X + 9 + r() * 8;
+      g.fillStyle = '#3a3238'; g.fillRect(bx - 1, Y + MT - 11, 10, 1.2);
+      path(g, [[bx, Y + MT - 10], [bx + 8, Y + MT - 10], [bx + 8, Y + MT + 2], [bx + 4, Y + MT - 1], [bx, Y + MT + 2]]); g.fillStyle = rgb([140, 32, 38]); g.fill();
+      g.fillStyle = rgb([214, 176, 80]); g.fillRect(bx + 3, Y + MT - 7, 2, 2);
+    }
+  }
+  for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
+    if (wall(x, y)) continue;
+    const X = x * MT, Y = y * MT;
+    if (wall(x, y - 1)) { const sg = g.createLinearGradient(0, Y, 0, Y + 8); sg.addColorStop(0, 'rgba(0,0,0,0.55)'); sg.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = sg; g.fillRect(X, Y, MT, 8); }
+    if (wall(x - 1, y)) { const sg = g.createLinearGradient(X, 0, X + 5, 0); sg.addColorStop(0, 'rgba(0,0,0,0.4)'); sg.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = sg; g.fillRect(X, Y, 5, MT); }
+  }
+  // what lies on each floor tile
+  for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
+    if (wall(x, y)) continue;
+    const ch = rows[y][x], X = x * MT, Y = y * MT, P = th.props, plain = ch === '.' || ch === 'C';
+    if (carpet.has(`${x},${y}`)) {
+      g.fillStyle = rgb([128, 28, 34]); g.fillRect(X + 4, Y, 24, MT);
+      g.fillStyle = rgb([200, 160, 70]); g.fillRect(X + 5, Y, 1.2, MT); g.fillRect(X + 25.8, Y, 1.2, MT);
+      g.fillStyle = rgb([96, 20, 26]); for (let k = 0; k < 3; k++) g.fillRect(X + 10 + k * 5, Y + 6 + (k % 2) * 14, 2, 2);
+    }
+    if (ch === 'D') { stairsDown(g, X, Y, th); glows.push({tx: x, ty: y, x: X + 16, y: Y + 18, col: '80,200,255', reach: 30, a: 0.4}); continue; }
+    if (ch === 'E') { exitDoor(g, X, Y, th, r); glows.push({tx: x, ty: y, x: X + 16, y: Y + 20, col: '255,226,150', reach: 70, a: 1, sun: true}); continue; }
+    if (ch === 'S') { trapdoor(g, X, Y); continue; }
+    if (ch === 'M' || ch === 'N') { robed(g, X + 15, Y + 28, [120, 80, 172], false); glows.push({tx: x, ty: y, x: X + 28, y: Y + 7, col: '255,196,110', reach: 46, a: 0.8, flicker: true}); continue; }
+    if (ch === 'X') {
+      g.strokeStyle = 'rgba(90,216,208,0.75)'; g.lineWidth = 1; g.beginPath(); g.ellipse(X + 16, Y + 27, 13, 3.6, 0, 0, Math.PI * 2); g.stroke();   // a circle of runes
+      for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2; g.fillStyle = '#5ad8d0'; g.fillRect(X + 16 + Math.cos(a) * 13 - 0.8, Y + 27 + Math.sin(a) * 3.6 - 0.8, 1.6, 1.6); }
+      robed(g, X + 17, Y + 28, [40, 150, 140], true);
+      glows.push({tx: x, ty: y, x: X + 7, y: Y + 3, col: '110,240,220', reach: 44, a: 0.8, runes: true});
+      continue;
+    }
+    if (!plain) continue;
+    const cx = X + 6 + r() * 20, cy = Y + 8 + r() * 18;
+    if (P.puddle && r() < P.puddle) {
+      ell(g, cx, cy, 6 + r() * 4, 2.6 + r() * 2, 'rgba(20,52,64,0.85)');
+      ell(g, cx - 1.5, cy - 0.8, 2.6, 0.8, 'rgba(150,210,220,0.5)');
+    } else if (P.lava && r() < P.lava) {
+      const q = [[X + 4, Y + 4], [X + 28, Y + 4], [X + 28, Y + 28], [X + 4, Y + 28]];
+      const a = mid(q[0], q[1], 0.2 + r() * 0.6), b = mid(q[3], q[2], 0.2 + r() * 0.6), m = mid(a, b, 0.5);
+      const pts = [a, [m[0] + (r() - 0.5) * 8, m[1]], b];
+      for (const [w, col] of [[3.2, '#5a1a0c'], [1.8, '#e0601c'], [0.8, '#ffd060']]) { g.strokeStyle = col; g.lineWidth = w; g.lineCap = g.lineJoin = 'round'; g.beginPath(); pts.forEach((p, k) => k ? g.lineTo(...p) : g.moveTo(...p)); g.stroke(); }
+      glows.push({tx: x, ty: y, x: m[0], y: m[1], col: '255,120,40', reach: 30, a: 0.6, flicker: true});
+    } else if (P.mushroom && r() < P.mushroom) {
+      const C = r() < 0.5 ? [90, 216, 208] : [200, 144, 255];
+      for (let k = 0; k < 3; k++) mushroom(g, cx + (k - 1) * 4, cy + (k % 2) * 2, 4 + r() * 2, C);
+      glows.push({tx: x, ty: y, x: cx, y: cy - 3, col: C.join(','), reach: 22, a: 0.45});
+    } else if (P.crack && r() < P.crack) {
+      crackAcross(g, [[X + 3, Y + 3], [X + 29, Y + 3], [X + 29, Y + 29], [X + 3, Y + 29]], r);
+    } else if (P.rubble && r() < P.rubble) {
+      for (let k = 0; k < 4; k++) { const s = 1.2 + r() * 1.8; lump(g, rockPts(cx + (r() - 0.5) * 10, cy + (r() - 0.5) * 6, s, r), stoneShade(th.wall, r, 0.8, 0.3), 700 + k + x * 13 + y, 1, 0.6); }
+    } else if (P.bone && r() < P.bone) {
+      if (r() < 0.5) skullAt(g, cx, cy, 0.55);
+      else { g.strokeStyle = rgb([200, 190, 164]); g.lineWidth = 1.4; g.beginPath(); g.moveTo(cx - 4, cy - 1); g.lineTo(cx + 4, cy + 1); g.stroke(); ell(g, cx - 4, cy - 1, 1.3, 1.3, rgb([200, 190, 164])); ell(g, cx + 4, cy + 1, 1.3, 1.3, rgb([200, 190, 164])); }
+    }
+  }
+  ACTIVE_LIGHTS = null;
+  const img = g.getImageData(0, 0, MAP_W, MAP_H);
+  quantize(img, PALETTE2, 16);
+  g.putImageData(img, 0, 0);
+  mapMemo = {id, base, torches, glows, light: mapCanvas(), sightMask: mapCanvas(MW * 4, MH * 4), ambMask: mapCanvas(MW * 4, MH * 4), maskKey: ''};
+  return mapMemo;
+}
+
+// ---- small figures for the map: you, each enemy, the chests; drawn once each, outlined, snapped to the palette ----
+const mapSprites = new Map();
+function finishSprite(cv) {
+  const g = cv.getContext('2d'), w = cv.width, h = cv.height, id = g.getImageData(0, 0, w, h), d = id.data, solid = new Uint8Array(w * h);
+  for (let i = 0; i < w * h; i++) { solid[i] = d[i * 4 + 3] >= 110 ? 1 : 0; d[i * 4 + 3] = solid[i] ? 255 : 0; }
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x;
+    if (!solid[i] && ((x > 0 && solid[i - 1]) || (x < w - 1 && solid[i + 1]) || (y > 0 && solid[i - w]) || (y < h - 1 && solid[i + w]))) { d[i * 4] = 13; d[i * 4 + 1] = 11; d[i * 4 + 2] = 16; d[i * 4 + 3] = 255; }
+  }
+  quantizeSolid(d, w);
+  g.putImageData(id, 0, 0);
+  return cv;
+}
+// a figure (feet at 0,0, facing right) shrunk to fit a tile: {cv, ax, ay} with its feet at (ax, ay) in the sprite
+function figureSprite(key, build, flip, maxH = 25, maxW = 28) {
+  if (mapSprites.has(key)) return mapSprites.get(key);
+  // sized by the figure itself, not by where it stands (a Bat flies at head height): its lowest point sits on the tile
+  const parts = build(), b = boxOf(parts), s = Math.min(maxH / Math.max(1, b.y1 - b.y0), maxW / Math.max(1, b.x1 - b.x0));
+  const cv = mapCanvas(40, 40), g = cv.getContext('2d'), f = flip ? -1 : 1, cx = 20 - (b.x0 + b.x1) / 2 * s * f;
+  ACTIVE_LIGHTS = [[cx - 14, 6, 70, 1.15], [cx + 10, 30, 40, 0.3]];
+  place(parts, cx, 37 - b.y1 * s, flip, s).forEach((q, k) => partLow(g, q, k));
+  ACTIVE_LIGHTS = null;
+  const out = {cv: finishSprite(cv), ax: 20, ay: 37};
+  if (mapSprites.size > 40) mapSprites.clear();
+  mapSprites.set(key, out);
+  return out;
+}
+function chestSprite(open) {
+  const key = 'chest:' + open;
+  if (mapSprites.has(key)) return mapSprites.get(key);
+  const cv = mapCanvas(24, 20), g = cv.getContext('2d'), wood = [132, 88, 46], gold = [214, 170, 70];
+  g.fillStyle = rgb(wood, 0.82); g.fillRect(2, 9, 20, 9);                                         // the body
+  g.fillStyle = rgb(wood, 0.62); g.fillRect(2, 15, 20, 3);
+  g.fillStyle = rgb(wood, 0.95); for (const x of [6.5, 12, 17.5]) g.fillRect(x, 9, 0.8, 9);
+  if (open) {
+    g.fillStyle = '#140c06'; g.fillRect(3, 7, 18, 3);                                              // the empty inside
+    path(g, [[2, 7], [22, 7], [20, 1], [4, 1]]); g.fillStyle = rgb(wood, 0.6); g.fill();          // the lid, thrown back
+    g.fillStyle = rgb(gold, 0.7); g.fillRect(5, 1, 1.6, 6); g.fillRect(17.4, 1, 1.6, 6);
+  } else {
+    path(g, [[2, 9.5], [2, 6], [5, 3], [19, 3], [22, 6], [22, 9.5]]); g.fillStyle = rgb(wood, 1.05); g.fill();   // the lid, rounded
+    g.fillStyle = rgb(wood, 1.25); g.fillRect(5, 3.6, 14, 1.2);
+    g.fillStyle = rgb(gold); g.fillRect(5, 3, 1.6, 15); g.fillRect(17.4, 3, 1.6, 15);              // the bands
+    g.fillStyle = rgb(gold, 1.15); g.fillRect(10.5, 8, 3, 4);                                      // the lock
+    g.fillStyle = '#2a1a08'; g.fillRect(11.6, 9.6, 0.9, 1.4);
+  }
+  const out = {cv: finishSprite(cv), ax: 12, ay: 18};
+  mapSprites.set(key, out);
+  return out;
+}
+
+// ---- one frame of the map ----
+// spec: {key, rows, vis: Uint8Array (2 in sight, 1 walked but out of sight, 0 dark), sight, t,
+//        hero: {x, y (tiles, in between while you step), face: 1 | -1, gear}, chests: [{x, y, open}],
+//        foes: [{x, y, name, gear, piece, color, boss, count}]}
+function drawMapScene(g, spec) {
+  const M = mapFor(spec.key, spec.rows), t = spec.t, vis = spec.vis, V = (x, y) => vis[y * MW + x] || 0;
+  // the masks of what you can see, rebuilt only when that changes: four cells to a tile, smoothed when stretched
+  const mk = vis.join('');
+  if (M.maskKey !== mk) {
+    M.maskKey = mk;
+    const sg = M.sightMask.getContext('2d'), ag = M.ambMask.getContext('2d');
+    sg.fillStyle = '#000'; sg.fillRect(0, 0, MW * 4, MH * 4);
+    ag.fillStyle = '#000'; ag.fillRect(0, 0, MW * 4, MH * 4);
+    for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
+      const v = V(x, y);
+      if (v === 2) { sg.fillStyle = '#fff'; sg.fillRect(x * 4, y * 4, 4, 4); ag.fillStyle = 'rgb(34,30,38)'; ag.fillRect(x * 4, y * 4, 4, 4); }
+      else if (v === 1) { ag.fillStyle = 'rgb(50,58,82)'; ag.fillRect(x * 4, y * 4, 4, 4); }       // walked before: dim and cold
+    }
+  }
+  g.save();
+  g.imageSmoothingEnabled = false;
+  g.drawImage(M.base, 0, 0);
+  // chests, enemies and you, each on its tile (feet low in the tile, so they stand on it)
+  for (const c of spec.chests) { const S = chestSprite(c.open); g.drawImage(S.cv, c.x * MT + 16 - S.ax, c.y * MT + 27 - S.ay); }
+  for (const f of spec.foes) {
+    const X = f.x * MT + 16, Y = f.y * MT + 28, K = KINDS[f.name] || KINDS.Goblin;
+    g.fillStyle = 'rgba(0,0,0,0.5)'; g.beginPath(); g.ellipse(X, Y, 11, 3.2, 0, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = f.boss ? '#ffffff' : f.color; g.lineWidth = 1.6; g.beginPath(); g.ellipse(X, Y, 12, 3.8, 0, 0, Math.PI * 2); g.stroke();
+    const S = figureSprite(`foe:${f.name}:${JSON.stringify(f.gear || {})}:${f.piece || 0}`, () => K.make({gear: f.gear || {}, piece: f.piece || 0}, 0.4), true,
+      f.boss ? 28 : K.idle === 'flap' ? 16 : 24, K.idle === 'flap' ? 34 : 28);
+    const bob = K.idle === 'flap' ? Math.round(Math.sin(t * 5.5 + f.x) * 1.5) - 4 : K.idle === 'hover' ? Math.round(Math.sin(t * 1.8 + f.y) * 1.2) - 2 : 0;
+    g.drawImage(S.cv, X - S.ax, Y - S.ay + bob);
+  }
+  const H0 = spec.hero, hx = H0.x * MT + 16, hy = H0.y * MT + 28;
+  g.fillStyle = 'rgba(0,0,0,0.5)'; g.beginPath(); g.ellipse(hx, hy, 8, 2.6, 0, 0, Math.PI * 2); g.fill();
+  const HS = figureSprite(`hero:${JSON.stringify(H0.gear)}:${H0.face}`, () => heroParts(H0.gear), H0.face < 0, 25, 26);
+  g.drawImage(HS.cv, Math.round(hx - HS.ax), Math.round(hy - HS.ay));
+  const tx = hx - 7 * H0.face, ty = hy - 17;                                                     // the torch in your other hand
+  // the light: your torch, the wall torches and the glows, only where you can see; then the dim memory of where you've walked
+  const L = M.light, lg = L.getContext('2d');
+  lg.globalCompositeOperation = 'source-over'; lg.fillStyle = '#000'; lg.fillRect(0, 0, MAP_W, MAP_H);
+  lg.globalCompositeOperation = 'lighter';
+  const glow = (x, y, reach, col, a) => {
+    const gr = lg.createRadialGradient(x, y, 1, x, y, reach);
+    gr.addColorStop(0, `rgba(${col},${a})`); gr.addColorStop(0.5, `rgba(${col},${a * 0.5})`); gr.addColorStop(1, `rgba(${col},0)`);
+    lg.fillStyle = gr; lg.fillRect(x - reach, y - reach, reach * 2, reach * 2);
+  };
+  const fl = 1 + 0.05 * Math.sin(t * 9.1) + 0.03 * Math.sin(t * 23.3);
+  glow(tx, ty, (spec.sight + 1.25) * MT * fl, '255,216,168', 1.15);
+  M.torches.forEach((T, i) => { if (V(T.tx, T.ty + 1) === 2) glow(T.x, T.y, 62 * (1 + 0.06 * Math.sin(t * 8.3 + i * 2.1)), '255,170,90', 0.85); });
+  for (const G of M.glows) if (V(G.tx, G.ty) === 2) glow(G.x, G.y, G.reach * (G.flicker ? 1 + 0.07 * Math.sin(t * 7 + G.x) : 1), G.col, G.a);
+  lg.imageSmoothingEnabled = true;
+  lg.globalCompositeOperation = 'multiply'; lg.drawImage(M.sightMask, 0, 0, MAP_W, MAP_H);
+  lg.globalCompositeOperation = 'lighter'; lg.drawImage(M.ambMask, 0, 0, MAP_W, MAP_H);
+  g.globalCompositeOperation = 'multiply';
+  g.imageSmoothingEnabled = true;
+  g.drawImage(L, 0, 0);
+  // what shines on its own: flames, lanterns, runes, crystals, lava, the daylight at the exit
+  g.globalCompositeOperation = 'lighter';
+  stamp(g, '255,170,80', 0.55, tx, ty - 3, 14 * fl);
+  M.torches.forEach(T => { if (V(T.tx, T.ty + 1) === 2) stamp(g, '255,150,60', 0.5, T.x, T.y - 3, 12); });
+  for (const G of M.glows) {
+    const v = V(G.tx, G.ty);
+    if (!v) continue;
+    const a = v === 2 ? 1 : 0.3;
+    stamp(g, G.col, 0.5 * a, G.x, G.y, G.sun ? 26 : 10);
+    if (G.sun && v === 2) for (let k = 0; k < 3; k++) { g.globalAlpha = 0.25 + 0.1 * Math.sin(t * 1.3 + k); stamp(g, G.col, 0.6, G.x + (k - 1) * 7, G.y - 4 - k * 2, 9); g.globalAlpha = 1; }
+    if (G.runes && v === 2) for (let k = 0; k < 4; k++) {                                       // motes circling the Enchanter
+      const a2 = t * 1.4 + k * Math.PI / 2, x = G.x + 9 + Math.cos(a2) * 12, y = G.y + 22 + Math.sin(a2) * 3.6;
+      stamp(g, G.col, 0.9, x, y, 3.2);
+    }
+  }
+  g.globalCompositeOperation = 'source-over';
+  M.torches.forEach((T, i) => { if (V(T.tx, T.ty + 1) === 2) liveFlame(g, T.x, T.y, 0.28, t, i); });
+  liveFlame(g, tx, ty, 0.3, t, 9);
+  // a group shows how many stand there
+  g.font = `600 9px ${'"EB Garamond", Georgia, serif'}`; g.textAlign = 'center';
+  for (const f of spec.foes) if (f.count > 1 && V(f.x, f.y) === 2) {
+    const x = f.x * MT + 27, y = f.y * MT + 9;
+    g.lineWidth = 2.4; g.strokeStyle = 'rgba(0,0,0,0.85)'; g.strokeText(`×${f.count}`, x, y); g.fillStyle = '#f4ead4'; g.fillText(`×${f.count}`, x, y);
+  }
+  g.textAlign = 'left';
+  g.restore();
+}
+const roomTitle = i => (SCENES.find(s => s.key === ROOM_OF_FLOOR[Math.min(i, ROOM_OF_FLOOR.length - 1)]) || {}).title || '';
+
+return {drawFight, drawDoll, drawMap: drawMapScene, roomTitle, roomFor, ROOM_OF_FLOOR, KINDS};
 })();
 
 
@@ -2919,12 +3311,17 @@ function outlinedText(text, x, y, color) {
 }
 
 const FALL_S = 0.45;  // how long a defeated enemy takes to go down
+let fightSeed = 1;    // the room layout of the fight on screen (from the encounter's roomSeed)
 function drawCombat() {
   const t = performance.now() / 1000;
   // the fight, in its floor's room (the Ogre King fights you in his own hall); each fight has its own seed,
   // so the props are laid out a little differently every time. The target stands on a yellow ring
   const boss = sceneFoes.some(f => f.boss), spots = foeSpots(), tgt = liveTarget();
-  if (current && current.roomSeed === undefined) current.roomSeed = 1 + Math.floor(Math.random() * 1e6);
+  // the seed is kept past the end of the fight, so the room stays the same while you look over the loot
+  if (current) {
+    if (current.roomSeed === undefined) current.roomSeed = 1 + Math.floor(Math.random() * 1e6);
+    fightSeed = current.roomSeed;
+  }
   const foeList = sceneFoes.map(f => {
     const s = spots.get(f), dead = f.hp <= 0;
     if (f.animPhase === undefined) f.animPhase = Math.random() * 10;      // so a group doesn't move in step
@@ -2932,7 +3329,7 @@ function drawCombat() {
     else if (f.fellAt === undefined) f.fellAt = t;
     return {f, x: s.x, y: s.y, s: s.s, fall: dead ? Math.min(1, (t - f.fellAt) / FALL_S) : 0, gone: !!f.fled};
   });
-  fightBoxes = ART.drawFight(ctx, {room: [boss ? 'throne' : ART.ROOM_OF_FLOOR[Math.min(floor, 4)], current ? current.roomSeed : 1],
+  fightBoxes = ART.drawFight(ctx, {room: [boss ? 'throne' : ART.ROOM_OF_FLOOR[Math.min(floor, 4)], fightSeed],
     hero: heroLook(), foes: foeList, ring: phase !== 'loot' ? tgt : null, t});
 
   // your health: a bar over your head, the numbers at your feet
@@ -2999,29 +3396,65 @@ function draw() {
   paintItems(items);
   ctx.setTransform(k, 0, 0, k, 0, k * view.top);
   drawTopBar();
-  if (uiAnimating()) requestFrames();
+  if (uiAnimating() || mapLive()) requestFrames();
 }
 
+// where you are drawn on the map: a step slides you from tile to tile; face = which way you last walked
+const STEP_SLIDE_MS = 150;
+let mapPos = null;   // {fx, fy (from), tx, ty (to), t0, face, floor}
+function heroOnMap(now) {
+  const m = mapPos;
+  if (!m || m.floor !== floor || Math.abs(p.x - m.tx) + Math.abs(p.y - m.ty) > 1) {
+    mapPos = {fx: p.x, fy: p.y, tx: p.x, ty: p.y, t0: 0, face: m ? m.face : 1, floor};   // a new floor: no slide
+  } else if (p.x !== m.tx || p.y !== m.ty) {
+    const at = slideAt(m, now);
+    mapPos = {fx: at.x, fy: at.y, tx: p.x, ty: p.y, t0: now, face: p.x !== m.tx ? Math.sign(p.x - m.tx) : m.face, floor};
+  }
+  return slideAt(mapPos, now);
+}
+function slideAt(m, now) {
+  const k = Math.min(1, Math.max(0, (now - m.t0) / STEP_SLIDE_MS)), e = 1 - (1 - k) * (1 - k);
+  return {x: m.fx + (m.tx - m.fx) * e, y: m.fy + (m.ty - m.fy) * e, face: m.face};
+}
+// the map keeps moving (torch flicker, glows) while it is on screen with nothing over it
+const mapLive = () => title.hidden && !over && !overlay && !inCombatScene() && (phase === 'explore' || phase === 'loot');
+
 function drawMap() {
-  map.forEach((row, y) => [...row].forEach((ch, x) => {
-    ctx.fillStyle = !visible(x, y) ? FOG
-      : ch === 'C' && opened.has(`${x},${y}`) ? '#432' : colors[ch];
-    ctx.fillRect(x * T, y * T, T, T);
-  }));
+  const now = performance.now(), hero = heroOnMap(now);
+  // 2 = in sight, 1 = walked before but out of sight, 0 = dark
+  const vis = new Uint8Array(W * H);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) vis[y * W + x] = inSight(x, y) ? 2 : visited.has(`${x},${y}`) ? 1 : 0;
   // Pathfinder spots enemies in sight before you bump into them
   const spotted = e => perkN('pathfinder') && inSight(e.x, e.y);
   enemies.forEach(e => { if (spotted(e) && e !== current) e.spottedEarly = true; }); // you can ambush it
-  enemies.filter(e => (e.seen || e.boss || spotted(e)) && !e.dead && visible(e.x, e.y)).forEach(e => {
+  const foesShown = enemies.filter(e => (e.seen || e.boss || spotted(e)) && !e.dead && visible(e.x, e.y)).map(e => {
     if (!e.group) e.group = makeGroup(e.zone);
-    ctx.fillStyle = e.group.find(f => f.hp > 0)?.color || e.group[0].color;
-    ctx.fillRect(e.x * T, e.y * T, T, T);
-    if (e.boss) {
-      ctx.strokeStyle = '#fff';
-      ctx.strokeRect(e.x * T + 1, e.y * T + 1, T - 2, T - 2);
-    }
+    const live = e.group.filter(f => f.hp > 0), f = live[0] || e.group[0];
+    return {x: e.x, y: e.y, name: f.name, gear: f.gear || {}, piece: f.piece, color: f.color, boss: !!e.boss, count: live.length};
   });
-  ctx.fillStyle = '#4af';
-  ctx.fillRect(p.x * T + 8, p.y * T + 8, T - 16, T - 16);
+  const chests = [];
+  map.forEach((row, y) => [...row].forEach((ch, x) => { if (ch === 'C' && visible(x, y)) chests.push({x, y, open: opened.has(`${x},${y}`)}); }));
+  ART.drawMap(ctx, {key: ART.ROOM_OF_FLOOR[Math.min(floor, 4)], rows: map, vis, sight: sight(), t: now / 1000,
+    hero: {x: hero.x, y: hero.y, face: hero.face, gear: heroLook().gear}, chests, foes: foesShown});
+  if (phase === 'explore' && !over) drawMoveHints(now);
+}
+
+// small gold arrows at the edges of the map, one for each way you can step from where you stand
+function drawMoveHints(now) {
+  const a = 0.45 + 0.2 * Math.sin(now / 380);
+  ctx.save();
+  ctx.lineCap = ctx.lineJoin = 'round';
+  for (const [dx, dy] of DIRS) {
+    const row = map[p.y + dy];
+    if (!row || !row[p.x + dx] || row[p.x + dx] === '#') continue;
+    const cx = CANVAS_W / 2 + dx * (CANVAS_W / 2 - 10), cy = PLAY_H / 2 + dy * (PLAY_H / 2 - 10);
+    const px = -dy, py = dx, s = 6;                          // across the arrow
+    const pts = [[cx - dx * s + px * s, cy - dy * s + py * s], [cx, cy], [cx - dx * s - px * s, cy - dy * s - py * s]];
+    const stroke = (w, col) => { ctx.lineWidth = w; ctx.strokeStyle = col; ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke(); };
+    stroke(5, `rgba(0,0,0,${a * 0.8})`);
+    stroke(2.4, `rgba(255,204,51,${a})`);
+  }
+  ctx.restore();
 }
 
 // a reminder along the bottom of the combat screen
@@ -3564,9 +3997,9 @@ function playControls(L, add) {
       {id: 'equip', label: 'Equip', tone: 'gold', act: equipItem},
       {id: 'leaveItem', label: 'Leave', act: leaveItem}]);
   } else if (phase === 'explore') {
-    add({draw: () => {
-      ctx.font = `italic 400 13px ${GAME_FONT}`;
-      centerText('Tap the side of the map to move', 144, L.act.y + L.act.h / 2 + 4, ctx.font, '#5e5866');
+    add({draw: () => {                                       // where you are, and how to move
+      titleText(`Floor ${floor + 1}: ${ART.roomTitle(floor)}`, 144, L.act.y + 21, 21, '#c9a24a', 'center', 270);
+      centerText('Tap the side of the map to move', 144, L.act.y + 41, `italic 400 13px ${GAME_FONT}`, '#5e5866');
     }});
   }
   buttonRow(add, 6, L.util.y, 276, L.util.h, [
@@ -4155,6 +4588,13 @@ function tryFlee() {
   if (Math.random() < FLEE_CHANCE + enchSum('fleetfoot')) {
     p.x = prev.x;
     p.y = prev.y;
+    // the enemies you ran from recover while you're gone: back to full health, nothing burning or stunned
+    for (const f of foes) if (f.hp > 0) {
+      f.hp = f.max;
+      f.burn = 0;
+      f.stunned = f.noRegen = f.raged = false;
+      f.swings = 0;
+    }
     foes = [];
     current = null;
     phase = 'explore';
@@ -4278,7 +4718,7 @@ fitScreen();   // sizes the canvas to the screen and draws the first frame
 
 // title screen: Play starts the run, How to Play swaps in the guide
 const showHowTo = on => { titleMain.hidden = on; howto.hidden = !on; title.scrollTop = 0; };
-playBtn.onclick = () => { title.hidden = true; run.start = Date.now(); };
+playBtn.onclick = () => { title.hidden = true; run.start = Date.now(); requestFrames(); };
 howBtn.onclick = () => showHowTo(true);
 backBtn.onclick = () => showHowTo(false);
 if (location.hash === '#play') title.hidden = true;
