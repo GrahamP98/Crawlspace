@@ -92,7 +92,7 @@
     <details>
       <summary>Fighting</summary>
       <p>Walk into an enemy to start a fight. The view switches to the <b>combat screen</b>: you stand on the left, facing the enemies on the right, each drawn as its own creature with its name and a green health bar over its head. Every floor has its own room, and the Ogre King fights you in his own hall. Enemies can come in groups of up to 3 on deeper floors; a group stands spread out in depth, the ones further back smaller. A <b>*</b> after a name means that enemy carries gear, so it hits harder or has armor.</p>
-      <p>Enemies wear the gear they carry, just like you. A sword in hand means it hits harder; a helmet, body armor, bracers or greaves mean it takes less damage. Leather is brown, iron is grey and steel shines silver. Only Goblins, Skeletons, Orcs and Dark Knights carry gear. Every other enemy fights with teeth, claws and fists.</p>
+      <p>Enemies wear the gear they carry, just like you. A sword in hand means it hits harder; a helmet, body armor, bracers or greaves mean it takes less damage. Leather is brown, iron is grey and steel shines silver. Only Goblins, Skeletons, Orcs and Dark Knights carry gear. Their gear is never better than the floor allows: leather on floors 1 and 2, up to iron on floor 3, and steel only from floor 4. Every other enemy fights with teeth, claws and fists.</p>
       <p><b>Tap an enemy to target it.</b> A yellow ring under an enemy shows your target, and your attacks go to it. When your target falls, the next enemy is targeted for you.</p>
       <p>Damage rises over the one who took it as a <b style="color:#f44">red</b> number, healing as a <b style="color:#4e4">green</b> one. <b>MISS</b> appears over whoever an attack was aimed at, <b style="color:#6df">STUNNED</b> over a stunned enemy, and <b style="color:#fc3">SECOND WIND</b> over you when that perk saves your life.</p>
       <p>You first choose <b>Fight</b> or <b>Flee</b>. Fleeing works 25% of the time (up to 65% with Fleetfoot gear) and puts you back one step. If it fails, the enemies get a free attack. You can never flee the Ogre King.</p>
@@ -120,13 +120,16 @@
       <ul>
         <li><span class="sw" style="background:#c33"></span><b>Orc</b>: bloodlust. Hits 4 harder while you are below half health, so heal before it gets going.</li>
         <li><span class="sw" style="background:#a52"></span><b>Troll</b>: regenerates 6 health every turn. A critical hit stops it for one turn, and fire stops it while the Troll burns. Finish Trolls fast.</li>
-        <li><span class="sw" style="background:#668"></span><b>Dark Knight</b>: often well armored. Whenever you miss it, it counterattacks for free, so a Heavy miss is costly.</li>
         <li><span class="sw" style="background:#bbf"></span><b>Wraith</b>: heals itself for a quarter of the damage it deals to you.</li>
       </ul>
       <h4>Floors <span class="num">4-5</span></h4>
       <ul>
-        <li><span class="sw" style="background:#35b"></span><b>Minotaur</b>: its first attack in a fight is a charge that never misses and deals double damage. Block it.</li>
+        <li><span class="sw" style="background:#668"></span><b>Dark Knight</b>: often well armored. Whenever you miss it, it counterattacks for free, so a Heavy miss is costly.</li>
         <li><span class="sw" style="background:#d4a"></span><b>Wyvern</b>: each hit has a 35% chance to poison you: 3 damage every turn and every step for 4 turns. A potion cures poison. Your health bar turns purple while you are poisoned.</li>
+      </ul>
+      <h4>Floor <span class="num">5</span></h4>
+      <ul>
+        <li><span class="sw" style="background:#35b"></span><b>Minotaur</b>: its first attack in a fight is a charge that never misses and deals double damage. Block it.</li>
       </ul>
       <h4>The Ogre King</h4>
       <p><span class="sw" style="background:#900"></span>260 health and armor of his own. Every third attack is a <b>Crushing Blow</b> that ignores your armor. The turn before, the log warns you: "The Ogre King winds up a huge swing..." That is your cue to <b>Block</b> or drink a potion. Below half health he flies into a rage and hits 3 harder.</p>
@@ -211,6 +214,7 @@
     <details>
       <summary>Gold and shops</summary>
       <p>Gold comes from kills and chests, and there is never enough of it. Spend it at the merchants on floors 2 and 4 (potions, potion bags, the Scroll Satchel, gear), at the Enchanter on floor 3, and on Redraws. The floor 4 merchant is the last shop, so after that gold is only good for Redraws. Spend it while you can.</p>
+      <p>You can also sell. Tap <b>Sell</b> at a merchant to sell potions or any piece of gear you wear, and tap <b>Sell scrolls</b> at the Enchanter to sell scrolls from your bag. You get 20% of what the thing costs to buy (an enchantment on gear adds its Enchanter price). Gear and scrolls take two taps to sell, so you never sell one by accident; gear you sell leaves its slot empty.</p>
     </details>
 
     <details>
@@ -527,7 +531,7 @@ const BAGS = [
   {type: 'bag', name: 'Potion Bandolier', from: 7, to: 10, price: 70, tier: 2}
 ];
 const makeStock = tier => [
-  {type: 'potion', name: 'Health Potion', price: 10},
+  {type: 'potion', name: 'Health Potion', price: POTION_PRICE},
   ...BAGS.filter(b => b.tier <= tier),
   {type: 'satchel', name: 'Scroll Satchel', price: SATCHEL_PRICE},
   ...Object.keys(slots).map(k => {
@@ -537,18 +541,35 @@ const makeStock = tier => [
 ];
 let shopStock = [], shopTitle = '';
 
+// ---- selling: the merchants buy potions and the gear you wear, the Enchanter buys scrolls ----
+// you get SELL_SHARE of what the thing costs to buy: gear costs 5 coins per point, plus what its
+// enchantment costs at the Enchanter; a scroll costs what its enchantment costs there
+const POTION_PRICE = 10, SELL_SHARE = 0.20;
+const sellValue = price => Math.max(1, Math.round(price * SELL_SHARE));
+const gearRetail = it => it.power * 5 + (it.ench ? TIER_PRICE[it.ench.t] : 0);
+let shopMode = 'buy';        // the merchant's screen: 'buy' or 'sell'
+// selling gear or a scroll takes two taps (the first asks), so a slip of the thumb never sells your sword
+let saleArm = null;          // {id, t}: the sale waiting for its second tap
+const SALE_CONFIRM_MS = 3000;
+const saleArmed = id => !!(saleArm && saleArm.id === id && performance.now() - saleArm.t < SALE_CONFIRM_MS);
+function confirmSale(id, ask, sell) {
+  if (saleArmed(id)) { saleArm = null; sell(); }
+  else { saleArm = {id, t: performance.now()}; msg.textContent = ask; }
+  refresh();
+}
+
 // gearTier = highest item tier the enemy can carry (leave it out for no gear)
 // armorMax = most armor pieces it can wear (defaults to 1)
 const types = [
   {name: 'Bat',      zone: 0, hp: 16,  dmg: [3, 7],   gold: [2, 4],   color: '#98a', evasion: 0.30},
   {name: 'Slime',    zone: 0, hp: 28,  dmg: [2, 6],   gold: [2, 5],   color: '#6c6', split: true},
-  {name: 'Goblin',   zone: 1, hp: 45,  dmg: [5, 9],   gold: [4, 7],   color: '#ee4', gearTier: 0, thief: true},
+  {name: 'Goblin',   zone: 1, hp: 40,  dmg: [5, 9],   gold: [4, 7],   color: '#ee4', gearTier: 0, thief: true},
   {name: 'Skeleton', zone: 1, hp: 50,  dmg: [6, 10],  gold: [4, 8],   color: '#ddd', gearTier: 1, reassemble: true, minFloor: 2},
   {name: 'Orc',      zone: 2, hp: 70,  dmg: [8, 13],  gold: [5, 8],  color: '#c33', gearTier: 1, armorMax: 2, bloodlust: 4},
   {name: 'Troll',    zone: 2, hp: 100, dmg: [10, 16], gold: [6, 9],  color: '#a52', regen: 6},
-  {name: 'Dark Knight', zone: 3, hp: 85, dmg: [11, 16], gold: [6, 10], color: '#668', gearTier: 2, armorMax: 3, riposte: true},
+  {name: 'Dark Knight', zone: 3, hp: 85, dmg: [11, 16], gold: [6, 10], color: '#668', gearTier: 2, armorMax: 3, riposte: true, minFloor: 4},
   {name: 'Wraith',   zone: 3, hp: 75,  dmg: [12, 18], gold: [6, 9],  color: '#bbf', drain: 0.25},
-  {name: 'Minotaur', zone: 4, hp: 130, dmg: [15, 22], gold: [7, 11], color: '#35b', charge: true},
+  {name: 'Minotaur', zone: 4, hp: 130, dmg: [15, 22], gold: [7, 11], color: '#35b', charge: true, minFloor: 5},
   {name: 'Wyvern',   zone: 4, hp: 110, dmg: [14, 21], gold: [7, 10], color: '#d4a', poison: true}
 ];
 // special abilities (set on each enemy type above):
@@ -586,10 +607,15 @@ function groupSize(zone) {
   return r < 0.25 ? 3 : r < 0.65 ? 2 : 1;
 }
 
+// the best gear an enemy can carry on each floor (0 Rusty/Leather, 1 Iron, 2 Steel), so it is never better
+// than what you can find or buy by then; each enemy type's own gearTier caps it too
+const FOE_GEAR_FLOOR_TIER = [0, 0, 1, 2, 2];
+const foeGearMax = t => Math.min(t.gearTier, FOE_GEAR_FLOOR_TIER[Math.min(floor, FLOORS - 1)]);
+
 // f.gear remembers each item's tier by slot (0 Rusty/Leather, 1 Iron, 2 Steel) so it can be drawn on the enemy
 function equipFoe(f, t) {
   if (Math.random() < FOE_GEAR_CHANCE) {
-    const tier = roll(0, t.gearTier), [name, pow] = slots.weapon.items[tier];
+    const tier = roll(0, foeGearMax(t)), [name, pow] = slots.weapon.items[tier];
     f.items.push(name);
     f.gear.weapon = tier;
     f.bonus = Math.ceil(pow / 2);
@@ -598,7 +624,7 @@ function equipFoe(f, t) {
   for (let n = 0; n < (t.armorMax || 1); n++) {
     if (Math.random() >= FOE_GEAR_CHANCE) continue;
     const k = free.splice(roll(0, free.length - 1), 1)[0];
-    const tier = roll(0, t.gearTier), [name, pow] = slots[k].items[tier];
+    const tier = roll(0, foeGearMax(t)), [name, pow] = slots[k].items[tier];
     f.items.push(name);
     f.gear[k] = tier;
     f.def += pow;
@@ -4053,10 +4079,25 @@ function menuFooter(L, add, defs) {
   add({id: 'log', x: P.x + 8, y: P.y + P.h - 10 - 26, w: P.w - 16, h: 26, act: openLog, draw: paintLogLine});
   return P.y + P.h - 10 - 26 - 6 - 44 - 8;   // where the rows above must end
 }
+// the merchant: Buy (the stock) or Sell (a potion, or a piece of gear you wear)
 function shopScreen(L, add, menu) {
-  const P = L.panel;
-  menu(shopTitle);
-  const end = menuFooter(L, add, [{id: 'shop:leave', label: 'Leave', act: leaveShop}]);
+  const P = L.panel, selling = shopMode === 'sell';
+  menu(selling ? `${shopTitle}: Sell` : shopTitle);
+  const end = menuFooter(L, add, [
+    {id: 'shop:mode', label: selling ? 'Buy' : 'Sell', tone: 'gold', act: () => { shopMode = selling ? 'buy' : 'sell'; saleArm = null; }},
+    {id: 'shop:leave', label: 'Leave', act: leaveShop}]);
+  if (selling) {
+    const top = menuPrompt(add, P, `The merchant pays ${pct(SELL_SHARE)} of what things cost. Gear you sell leaves its slot empty.`);
+    const rows = [{id: 'sell:potion', text: `Health Potion (${potions}/${maxPotions})`, note: potions ? 'sell one' : 'none to sell',
+      price: sellValue(POTION_PRICE), enabled: potions > 0, act: sellPotion}];
+    for (const k of Object.keys(slots)) {
+      const it = worn[k], id = 'sell:' + k;
+      rows.push({id, text: `${slots[k].label}: ${it ? itemName(it) : 'empty'}`, enabled: !!it,
+        note: !it ? 'nothing worn' : saleArmed(id) ? 'Tap again to sell it' : `+${it.power}` + (it.ench ? `, ${enchText(it.ench)}` : ''),
+        price: it ? sellValue(gearRetail(it)) : undefined, edge: it ? TIER_EDGE[it.tier] : null, act: () => sellGear(k)});
+    }
+    return rowStack(add, P.x + 8, top, end, P.w - 16, rows);
+  }
   rowStack(add, P.x + 8, P.y + 46, end, P.w - 16, shopStock.map((it, i) => ({
     id: 'buy:' + i, text: it.name, note: shopNote(it), price: it.price, enabled: canBuy(it),
     edge: it.type === 'gear' ? TIER_EDGE[it.tier] : null, act: () => buyItem(i)})));
@@ -4071,10 +4112,19 @@ function menuPrompt(add, P, text, y = P.y + 50) {
 function enchanterScreen(L, add, menu) {
   const P = L.panel, it = ench.slot && worn[ench.slot];
   menu('Enchanter');
-  let prompt, rows, back = true;
-  if (!it) {
+  let prompt, rows, back = true, sellBtn = false;
+  if (ench.sell) {
+    prompt = `Sell a scroll? The Enchanter pays ${pct(SELL_SHARE)} of what that enchantment costs here.`;
+    rows = scrolls.map((s, i) => {
+      const id = 'ench:sell:' + i;
+      return {id, text: `Scroll of ${enchLabel(s)}`, note: saleArmed(id) ? 'Tap again to sell it' : `${enchText(s)} (${TIER_NEED[s.t]})`,
+        price: sellValue(TIER_PRICE[s.t]), edge: ENCH_GLOW[s.id], act: () => sellScroll(i)};
+    });
+    if (!rows.length) prompt = 'You have no scrolls left to sell.';
+  } else if (!it) {
     prompt = 'Which piece of gear?';
     back = false;
+    sellBtn = true;
     rows = Object.keys(slots).map(k => ({
       id: 'ench:slot:' + k, text: `${slots[k].label}: ${worn[k] ? itemName(worn[k]) : 'empty'}`,
       note: !worn[k] ? 'nothing worn' : worn[k].ench ? `now: ${enchText(worn[k].ench)}` : 'no enchantment yet',
@@ -4090,7 +4140,9 @@ function enchanterScreen(L, add, menu) {
       id: 'ench:tier:' + t, text: name, note: E.text(E.vals[t]) + (it.tier < t ? ` (needs ${TIER_NEED[t]})` : ''),
       price: TIER_PRICE[t], enabled: it.tier >= t && coins >= TIER_PRICE[t], act: () => enchanterClick('tier:' + t)}));
   }
-  const end = menuFooter(L, add, (back ? [{id: 'ench:back', label: 'Back', act: () => enchanterClick('back')}] : [])
+  const end = menuFooter(L, add, (back ? [{id: 'ench:back', label: 'Back', act: () => { saleArm = null; enchanterClick('back'); }}] : [])
+    .concat(sellBtn ? [{id: 'ench:sellScrolls', label: 'Sell scrolls', sub: `${scrolls.length} in your bag`, tone: 'gold',
+      enabled: scrolls.length > 0, act: () => { ench = {sell: true}; saleArm = null; }}] : [])
     .concat([{id: 'ench:leave', label: 'Leave', act: () => enchanterClick('leave')}]));
   rowStack(add, P.x + 8, menuPrompt(add, P, prompt), end, P.w - 16, rows);
 }
@@ -4548,7 +4600,41 @@ function drinkPotion() {
 function leaveShop() {
   if (phase !== 'shop') return;
   phase = 'explore';
+  saleArm = null;
   msg.textContent = '';
+}
+
+// sell one potion to the merchant (one tap: it's only a potion)
+function sellPotion() {
+  if (phase !== 'shop' || shopMode !== 'sell' || potions <= 0) return;
+  const got = sellValue(POTION_PRICE);
+  potions--;
+  coins += got;
+  msg.textContent = `Sold a health potion for ${got} coins.`;
+  refresh();
+}
+// sell the piece of gear you wear in slot k to the merchant (tap twice)
+function sellGear(k) {
+  const it = worn[k];
+  if (phase !== 'shop' || shopMode !== 'sell' || !it) return;
+  const got = sellValue(gearRetail(it));
+  confirmSale('sell:' + k, `Sell your ${itemName(it)} for ${got} coins? Tap it again to sell.`, () => {
+    delete worn[k];
+    coins += got;
+    refreshMax();
+    msg.textContent = `Sold your ${itemName(it)} for ${got} coins.`;
+  });
+}
+// sell scroll i from your bag to the Enchanter (tap twice)
+function sellScroll(i) {
+  const s = scrolls[i];
+  if (phase !== 'enchanter' || !ench.sell || !s) return;
+  const got = sellValue(TIER_PRICE[s.t]);
+  confirmSale('ench:sell:' + i, `Sell the Scroll of ${enchLabel(s)} for ${got} coins? Tap it again to sell.`, () => {
+    scrolls.splice(i, 1);
+    coins += got;
+    msg.textContent = `Sold the Scroll of ${enchLabel(s)} for ${got} coins.`;
+  });
 }
 
 // buy item i of the merchant's stock
@@ -4693,11 +4779,14 @@ function handleTap(pt) {
         : `A ${describe(live[0])} appears!`;
   } else if (sh && sh.enchanter) {
     ench = {};
+    saleArm = null;
     phase = 'enchanter';
     msg.textContent = 'Enchanter: "Bring me your gear, and coins, and I will make it sing."';
   } else if (sh) {
     shopStock = makeStock(sh.tier);
     shopTitle = sh.title;
+    shopMode = 'buy';
+    saleArm = null;
     phase = 'shop';
     msg.textContent = "Merchant: what'll it be?";
   } else if (map[ny][nx] === 'C' && !opened.has(key)) {
