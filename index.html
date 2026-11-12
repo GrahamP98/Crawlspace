@@ -68,7 +68,7 @@
 
     <details open>
       <summary>The goal</summary>
-      <p>Fight your way down five floors. Every floor is a new random maze. The stairs down sit at the far end of each floor, and an enemy always guards them. On floor 5 the stairs are replaced by the exit, guarded by the <b>Ogre King</b>. Beat him and step through to win.</p>
+      <p>Fight your way down five floors. Every floor is a new random maze. The stairs down sit at the far end of each floor, and an enemy always guards them. On floor 5 the stairs are replaced by the exit, daylight spilling through it, and the <b>Ogre King</b> stands before it. Beat him and you win: you're free.</p>
       <p>You have one life. If your health hits 0, the run ends and you see a summary of how far you got.</p>
     </details>
 
@@ -101,7 +101,7 @@
       <ul>
         <li><b>Normal</b>: your reliable hit, 8-14 damage plus your weapon and bonuses, minus the enemy's armor. It misses 10% of the time, and 10% of hits are critical hits for double damage.</li>
         <li><b>Heavy</b>: 1.75 times the damage, but it misses 45% of the time, and enemies hit you 20% harder that turn. Use it to finish a fight faster when you can afford the risk.</li>
-        <li><b>Block</b>: you don't attack, but you take only a quarter of the damage, and each hit you block has a 10% chance to stun that enemy so it skips its next attack. A shield makes both better.</li>
+        <li><b>Block</b>: you don't attack, but you take less damage. Without a shield Block stops 45% of each hit; a shield raises that (Wooden Buckler 55%, Iron Shield 65%, Steel Kite Shield 75%, the most it can be). Each hit you block has a 10% chance to stun that enemy so it skips its next attack. A shield raises the stun chance. Stuns don't chain: an enemy that was just stunned can't be stunned by its very next attack (another enemy in the group still can). Thorns doesn't cut enemies on a turn you Block.</li>
       </ul>
       <p>Enemies miss 10% of the time too, and 10% of their hits are critical hits for 1.5 times the damage. Your armor takes points off every hit, but a hit always does at least 1.</p>
       <p>When a fight ends you get coins and XP for each enemy, and the group drops a piece of gear. A card shows what you found next to what you wear in that slot, with a green or red number for how much better or worse it is. You can <b>Equip</b> it or <b>Leave</b> it, and either one takes you back to the map.</p>
@@ -158,7 +158,7 @@
       <h4>Basics</h4>
       <ul>
         <li><b>Attack</b>: +2 damage on every hit.</li>
-        <li><b>Vitality</b>: +25 max health (and heals 25), and Block lets 15% less damage through.</li>
+        <li><b>Vitality</b>: +25 max health (and heals 25).</li>
         <li><b>Focus</b>: +3% critical hit chance, and every miss chance shrinks by 8% (including Heavy and against Bats).</li>
       </ul>
       <h4>Specials</h4>
@@ -180,7 +180,7 @@
         <li><b>Iron</b>: Iron Sword, Iron Shield, Iron Helm, Chainmail, Iron Bracers, Iron Greaves</li>
         <li><b>Steel</b>: Steel Sword, Steel Kite Shield, Steel Helm, Steel Plate, Steel Bracers, Steel Greaves</li>
       </ul>
-      <p>A weapon adds its number to your damage. Armor numbers add up to your <b>Defense</b>, which comes off every enemy hit. Full Steel armor gives 13. A <b>shield</b> adds nothing to Defense; it makes <b>Block</b> stronger instead: each point lets 10% less damage through when you Block and adds 4% to the stun chance (a Steel Kite Shield, +3, takes Block from stopping 75% to 83%). Gear drops from fights and chests, and merchants sell it (price = 5 coins per point). Better material also lets you use stronger enchantments.</p>
+      <p>A weapon adds its number to your damage. Armor numbers add up to your <b>Defense</b>, which comes off every enemy hit. Full Steel armor gives 13. What you find depends on the floor: floor 1 is mostly leather with the odd iron piece (but no Chainmail yet), floor 2 is half leather and half iron, Steel first turns up on floor 3, and floor 5 holds only iron and steel. A <b>shield</b> adds nothing to Defense; it makes <b>Block</b> stronger instead: each point stops 10% more of a blocked hit and adds 4% to the stun chance (with no shield Block stops 45%; a Steel Kite Shield, +3, takes it to 75%, the most it can be, and the stun chance from 10% to 22%). Gear drops from fights and chests, and merchants sell it (price = 5 coins per point). Better material also lets you use stronger enchantments.</p>
       <p>Everything you wear shows on your character in fights, from a rusty sword to a steel great helm. You start out in a prisoner's rags: a torn tunic, a bandaged arm and bare feet. Wear all four armor pieces (helmet, chest, bracers and greaves) with a steel helm, and a knight's blue plume streams from it. A full set of Steel adds gold trim, and enchanted gear glows in its enchantment's color. Enemies show their gear the same way (see Fighting).</p>
       <p>Tap <b>Hero</b> to see yourself in everything you wear, with your six slots around you. The edge of each slot shows its material (brown leather, grey iron, bright steel), and enchanted pieces glow. Below are your stats (the damage range of your hits, Defense, Max HP, how much Block stops, stun, critical hit, miss and flee chances) and your perks. Tap any piece of gear or perk to read what it does. The <b>Bag</b> tab holds your scrolls.</p>
     </details>
@@ -199,7 +199,7 @@
       </ul>
       <h4>Armor and shield</h4>
       <ul>
-        <li><b>Thorns</b>: enemies that hit you take 2 / 3 / 5 damage.</li>
+        <li><b>Thorns</b>: enemies that hit you take 2 / 3 / 5 damage, but not on a turn you Block.</li>
         <li><b>Mending</b>: heal 3 / 5 / 8 after every fight you win.</li>
         <li><b>Fortitude</b>: +10 / 20 / 30 max health.</li>
         <li><b>Purity</b>: poison lasts 1 / 2 / 3 fewer turns, and Wraith drain is cut 25% / 50% / 75%.</li>
@@ -314,7 +314,7 @@ const RARITY_WEIGHT = {common: 10, uncommon: 6, rare: 3}; // how often a perk is
 const OWNED_WEIGHT_MULT = 1.5;  // specials you already have turn up a bit more often
 const REDRAW_COST = 10;         // coins; each extra redraw in the same level-up costs this much more
 const ATTACK_DMG = 2;                                // Attack: +2 damage
-const VITALITY_HP = 25, VITALITY_BLOCK_KEEP = 0.85;  // Vitality: +25 max HP, Block lets 15% less through
+const VITALITY_HP = 25;                              // Vitality: +25 max HP
 const FOCUS_CRIT = 0.03, FOCUS_MISS_KEEP = 0.92;     // Focus: +3% crit, miss chance x0.92
 const AMBUSH_TOP = 1.0;                              // Pathfinder: your first hit in each fight +50%, 67%, 75%...
 const EXEC_THRESHOLD = 0.50, EXEC_TOP = 1.0;         // Executioner: +50%, 67%, 75%... vs enemies under 50% HP
@@ -326,10 +326,11 @@ const PURSE_TOP = 0.60;                              // Tight Purse: gold +30%, 
 const perkN = id => perks[id] || 0;
 const curve = (top, c, k) => top * k / (k + c);  // grows by less with every repeat
 const pct = x => `${Math.round(x * 100)}%`;
-// your shield: each point of it lets SHIELD_BLOCK less through when you Block, and adds SHIELD_STUN to the stun chance
-const SHIELD_BLOCK = 0.10, SHIELD_STUN = 0.04;
-const shieldKeep = () => 1 - SHIELD_BLOCK * power('shield');
-const blockMult = (k = perkN('vitality')) => BLOCK_MULT * VITALITY_BLOCK_KEEP ** k * shieldKeep();
+// Block: with no shield it stops BLOCK_BASE of a hit; each point of shield stops SHIELD_BLOCK more (Wooden 55%,
+// Iron 65%, Steel 75%), never past BLOCK_CAP. Each point of shield also adds SHIELD_STUN to the stun chance
+const BLOCK_BASE = 0.45, SHIELD_BLOCK = 0.10, BLOCK_CAP = 0.75, SHIELD_STUN = 0.04;
+const blockStops = () => Math.min(BLOCK_CAP, BLOCK_BASE + SHIELD_BLOCK * power('shield'));
+const blockMult = () => 1 - blockStops();   // the share of a hit that still gets through your Block
 const critChance = (k = perkN('focus')) => PLAYER_CRIT + FOCUS_CRIT * k;
 const missKeep = (k = perkN('focus')) => FOCUS_MISS_KEEP ** k;
 const sight = (k = perkN('pathfinder')) => 1 + k;
@@ -350,8 +351,8 @@ const PERKS = {
     card: k => `+${ATTACK_DMG} damage`,
     info: k => `+${ATTACK_DMG} damage on every hit (total +${ATTACK_DMG * k}).`},
   vitality: {name: 'Vitality', rarity: 'common',
-    card: k => `+${VITALITY_HP} HP, Block ${pct(1 - blockMult(k))}`,
-    info: k => `+${VITALITY_HP} max HP and heal ${VITALITY_HP}. Block stops ${pct(1 - blockMult(k))} of damage.`},
+    card: k => `+${VITALITY_HP} max HP`,
+    info: k => `+${VITALITY_HP} max HP and heal ${VITALITY_HP} (total +${VITALITY_HP * k}).`},
   focus: {name: 'Focus', rarity: 'common',
     card: k => `Crit ${pct(critChance(k))}`,
     info: k => `Crit chance ${pct(critChance(k))}, and you miss ${pct(1 - missKeep(k))} less often.`},
@@ -399,7 +400,7 @@ const ENCHANTS = {
   swift:       {name: 'Swift', slot: 'weapon', vals: [0.08, 0.12, 0.16], desc: 'may strike twice',
                 text: v => `${pct(v)} chance to strike a second time`},
   thorns:      {name: 'Thorns', slot: 'armor', vals: [2, 3, 5], desc: 'hurts enemies that hit you',
-                text: v => `enemies that hit you take ${v} damage`},
+                text: v => `enemies that hit you take ${v} damage (not when you Block)`},
   mending:     {name: 'Mending', slot: 'armor', vals: [3, 5, 8], desc: 'heals you after fights',
                 text: v => `heal ${v} HP after every fight you win`},
   fortitude:   {name: 'Fortitude', slot: 'armor', vals: [10, 20, 30], desc: 'more max HP',
@@ -563,7 +564,7 @@ function makeFloor(i) {
 
 const slots = {
   weapon:  {label: 'Weapon',  items: [['Rusty Sword', 2], ['Iron Sword', 4], ['Steel Sword', 6]]},
-  // a shield adds nothing to Defense: its number makes Block stronger (see shieldKeep and shieldStun)
+  // a shield adds nothing to Defense: its number makes Block stronger (see blockStops and SHIELD_STUN)
   shield:  {label: 'Shield',  items: [['Wooden Buckler', 1], ['Iron Shield', 2], ['Steel Kite Shield', 3]]},
   helmet:  {label: 'Helmet',  items: [['Leather Cap', 1], ['Iron Helm', 2], ['Steel Helm', 3]]},
   chest:   {label: 'Chest',   items: [['Leather Vest', 2], ['Chainmail', 3], ['Steel Plate', 4]]},
@@ -646,8 +647,8 @@ const THIEF_CHANCE = 0.33, THIEF_STEAL = [3, 6], THIEF_TURNS = 3;
 const REASSEMBLE_CHANCE = 0.33, REASSEMBLE_HP = 0.25;
 const POISON_CHANCE = 0.35, POISON_DMG = 3, POISON_TURNS = 4;
 // your combat moves: Heavy hits harder but misses more often and leaves you open
-// (enemies hit 20% harder in their next attacks); Block cuts incoming damage by 75%
-const HEAVY_MULT = 1.75, HEAVY_MISS = 0.35, HEAVY_EXPOSED = 1.20, BLOCK_MULT = 0.25;
+// (enemies hit 20% harder in their next attacks); Block cuts incoming damage by 45-75% (more with a better shield)
+const HEAVY_MULT = 1.75, HEAVY_MISS = 0.35, HEAVY_EXPOSED = 1.20;   // (how much Block stops: see blockStops)
 const STUN_CHANCE = 0.10; // chance a blocked hit stuns that enemy for its next turn
 // every crushEvery-th Ogre King attack ignores your defense (he warns you the turn before)
 const BOSS = {name: 'Ogre King', hp: 260, dmg: [18, 24], gold: [40, 60], color: '#900', def: 4, crushEvery: 3, boss: true};
@@ -838,10 +839,25 @@ function canBuy(it) {
   return !(worn[it.slot] && worn[it.slot].power >= it.power);
 }
 
-// gear found in fights and chests; tier = 0 Rusty/Leather, 1 Iron, 2 Steel
-function loot(maxTier = 2, minTier = 0) {
+// gear found in fights and chests; tier = 0 Rusty/Leather, 1 Iron, 2 Steel. The floor decides the odds of each
+// tier: [Leather, Iron, Steel], so Steel can't turn up before floor 3 and floor 5 holds no more Leather
+const PLAYER_GEAR_ODDS = [
+  [0.75, 0.25, 0],      // floor 1 (and no Chainmail yet: its chest pieces stay Leather)
+  [0.50, 0.50, 0],      // floor 2
+  [1 / 3, 1 / 3, 1 / 3],  // floor 3
+  [1 / 3, 1 / 3, 1 / 3],  // floor 4
+  [0, 0.50, 0.50]       // floor 5
+];
+const FLOOR1_CHEST_TIER = 0;   // the best chest piece floor 1 gives: the Leather Vest
+function lootTier(slot) {
+  const odds = PLAYER_GEAR_ODDS[Math.min(floor, FLOORS - 1)];
+  let r = Math.random(), tier = 0;
+  while (tier < odds.length - 1 && r >= odds[tier]) r -= odds[tier++];
+  return floor === 0 && slot === 'chest' ? Math.min(tier, FLOOR1_CHEST_TIER) : tier;
+}
+function loot() {
   const keys = Object.keys(slots), k = keys[roll(0, keys.length - 1)];
-  const tier = roll(minTier, maxTier);
+  const tier = lootTier(k);
   const [name, pow] = slots[k].items[tier];
   pending = {slot: k, name, power: pow, tier};
   if (Math.random() < ENCHANT_DROP_CHANCE)
@@ -1039,7 +1055,7 @@ let sceneFoes = [];                  // the whole group, dead ones too, so nobod
 let target = null;                   // the enemy your attacks go to (tap one to pick it)
 let pops = [];                       // floating numbers: {who, text, color, t0}
 
-const inCombatScene = () => combatView && ['choice', 'fight', 'loot'].includes(phase);
+const inCombatScene = () => combatView && ['choice', 'fight', 'loot', 'finale'].includes(phase);
 const liveTarget = () => {
   if (!(target && target.hp > 0 && foes.includes(target))) target = foes.find(f => f.hp > 0) || null;
   return target;
@@ -3435,8 +3451,66 @@ function outlinedText(text, x, y, color) {
 
 const FALL_S = 0.45;  // how long a defeated enemy takes to go down
 let fightSeed = 1;    // the room layout of the fight on screen (from the encounter's roomSeed)
+
+// ---- the Ogre King's fall: a few seconds of drama, then the victory screen ----
+// he staggers and shakes, topples (slowly, then faster), hits the floor in a cloud of dust that shakes the hall,
+// and daylight floods in as "The Ogre King falls" rises; then the run is won. Seconds for each part:
+const FINALE = {stagger: 1.1, topple: 1.3, after: 1.3};
+let finale = null;    // {t0, f, timer}: when the last blow landed, and the Ogre King
+function startBossFinale(boss) {
+  finale = {t0: performance.now() / 1000, f: boss};
+  phase = 'finale';
+  finale.timer = setTimeout(finishBossFinale, (FINALE.stagger + FINALE.topple + FINALE.after) * 1000);
+  requestFrames();
+}
+function finishBossFinale() {
+  if (!finale) return;
+  clearTimeout(finale.timer);
+  finale = null;
+  endRun(true);
+  draw();
+}
+// where the finale is at time t: {T (seconds since the blow), fall (0..1), shake (x jitter on him), quake (on the hall)}
+function finaleAt(t) {
+  const T = t - finale.t0, hit = FINALE.stagger + FINALE.topple;
+  const k = Math.max(0, Math.min(1, (T - FINALE.stagger) / FINALE.topple));
+  const shake = T < FINALE.stagger ? Math.sin(T * 47) * (1.5 + 3 * T / FINALE.stagger) : 0;
+  const q = (T - hit) / 0.5, quake = q >= 0 && q < 1 ? (1 - q) * 6 : 0;
+  return {T, hit, fall: k * k, shake, quake};
+}
+// the finale's light and dust over the arena: the white flash of the killing blow, the dust where he lands,
+// the daylight and the title at the end
+function drawFinale(t) {
+  const F = finaleAt(t), s = foeSpots().get(finale.f);
+  if (F.T < 0.3) { ctx.fillStyle = `rgba(255,255,255,${0.55 * (1 - F.T / 0.3)})`; ctx.fillRect(0, 0, CANVAS_W, PLAY_H); }
+  const d = (F.T - F.hit) / 1.1;                                          // the dust cloud, rolling out from where he lands
+  if (s && d >= 0 && d < 1) for (let i = 0; i < 9; i++) {
+    const a = (i / 8 - 0.5) * Math.PI * 0.9, r = 12 + 34 * d, x = s.x - 30 + Math.sin(a) * r * 1.8 + i * 4, y = s.y - 4 - Math.cos(a) * r * 0.35;
+    const g = ctx.createRadialGradient(x, y, 0, x, y, 10 + 22 * d);
+    g.addColorStop(0, `rgba(130,110,90,${0.55 * (1 - d)})`); g.addColorStop(1, 'rgba(130,110,90,0)');
+    ctx.fillStyle = g; ctx.fillRect(x - 40, y - 40, 80, 80);
+  }
+  const u = Math.max(0, Math.min(1, (F.T - F.hit - 0.2) / (FINALE.after - 0.2)));   // daylight floods in, and the title rises
+  if (u > 0) {
+    const g = ctx.createRadialGradient(CANVAS_W * 0.75, PLAY_H * 0.3, 10, CANVAS_W * 0.75, PLAY_H * 0.3, 320);
+    g.addColorStop(0, `rgba(255,236,180,${0.55 * u})`); g.addColorStop(1, `rgba(255,200,120,${0.12 * u})`);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, CANVAS_W, PLAY_H);
+    ctx.globalAlpha = u;
+    ctx.font = `34px ${TITLE_FONT}`;
+    ctx.textAlign = 'center';
+    ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(20,10,4,0.85)';
+    const y = PLAY_H * 0.26 - 10 * u;                                     // high in the hall, clear of the figures
+    ctx.strokeText('The Ogre King falls', CANVAS_W / 2, y);
+    ctx.fillStyle = '#ffcc33'; ctx.fillText('The Ogre King falls', CANVAS_W / 2, y);
+    ctx.globalAlpha = 1;
+    ctx.textAlign = 'left';
+  }
+}
+
 function drawCombat() {
-  const t = performance.now() / 1000;
+  const t = performance.now() / 1000, F = finale ? finaleAt(t) : null;
+  ctx.save();
+  if (F && F.quake) ctx.translate((Math.random() - 0.5) * F.quake, (Math.random() - 0.5) * F.quake);   // the hall shakes as he lands
   // the fight, in its floor's room (the Ogre King fights you in his own hall); each fight has its own seed,
   // so the props are laid out a little differently every time. The target stands on a yellow ring
   const boss = sceneFoes.some(f => f.boss), spots = foeSpots(), tgt = liveTarget();
@@ -3450,6 +3524,7 @@ function drawCombat() {
     if (f.animPhase === undefined) f.animPhase = Math.random() * 10;      // so a group doesn't move in step
     if (!dead) f.fellAt = undefined;                                      // (a Skeleton can rise again)
     else if (f.fellAt === undefined) f.fellAt = t;
+    if (F && f === finale.f) return {f, x: s.x + F.shake, y: s.y, s: s.s, fall: F.fall, gone: false};   // the Ogre King's long fall
     return {f, x: s.x, y: s.y, s: s.s, fall: dead ? Math.min(1, (t - f.fellAt) / FALL_S) : 0, gone: !!f.fled};
   });
   fightBoxes = ART.drawFight(ctx, {room: [boss ? 'throne' : ART.ROOM_OF_FLOOR[Math.min(floor, 4)], fightSeed],
@@ -3463,7 +3538,7 @@ function drawCombat() {
   outlinedText(`${p.hp}/${p.max}`, hb.x, hb.y + 16, '#fff');
   // each enemy's name over its head, with its green health bar under the name (kept on screen at the edges)
   ctx.font = `600 11px ${GAME_FONT}`;
-  for (const f of sceneFoes) {
+  for (const f of F ? [] : sceneFoes) {                                   // (no labels while the Ogre King falls)
     const b = fightBoxes.boxes.get(f);
     if (!b) continue;
     const dead = f.hp <= 0, label = f.name + (f.items.length ? '*' : '') + (f.burn > 0 && !dead ? ' (burning)' : '');
@@ -3472,6 +3547,8 @@ function drawCombat() {
     outlinedText(label, cx, top - 12, dead ? '#777' : '#fff');
   }
   ctx.textAlign = 'left';
+  if (F) drawFinale(t);
+  ctx.restore();
 }
 
 // tap an enemy on the combat screen to target it: the living enemy whose figure you tapped, the nearest one
@@ -4038,7 +4115,7 @@ function heroDetail(pick) {
     if (!it) return `${slots[k].label}: nothing worn.`;
     return `${itemName(it)} +${it.power}` + (it.ench ? `: ${enchText(it.ench)}.` : '.') +
       (k === 'weapon' ? ' Its number adds to every hit.'
-        : k === 'shield' ? ` When you Block it lets ${pct(SHIELD_BLOCK * it.power)} less damage through, and adds ${pct(SHIELD_STUN * it.power)} to the stun chance.`
+        : k === 'shield' ? ` When you Block, Block stops ${pct(blockStops())} of each hit (${pct(BLOCK_BASE)} without a shield), and the chance to stun the attacker rises by ${pct(SHIELD_STUN * it.power)}.`
         : ' Its number adds to your Defense.');
   }
   if (pick && pick.startsWith('perk:')) {
@@ -4108,6 +4185,7 @@ function rowStack(add, x, top, bottom, w, rows, maxH = 46) {
 // ---- exploring and fighting: the log line, the action buttons, Hero and Bag ----
 function playControls(L, add) {
   add({id: 'log', x: 6, y: L.logY, w: 276, h: 26, act: openLog, draw: paintLogLine});
+  if (phase === 'finale') return;                                          // nothing to press while the Ogre King falls
   if (phase === 'choice') buttonRow(add, 6, L.act.y, 276, L.act.h, [
     {id: 'fight', label: 'Fight', tone: 'fight', act: startFight},
     {id: 'flee', label: 'Flee', sub: canFlee() ? `${pct(fleeChance())} chance` : 'no escape',
@@ -4427,7 +4505,8 @@ function tickPoison() {
 }
 
 // one enemy swing; mult comes from your stance (Block lowers it, Heavy raises it)
-function foeStrike(f, mult) {
+// blocking: you have your guard up this turn (Thorns doesn't cut an enemy whose blow you Block)
+function foeStrike(f, mult, blocking = false) {
   const rage = f.raged ? RAGE_BONUS : 0;
   f.swings = (f.swings || 0) + 1;
   const crush = f.crushEvery && f.swings % f.crushEvery === 0;
@@ -4474,7 +4553,7 @@ function foeStrike(f, mult) {
       msg.textContent += ` The ${f.name} snatches ${f.stolen} coins!`;
     }
     const thorns = enchSum('thorns');
-    if (thorns && p.hp > 0 && f.hp > 0) {
+    if (thorns && !blocking && p.hp > 0 && f.hp > 0) {
       msg.textContent += ` Thorns cut the ${f.name} for ${Math.min(thorns, f.hp)}.`;
       damageFoe(f, thorns, false);
     }
@@ -4517,16 +4596,18 @@ function foesAttack(mult = 1, blocking = false) {
     }
     if (f.stunned) {
       f.stunned = false;
+      f.stunProof = true;            // stuns don't chain: its next attack can't stun it again (others in the group still can be)
       msg.textContent += ` The ${f.name} is stunned and can't attack.`;
       continue;
     }
-    if (!foeStrike(f, mult)) return;
-    // a hit that lands on your raised shield may stun the attacker for its next turn
-    if (blocking && f.landed && f.hp > 0 && Math.random() < stunChance()) {
+    if (!foeStrike(f, mult, blocking)) return;
+    // a hit that lands on your raised shield may stun the attacker for its next turn (unless it was stunned just before)
+    if (blocking && f.landed && f.hp > 0 && !f.stunProof && Math.random() < stunChance()) {
       f.stunned = true;
       popup(f, 'STUNNED', 'stun');
       msg.textContent += ` The ${f.name} staggers off your shield, stunned!`;
     }
+    f.stunProof = false;
   }
   if (!tickPoison()) return;
   if (!foes.some(f => f.hp > 0)) endFight();
@@ -4562,9 +4643,15 @@ function endFight() {
     msg.textContent += ` Your gear mends ${mend} HP.`;
   }
   if (current.boss) {
-    msg.textContent += ' The way to the exit is clear! ' + loot(2, 2);
+    // the run ends the moment the Ogre King falls: no drop, nothing left to spend it on
+    msg.textContent += ` The ${BOSS.name} falls! Daylight spills through the doorway behind him.`;
+    const boss = sceneFoes.find(f => f.boss);
+    foes = [];
+    current = null;
+    startBossFinale(boss);                                                // his fall, then the victory screen
+    return;
   } else if (killedAny) {
-    msg.textContent += ' ' + loot(Math.min(2, current.zone));
+    msg.textContent += ' ' + loot();
   } else {
     phase = 'explore';
     combatView = false;  // nothing to loot: straight back to the map
@@ -4902,10 +4989,7 @@ function handleTap(pt) {
       ? `You descend to floor ${floor + 1}. The air reeks of ogre...`
       : `You descend to floor ${floor + 1}.`;
   }
-  if (map[ny][nx] === 'E') {
-    msg.textContent = 'You step into daylight.';
-    endRun(true);
-  }
+  // (the exit, E, is only scenery now: the run is won the moment the Ogre King, who stands before it, falls)
 }
 
 fitScreen();   // sizes the canvas to the screen and draws the first frame
