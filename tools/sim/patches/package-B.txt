@@ -1,0 +1,4 @@
+# Package B (optional, not applied): makes the Ogre King the final test. Measured at 9.2% pooled wins with package A.
+const FLOOR_ZONES = [[0, 1], [1, 2], [2, 3], [3, 4], [4, 4]]; ==> const FLOOR_ZONES = [[0, 1], [1, 2], [2, 3], [3, 4], [3, 4]];
+if (blocking && f.landed && f.hp > 0 && !f.stunProof && Math.random() < stunChance()) { ==> if (blocking && f.landed && f.hp > 0 && !f.stunProof && Math.random() < stunChance() * (f.boss ? 0.5 : 1)) {
+const BOSS = {name: 'Ogre King', hp: 300, dmg: [18, 24], ==> const BOSS = {name: 'Ogre King', hp: 400, dmg: [22, 28],

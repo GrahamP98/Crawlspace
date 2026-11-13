@@ -1,5 +1,4 @@
-﻿# made while running: the browser profile, screenshots and results
-chrome-profile/
-shots/
-sim-run.txt
-sim-results.json
+# made while running: browser profiles, patched game copies and results
+prof/
+games/
+res/
