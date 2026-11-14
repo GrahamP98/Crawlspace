@@ -6,8 +6,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#111111">
 <title>Crawlspace</title>
-<link rel="apple-touch-icon" href="goblin-icon.png">
-<link rel="icon" href="goblin-icon.png">
+<link rel="apple-touch-icon" href="crawlspace-icon.png">
+<link rel="icon" href="crawlspace-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@900&family=EB+Garamond:wght@400;600&family=Pirata+One&display=swap">
@@ -1616,6 +1616,62 @@ function banner(g, x0, x1, y0, y1, r, C = [130, 30, 36], emblem = 'skull', torn 
     g.fillStyle = '#1a0c0c'; g.fillRect(sx - 3.6, sy - 4, 2.4, 2.2); g.fillRect(sx + 1.2, sy - 4, 2.4, 2.2);
   }
 }
+// the King's mark as a hand-placed sprite for his banners: G gold, g the crown's band, B bone, x a cut
+const MARK = ['......G......',
+              'G....GGG....G',
+              'GG..GGxGG..GG',
+              'GGGGGGGGGGGGG',
+              'ggggggggggggg',
+              'GGGGGGGGGGGGG',
+              '.............',
+              '..BBBBBBBBB..',
+              '.BBBBBBBBBBB.',
+              '.BxxxBBBxxxB.',
+              '.BxxxBBBxxxB.',
+              '.BBBBBxBBBBB.',
+              '..BBBBxBBBB..',
+              '...BBBBBBB...',
+              '...BBxBxBB...',
+              '...BBxBxBB...'];
+function markSprite(g, cx, top, k) {
+  const at = (i, j) => (MARK[j] || '')[i] || '.', solid = (i, j) => 'GgB'.includes(at(i, j));
+  const C = {G: [226, 182, 78], g: [168, 124, 46], B: [214, 198, 160]}, x0 = Math.round(cx) - 6;
+  for (let j = -1; j <= MARK.length; j++) for (let i = -1; i <= 13; i++) {
+    const c = at(i, j);
+    if (solid(i, j)) g.fillStyle = rgb(C[c], k * (!solid(i - 1, j) || !solid(i, j - 1) ? 1.25 : !solid(i + 1, j) || !solid(i, j + 1) ? 0.78 : 1));
+    else if (c === 'x' || solid(i - 1, j) || solid(i + 1, j) || solid(i, j - 1) || solid(i, j + 1)) g.fillStyle = '#1a0a0c';
+    else continue;
+    g.fillRect(x0 + i, top + j, 1, 1);
+  }
+}
+// one of his banners on the gate's pillars: long red cloth hung from an iron rod, stirring in a draught from the
+// dark. Made once with the room (its tatters, its light), then drawn with each frame: its sides ripple, folds drift
+// down it catching the light, the breeze comes and goes, and it ends in a swallowtail. His mark rides the cloth
+let T_BANNERS = [];
+const titleBannerMake = (x0, x1, y0, y1, r, ph) => ({x0, x1, y0, y1, ph, k: litK((x0 + x1) / 2, y0 + 20, 1, 0.3),
+  tat: Array.from({length: x1 - x0 + 1}, () => r() < 0.22 ? 2 + r() * 5 : r() * 1.5)});
+function titleBanner(g, b, t) {
+  const {x0, x1, y0, y1, ph, k, tat} = b, w = x1 - x0;
+  const gust = 0.65 + 0.35 * Math.sin(t * 0.37 + ph) * Math.sin(t * 0.23 + 1.3 * ph);   // the draught rises and falls
+  const sway = y => Math.sin((y - y0) * 0.07 - t * 1.7 + ph) * 2.6 * gust * Math.min(1, (y - y0) / 22);   // still at the rod, freer below
+  for (let y = y0; y <= y1; y++) {
+    const sx = sway(y), lean = sway(y + 2) - sx;                          // where the cloth turns toward the light or away
+    for (let x = x0 - 4; x <= x1 + 4; x++) {
+      const u = (x - x0 - sx) / w;
+      if (u < 0 || u > 1) continue;
+      const bot = y1 - 13 * (1 - Math.abs(2 * u - 1)) - tat[Math.min(w, Math.max(0, Math.round(u * w)))] + Math.sin(t * 2.3 + u * 5 + ph) * gust;
+      if (y > bot) continue;
+      const fold = (0.68 + 0.4 * Math.max(0, Math.sin(u * Math.PI * 4.4 + (y - y0) * 0.05 - t * 1.1 + ph)) ** 0.8) * (1 - lean * 0.12);
+      const edge = u < 0.06 || u > 0.94 ? 0.78 : 1, lip = y > bot - 1.5 ? 0.7 : 1;
+      g.fillStyle = y - y0 < 4 ? rgb([200, 156, 60], k * fold) : rgb([138, 28, 34], k * fold * edge * lip);
+      g.fillRect(x, y, 1, 1);
+    }
+  }
+  path(g, [[x0 - 4, y0 - 2], [x1 + 4, y0 - 2], [x1 + 4, y0 + 1], [x0 - 4, y0 + 1]]); g.fillStyle = rgb([70, 66, 76], k); g.fill();   // the rod
+  for (const fx of [x0 - 5, x1 + 5]) { g.beginPath(); g.arc(fx, y0 - 0.5, 2.2, 0, Math.PI * 2); g.fillStyle = rgb([96, 92, 104], k); g.fill(); }
+  const my = y0 + 10;
+  markSprite(g, (x0 + x1) / 2 + Math.round(sway(my + 8)), my, k);
+}
 function hangChain(g, x, y0, y1, r) {
   for (let y = y0; y < y1; y += 3.2) {
     const k = litK(x, y, 1, 0.3), wide = Math.round((y - y0) / 3.2) % 2;
@@ -1741,34 +1797,29 @@ function skullAt(g, x, y, s = 1) {
   lump(g, [[x - 5 * s, y], [x - 5.5 * s, y - 5 * s], [x - 2 * s, y - 8 * s], [x + 3 * s, y - 8 * s], [x + 6 * s, y - 4.5 * s], [x + 5 * s, y], [x + 3 * s, y + 2 * s], [x - 3 * s, y + 2 * s]], [200, 190, 164], 990 + x + y, 1, 0.35);
   g.fillStyle = '#0c0a0a'; g.fillRect(x - 2.6 * s, y - 4.6 * s, 2 * s, 2 * s); g.fillRect(x + 1 * s, y - 4.6 * s, 2 * s, 2 * s);
 }
-// a cherub carved in relief on the keystone, as pixel art: a head with a halo behind it, and wings spreading out to
-// the upper corners and curving down to meet under the chin, in a sunken panel with a raised border. Each wing is
-// three tiers of feathers, each tier's lower edge cut into scallops (lit on top, a dark gap under each)
-function cherubAt(g, x0, y0) {
-  const GW = 36, GH = 24, cx = 18, cy = 10;
-  const INK = {o: '#1a1620', d: '#2a2430', s: '#544a5c', m: '#8c8496', l: '#b0a8b8', h: '#d8d0dc'};
-  const face = {[`${cx - 3},${cy}`]: 'o', [`${cx + 2},${cy}`]: 'o', [`${cx - 3},${cy - 1}`]: 'm', [`${cx + 2},${cy - 1}`]: 'm',
-    [`${cx - 1},${cy + 2}`]: 'm', [`${cx - 1},${cy + 4}`]: 's', [`${cx - 2},${cy + 4}`]: 's', [`${cx},${cy + 4}`]: 's'};
-  for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) {
-    const px = x + 0.5, py = y + 0.5, hr = Math.hypot((px - cx) / 5.2, (py - cy - 0.5) / 5.6);
-    const u = Math.abs(px - cx) - 4.5, uo = Math.max(u, 0);
-    const top = cy - 2 - uo * 0.62, bot = cy + 10 - uo * 0.5 - Math.max(0, u - 9) * 1.4;
-    const wing = u <= 13.5 && py > top && py < bot && (u > 0 || py > cy + 5);
-    let ink;
-    if (hr < 1) {                                                          // the head: curls on top, a lit face
-      const k = face[`${x},${y}`];
-      ink = k || (py < cy - 2.2 && hr > 0.45 ? ((x + y) % 2 ? 'm' : 'h') : (px - cx) + (py - cy) < -4 ? 'h' : (px - cx) + (py - cy) > 4 ? 'm' : 'l');
-    } else if (hr < 1.2) ink = 'o';                                       // a dark line round the head, against the wings
-    else if (wing) {
-      const H = (bot - top) / 3, tier = Math.min(2, Math.floor((py - top) / H)), tv = ((py - top) / H) % 1;
-      const su = ((u + 3 + tier * 1.5) / 3) % 1, cut = 0.6 + 0.32 * Math.sin(su * Math.PI);
-      ink = tv > cut ? 'o' : tv < 0.28 ? 'h' : su < 0.18 || su > 0.82 ? 'm' : 'l';
-    } else if (Math.abs(Math.hypot(px - cx, py - cy + 0.5) - 8) < 0.7 && py < cy + 2) ink = 'h';   // the halo
-    else {                                                                 // the panel: sunken, its border raised
-      const edge = x < 1 || y < 1 || x > GW - 2 || y > GH - 2;
-      ink = edge ? (x < 1 || y < 1 ? 'l' : 's') : 'd';
-    }
-    g.fillStyle = INK[ink]; g.fillRect(Math.round(x0) - GW / 2 + x, Math.round(y0) - GH / 2 + y, 1, 1);
+// the King's mark: a crowned skull, carved in relief on the keystone or sewn in gold and bone on his banners. Pixel art
+// rasterized from a few shapes at scale s; (x, y) is the top middle of the crown. A dark cut runs round the mark, its
+// lit edges face the upper left, and the eyes, nose, teeth and the line of the crown's band are cut deep
+function crownSkullAt(g, x, y, s = 1, cloth = false) {
+  const inPoly = (px, py, P) => { let c = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++) { const [xi, yi] = P[i], [xj, yj] = P[j]; if ((yi > py) !== (yj > py) && px < (xj - xi) * (py - yi) / (yj - yi) + xi) c = !c; } return c; };
+  const CROWN = [[-9.5, 10.5], [-9.5, 0.5], [-5, 5], [0, -1.5], [5, 5], [9.5, 0.5], [9.5, 10.5]];
+  const SKULL = [[-8.5, 16], [-6.5, 13], [6.5, 13], [8.5, 16], [8.5, 24], [6, 26], [5.5, 30.5], [-5.5, 30.5], [-6, 26], [-8.5, 24]];
+  const CUTS = [[[-6.5, 17.5], [-2, 17.5], [-2, 21.5], [-6.5, 21.5]], [[2, 17.5], [6.5, 17.5], [6.5, 21.5], [2, 21.5]],   // eye sockets
+    [[0, 22], [1.6, 24.8], [-1.6, 24.8]],                                                                       // the nose
+    [[-2.8, 27.4], [-1.2, 27.4], [-1.2, 31], [-2.8, 31]], [[1.2, 27.4], [2.8, 27.4], [2.8, 31], [1.2, 31]],         // between the teeth
+    [[-9.5, 7.4], [9.5, 7.4], [9.5, 8.6], [-9.5, 8.6]],                                                         // the crown's band
+    [[0, 2.2], [1.6, 4.2], [0, 6.2], [-1.6, 4.2]]];                                                             // a gem in the middle point
+  const at = (i, j) => { const u = (i + 0.5 - x) / s, v = (j + 0.5 - y) / s; return inPoly(u, v, CROWN) ? 1 : inPoly(u, v, SKULL) ? 2 : 0; };
+  const solid = (i, j) => { const w = at(i, j); if (!w) return 0; const u = (i + 0.5 - x) / s, v = (j + 0.5 - y) / s; return CUTS.some(P => inPoly(u, v, P)) ? 0 : w; };
+  const C = cloth ? null : [128, 120, 128], k = litK(x, y + 15 * s, 1, cloth ? 0.3 : 0.22);
+  const tone = (w, f) => rgb(cloth ? (w === 1 ? [214, 176, 80] : [200, 178, 128]) : C, k * f);
+  const dark = cloth ? '#1a0c0c' : rgb(C, k * 0.3);
+  for (let j = Math.floor(y - 3 * s); j <= Math.ceil(y + 33 * s); j++) for (let i = Math.floor(x - 11 * s); i <= Math.ceil(x + 11 * s); i++) {
+    const w = at(i, j), sw = solid(i, j);
+    if (sw) g.fillStyle = tone(sw, !solid(i - 1, j) || !solid(i, j - 1) ? 1.32 : !solid(i + 1, j) || !solid(i, j + 1) ? 0.74 : 1.04);
+    else if (w || at(i - 1, j) || at(i + 1, j) || at(i, j - 1) || at(i, j + 1)) g.fillStyle = dark;   // the cut round it, and the cuts in it
+    else continue;
+    g.fillRect(i, j, 1, 1);
   }
 }
 const randomBones = (r, n, zone) => Array.from({length: n}, () => [zone[0] + r() * (zone[2] - zone[0]), zone[1] + r() * (zone[3] - zone[1]), r() * 3]);
@@ -2133,7 +2184,7 @@ function titleGate(g, r) {
       g.fillStyle = r() < 0.5 ? '#2c3a1a' : '#4a5e24'; g.fillRect(p[0] - 0.6 + r(), p[1] - 0.6 + r(), 1.2, 1.2);
     }
   });
-  cherubAt(g, cx, spring - r2 + 16);                                     // a winged cherub's head carved on the keystone
+  crownSkullAt(g, cx, spring - r2 - 4);                                  // the King's mark, a crowned skull, carved on the keystone
   for (const [x, y0, y1] of [[9, 96, 178], [279, 88, 160]]) {          // chains on the wall, ending in open cuffs
     hangChain(g, x, y0, y1, r);
     g.strokeStyle = rgb([112, 106, 114], litK(x, y1, 1, 0.3)); g.lineWidth = 1.6;
@@ -2148,8 +2199,7 @@ function titleGate(g, r) {
   g.beginPath(); g.ellipse(px, py, prx, pry, 0, 0, Math.PI * 2); g.fillStyle = '#0a0d12'; g.fill();
   g.strokeStyle = rgb([44, 52, 64], litK(px, py, 1, 0.3)); g.lineWidth = 0.9;
   g.beginPath(); g.ellipse(px, py - 0.3, prx, pry, 0, Math.PI * 1.05, Math.PI * 1.95); g.stroke();
-  banner(g, 29, 51, 160, 206, r, undefined, 'skull', true);                      // his banners on the pillars, like the ones on floor 1
-  banner(g, 237, 259, 160, 206, r, undefined, 'skull', true);
+  T_BANNERS = [titleBannerMake(25, 55, 152, 238, r, 0), titleBannerMake(233, 263, 152, 238, r, 2.2)];   // his banners on the pillars (drawn live)
 }
 // you, as a shape: not the knight from the fights but a silhouette of him from behind (great helm and plume, broad
 // pauldrons, the sword low in your left hand, the torch raised in your right), dark against the light. Feet at 0, 0
@@ -2263,6 +2313,7 @@ function drawTitle(g, t, e = 99) {
     titleAt = step;
     const fg = fr.getContext('2d');
     fg.setTransform(1, 0, 0, 1, 0, 0); fg.globalCompositeOperation = 'source-over'; fg.drawImage(room.low, 0, 0);
+    T_BANNERS.forEach(b => titleBanner(fg, b, ts));                       // his banners, stirring
     if (open > 0) { fg.globalAlpha = open; fg.drawImage(room.crown, 0, 0); fg.globalAlpha = 1; }   // his crown, coming out of the dark with his eyes
     room.flames.forEach((f, i) => { fg.setTransform(f.m); liveFlame(fg, f.x, f.y, f.s, ts, i); });
     fg.setTransform(1, 0, 0, 1, 0, 0);
@@ -2309,7 +2360,7 @@ function drawTitle(g, t, e = 99) {
     g.globalAlpha = 1;
     for (const [lx2, ly2] of T_LETTER_AT) { stamp(g, '255,150,60', 0.26 * lit, lx2, ly2, 14 * fl); stamp(g, '224,80,28', 0.08 * lit, lx2, ly2, 24); }
   }
-  stamp(g, '160,170,225', 0.14, TG.cx, TG.spring - TG.r2 + 16, 26);       // a faint cold light on the cherub over the gate
+  stamp(g, '160,170,225', 0.14, TG.cx, TG.spring - TG.r2 + 12, 26);       // a faint cold light on the King's mark over the gate
   titleEyes(g, t, open, room);
   g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
   for (let k = 0; k < 3; k++) {                                            // smoke off your torch
