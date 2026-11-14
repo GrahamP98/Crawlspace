@@ -163,7 +163,7 @@
         <li><b>Block</b>: you don't attack, but you take less damage. Without a shield Block stops 45% of each hit; a shield raises that (Wooden Buckler 55%, Iron Shield 65%, Steel Kite Shield 75%, the most it can be). Each hit you block has a 10% chance to stun that enemy so it skips its next attack. A shield raises the stun chance. Stuns don't chain: an enemy that was just stunned can't be stunned by its very next attack (another enemy in the group still can). Thorns doesn't cut enemies on a turn you Block.</li>
       </ul>
       <p>Enemies miss 10% of the time too, and 10% of their hits are critical hits for 1.5 times the damage. Your armor takes points off every hit, but a hit always does at least 1.</p>
-      <p>When a fight ends you get coins and XP for each enemy, and the group drops a piece of gear. A card shows what you found next to what you wear in that slot, with a green or red number for how much better or worse it is. You can <b>Equip</b> it or <b>Leave</b> it, and either one takes you back to the map.</p>
+      <p>When a fight ends you get coins and XP for each enemy, and the group drops a piece of gear. A card shows what you found on the left and what you wear in that slot on the right: each piece's symbol (its shape and color show the material: brown leather, grey iron, bright steel trimmed in gold), its number (damage for a weapon, defense for armor, block for a shield), and its enchantment as a symbol and a few words. Between them a badge tells you at a glance: a green arrow up for <b>Better</b>, a red arrow down for <b>Worse</b>, = for <b>Same</b>, or a yellow <b>Trade-off</b> when it is better one way and worse another (say, a bigger number but no enchantment). You can <b>Equip</b> it or <b>Leave</b> it, and either one takes you back to the map.</p>
     </details>
 
     <details>
@@ -242,7 +242,7 @@
       </ul>
       <p>A weapon adds its number to your damage. Armor numbers add up to your <b>Defense</b>, which comes off every enemy hit. Full Steel armor gives 13. What you find depends on the floor: floor 1 is mostly leather with the odd iron piece (but no Chainmail yet), floor 2 is half leather and half iron, Steel first turns up on floor 3, and floor 5 holds only iron and steel. A <b>shield</b> adds nothing to Defense; it makes <b>Block</b> stronger instead: each point stops 10% more of a blocked hit and adds 4% to the stun chance (with no shield Block stops 45%; a Steel Kite Shield, +3, takes it to 75%, the most it can be, and the stun chance from 10% to 22%). Gear drops from fights and chests, and merchants sell it (price = 5 coins per point). Better material also lets you use stronger enchantments.</p>
       <p>Everything you wear shows on your character in fights, from a rusty sword to a steel great helm. You start out in a prisoner's rags: a torn tunic, a bandaged arm and bare feet. Wear all four armor pieces (helmet, chest, bracers and greaves) with a steel helm, and a knight's blue plume streams from it. A full set of Steel adds gold trim, and enchanted gear glows in its enchantment's color. Enemies show their gear the same way (see Fighting).</p>
-      <p>Tap <b>Hero</b> to see yourself in everything you wear, with your six slots around you. The edge of each slot shows its material (brown leather, grey iron, bright steel), and enchanted pieces glow. Below are your stats (the damage range of your hits, Defense, Max HP, how much Block stops, stun, critical hit, miss and flee chances) and your perks. Tap any piece of gear or perk to read what it does. The <b>Bag</b> tab holds your scrolls.</p>
+      <p>Tap <b>Hero</b> to see yourself in everything you wear, with your six slots around you. Each slot shows its piece's symbol, shaped and colored by its material (a rusty sword, an iron sword, a gold-guarded steel sword, and so on), and its number. An enchanted piece glows and shows its enchantment's symbol, with one, two or three dots for Minor, Good or Major. Below are your stats, each with its symbol (the damage range of your hits, Defense, Max HP, how much Block stops, stun, critical hit, miss and flee chances) and your perks. Tap any piece of gear or perk to read what it does. The <b>Bag</b> tab holds your scrolls.</p>
     </details>
 
     <details>
@@ -464,6 +464,7 @@ const PERKS = {
 // Minor fits any gear, Good needs Iron gear or better, Major needs Steel gear
 const TIERS = ['Minor', 'Good', 'Major'];
 const TIER_NEED = ['any gear', 'Iron gear or better', 'Steel gear'];
+const TIER_FITS = ['any gear', 'Iron or Steel', 'Steel only'];   // the same, short
 const TIER_FLOOR = [1, 2, 4];            // first floor where drops and scrolls can carry this tier
 const TIER_PRICE = [15, 30, 50];         // what an enchantment is worth (selling a scroll, or enchanted gear); the Enchanter's prices
 const ENCHANT_DROP_CHANCE = 0.20;        // gear from fights and chests comes enchanted
@@ -502,6 +503,12 @@ const ENCHANTS = {
 const enchSlots = id => ENCHANTS[id].slots || (ENCHANTS[id].slot === 'weapon' ? ['weapon'] : [...armor, 'shield']);
 const enchLabel = e => `${ENCHANTS[e.id].name} (${TIERS[e.t]})`;
 const enchText = e => ENCHANTS[e.id].text(ENCHANTS[e.id].vals[e.t]);
+// an enchantment in a few words, next to its symbol (enchText is the whole sentence)
+const ENCH_SHORT = {flaming: v => `Burn ${v}`, vampiric: v => `Leech ${pct(v)}`, balanced: v => `Heavy miss \u2212${pct(v)}`,
+  giantslayer: v => `Big foes +${pct(v)}`, swift: v => `Double hit ${pct(v)}`, thorns: v => `Thorns ${v}`, mending: v => `Mend ${v}`,
+  fortitude: v => `+${v} max HP`, purity: v => `Poison \u2212${v}`, fleetfoot: v => `Flee +${pct(v)}`, fortune: v => `Gold +${pct(v)}`};
+const enchShort = e => ENCH_SHORT[e.id](ENCHANTS[e.id].vals[e.t]);
+const statWord = slot => slot === 'weapon' ? 'damage' : slot === 'shield' ? 'block' : 'defense';
 const itemName = it => it.ench ? `${it.name} of ${ENCHANTS[it.ench.id].name} (${TIERS[it.ench.t]})` : it.name;
 // total strength of an enchantment across everything you wear
 const enchSum = id => Object.values(worn).reduce((s, it) =>
@@ -986,10 +993,7 @@ function loot() {
   if (Math.random() < ENCHANT_DROP_CHANCE)
     pending.ench = {id: randomEnchant(k), t: Math.min(tier, floorTier())};
   phase = 'loot';
-  const cur = worn[k];
-  return `Found ${itemName(pending)} (+${pow})` + (pending.ench ? `: ${enchText(pending.ench)}. ` : '. ') + (cur
-    ? `You wear ${itemName(cur)} (+${cur.power}).`
-    : `Your ${slots[k].label} slot is empty.`);
+  return `Found ${itemName(pending)}.`;
 }
 
 // ---- scrolls: put one on a worn item now, keep it in your bag, or throw it away ----
@@ -1075,7 +1079,7 @@ function openChest(key) {
     refresh();
     return `It holds a health potion, but your bag is full. You take ${got} coins instead.`;
   }
-  return 'It holds equipment. ' + loot();
+  return loot();
 }
 
 // a capsa: a leather scroll case, with a scroll in it every time
@@ -4437,15 +4441,16 @@ function paintRow(b) {
   ctx.strokeStyle = off ? '#2c2832' : b.edge || '#5a4a34';
   ctx.lineWidth = 1;
   ctx.stroke();
-  const right = b.price !== undefined ? 48 : b.tag ? 46 : 8, big = b.h >= 36, textW = b.w - 14 - right;
+  const right = b.price !== undefined ? 48 : b.tag ? 46 : 8, big = b.h >= 36, lx = b.x + (b.icon ? 34 : 10), textW = b.w - 4 - right - (lx - b.x);
+  if (b.icon) { ctx.save(); if (off) ctx.globalAlpha = 0.45; b.icon(b.x + 18, b.y + b.h / 2); ctx.restore(); }   // a symbol on the left
   ctx.textAlign = 'left';
   ctx.font = textFont(big ? 15 : 13);
   ctx.fillStyle = off ? '#7a7480' : '#f0e8d8';
-  ctx.fillText(fitText(b.text, textW), b.x + 10, b.note ? b.y + (big ? 17 : 14) : b.y + b.h / 2 + 5);
+  ctx.fillText(fitText(b.text, textW), lx, b.note ? b.y + (big ? 17 : 14) : b.y + b.h / 2 + 5);
   if (b.note) {
     ctx.font = textFont(big ? 12 : 11, 400);
     ctx.fillStyle = off ? '#5e5864' : '#aa9e8a';
-    ctx.fillText(fitText(b.note, textW), b.x + 10, b.y + b.h - (big ? 9 : 6));
+    ctx.fillText(fitText(b.note, textW), lx, b.y + b.h - (big ? 9 : 6));
   }
   if (b.price !== undefined) {
     drawCoin(b.x + b.w - 38, b.y + b.h / 2, 6.5);
@@ -4528,58 +4533,152 @@ function paintLogLine(b) {
   ctx.fillText(fitText(s.entry.text, maxW), b.x + 8, b.y + b.h / 2 + 5);
 }
 
-// ---- the item you just found, over the bottom of the view, while you choose Equip or Leave ----
+// ---- the item you just found, over the bottom of the view, while you choose Equip or Leave: what you found on the
+// left, what you wear in that slot on the right (each as its symbol, its number and its enchantment), and between
+// them a badge that says at a glance whether it is better or worse ----
+const VERDICTS = {1: {word: 'Better', col: '#5ee25e'}, '-1': {word: 'Worse', col: '#ee5a5a'}, 0: {word: 'Same', col: '#9a9080'}, 2: {word: 'Trade-off', col: '#f2b84a'}};
+// 1 better, -1 worse, 0 the same, 2 a trade-off (better one way, worse another): its number first, then its enchantment
+// (none < Minor < Good < Major; two different ones of the same tier count as even)
+function lootVerdict(it, cur) {
+  if (!cur) return 1;
+  const worth = e => e ? 1 + e.t : 0, dp = it.power - cur.power, de = worth(it.ench) - worth(cur.ench);
+  if (dp === 0 && de === 0) return it.ench && cur.ench && it.ench.id !== cur.ench.id ? 2 : 0;
+  if (dp >= 0 && de >= 0) return 1;
+  if (dp <= 0 && de <= 0) return -1;
+  return 2;
+}
+function lootSide(it, slot, ax, y, label, right) {
+  const dir = right ? -1 : 1, align = right ? 'right' : 'left', ix = ax + dir * 14, iy = y + 38;
+  ctx.textAlign = align;
+  ctx.font = textFont(10, 400); ctx.fillStyle = '#8a8070';
+  ctx.fillText(label.toUpperCase(), ax, y + 14);
+  if (!it) {
+    drawSlotIcon(slot, ix, iy, 13, 1, '#4e4856');
+    ctx.textAlign = align; ctx.font = textFont(15); ctx.fillStyle = '#6a6470';
+    ctx.fillText('empty', ax + dir * 33, iy + 5);
+    return;
+  }
+  const col = TIER_EDGE[it.tier];
+  drawSlotIcon(slot, ix, iy, 13, it.tier);
+  ctx.textAlign = align;
+  ctx.font = textFont(26); ctx.fillStyle = '#f4ead4';
+  ctx.fillText(`+${it.power}`, ax + dir * 33, iy + 8);
+  ctx.font = textFont(10, 400); ctx.fillStyle = '#9a9080';
+  ctx.fillText(statWord(slot), ax + dir * 34, iy + 20);
+  ctx.font = textFont(12); ctx.fillStyle = col;
+  ctx.fillText(fitText(it.name, 100), ax, y + 75);
+  if (it.ench) {                                                           // its enchantment: the symbol and a few words, in its glow
+    const g = ENCH_GLOW[it.ench.id];
+    drawEnchIcon(it.ench.id, ax + dir * 7, y + 89, 8, g);
+    ctx.textAlign = align; ctx.font = textFont(12); ctx.fillStyle = g;
+    ctx.fillText(fitText(enchShort(it.ench), 84), ax + dir * 18, y + 93);
+  } else {
+    ctx.font = textFont(11, 400); ctx.fillStyle = '#5e5864';
+    ctx.fillText('no enchantment', ax, y + 93);
+  }
+}
+function drawVerdict(v, x, y, r) { pixelIcon('verdict:' + v, r, g => verdictGlyph(g, v), x, y); }
+function verdictGlyph(ctx, v) {                                                // (ctx: the icon's own canvas)
+  const col = VERDICTS[v].col;
+  ctx.save();
+  ctx.beginPath(); ctx.arc(0, 0, 9.6, 0, Math.PI * 2);
+  ctx.fillStyle = shade(col, 0.24); ctx.fill();
+  ctx.strokeStyle = col; ctx.lineWidth = 1.4; ctx.stroke();
+  ctx.scale(10 / 14, 10 / 14);
+  ctx.beginPath();
+  if (v === 1) { ctx.moveTo(0, -7); ctx.lineTo(7.5, 4.5); ctx.lineTo(-7.5, 4.5); }                        // up
+  else if (v === -1) { ctx.moveTo(0, 7); ctx.lineTo(7.5, -4.5); ctx.lineTo(-7.5, -4.5); }                 // down
+  else if (v === 0) { ctx.rect(-6.5, -4.2, 13, 2.8); ctx.rect(-6.5, 1.4, 13, 2.8); }                     // equal
+  else { ctx.moveTo(-6.5, -1.5); ctx.lineTo(0, -9); ctx.lineTo(6.5, -1.5); ctx.closePath(); ctx.moveTo(-6.5, 1.5); ctx.lineTo(0, 9); ctx.lineTo(6.5, 1.5); ctx.closePath(); }   // up and down
+  ctx.fillStyle = col; ctx.fill();
+  ctx.restore();
+}
 function paintLootCard() {
   if (!pending) return;
-  const x = 8, w = 272, h = 66, y = view.controls - h - 6, cur = worn[pending.slot];
-  const diff = pending.power - (cur ? cur.power : 0);
-  ctx.fillStyle = 'rgba(16,13,20,0.94)';
+  const x = 8, w = 272, h = 100, y = view.controls - h - 6, cur = worn[pending.slot], v = lootVerdict(pending, cur), V = VERDICTS[v];
+  ctx.fillStyle = 'rgba(16,13,20,0.95)';
   roundBox(x, y, w, h, 8);
   ctx.fill();
-  ctx.strokeStyle = TIER_EDGE[pending.tier];
+  ctx.strokeStyle = V.col;
   ctx.lineWidth = 1.4;
   ctx.stroke();
-  ctx.textAlign = 'left';
-  ctx.font = textFont(11, 400);
-  ctx.fillStyle = '#9a9080';
-  ctx.fillText(`Found: ${slots[pending.slot].label}`, x + 10, y + 14);
-  ctx.font = textFont(15);
-  ctx.fillStyle = TIER_EDGE[pending.tier];
-  ctx.fillText(fitText(`${itemName(pending)} +${pending.power}`, w - 74), x + 10, y + 31);
-  if (pending.ench) {
-    ctx.font = textFont(11);
-    ctx.fillStyle = ENCH_GLOW[pending.ench.id];
-    ctx.fillText(fitText(enchText(pending.ench), w - 74), x + 10, y + 46);
+  lootSide(pending, pending.slot, x + 10, y, 'Found', false);
+  lootSide(cur, pending.slot, x + w - 10, y, 'You wear', true);
+  const cx = x + w / 2, dp = pending.power - (cur ? cur.power : 0);
+  drawVerdict(v, cx, y + 36, 14);
+  centerText(V.word, cx, y + 66, textFont(13), V.col);
+  if (dp) centerText(`${dp > 0 ? '+' : '\u2212'}${Math.abs(dp)} ${statWord(pending.slot)}`, cx, y + 80, textFont(10, 400), '#9a9080');
+}
+// ---- symbols in the game's look: each one is painted on a small canvas of its own at twice the size it will have,
+// every 2 x 2 of that becomes one big square pixel (two units across, like the pictures of you and the creatures),
+// lit in three steps from the top left with its near edges catching the light and its far edges in shadow, and
+// ringed by a one-pixel dark outline. paint(g) draws the symbol in a square 20 units across, centered on 0, 0 ----
+const ICON_PX = 2, iconCache = new Map();
+function pixelIcon(key, r, paint, x, y) {
+  const n = Math.max(5, Math.round(2 * r / ICON_PX)) + 2, ck = key + '|' + n;   // its pixels, plus a border for the outline
+  let cv = iconCache.get(ck);
+  if (!cv) {
+    const H = n * 2, hi = document.createElement('canvas');
+    hi.width = hi.height = H;
+    const hg = hi.getContext('2d');
+    hg.translate(H / 2, H / 2); hg.scale((H - 4) / 20, (H - 4) / 20);
+    hg.lineCap = hg.lineJoin = 'round';
+    paint(hg);
+    const src = hg.getImageData(0, 0, H, H).data, solid = new Uint8Array(n * n), col = new Float32Array(n * n * 3);
+    for (let py = 0; py < n; py++) for (let px = 0; px < n; px++) {
+      let w = 0, R = 0, G = 0, B = 0, hit = false;
+      for (let k = 0; k < 4; k++) {
+        const o = ((py * 2 + (k >> 1)) * H + px * 2 + (k & 1)) * 4, a = src[o + 3];
+        if (a >= 140) hit = true;
+        R += src[o] * a; G += src[o + 1] * a; B += src[o + 2] * a; w += a;
+      }
+      const i = py * n + px;
+      if (hit) { solid[i] = 1; col[i * 3] = R / w; col[i * 3 + 1] = G / w; col[i * 3 + 2] = B / w; }
+    }
+    cv = document.createElement('canvas');
+    cv.width = cv.height = n;
+    const g = cv.getContext('2d'), img = g.createImageData(n, n), d = img.data;
+    const S = (px, py) => px >= 0 && py >= 0 && px < n && py < n && solid[py * n + px] === 1;
+    for (let py = 0; py < n; py++) for (let px = 0; px < n; px++) {
+      const i = py * n + px, o = i * 4;
+      if (solid[i]) {
+        const diag = px + py - (n - 1);
+        let k = diag < -n * 0.25 ? 1.14 : diag > n * 0.25 ? 0.8 : 1;       // three facets
+        if (!S(px - 1, py) || !S(px, py - 1)) k *= 1.16;                   // the edges toward the light
+        else if (!S(px + 1, py) || !S(px, py + 1)) k *= 0.8;              // the edges away from it
+        for (let c = 0; c < 3; c++) d[o + c] = Math.min(255, col[i * 3 + c] * k);
+        d[o + 3] = 255;
+      } else if (S(px - 1, py) || S(px + 1, py) || S(px, py - 1) || S(px, py + 1)) {
+        d[o] = 13; d[o + 1] = 11; d[o + 2] = 16; d[o + 3] = 255;           // the outline
+      }
+    }
+    g.putImageData(img, 0, 0);
+    if (iconCache.size > 400) iconCache.clear();
+    iconCache.set(ck, cv);
   }
-  ctx.font = textFont(11, 400);
-  ctx.fillStyle = '#9a9080';
-  ctx.fillText(fitText(cur ? `You wear: ${itemName(cur)} +${cur.power}` : `Your ${slots[pending.slot].label.toLowerCase()} slot is empty`, w - 74), x + 10, y + 60);
-  // better or worse than what you wear
-  centerText(diff > 0 ? `+${diff}` : diff < 0 ? String(diff) : '=', x + w - 32, y + 36, textFont(24), diff > 0 ? '#5ee25e' : diff < 0 ? '#ee5a5a' : '#9a9080');
-  centerText(diff ? 'power' : 'same', x + w - 32, y + 52, textFont(11, 400), '#9a9080');
+  const s = n * 2 * r / (n - 2);                                           // the inner pixels span 2r units
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(cv, x - s / 2, y - s / 2, s, s);
+  ctx.restore();
 }
 
 // ---- perk symbols, on a disc in the perk's rarity color ----
-function drawPerkIcon(id, x, y, r) {
+function drawPerkIcon(id, x, y, r) { pixelIcon('perk:' + id, r, g => perkGlyph(g, id), x, y); }
+function perkGlyph(ctx, id) {                                                  // (ctx: the icon's own canvas)
   const edge = RARITY_EDGE[PERKS[id].rarity];
-  ctx.save();
-  ctx.fillStyle = edge;
-  ctx.globalAlpha *= 0.22;
-  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
-  ctx.globalAlpha /= 0.22;
-  ctx.strokeStyle = edge;
-  ctx.lineWidth = 1.2;
-  ctx.stroke();
-  ctx.translate(x, y);
-  ctx.scale(r / 10, r / 10);
+  ctx.beginPath(); ctx.arc(0, 0, 8.9, 0, Math.PI * 2);
+  ctx.fillStyle = shade(edge, 0.2); ctx.fill();
+  ctx.strokeStyle = edge; ctx.lineWidth = 1.8; ctx.stroke();
+  ctx.scale(0.8, 0.8);
   ctx.strokeStyle = ctx.fillStyle = '#f4ead4';
-  ctx.lineWidth = 1.7;
+  ctx.lineWidth = 2.6;                                                      // bold enough to stay whole as pixels
   ctx.lineCap = ctx.lineJoin = 'round';
   const line = (...pts) => { ctx.beginPath(); pts.forEach(([a, b], i) => i ? ctx.lineTo(a, b) : ctx.moveTo(a, b)); ctx.stroke(); };
   ctx.beginPath();
   if (id === 'attack') { line([-4, 4], [6, -6]); line([-6, 1], [-1, 6]); line([-7, 7], [-5, 5]); }        // a sword
   else if (id === 'vitality') {                                                                        // a heart
-    ctx.moveTo(0, 6); ctx.bezierCurveTo(-10, 0, -5, -8, 0, -3); ctx.bezierCurveTo(5, -8, 10, 0, 0, 6); ctx.fill();
+    for (const s of [-1, 1]) { ctx.beginPath(); ctx.arc(s * 3.6, -2, 4, 0, Math.PI * 2); ctx.fill(); } ctx.beginPath(); ctx.moveTo(-7.4, -0.6); ctx.lineTo(0, 7.2); ctx.lineTo(7.4, -0.6); ctx.closePath(); ctx.fill();
   } else if (id === 'focus') {                                                                         // an eye
     ctx.ellipse(0, 0, 7, 4, 0, 0, Math.PI * 2); ctx.stroke();
     ctx.beginPath(); ctx.arc(0, 0, 2, 0, Math.PI * 2); ctx.fill();
@@ -4609,6 +4708,178 @@ function drawPerkIcon(id, x, y, r) {
   ctx.restore();
 }
 
+// ---- gear, enchantment and stat symbols: small drawings like the perk symbols, on a square 20 units across ----
+const ICON_DARK = 'rgba(10,8,14,0.6)';
+// a piece of gear's symbol. Its shape and colors follow its material, as the piece looks on you in a fight:
+// tier 0 is leather (a wooden buckler, cloth wraps, a rusty sword), 1 iron (a duller, darker grey), 2 steel (bright,
+// trimmed in gold). tint draws the iron shape in one flat color instead (an empty slot, a stat)
+const GEAR_MATS = [{base: '#a8743c', dark: '#4e321a', trim: '#d0a060'}, {base: '#8e96a2', dark: '#3a4048', trim: '#c4ccd6'},
+                   {base: '#e6eef8', dark: '#5a6676', trim: '#e8b84a'}];
+function drawSlotIcon(slot, x, y, r, tier, tint) { pixelIcon(`slot:${slot}:${tier}:${tint || ''}`, r, g => slotGlyph(g, slot, tier, tint), x, y); }
+function slotGlyph(ctx, slot, t, tint) {                                       // (ctx: the icon's own canvas)
+  const M = tint ? {base: tint, dark: shade(tint, 0.5), trim: tint, leather: tint, wood: tint, cloth: tint, hilt: shade(tint, 0.7), blade: tint}
+                 : {...GEAR_MATS[t], leather: GEAR_MATS[0].base, wood: '#9a6a3a', cloth: '#cdb894', hilt: '#5a3a1e', blade: '#a08470'};
+  const poly = (c, pts) => { ctx.fillStyle = c; ctx.beginPath(); pts.forEach(([a, b], i) => i ? ctx.lineTo(a, b) : ctx.moveTo(a, b)); ctx.closePath(); ctx.fill(); };
+  const line = (c, w, pts) => { ctx.strokeStyle = c; ctx.lineWidth = w; ctx.beginPath(); pts.forEach(([a, b], i) => i ? ctx.lineTo(a, b) : ctx.moveTo(a, b)); ctx.stroke(); };
+  const disc = (c, cx, cy, r) => { ctx.fillStyle = c; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill(); };
+  const box = (c, bx, by, w, h) => { ctx.fillStyle = c; ctx.fillRect(bx, by, w, h); };
+  const inside = (pts, draw) => { ctx.save(); ctx.beginPath(); pts.forEach(([a, b], i) => i ? ctx.lineTo(a, b) : ctx.moveTo(a, b)); ctx.closePath(); ctx.clip(); draw(); ctx.restore(); };
+  ctx.save();
+  ctx.lineCap = ctx.lineJoin = 'round';
+  if (slot === 'weapon') {
+    if (t === 0) {                                                           // a short, rusty sword
+      poly(M.blade, [[6.4, -6.4], [5.2, -2.8], [-1.4, 3.8], [-3.8, 1.4], [2.8, -5.2]]);
+      if (!tint) { box('#c8642a', 1.4, -2.8, 2.4, 2.4); box('#c8642a', -1.4, 0.4, 2, 2); }   // rust
+      line(M.hilt, 2.6, [[-5.8, 0.4], [-0.4, 5.8]]); line(M.hilt, 2.4, [[-3, 3], [-6.4, 6.4]]); disc(M.hilt, -7.2, 7.2, 1.8);
+    } else if (t === 1) {                                                    // a plain iron sword
+      poly(M.base, [[8.4, -8.4], [7, -4.2], [-1.4, 4.2], [-4.2, 1.4], [4.2, -7]]);
+      line(M.dark, 2.6, [[-6.6, 0.8], [-0.8, 6.6]]); line(M.hilt, 2.4, [[-3.8, 3.8], [-6.8, 6.8]]); disc(M.dark, -7.6, 7.6, 1.8);
+    } else {                                                                 // a long steel sword with a gold guard
+      poly(M.base, [[9.6, -9.6], [8.2, -5], [-1.2, 4.4], [-4.4, 1.2], [5, -8.2]]);
+      line(M.dark, 1, [[7.8, -7.8], [-1.6, 1.6]]);                           // the fuller
+      line(M.trim, 3, [[-7.8, -0.2], [0.2, 7.8]]); line(M.hilt, 2.4, [[-3.8, 3.8], [-6.8, 6.8]]); disc(M.trim, -7.8, 7.8, 2.1);
+    }
+  } else if (slot === 'shield') {
+    if (t === 0) {                                                           // a round wooden buckler with an iron boss
+      disc(M.dark, 0, 0, 9.2); disc(M.wood, 0, 0, 7.6);
+      if (!tint) for (const px of [-3.6, 0, 3.6]) line('#6a4624', 1.1, [[px, -7], [px, 7]]);
+      disc(tint || GEAR_MATS[1].base, 0, 0, 2.8);
+    } else if (t === 1) {                                                    // an iron heater shield
+      ctx.fillStyle = M.base; ctx.beginPath(); ctx.moveTo(-7.5, -8); ctx.lineTo(7.5, -8); ctx.lineTo(7.5, -1); ctx.quadraticCurveTo(6.5, 5.5, 0, 9); ctx.quadraticCurveTo(-6.5, 5.5, -7.5, -1); ctx.closePath(); ctx.fill();
+      line(M.dark, 1.8, [[0, -6.5], [0, 7]]);
+    } else {                                                                 // a tall steel kite shield, rimmed and crossed in gold
+      ctx.fillStyle = M.base; ctx.beginPath(); ctx.moveTo(-6.6, -9.4); ctx.lineTo(6.6, -9.4); ctx.lineTo(7.4, -3); ctx.quadraticCurveTo(4.6, 4.4, 0, 9.8); ctx.quadraticCurveTo(-4.6, 4.4, -7.4, -3); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = M.trim; ctx.lineWidth = 1.8; ctx.stroke();
+      line(M.trim, 1.8, [[0, -8], [0, 7]]); line(M.trim, 1.8, [[-5.6, -3.6], [5.6, -3.6]]);
+    }
+  } else if (slot === 'helmet') {
+    if (t === 0) {                                                           // a soft leather cap with a band
+      ctx.fillStyle = M.base; ctx.beginPath(); ctx.moveTo(-8, 3); ctx.quadraticCurveTo(-8, -8.5, 0, -8.5); ctx.quadraticCurveTo(8, -8.5, 8, 3); ctx.closePath(); ctx.fill();
+      box(M.dark, -9, 2, 18, 3.6);
+      line(M.dark, 1.2, [[0, -8], [0, 1]]);                                  // a seam
+    } else if (t === 1) {                                                    // an open iron helm with a nose guard
+      ctx.fillStyle = M.base; ctx.beginPath(); ctx.moveTo(-7.5, 8); ctx.lineTo(-7.5, -1); ctx.quadraticCurveTo(-7.5, -9, 0, -9); ctx.quadraticCurveTo(7.5, -9, 7.5, -1); ctx.lineTo(7.5, 8); ctx.closePath(); ctx.fill();
+      box('rgb(26,22,32)', -5, -2, 10, 10);                                  // the face, in shadow
+      box(M.base, -1.3, -3, 2.6, 8.4);                                       // the nose guard
+    } else {                                                                 // a closed steel great helm with a gold cross
+      poly(M.base, [[-7.5, -6.6], [-6, -9], [6, -9], [7.5, -6.6], [7.5, 8.6], [-7.5, 8.6]]);
+      box('rgb(26,22,32)', -6.2, -2.8, 12.4, 2.6);                           // the eye slit
+      box(M.trim, -1.2, -9, 2.4, 6.2); box(M.trim, -1.2, -0.2, 2.4, 8.8);
+    }
+  } else if (slot === 'chest') {
+    const torso = [[-8.5, -6.5], [-4.2, -8.5], [-2.6, -5.8], [0, -5], [2.6, -5.8], [4.2, -8.5], [8.5, -6.5], [6.6, -1], [6.2, 7.6], [0, 9.2], [-6.2, 7.6], [-6.6, -1]];
+    poly(M.base, torso);
+    if (t === 0) {                                                           // a leather vest, laced up the front
+      poly(M.dark, [[-2.4, -5.4], [2.4, -5.4], [1, 8.8], [-1, 8.8]]);
+      if (!tint) for (const ly of [-2.4, 1, 4.4]) line(M.trim, 1.2, [[-2.2, ly], [2.2, ly]]);
+    } else if (t === 1) {                                                    // chainmail: rings all over
+      if (!tint) inside(torso, () => { for (let row = 0; row < 7; row++) for (let col = 0; col < 7; col++) box(M.dark, -8 + col * 2.8 + (row % 2) * 1.4, -7.4 + row * 2.6, 1.4, 1.4); });
+    } else {                                                                 // a steel breastplate, gold at the neck and the waist
+      line(M.trim, 1.9, [[-2.6, -5.8], [0, -5], [2.6, -5.8]]);
+      line(M.trim, 1.9, [[-6.2, 7.2], [0, 8.8], [6.2, 7.2]]);
+      line(M.dark, 1, [[0, -3.6], [0, 7]]);
+    }
+  } else if (slot === 'bracers') {
+    const arm = [[-5, -8.5], [5, -8.5], [3.8, 8.5], [-3.8, 8.5]];
+    if (t === 0) {                                                           // cloth wrapped round the forearm
+      poly(M.cloth, arm);
+      if (!tint) inside(arm, () => { for (const wy of [-6.4, -2, 2.4, 6.8]) line('#8a7656', 1.4, [[-5.4, wy + 1.8], [5.4, wy - 1.8]]); });
+    } else if (t === 1) {                                                    // an iron bracer with two bands
+      poly(M.base, arm); line(M.dark, 1.9, [[-4.6, -3.5], [4.6, -3.5]]); line(M.dark, 1.9, [[-4.2, 3.5], [4.2, 3.5]]);
+    } else {                                                                 // a plated steel bracer, gold at both ends
+      poly(M.base, arm); box(M.trim, -5.2, -9.2, 10.4, 2.8); box(M.trim, -4.2, 6.4, 8.4, 2.6); line(M.dark, 1, [[0, -5.8], [0, 5.6]]);
+    }
+  } else {
+    const boot = [[-4.5, -9], [3, -9], [3, 3], [7.5, 4.4], [8.6, 8.8], [-4.5, 8.8]];
+    if (t === 0) {                                                           // a soft leather boot with a turned-down cuff
+      poly(M.base, boot); box(M.dark, -5, -9.2, 8.6, 3.6);
+    } else if (t === 1) {                                                    // a leather boot under an iron shin plate
+      poly(M.leather, boot); poly(M.base, [[-5, -9.4], [3.6, -9.4], [3.6, 2.6], [-5, 2.6]]); line(M.dark, 1.7, [[-5, -3.4], [3.6, -3.4]]);
+    } else {                                                                 // steel from the knee to the toes, a gold-rimmed knee guard
+      poly(M.base, boot); line(M.dark, 1.2, [[-4.5, 4.6], [5, 4.6]]); line(M.dark, 1.2, [[2.6, 6.8], [7.8, 6.8]]);
+      disc(M.trim, -0.8, -6.6, 3.8); disc(M.base, -0.8, -6.6, 2.5);
+    }
+  }
+  ctx.restore();
+}function drawEnchIcon(id, x, y, r, col) { pixelIcon(`ench:${id}:${col}`, r, g => enchGlyph(g, id, col), x, y); }
+function enchGlyph(ctx, id, col) {                                             // (ctx: the icon's own canvas)
+  ctx.save();
+  ctx.fillStyle = ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.lineCap = ctx.lineJoin = 'round';
+  const path = pts => { ctx.beginPath(); pts.forEach(([a, b], i) => i ? ctx.lineTo(a, b) : ctx.moveTo(a, b)); };
+  ctx.beginPath();
+  if (id === 'flaming') {                                                  // a flame
+    ctx.moveTo(0, -9.5); ctx.quadraticCurveTo(8, -1, 5.5, 5); ctx.quadraticCurveTo(3.5, 9.5, 0, 9.5); ctx.quadraticCurveTo(-3.5, 9.5, -5.5, 5);
+    ctx.quadraticCurveTo(-7, -0.5, -1.5, -3.5); ctx.quadraticCurveTo(-1, -6.5, 0, -9.5); ctx.fill();
+  } else if (id === 'vampiric') {                                          // fangs
+    path([[-8, -6], [8, -6]]); ctx.stroke(); path([[-6, -6], [-1.5, -6], [-3.8, 6.5]]); ctx.fill(); path([[1.5, -6], [6, -6], [3.8, 6.5]]); ctx.fill();
+  } else if (id === 'balanced') {                                          // scales
+    path([[0, -8], [0, 7]]); ctx.stroke(); path([[-4.5, 8], [4.5, 8]]); ctx.stroke(); path([[-8, -5], [8, -5]]); ctx.stroke();
+    for (const s of [-1, 1]) {
+      ctx.beginPath(); ctx.moveTo(s * 9.5, 0.5); ctx.quadraticCurveTo(s * 6.5, 5, s * 3.5, 0.5); ctx.closePath(); ctx.fill();
+      ctx.lineWidth = 1; path([[s * 6.5, -5], [s * 9.5, 0.5]]); ctx.stroke(); path([[s * 6.5, -5], [s * 3.5, 0.5]]); ctx.stroke(); ctx.lineWidth = 2;
+    }
+  } else if (id === 'giantslayer') {                                       // a war hammer
+    ctx.lineWidth = 2.4; path([[-7, 8], [2.5, -1.5]]); ctx.stroke(); path([[-1, -8], [8.5, 1.5], [5, 5], [-4.5, -4.5]]); ctx.closePath(); ctx.fill();
+  } else if (id === 'swift') {                                             // a double chevron
+    ctx.lineWidth = 2.6; path([[-8, -6.5], [-2, 0], [-8, 6.5]]); ctx.stroke(); path([[0, -6.5], [6, 0], [0, 6.5]]); ctx.stroke();
+  } else if (id === 'thorns') {                                            // a thorny ring
+    ctx.arc(0, 0, 4.6, 0, Math.PI * 2); ctx.lineWidth = 2.2; ctx.stroke();
+    for (let k = 0; k < 6; k++) { const a = k * Math.PI / 3; path([[Math.cos(a - 0.32) * 4.6, Math.sin(a - 0.32) * 4.6], [Math.cos(a) * 9.6, Math.sin(a) * 9.6], [Math.cos(a + 0.32) * 4.6, Math.sin(a + 0.32) * 4.6]]); ctx.fill(); }
+  } else if (id === 'mending') {                                           // a cross
+    ctx.fillRect(-2.8, -8.5, 5.6, 17); ctx.fillRect(-8.5, -2.8, 17, 5.6);
+  } else if (id === 'fortitude') {                                         // a heart with a plus
+    for (const s of [-1, 1]) { ctx.beginPath(); ctx.arc(s * 4.3, -2.6, 4.7, 0, Math.PI * 2); ctx.fill(); } ctx.beginPath(); ctx.moveTo(-8.8, -1); ctx.lineTo(0, 8.8); ctx.lineTo(8.8, -1); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(10,8,14,0.7)'; ctx.fillRect(-0.9, -3.2, 1.8, 6.4); ctx.fillRect(-3.2, -0.9, 6.4, 1.8);
+  } else if (id === 'purity') {                                            // a sparkle
+    ctx.moveTo(0, -9.5); ctx.quadraticCurveTo(1.2, -1.2, 9.5, 0); ctx.quadraticCurveTo(1.2, 1.2, 0, 9.5); ctx.quadraticCurveTo(-1.2, 1.2, -9.5, 0); ctx.quadraticCurveTo(-1.2, -1.2, 0, -9.5); ctx.fill();
+  } else if (id === 'fleetfoot') {                                         // an arrow with speed lines
+    path([[1, -6.5], [9, 0], [1, 6.5]]); ctx.closePath(); ctx.fill();
+    ctx.lineWidth = 2.2; path([[-3, 0], [3, 0]]); ctx.stroke();
+    ctx.lineWidth = 1.6; path([[-9, -4], [-3.5, -4]]); ctx.stroke(); path([[-9.5, 0], [-5.5, 0]]); ctx.stroke(); path([[-9, 4], [-3.5, 4]]); ctx.stroke();
+  } else if (id === 'fortune') {                                           // a coin
+    ctx.arc(0, 0, 8, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(10,8,14,0.5)'; ctx.lineWidth = 1.5; ctx.stroke();
+  }
+  ctx.restore();
+}
+// an enchantment's tier as three dots: one lit for Minor, two for Good, three for Major
+function drawTierPips(x, y, t, col) {
+  for (let k = 0; k < 3; k++) {
+    const px = x + (k - 1) * 4.6 - 1.4, py = y - 1.4;
+    ctx.fillStyle = '#0d0b10'; ctx.fillRect(px - 0.9, py - 0.9, 4.6, 4.6);
+    ctx.fillStyle = k <= t ? col : '#3a3440'; ctx.fillRect(px, py, 2.8, 2.8);
+  }
+}
+const STAT_COL = {hit: '#f0d080', defense: '#aab0ba', maxhp: '#ee5a5a', block: '#6aa8d8', stun: '#66ddff', crit: '#ff9a3a', miss: '#9a9080', flee: '#8ad8a0'};
+function drawStatIcon(id, x, y, r) {
+  const col = STAT_COL[id];
+  if (id === 'hit') return drawSlotIcon('weapon', x, y, r, 1, col);
+  if (id === 'defense') return drawSlotIcon('helmet', x, y, r, 1, col);
+  if (id === 'block') return drawSlotIcon('shield', x, y, r, 1, col);
+  pixelIcon('stat:' + id, r, g => statGlyph(g, id, col), x, y);
+}
+function statGlyph(ctx, id, col) {                                             // (ctx: the icon's own canvas)
+  ctx.save();
+  ctx.fillStyle = ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.lineCap = ctx.lineJoin = 'round';
+  ctx.beginPath();
+  if (id === 'maxhp') { for (const s of [-1, 1]) { ctx.beginPath(); ctx.arc(s * 4.3, -2.6, 4.7, 0, Math.PI * 2); ctx.fill(); } ctx.beginPath(); ctx.moveTo(-8.8, -1); ctx.lineTo(0, 8.8); ctx.lineTo(8.8, -1); ctx.closePath(); ctx.fill(); }   // a heart
+  else if (id === 'stun') {                                                // a star
+    for (let k = 0; k < 10; k++) { const a = -Math.PI / 2 + k * Math.PI / 5, rr = k % 2 ? 4 : 9.5; ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); }
+    ctx.closePath(); ctx.fill();
+  } else if (id === 'crit') {                                              // a target
+    ctx.arc(0, 0, 6.5, 0, Math.PI * 2); ctx.stroke();
+    for (const [a, b, c, d] of [[0, -9.5, 0, -4], [0, 4, 0, 9.5], [-9.5, 0, -4, 0], [4, 0, 9.5, 0]]) { ctx.beginPath(); ctx.moveTo(a, b); ctx.lineTo(c, d); ctx.stroke(); }
+    ctx.beginPath(); ctx.arc(0, 0, 1.8, 0, Math.PI * 2); ctx.fill();
+  } else if (id === 'miss') {                                              // a broken ring
+    ctx.lineWidth = 2.2; ctx.arc(0, 0, 7.5, 0.5, 2.7); ctx.stroke(); ctx.beginPath(); ctx.arc(0, 0, 7.5, 3.6, 5.8); ctx.stroke();
+  } else if (id === 'flee') {                                              // out through a door
+    ctx.lineWidth = 1.8; ctx.strokeRect(-8.5, -8.5, 9, 17);
+    ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(-2.5, 0); ctx.lineTo(8, 0); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(4.5, -4); ctx.lineTo(9, 0); ctx.lineTo(4.5, 4); ctx.stroke();
+  }
+  ctx.restore();
+}
+
 // ---- the Hero panel: a gear slot box, and a perk badge ----
 function paintSlot(b) {
   const it = worn[b.slot], picked = overlay && overlay.pick === b.id, glow = it && it.ench ? ENCH_GLOW[it.ench.id] : null;
@@ -4622,25 +4893,17 @@ function paintSlot(b) {
   ctx.lineWidth = picked ? 2.2 : 1.2;
   roundBox(b.x, b.y, b.w, b.h, 6);
   ctx.stroke();
+  drawSlotIcon(b.slot, b.x + 16, b.y + b.h / 2, 11, it ? it.tier : 1, it ? null : '#4a4452');
   ctx.textAlign = 'left';
-  ctx.font = textFont(10, 400);
-  ctx.fillStyle = '#9a9080';
-  ctx.fillText(slots[b.slot].label, b.x + 6, b.y + 11);
-  ctx.font = textFont(12);
-  if (!it) { ctx.fillStyle = '#5e5864'; ctx.fillText('empty', b.x + 6, b.y + 27); return; }
-  ctx.fillStyle = '#f0e8d8';
-  ctx.fillText(fitText(it.name, b.w - 11), b.x + 6, b.y + 25);
-  ctx.font = textFont(11);
-  ctx.fillStyle = '#fc3';
-  ctx.fillText(`+${it.power}`, b.x + 6, b.y + 37);
+  if (!it) { ctx.font = textFont(16); ctx.fillStyle = '#4e4856'; ctx.fillText('\u2014', b.x + 33, b.y + b.h / 2 + 5); return; }
+  ctx.font = textFont(19);
+  ctx.fillStyle = '#f4ead4';
+  ctx.fillText(`+${it.power}`, b.x + 31, b.y + b.h / 2 + 7);
   if (it.ench) {
-    ctx.fillStyle = glow;
-    ctx.textAlign = 'right';
-    ctx.fillText(fitText(ENCHANTS[it.ench.id].name, b.w - 30), b.x + b.w - 6, b.y + 37);
-    ctx.textAlign = 'left';
+    drawEnchIcon(it.ench.id, b.x + b.w - 12, b.y + 14, 8, glow);
+    drawTierPips(b.x + b.w - 11, b.y + b.h - 8, it.ench.t, glow);
   }
-}
-function paintBadge(b) {
+}function paintBadge(b) {
   if (overlay && overlay.pick === b.id) {
     ctx.strokeStyle = '#fc3';
     ctx.lineWidth = 1.6;
@@ -4884,7 +5147,7 @@ function enchanterScreen(L, add, menu) {
 function scrollScreen(L, add, menu) {
   const P = L.panel, s = scrollNow;
   menu(`Scroll of ${ENCHANTS[s.id].name}`);
-  const top = menuPrompt(add, P, `${TIERS[s.t]}: ${enchText(s)} (${TIER_NEED[s.t]}). Put it on:`);
+  const top = menuPrompt(add, P, `${TIERS[s.t]}: ${enchShort(s)} \u00b7 fits ${TIER_FITS[s.t]}. Put it on:`);
   const end = menuFooter(L, add, s.fromBag === null
     ? [{id: 'scroll:keep', label: `Keep ${scrolls.length}/${bagSlots}`, sub: 'in your bag', enabled: scrolls.length < bagSlots, act: () => scrollChoice('keep')},
        {id: 'scroll:discard', label: 'Throw away', act: () => scrollChoice('discard')}]
@@ -4892,8 +5155,9 @@ function scrollScreen(L, add, menu) {
   rowStack(add, P.x + 8, top, end, P.w - 16, enchSlots(s.id).map(k => {
     const it = worn[k], ok = !!it && it.tier >= s.t;
     return {
-      id: 'scroll:' + k, text: `${slots[k].label}: ${it ? itemName(it) : 'empty'}`, enabled: ok,
+      id: 'scroll:' + k, text: it ? `${it.name} +${it.power}` : `${slots[k].label}: empty`, enabled: ok,
       note: !it ? 'nothing worn' : !ok ? `needs ${TIER_NEED[s.t]}` : it.ench ? `replaces ${enchLabel(it.ench)}` : 'no enchantment yet',
+      icon: (ix, iy) => drawSlotIcon(k, ix, iy, 10, it ? it.tier : 1, it ? null : '#4a4452'),
       edge: it ? TIER_EDGE[it.tier] : null, act: () => scrollChoice(k)};
   }));
 }
@@ -4928,20 +5192,17 @@ function heroScreen(L, add, menu) {
     ctx.textAlign = 'left';
     paragraph(heroDetail(o.pick), P.x + 14, dy + 14, P.w - 28, 14, 2);
   }});
-  const sy = dy + 42, stats = [
-    ['Hit', `${8 + power('weapon') + bonusDmg + honed + purseDmg()}-${14 + power('weapon') + bonusDmg + honed + purseDmg()}`], ['Defense', defense()], ['Max HP', p.max],
-    ['Block', pct(1 - blockMult())], ['Stun', pct(stunChance())], ['Crit', pct(critChance())],
-    ['Miss', pct(PLAYER_MISS * missKeep())], ['Flee', pct(fleeChance())]];
-  add({draw: () => stats.forEach(([label, value], i) => {
-    const cw = (P.w - 16) / 3, x = P.x + 8 + (i % 3) * cw + cw * 0.46, y = sy + Math.floor(i / 3) * 22;
-    ctx.font = textFont(11, 400);
-    ctx.fillStyle = '#9a9080';
-    ctx.textAlign = 'right';
-    ctx.fillText(label, x - 3, y + 12);
-    ctx.font = textFont(14);
-    ctx.fillStyle = '#f4ead4';
+  const sy = dy + 42, dmg = power('weapon') + bonusDmg + honed + purseDmg(), stats = [
+    ['hit', 'Hit', `${8 + dmg}-${14 + dmg}`], ['defense', 'Defense', defense()], ['maxhp', 'Max HP', p.max], ['block', 'Block', pct(1 - blockMult())],
+    ['stun', 'Stun', pct(stunChance())], ['crit', 'Crit', pct(critChance())], ['miss', 'Miss', pct(PLAYER_MISS * missKeep())], ['flee', 'Flee', pct(fleeChance())]];
+  add({draw: () => stats.forEach(([id, label, value], i) => {               // each stat: its symbol, its number, its name under it
+    const cw = (P.w - 16) / 4, x = P.x + 8 + (i % 4) * cw, y = sy + Math.floor(i / 4) * 33;
+    drawStatIcon(id, x + 11, y + 13, 9);
     ctx.textAlign = 'left';
-    ctx.fillText(String(value), x + 3, y + 13);
+    ctx.font = textFont(15); ctx.fillStyle = '#f4ead4';
+    ctx.fillText(String(value), x + 23, y + 17);
+    ctx.font = textFont(10, 400); ctx.fillStyle = '#8a8070';
+    ctx.fillText(label, x + 23, y + 29);
   })});
   const py = sy + 70, owned = Object.keys(PERKS).filter(perkN), per = Math.floor((P.w - 16) / 38);
   add({draw: () => {
@@ -4965,7 +5226,8 @@ function bagTab(L, add) {
       P.x + 14, top + 4, P.w - 28, 16, 3);
   }});
   rowStack(add, P.x + 8, top + 40, P.y + P.h - 10, P.w - 16, scrolls.map((s, i) => ({
-    id: 'bagUse:' + i, text: `Scroll of ${enchLabel(s)}`, note: `${enchText(s)} (${TIER_NEED[s.t]})`, tag: 'Use',
+    id: 'bagUse:' + i, text: enchLabel(s), note: `${enchShort(s)} \u00b7 ${TIER_FITS[s.t]}`, tag: 'Use',
+    icon: (ix, iy) => drawEnchIcon(s.id, ix, iy, 10, ENCH_GLOW[s.id]),
     enabled: phase === 'explore', edge: ENCH_GLOW[s.id], act: () => useBagScroll(i)})), 52);
 }
 
