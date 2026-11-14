@@ -1741,6 +1741,36 @@ function skullAt(g, x, y, s = 1) {
   lump(g, [[x - 5 * s, y], [x - 5.5 * s, y - 5 * s], [x - 2 * s, y - 8 * s], [x + 3 * s, y - 8 * s], [x + 6 * s, y - 4.5 * s], [x + 5 * s, y], [x + 3 * s, y + 2 * s], [x - 3 * s, y + 2 * s]], [200, 190, 164], 990 + x + y, 1, 0.35);
   g.fillStyle = '#0c0a0a'; g.fillRect(x - 2.6 * s, y - 4.6 * s, 2 * s, 2 * s); g.fillRect(x + 1 * s, y - 4.6 * s, 2 * s, 2 * s);
 }
+// a cherub carved in relief on the keystone, as pixel art: a head with a halo behind it, and wings spreading out to
+// the upper corners and curving down to meet under the chin, in a sunken panel with a raised border. Each wing is
+// three tiers of feathers, each tier's lower edge cut into scallops (lit on top, a dark gap under each)
+function cherubAt(g, x0, y0) {
+  const GW = 36, GH = 24, cx = 18, cy = 10;
+  const INK = {o: '#1a1620', d: '#2a2430', s: '#544a5c', m: '#8c8496', l: '#b0a8b8', h: '#d8d0dc'};
+  const face = {[`${cx - 3},${cy}`]: 'o', [`${cx + 2},${cy}`]: 'o', [`${cx - 3},${cy - 1}`]: 'm', [`${cx + 2},${cy - 1}`]: 'm',
+    [`${cx - 1},${cy + 2}`]: 'm', [`${cx - 1},${cy + 4}`]: 's', [`${cx - 2},${cy + 4}`]: 's', [`${cx},${cy + 4}`]: 's'};
+  for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) {
+    const px = x + 0.5, py = y + 0.5, hr = Math.hypot((px - cx) / 5.2, (py - cy - 0.5) / 5.6);
+    const u = Math.abs(px - cx) - 4.5, uo = Math.max(u, 0);
+    const top = cy - 2 - uo * 0.62, bot = cy + 10 - uo * 0.5 - Math.max(0, u - 9) * 1.4;
+    const wing = u <= 13.5 && py > top && py < bot && (u > 0 || py > cy + 5);
+    let ink;
+    if (hr < 1) {                                                          // the head: curls on top, a lit face
+      const k = face[`${x},${y}`];
+      ink = k || (py < cy - 2.2 && hr > 0.45 ? ((x + y) % 2 ? 'm' : 'h') : (px - cx) + (py - cy) < -4 ? 'h' : (px - cx) + (py - cy) > 4 ? 'm' : 'l');
+    } else if (hr < 1.2) ink = 'o';                                       // a dark line round the head, against the wings
+    else if (wing) {
+      const H = (bot - top) / 3, tier = Math.min(2, Math.floor((py - top) / H)), tv = ((py - top) / H) % 1;
+      const su = ((u + 3 + tier * 1.5) / 3) % 1, cut = 0.6 + 0.32 * Math.sin(su * Math.PI);
+      ink = tv > cut ? 'o' : tv < 0.28 ? 'h' : su < 0.18 || su > 0.82 ? 'm' : 'l';
+    } else if (Math.abs(Math.hypot(px - cx, py - cy + 0.5) - 8) < 0.7 && py < cy + 2) ink = 'h';   // the halo
+    else {                                                                 // the panel: sunken, its border raised
+      const edge = x < 1 || y < 1 || x > GW - 2 || y > GH - 2;
+      ink = edge ? (x < 1 || y < 1 ? 'l' : 's') : 'd';
+    }
+    g.fillStyle = INK[ink]; g.fillRect(Math.round(x0) - GW / 2 + x, Math.round(y0) - GH / 2 + y, 1, 1);
+  }
+}
 const randomBones = (r, n, zone) => Array.from({length: n}, () => [zone[0] + r() * (zone[2] - zone[0]), zone[1] + r() * (zone[3] - zone[1]), r() * 3]);
 
 // ---- wreckage, chains, cages, glow, and the feast ----
@@ -1990,8 +2020,8 @@ const T_WORD = ['C', 'R', 'A', 'W', 'L', null, 'S', 'P', 'A', 'C', 'E'];  // one
 const T_LETTER = 19;                                                     // how tall the carved capitals stand
 const T_KNIGHT = {x: 144, y: 348, s: 1.05}, KNIGHT_TORCH = [43, -138];  // where you stand; your torch's tip (feet at 0, 0)
 const T_KTORCH = [T_KNIGHT.x + KNIGHT_TORCH[0] * T_KNIGHT.s, T_KNIGHT.y + KNIGHT_TORCH[1] * T_KNIGHT.s];
-const T_EYES_AT = [[130, 172], [154, 172]];                              // his eyes, each between two bars
-const T_CROWN = {x: 142, y: 152, w: 56, h: 20};                          // his crown: the middle of its band, its width and height
+const T_EYES_AT = [[132, 172], [156, 172]];                              // his eyes, each in the middle of a gap between two bars
+const T_CROWN = {x: 144, y: 152, w: 56, h: 20};                          // his crown: the middle of its band, its width and height
 let T_NO_CROWN = false;                                                  // true while the picture is built without it (so it can fade in)
 let T_LETTER_PIX = [], T_LETTER_AT = [];                                 // the carved letters' pixels [index, 0 edge / 1 face / 2 lit edge], their centers
 const T_BAR = 12;                                                        // the portcullis's bars, this far apart
@@ -2071,13 +2101,13 @@ function titleGate(g, r) {
   if (!T_NO_CROWN) for (const [dx, c] of [[-14, [170, 30, 34]], [0, [60, 90, 190]], [14, [170, 30, 34]]]) {   // jewels in the band
     g.beginPath(); g.ellipse(kx + dx, ky - 2.6, 2.4, 1.8, 0, 0, Math.PI * 2); g.fillStyle = rgb(c, litK(kx, ky, 1, 0.45)); g.fill();
   }
-  for (let x = cx - r1 + 6; x < cx + r1 - 2; x += T_BAR) {                 // the portcullis, down: iron bars from the arch to the floor
+  for (let x = cx - r1 + 8; x < cx + r1 - 2; x += T_BAR) {                 // the portcullis, down: iron bars from the arch to the floor
     const top = spring - Math.sqrt(Math.max(0, r1 * r1 - (x - cx) ** 2));
     path(g, [[x - 1.5, top], [x + 1.5, top], [x + 1.5, base], [x - 1.5, base]]); g.fillStyle = rgb([54, 52, 62], litK(x, 230, 1, 0.12)); g.fill();
     g.fillStyle = rgb([96, 94, 108], litK(x, 230, 1, 0.12)); g.fillRect(x - 1.5, top, 0.8, base - top);
   }
   for (const yy of [104, 186, 252]) { path(g, [[cx - r1, yy], [cx + r1, yy], [cx + r1, yy + 3], [cx - r1, yy + 3]]); g.fillStyle = rgb([48, 46, 56], litK(cx, yy, 1, 0.12)); g.fill(); }
-  for (let x = cx - r1 + 6; x < cx + r1 - 2; x += T_BAR) {               // rivets where the bars cross, spiked feet sunk in the floor
+  for (let x = cx - r1 + 8; x < cx + r1 - 2; x += T_BAR) {               // rivets where the bars cross, spiked feet sunk in the floor
     for (const yy of [104, 186, 252]) { g.fillStyle = rgb([118, 114, 126], litK(x, yy, 1, 0.14)); g.fillRect(x - 1, yy + 0.5, 2, 2); }
     path(g, [[x - 2.2, base - 4], [x + 2.2, base - 4], [x, base + 1]]); g.fillStyle = rgb([60, 58, 68], litK(x, base, 1, 0.14)); g.fill();
   }
@@ -2103,7 +2133,7 @@ function titleGate(g, r) {
       g.fillStyle = r() < 0.5 ? '#2c3a1a' : '#4a5e24'; g.fillRect(p[0] - 0.6 + r(), p[1] - 0.6 + r(), 1.2, 1.2);
     }
   });
-  skullAt(g, cx - 0.5, spring - r2 - 0.5, 1.5);                         // a skull carved on the keystone
+  cherubAt(g, cx, spring - r2 + 16);                                     // a winged cherub's head carved on the keystone
   for (const [x, y0, y1] of [[9, 96, 178], [279, 88, 160]]) {          // chains on the wall, ending in open cuffs
     hangChain(g, x, y0, y1, r);
     g.strokeStyle = rgb([112, 106, 114], litK(x, y1, 1, 0.3)); g.lineWidth = 1.6;
@@ -2118,6 +2148,8 @@ function titleGate(g, r) {
   g.beginPath(); g.ellipse(px, py, prx, pry, 0, 0, Math.PI * 2); g.fillStyle = '#0a0d12'; g.fill();
   g.strokeStyle = rgb([44, 52, 64], litK(px, py, 1, 0.3)); g.lineWidth = 0.9;
   g.beginPath(); g.ellipse(px, py - 0.3, prx, pry, 0, Math.PI * 1.05, Math.PI * 1.95); g.stroke();
+  banner(g, 29, 51, 160, 206, r, undefined, 'skull', true);                      // his banners on the pillars, like the ones on floor 1
+  banner(g, 237, 259, 160, 206, r, undefined, 'skull', true);
 }
 // you, as a shape: not the knight from the fights but a silhouette of him from behind (great helm and plume, broad
 // pauldrons, the sword low in your left hand, the torch raised in your right), dark against the light. Feet at 0, 0
@@ -2277,6 +2309,7 @@ function drawTitle(g, t, e = 99) {
     g.globalAlpha = 1;
     for (const [lx2, ly2] of T_LETTER_AT) { stamp(g, '255,150,60', 0.26 * lit, lx2, ly2, 14 * fl); stamp(g, '224,80,28', 0.08 * lit, lx2, ly2, 24); }
   }
+  stamp(g, '160,170,225', 0.14, TG.cx, TG.spring - TG.r2 + 16, 26);       // a faint cold light on the cherub over the gate
   titleEyes(g, t, open, room);
   g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
   for (let k = 0; k < 3; k++) {                                            // smoke off your torch
