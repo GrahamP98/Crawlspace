@@ -8,14 +8,17 @@ cd tools\sim
 .\report.ps1 -Label today -Detail
 ```
 
+Everything a run makes goes to `%LOCALAPPDATA%\CrawlspaceSim`, outside OneDrive: the browser profiles (`prof`, several GB after a few batches, and safe to delete), the patched game copies (`games`) and the results (`res\<Label>`).
+
 `report.ps1` prints the win rate (with its standard error) for each policy, and the share of runs that die on each floor. `-Detail` adds the killers on each floor, averages, win rates by perk, and win rates by worn enchantment. With 12 workers the bots play about 25 runs a second. Keep workers × policies at 12 or fewer, because with more, some results go missing.
 
 ## Files
 
-- `bot.js`: the bot. Its strategy knobs and their defaults are at the top in `DEF`.
-- `worker.ps1`: one headless Edge on its own port and profile. It plays N runs and writes `res\<Label>\<policy>-<worker>.json`.
-- `batch.ps1`: starts the workers. `-Patch name` (or `a+b`) first applies `patches\<name>.txt` to a copy of the game in `games\`. A patch file holds literal `find ==> replace` lines, and `index.html` itself is never changed.
+- `bot.js`: the bot. Its strategy knobs and their defaults are at the top in `DEF`. Once a floor is cleared it walks back to the merchant if it has money to spend, and to an unused campfire before the stairs or the King (it rests below 70% health and trains above; `camp: 'rest'` or `'train'` forces one). It sells the scrolls it has no use for at the merchants.
+- `worker.ps1`: one headless Edge on its own port and profile. It plays N runs and writes `res\<Label>\<policy>-<worker>.json` (in the work folder).
+- `batch.ps1`: starts the workers. `-Patch name` (or `a+b`) first applies `patches\<name>.txt` to a copy of the game in the work folder's `games\`. A patch file holds literal `find ==> replace` lines, and `index.html` itself is never changed.
 - `report.ps1`: sums up a batch.
+- `curve.ps1`: the difficulty curve of a batch, with every policy pooled. For each stretch of the run (floor + `N` near half, `F` far half, `G` stairs guard, `B` the Ogre King) it shows how many runs got there, the share that died there, the number of fights, and how much max HP a fight there cost. Then where the gold went. Tune the curve with `STRETCH` in `index.html` (the difficulty director: enemy HP and damage multipliers and a group-size bias for each stretch).
 - `policies\`: one JSON file per playstyle.
 - `patches\package-B.txt`: the optional Ogre King change from the 2026-11-13 study. It is not applied to the game.
 

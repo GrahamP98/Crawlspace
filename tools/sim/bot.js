@@ -36,7 +36,10 @@
     enchPref: {},           // extra score for drops/scrolls with these enchantments
     sellScrolls: true,
     sellPotionsAtShop: false,
-    target: 'threat'        // 'threat' | 'weakest'
+    target: 'threat',       // 'threat' | 'weakest'
+    camp: null,             // the campfire on floor 5: null = rest or train by health, or force 'rest' | 'train'
+    campRestNow: 0.45,      // rest on the way past it if below this share of max HP
+    campRestEnd: 0.7        // coming back to it before the King: rest below this share, train above
   };
   const P = Object.assign({}, DEF, cfg.pol || {});
   if (cfg.pol && cfg.pol.perk) P.perk = Object.assign({}, cfg.pol.perk);
@@ -69,12 +72,24 @@
     const origEnd = endRun;
     endRun = (won, killer) => { ST.killer = won ? null : killer; ST.deathFoes = won ? null : foes.filter(f => f.hp > 0 || true).map(f => f.name); origEnd(won, killer); };
     const origLoad = loadFloor;
-    loadFloor = i => { ST.coinsEnd[floor] = coins; origLoad(i); K.known = new Set(); K.avoid = new Set(); K.floorFights = 0; K.backDone = false; K.stuckCount = 0; see(); arrive(); };
+    loadFloor = i => { ST.coinsEnd[floor] = coins; origLoad(i); K.known = new Set(); K.avoid = new Set(); K.floorFights = 0; K.backDone = false; K.headFor = null; K.campBack = false; K.stuckCount = 0; see(); arrive(); };
     see(); arrive();
+    // every fight, by where it was: floor + N (the near half), F (the far half), G (the stairs guard) or B (the boss);
+    // segs[key] = [fights, share of max HP lost in them, coins gained in them]; deathSeg = where the run ended
+    ST.segs = {}; ST.deathSeg = null;
+    const segOf = e => `${floor + 1}${e.boss ? 'B' : openNbrs(map.map(r => [...r]), e.x, e.y).some(([a, b]) => map[b][a] === 'D') ? 'G' : e.hard ? 'F' : 'N'}`;
+    let seg = null, segTaken = 0, segMax = 1, segGold = 0;
     let n = 0, lastHp = p.hp;
     while (!over && n < 30000) {
       n++;
       step();
+      if (current && !seg) { seg = segOf(current); segTaken = run.taken; segMax = p.max; segGold = run.gold; }
+      else if (seg && (!current || over)) {
+        const s = ST.segs[seg] || (ST.segs[seg] = [0, 0, 0]);
+        s[0]++; s[1] += (run.taken - segTaken) / segMax; s[2] += run.gold - segGold;
+        if (over && !runSummary.won) ST.deathSeg = seg;
+        seg = null;
+      }
       if (p.hp < lastHp) ST.hpLostFloor[floor] += lastHp - p.hp;
       lastHp = p.hp;
     }
@@ -87,7 +102,8 @@
       steps: run.steps, kills: Object.values(run.kills).reduce((a, b) => a + b, 0), taken: run.taken, dealt: run.dealt,
       fights: ST.fights, fled: ST.fled, fleeTry: ST.fleeTry, turns: ST.turns, heavy: ST.heavy, block: ST.block, normal: ST.normal,
       potFight: ST.potFight, potExplore: ST.potExplore, bought: ST.bought, enchBought: ST.enchBought, sold: ST.sold, redraws: ST.redraws,
-      arrive: ST.arrive, hpLost: ST.hpLostFloor, coinsEnd: ST.coinsEnd, skipped: ST.skipped, maxPotions, sw: secondWinds
+      arrive: ST.arrive, hpLost: ST.hpLostFloor, coinsEnd: ST.coinsEnd, skipped: ST.skipped, maxPotions, sw: secondWinds,
+      segs: ST.segs, deathSeg: ST.deathSeg, spent: ST.bought.length, camp: ST.camp || null
     };
   }
   function arrive() { ST.arrive[floor] = [p.hp, p.max, potions, level, coins, defense(), power('weapon'), power('shield')]; }
@@ -96,8 +112,8 @@
   function see() {
     const r = sight();
     for (let y = p.y - r; y <= p.y + r; y++) for (let x = p.x - r; x <= p.x + r; x++) if (map[y] && map[y][x]) K.known.add(`${x},${y}`);
-    if (perkN('pathfinder')) enemies.forEach(e => { if (inSight(e.x, e.y) && e !== current) { e.spottedEarly = true; if (!e.group) e.group = makeGroup(e.zone); } });
-    if (P.omni) enemies.forEach(e => { if (!e.group && !e.boss && e !== current) e.group = makeGroup(e.zone); });
+    if (perkN('pathfinder')) enemies.forEach(e => { if (inSight(e.x, e.y) && e !== current) { e.spottedEarly = true; if (!e.group) e.group = makeGroup(e.zone, e); } });
+    if (P.omni) enemies.forEach(e => { if (!e.group && !e.boss && e !== current) e.group = makeGroup(e.zone, e); });
   }
   // P.omni: knows every enemy, as if it had a perfect map (a ceiling on what information is worth)
   const knownEnemy = e => !e.dead && (P.omni || e.seen || e.boss && K.known.has(`${e.x},${e.y}`) || (perkN('pathfinder') && e.spottedEarly));
@@ -110,6 +126,7 @@
       case 'scroll': return scrollPick();
       case 'shop': return shopping();
       case 'enchanter': return enchanting();
+      case 'camp': return camping();
       case 'choice': return choose();
       case 'fight': return fightTurn();
       case 'finale': return finishBossFinale();
@@ -279,9 +296,15 @@
     ST.sold += coins - c0;
   }
   function shopping() {
+    K.headFor = null;
     K.shopVisits[floor] = (K.shopVisits[floor] || 0) + 1;
     const buy = i => { const it = shopStock[i]; const c0 = coins; buyItem(i); if (coins < c0) { ST.bought.push(floor + 1 + ':' + (it.slot || it.type)); return true; } return false; };
     const idx = pred => shopStock.findIndex(pred);
+    if (P.sellScrolls && scrolls.some(s => !scrollTarget(s))) {
+      shopMode = 'sell';
+      for (let i = scrolls.length - 1; i >= 0; i--) if (!scrollTarget(scrolls[i])) { const c0 = coins; sellScroll(i); sellScroll(i); ST.sold += coins - c0; }
+      shopMode = 'buy';
+    }
     if (P.sellPotionsAtShop) { shopMode = 'sell'; while (potions > 0) sellPotion(); shopMode = 'buy'; }
     if (p.hp < p.max * 0.65) buy(idx(s => s.type === 'rest'));
     for (let g = 0; g < 40; g++) {
@@ -300,11 +323,21 @@
       if (!done && P.buyBandolier) done = buy(idx(s => s.type === 'bag' && s.from === 7 && maxPotions === 7));
       if (!done) { const i = idx(s => s.type === 'potion'); if (i >= 0 && shopStock[i].price <= (P.maxPotPrice || 999) && coins - shopStock[i].price >= (floor === 1 ? (P.potReserve || 0) : 0)) done = buy(i); }
       if (!done && P.buySatchel) done = buy(idx(s => s.type === 'satchel'));
+      if (!done && P.hone !== false) { const i = idx(s => s.type === 'hone'); if (i >= 0 && coins - shopStock[i].price >= (P.honeReserve ?? 15)) done = buy(i); }   // spare gold into the blade
       if (!done) break;
     }
     leaveShop();
   }
+  // the campfire: rest on the way past if badly hurt; otherwise clear the far half and come back to it before the King
+  function camping() {
+    const k = p.hp / p.max, pick = K.campBack ? (P.camp || (k < P.campRestEnd ? 'rest' : 'train'))
+      : P.camp !== 'train' && k < P.campRestNow ? 'rest' : 'leave';
+    if (pick !== 'leave') ST.camp = pick;
+    K.headFor = null;
+    campChoice(pick);
+  }
   function enchanting() {
+    K.headFor = null;
     K.shopVisits[floor] = (K.shopVisits[floor] || 0) + 1;
     if (P.sellScrolls && scrolls.some(s => !scrollTarget(s))) {
       ench = {sell: true};
@@ -353,11 +386,12 @@
       if (c === FLOOR_SHOPS[floor]) shopTile = [x, y];
     }
     const rush = P.explore === 'rush' || (P.explore === 'gated' && (p.hp + healAvail()) < p.max * 0.6);
+    const bossAt = key => enemies.some(e => e.boss && !e.dead && knownEnemy(e) && `${e.x},${e.y}` === key);   // walk into him only on purpose
     // chests and the unknown (frontier) as goals
     for (const key of known) {
       const [x, y] = key.split(',').map(Number), c = tile(x, y);
-      if (c === 'C' && !opened.has(key)) goals.push(key);
-      if (c !== '#' && !rush && DIRS.some(([dx, dy]) => isOpen(x + dx, y + dy) && !known.has(`${x + dx},${y + dy}`))) goals.push(key);
+      if ((c === 'C' || c === 'K') && !opened.has(key)) goals.push(key);
+      if (c !== '#' && !rush && !bossAt(key) && DIRS.some(([dx, dy]) => isOpen(x + dx, y + dy) && !known.has(`${x + dx},${y + dy}`))) goals.push(key);
     }
     if (wantFights && !rush) for (const e of enemies) {
       if (!knownEnemy(e) || e.boss || required(e) || K.avoid.has(e)) continue;
@@ -372,18 +406,23 @@
     let path = bfs(goals, blockedKnown);
     if (!path) {
       // back to the merchant with money to spend, once per floor after clearing
-      if (P.backtrackShop && shopTile && FLOOR_SHOPS[floor] !== 'X' && shopWorth() && (K.shopVisits[floor] || 0) < 3 && !K.backDone) {
+      if (P.backtrackShop && shopTile && shops[FLOOR_SHOPS[floor]] && !shops[FLOOR_SHOPS[floor]].enchanter && shopWorth() && (K.shopVisits[floor] || 0) < 3 && !K.backDone) {
         K.backDone = true;
         path = bfs([shopTile.join(',')], blockedKnown);
-        if (path) K.goingShop = true;
+        if (path) K.headFor = shopTile.join(',');
       }
       if (!path && FLOOR_SHOPS[floor] === 'X' && shopTile && (K.shopVisits[floor] || 0) < 2 && !K.backDone && coins >= 15 + P.enchReserve) {
-        K.backDone = true; path = bfs([shopTile.join(',')], blockedKnown);
+        K.backDone = true; path = bfs([shopTile.join(',')], blockedKnown); if (path) K.headFor = shopTile.join(',');
       }
     }
+    if (!path && FLOOR_SHOPS[floor] === 'F' && shopTile && !K.campBack) {   // back to the unused campfire
+      K.campBack = true; K.headFor = shopTile.join(',');
+    }
+    if (!path && K.headFor) { path = bfs([K.headFor], blockedKnown); if (!path) K.headFor = null; }   // keep going where it set off for
     if (!path) {
       const boss = enemies.find(e => e.boss && !e.dead);
       if (boss && potions > 0 && k < P.preBossHp) { ST.potExplore++; return drinkPotion(); }
+      if (boss && knownEnemy(boss) && !stairs) path = bfs([`${boss.x},${boss.y}`], blockedKnown);   // the exit is behind him: time to fight
       if (stairs) {
         const guard = enemies.find(e => !e.dead && required(e));
         if (guard && potions > 0 && k < 0.6) { ST.potExplore++; return drinkPotion(); }
@@ -402,6 +441,7 @@
     if (coins < 10) return false;
     if (potions < maxPotions && shopPotionsLeft > 0) return true;
     if (coins >= 30 && p.hp < p.max * 0.65 && !(window.__rest || {})[floor] && typeof makeStock === 'function' && makeStock(1).some(s => s.type === 'rest')) return true;
+    if (P.hone !== false && typeof honePrice === 'function' && coins - honePrice() >= (P.honeReserve ?? 15)) return true;
     const tier = shops[FLOOR_SHOPS[floor]].tier;
     return Object.keys(slots).some(k => { const [, pow] = slots[k].items[tier]; return !(worn[k] && worn[k].power >= pow) && coins >= pow * 5; });
   }

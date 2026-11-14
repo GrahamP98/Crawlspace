@@ -84,6 +84,27 @@
   #howto ul { margin: 4px 0 0; padding-left: 20px; display: grid; gap: 5px; }
   #howto .sw { display: inline-block; width: 12px; height: 12px; vertical-align: -1px; margin-right: 4px; border: 1px solid #666; }
   #howto b { color: #fff; }
+  #titleMain .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  #titleMain .pair button { font-size: 20px; }
+  #vault h2 { font-family: var(--title-font); font-weight: 400; font-size: 30px; color: #fc3; margin: 8px 0 0; text-align: center; }
+  #vault .lead { text-align: center; color: #aaa; margin: 0; font-style: italic; line-height: 1.4; }
+  #vault .vhead { display: grid; justify-items: center; gap: 2px; }
+  #vaultArt { width: 220px; height: 200px; display: block; }
+  #vault .vbank { display: flex; align-items: center; gap: 7px; font-size: 17px; color: #cdbb94; }
+  #vault .vbank b { color: #ffd36a; font-size: 24px; }
+  #vault .vcoin { width: 20px; height: 20px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #ffe38a, #d9a43a 60%, #8a5e1a); box-shadow: 0 0 6px rgba(255, 190, 80, 0.5); }
+  #vault h4 { font-family: var(--title-font); font-weight: 400; font-size: 20px; color: #fc3; margin: 14px 0 0; }
+  #vault .vnote { margin: 0 0 6px; font-size: 14px; color: #8e8574; font-style: italic; }
+  #vault .vgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+  #vault .vgrid button { font-size: 18px; padding: 8px 4px 7px; display: grid; justify-items: center; gap: 3px; line-height: 1.2; }
+  #vault .sw2 { width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.28); box-shadow: inset 0 -3px 6px rgba(0, 0, 0, 0.35); }
+  #vault .state { font-family: var(--text-font); font-size: 13px; letter-spacing: 0; color: #9a9080; }
+  #vault .vgrid button.wearing { border-color: #f2c25a; box-shadow: 0 0 10px rgba(242, 194, 90, 0.35); }
+  #vault .vgrid button.wearing .state { color: #f2c25a; }
+  #vault .vgrid button.armed { border-color: #ff9a3a; }
+  #vault .vgrid button.armed .state { color: #ffb060; }
+  #vault .vgrid button.poor { opacity: 0.55; }
+  #vault #vaultBack { margin-top: 16px; }
 </style>
 <div id="title">
   <canvas id="titleArt" aria-hidden="true"></canvas>
@@ -93,7 +114,7 @@
     <div class="record" id="record" role="img" hidden></div>
     <div class="actions">
       <button id="playBtn">Play</button>
-      <button id="howBtn">How to Play</button>
+      <div class="pair"><button id="howBtn">How to Play</button><button id="vaultBtn">Vault</button></div>
       <p class="whisper" id="whisper"></p>
     </div>
   </div>
@@ -116,13 +137,15 @@
       <p>The line just under the map is the <b>message log</b>. It shows what just happened, one message at a time (the dots on its right show how many there were). Tap it to read the whole history; <b>Older</b> and <b>Newer</b> page through it.</p>
       <ul>
         <li><b>You</b>: a small figure with a torch, wearing your gear</li>
-        <li><span class="sw" style="background:#c80"></span><b>Chest</b>: coins, a potion, a piece of gear or a scroll. Its lid stands open once looted.</li>
+        <li><span class="sw" style="background:#c80"></span><b>Chest</b>: coins, a potion or a piece of gear. Its lid stands open once looted.</li>
+        <li><span class="sw" style="background:#a64"></span><b>Capsa</b>, a leather scroll case standing on end: one on every floor, always with a scroll in it. Its lid lies beside it once opened.</li>
         <li><span class="sw" style="background:#3cf"></span><b>Stairs down</b>, glowing faintly blue. Step on them to go to the next floor.</li>
-        <li><span class="sw" style="background:#a6f"></span><b>Merchant</b>, hooded, with a lantern: floor 2 (Iron gear) and floor 4 (Steel gear)</li>
-        <li><span class="sw" style="background:#2cb"></span><b>Enchanter</b>, in a pointed hat in a circle of runes: floor 3 only</li>
+        <li><span class="sw" style="background:#a6f"></span><b>Merchant</b>, hooded, at a market stall under a striped awning: floor 2 (Iron gear) and floor 4 (Steel gear)</li>
+        <li><span class="sw" style="background:#f83"></span><b>Campfire</b>, a ring of stones round a fire: floor 3, and the last camp halfway through floor 5</li>
         <li><span class="sw" style="background:#fc3"></span><b>The exit</b>, a doorway full of daylight: floor 5</li>
       </ul>
-      <p>On floors 2 to 4 the Merchant or Enchanter stands about halfway to the stairs, at a spot you can't get around. Everything in front of the shop is the easier half of the floor; the harder enemies, and the stairs, all lie beyond it, so you always reach the shop before them.</p>
+      <p>On floors 2 and 4 the Merchant stands about halfway to the stairs, at a spot you can't get around, and on floors 3 and 5 a campfire does the same (on floor 5, on the way to the Ogre King). Everything in front of it is the easier half of the floor; the harder enemies, and the stairs, all lie beyond it, so you always reach it before them.</p>
+      <p>The <b>campfire</b> lasts for one thing before it burns out. <b>Rest</b> to recover 40% of your max HP, or <b>Train</b> for XP (80 on floor 3, 150 on floor 5: often enough for a level-up, with its perk). Leave it and it keeps burning, so you can clear the far half first and come back to it before you take the stairs, or face the King.</p>
       <p>An enemy you have met stays on the map, standing on a ring in its color, with a number if it is a group. A white ring marks the Ogre King.</p>
     </details>
 
@@ -172,7 +195,7 @@
         <li><span class="sw" style="background:#35b"></span><b>Minotaur</b>: its first attack in a fight is a charge that never misses and deals double damage. Block it.</li>
       </ul>
       <h4>The Ogre King</h4>
-      <p><span class="sw" style="background:#900"></span>300 health and armor of his own. Every third attack is a <b>Crushing Blow</b> that ignores your armor. The turn before, the log warns you: "The Ogre King winds up a huge swing..." That is your cue to <b>Block</b> or drink a potion. Below half health he flies into a rage and hits 3 harder.</p>
+      <p><span class="sw" style="background:#900"></span>475 health and armor of his own, and he hits for 22-29. Every third attack is a <b>Crushing Blow</b> that ignores your armor. The turn before, the log warns you: "The Ogre King winds up a huge swing..." That is your cue to <b>Block</b> or drink a potion. Below half health he flies into a rage and hits 3 harder.</p>
     </details>
 
     <details>
@@ -183,7 +206,7 @@
         <li><b>Level-ups</b>: +10 max HP (already filled in), then heal 16% of your max HP.</li>
         <li>Some perks and enchantments, like Vitality, Mending and Vampiric.</li>
       </ul>
-      <p>You can carry 5 potions. The <b>Potion Belt</b> (40 coins, both merchants) raises that to 7, and the <b>Potion Bandolier</b> (70 coins, floor 4, needs the Belt) to 10. Each merchant has 5 potions for sale at 10 coins. If a chest holds a potion while your bag is full, you get coins instead.</p>
+      <p>You can carry 5 potions. The <b>Potion Belt</b> (40 coins, every merchant) raises that to 7, and the <b>Potion Bandolier</b> (70 coins, floor 4, needs the Belt) to 10. Each merchant has 5 potions for sale at 15 coins. If a chest holds a potion while your bag is full, you get coins instead.</p>
     </details>
 
     <details>
@@ -246,16 +269,16 @@
       <h4>Where to get them</h4>
       <ul>
         <li><b>Enchanted drops</b>: 1 in 5 pieces of gear comes enchanted. Good ones show up from floor 2, Major from floor 4.</li>
-        <li><b>Scrolls</b>: found in chests. Put it on a piece of gear right away, keep it, or throw it away. Your bag holds 2 scrolls (3 with the <b>Scroll Satchel</b>, 25 coins at the merchants). Tap <b>Bag</b> and then <b>Use</b> to put a kept one on later (while exploring), for example once you find Iron gear for a Good scroll.</li>
-        <li><b>The Enchanter</b> (floor 3): pick a piece of gear, an enchantment and a tier. Minor costs 15 coins, Good 30, Major 50.</li>
+        <li><b>Scrolls</b>: found in capsae, the leather scroll cases (one on every floor; chests never hold scrolls). Put it on a piece of gear right away, keep it, or throw it away. Your bag holds 2 scrolls (3 with the <b>Scroll Satchel</b>, 25 coins at the merchants). Tap <b>Bag</b> and then <b>Use</b> to put a kept one on later (while exploring), for example once you find Iron gear for a Good scroll.</li>
       </ul>
-      <p>Putting a new enchantment on an item replaces the old one. The game warns you first.</p>
+      <p>You can't pick your enchantments: build around what the dungeon gives you. A scroll you don't want sells at any merchant. Putting a new enchantment on an item replaces the old one. The game warns you first.</p>
     </details>
 
     <details>
       <summary>Gold and shops</summary>
-      <p>Gold comes from kills and chests, and there is never enough of it. Spend it at the merchants on floors 2 and 4 (potions, potion bags, the Scroll Satchel, gear), at the Enchanter on floor 3, and on Redraws. The floor 4 merchant is the last shop, so after that gold is only good for Redraws. Spend it while you can.</p>
-      <p>You can also sell. Tap <b>Sell</b> at a merchant to sell potions or any piece of gear you wear, and tap <b>Sell scrolls</b> at the Enchanter to sell scrolls from your bag. You get 25% of what the thing costs to buy (an enchantment on gear adds its Enchanter price). Gear and scrolls take two taps to sell, so you never sell one by accident; gear you sell leaves its slot empty.</p>
+      <p>Gold comes from kills and chests, and there is never enough of it. Spend it at the merchants on floors 2 and 4 (potions, potion bags, the Scroll Satchel, gear and the Whetstone) and on Redraws. The floor 4 merchant is the last shop: there is nothing to buy on floor 5. Whatever you still carry when you escape goes to the Vault.</p>
+      <p>Every merchant has a <b>Whetstone</b>: for 35 coins they hone your blade, +1 damage on every hit for the rest of the run. You can keep honing, but each time costs 30 more (35, 65, 95...), so it is a home for spare gold, not a bargain.</p>
+      <p>You can also sell. Tap <b>Sell</b> at a merchant to sell potions, any piece of gear you wear, or scrolls from your bag. You get 25% of what the thing is worth: gear is worth 5 coins a point, and an enchantment is worth 15 (Minor), 30 (Good) or 50 (Major), on gear or as a scroll. Gear and scrolls take two taps to sell, so you never sell one by accident; gear you sell leaves its slot empty.</p>
       <p>Buying gear for a slot you already fill trades in your old piece: the merchant buys it for the same 25%, and that counts toward the price. The shop list shows what your piece is worth as "trade-in". If your old piece is enchanted, the enchantment goes with it.</p>
     </details>
 
@@ -271,7 +294,22 @@
         <li>The top bar shows your level, floor, health, XP, gold and potions. Tap <b>Hero</b> for your gear, stats and perks, and <b>Bag</b> for your scrolls.</li>
       </ul>
     </details>
+    <details>
+      <summary>The Vault</summary>
+      <p>Escape, and every coin you still carry goes into the <b>Vault</b> (tap <b>Vault</b> on the title screen). Die, and your coins are lost with you. So at the last merchant there is a choice: spend to get stronger, or save for the Vault.</p>
+      <p>The Vault sells looks: the color of your torch's flame (Ghostfire, Witchfire or Soulfire), your hair, a beard, the dye of your prisoner's rags, and the plume you wear in full armor with a Steel helm. They change nothing but how you look. Tap a look to try it on, tap it again to buy it, and tap one you own to wear it.</p>
+    </details>
     <button id="backBtn">Back</button>
+  </div>
+  <div class="inner" id="vault" hidden>
+    <h2>The Vault</h2>
+    <p class="lead">Escape the dungeon, and the coins you carry out are kept here. Spend them on how you look; it changes nothing else.</p>
+    <div class="vhead">
+      <canvas id="vaultArt" aria-hidden="true"></canvas>
+      <div class="vbank"><span class="vcoin" aria-hidden="true"></span><b id="vaultCoins">0</b> coins</div>
+    </div>
+    <div id="vaultList"></div>
+    <button id="vaultBack">Back</button>
   </div>
 </div>
 <canvas id="c" width="288" height="400"></canvas>
@@ -427,9 +465,9 @@ const PERKS = {
 const TIERS = ['Minor', 'Good', 'Major'];
 const TIER_NEED = ['any gear', 'Iron gear or better', 'Steel gear'];
 const TIER_FLOOR = [1, 2, 4];            // first floor where drops and scrolls can carry this tier
-const TIER_PRICE = [15, 30, 50];         // Enchanter prices (floor 3)
+const TIER_PRICE = [15, 30, 50];         // what an enchantment is worth (selling a scroll, or enchanted gear); the Enchanter's prices
 const ENCHANT_DROP_CHANCE = 0.20;        // gear from fights and chests comes enchanted
-const SCROLL_CHANCE = 0.25;              // a chest holds a scroll instead of coins, a potion or gear
+const CAPSAE_PER_FLOOR = 1;              // a capsa, a leather scroll case, always holds a scroll (and chests never do)
 const BAG_SLOTS = 2, SATCHEL_PRICE = 25; // scroll bag; the Scroll Satchel adds one slot
 const BURN_TURNS = 3, GIANT_HP = 100;
 const PURITY_DRAIN = [0.25, 0.50, 0.75]; // share of Wraith drain each Purity item blocks
@@ -481,12 +519,12 @@ const randomEnchant = slotKey => {
 };
 // S = where you arrive, D = stairs down, E = dungeon exit (last floor only)
 const W = 9, H = 11, FLOORS = 5;
-const FLOOR_SHOPS = [null, 'M', 'X', 'N', null]; // M/N = merchants, X = the Enchanter
-const CHESTS_PER_FLOOR = 3;
+const FLOOR_SHOPS = [null, 'M', 'F', 'N', 'F']; // M/N = merchants, F = a campfire (floor 5's is the last camp, halfway to the King); X = the Enchanter, on no floor now
+const CHESTS_PER_FLOOR = 2;   // and one capsa (CAPSAE_PER_FLOOR)
 const ENEMIES_PER_FLOOR = [8, 8, 9, 9, 9]; // plus the stairs guard / boss
 // [near zone, far zone] per floor - zone 0: Bat/Slime, 1: Goblin/Skeleton,
 // 2: Orc/Troll, 3: Dark Knight/Wraith, 4: Minotaur/Wyvern
-const FLOOR_ZONES = [[0, 1], [1, 2], [2, 3], [3, 4], [4, 4]];
+const FLOOR_ZONES = [[0, 1], [1, 2], [2, 3], [3, 4], [3, 4]];
 let floor = 0, map = [];
 const roll = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
 const shuffle = a => {
@@ -595,6 +633,10 @@ function makeFloor(i) {
       const [x, y] = free.pop();
       g[y][x] = 'C';
     }
+    for (let n = 0; n < CAPSAE_PER_FLOOR; n++) {
+      const [x, y] = free.pop();
+      g[y][x] = 'K';
+    }
     let enemies;
     if (split) {
       // about half the enemies behind the shop (hard), the rest in front of it (easy); if one side runs out
@@ -625,6 +667,14 @@ const armor = ['helmet', 'chest', 'bracers', 'greaves'];
 const worn = {};
 const power = k => worn[k] ? worn[k].power : 0;
 let level = 1, xp = 0, levelUps = 0, bonusDmg = 0;
+let honed = 0;                 // times you have had your blade honed at a merchant (+1 damage each)
+const HONE_BASE = 35, HONE_STEP = 30;
+const honePrice = () => HONE_BASE + HONE_STEP * honed;
+// the campfire at the last camp, halfway through floor 5: it lasts for one thing, either a rest (heal a share of
+// your max HP) or a night of drills (a flat lump of XP). It stays lit until you use it, so you can come back to it
+const CAMP_HEAL_SHARE = 0.4, CAMP_XP_BY_FLOOR = {2: 80, 4: 150};   // (floor index: 2 = floor 3, 4 = floor 5)
+const campXp = () => CAMP_XP_BY_FLOOR[floor] || 150;
+const campHeal = () => Math.round(p.max * CAMP_HEAL_SHARE);
 const perks = {};          // perk id -> times taken
 let hand = [], redraws = 0, secondWinds = 0;
 const defense = () => armor.reduce((sum, k) => sum + power(k), 0);
@@ -643,6 +693,7 @@ const makeStock = tier => [
   {type: 'potion', name: 'Health Potion', price: POTION_PRICE},
   ...BAGS.filter(b => b.tier <= tier),
   {type: 'satchel', name: 'Scroll Satchel', price: SATCHEL_PRICE},
+  {type: 'hone', name: 'Whetstone', price: honePrice()},        // +1 damage for good; dearer every time
   ...Object.keys(slots).map(k => {
     const [name, pow] = slots[k].items[tier];
     return {type: 'gear', slot: k, name, power: pow, price: pow * 5, tier};
@@ -650,10 +701,10 @@ const makeStock = tier => [
 ];
 let shopStock = [], shopTitle = '';
 
-// ---- selling: the merchants buy potions and the gear you wear, the Enchanter buys scrolls ----
+// ---- selling: the merchants buy potions, the gear you wear and scrolls (and so would the Enchanter) ----
 // you get SELL_SHARE of what the thing costs to buy: gear costs 5 coins per point, plus what its
-// enchantment costs at the Enchanter; a scroll costs what its enchantment costs there
-const POTION_PRICE = 10, SELL_SHARE = 0.25;
+// enchantment is worth (TIER_PRICE); a scroll is worth what its enchantment is
+const POTION_PRICE = 15, SELL_SHARE = 0.25;
 const sellValue = price => Math.max(1, Math.round(price * SELL_SHARE));
 const gearRetail = it => it.power * 5 + (it.ench ? TIER_PRICE[it.ench.t] : 0);
 // buying gear for a slot you already fill sells the old piece to the merchant; what it fetches counts toward the price
@@ -704,16 +755,26 @@ const POISON_CHANCE = 0.35, POISON_DMG = 3, POISON_TURNS = 4;
 const HEAVY_MULT = 1.75, HEAVY_MISS = 0.35, HEAVY_EXPOSED = 1.20;   // (how much Block stops: see blockStops)
 const STUN_CHANCE = 0.10; // chance a blocked hit stuns that enemy for its next turn
 // every crushEvery-th Ogre King attack ignores your defense (he warns you the turn before)
-const BOSS = {name: 'Ogre King', hp: 300, dmg: [18, 24], gold: [40, 60], color: '#900', def: 4, crushEvery: 3, boss: true};
+const BOSS = {name: 'Ogre King', hp: 475, dmg: [22, 29], gold: [40, 60], color: '#900', def: 4, crushEvery: 3, boss: true};
 // minFloor keeps an enemy off the floors above it (floor numbers start at 1)
 const pick = z => {
   const pool = types.filter(t => t.zone === z && floor + 1 >= (t.minFloor || 1));
   return pool[roll(0, pool.length - 1)];
 };
 
-function groupSize(zone) {
-  const r = Math.random();
-  if (zone === 0) return 1;
+// the difficulty director: how hard each stretch of the run is. Per floor: [near half, far half, stairs guard (the
+// boss on the last floor)], each [enemy HP x, enemy damage x, group bias (more of them in a group when above 0)]
+const STRETCH = [
+  [[1, 1, 0], [1, 1.1, 0], [1.2, 1.1, 0]],                         // floor 1: a sting in its far half and its guard
+  [[1.05, 1.05, 0], [1.02, 1.03, 0], [1.15, 1.05, 0]],             // floor 2: no longer a stroll
+  [[1, 1, 0], [0.92, 0.92, -0.08], [1.1, 1, 0]],                  // floor 3: its far half was a sudden spike
+  [[0.98, 0.99, 0], [1.01, 1.01, -0.02], [1.1, 1.05, 0]],         // floor 4: eased in front of the merchant (no shop on floor 3)
+  [[1.03, 1.03, 0], [1.03, 1.02, 0.04], [1, 1, 0]]                // floor 5: a breather, then the gauntlet past the campfire (the King has his own numbers)
+];
+const stretchOf = e => STRETCH[Math.min(floor, FLOORS - 1)][e && (e.boss || e.guard) ? 2 : e && e.hard ? 1 : 0];
+function groupSize(zone, bias = 0) {
+  const r = Math.random() - bias;
+  if (zone === 0) return r < 0 ? 2 : 1;
   if (zone === 1) return r < 0.3 ? 2 : 1;
   if (zone === 2) return r < 0.15 ? 3 : r < 0.55 ? 2 : 1;
   return r < 0.25 ? 3 : r < 0.65 ? 2 : 1;
@@ -752,10 +813,12 @@ function equipFoe(f, t) {
 // an enemy's shield catches this share of your hits (by its tier: Wooden, Iron, Steel), and a caught hit does half
 const FOE_SHIELD_BLOCK = [0.15, 0.20, 0.25], FOE_SHIELD_KEEP = 0.5;
 
-function makeGroup(zone) {
-  return Array.from({length: groupSize(zone)}, (_, i) => {
-    const t = pick(i === 0 ? zone : roll(Math.max(0, zone - 1), zone));
-    const f = {...t, max: t.hp, bonus: 0, def: 0, items: [], gear: {}};
+// a group for enemy e on the map (its zone, and how hard its stretch of the floor is)
+function makeGroup(zone, e) {
+  const [hpX, dmgX, bias] = stretchOf(e);
+  return Array.from({length: groupSize(zone, bias)}, (_, i) => {
+    const t = pick(i === 0 ? zone : roll(Math.max(0, zone - 1), zone)), hp = Math.round(t.hp * hpX);
+    const f = {...t, hp, max: hp, dmg: t.dmg.map(v => Math.round(v * dmgX)), bonus: 0, def: 0, items: [], gear: {}};
     if (t.gearTier !== undefined) equipFoe(f, t);
     return f;
   });
@@ -779,7 +842,7 @@ let ench = {};                          // Enchanter menu state: {slot, id}
 
 // numbers for the end-of-run summary
 const run = {start: Date.now(), kills: {}, gold: 0, dealt: 0, taken: 0, crits: 0,
-             misses: 0, biggest: 0, potions: 0, chests: 0, steps: 0};
+             misses: 0, biggest: 0, potions: 0, chests: 0, capsae: 0, steps: 0};
 // adds Tight Purse's bonus; returns the coins you actually got
 function earn(gold) {
   const got = gold + Math.round(gold * (purseBonus() + enchSum('fortune')));
@@ -808,6 +871,7 @@ function endRun(won, killer) {
     ['Level', level],
     ['Enemies defeated', total],
     ['Gold earned', run.gold],
+    ...(won ? [['Carried to the Vault', coins]] : []),
     ['Damage dealt', run.dealt],
     ['Damage taken', run.taken],
     ['Critical hits', run.crits],
@@ -815,6 +879,7 @@ function endRun(won, killer) {
     ['Biggest hit', run.biggest],
     ['Potions drunk', run.potions],
     ['Chests opened', run.chests],
+    ['Capsae opened', run.capsae],
     ['Steps taken', run.steps],
     ['Time', time]
   ];
@@ -843,12 +908,14 @@ function loadFloor(i) {
   opened.clear();
   shopPotionsLeft = SHOP_POTIONS; // one merchant per floor at most
   visited.clear();
-  enemies = lvl.enemies.map(([x, y, hard]) => ({x, y, zone: FLOOR_ZONES[i][hard], group: null}));
+  enemies = lvl.enemies.map(([x, y, hard]) => ({x, y, hard, zone: FLOOR_ZONES[i][hard], group: null,
+    guard: x === lvl.guard[0] && y === lvl.guard[1]}));                   // the one guarding the stairs
   // the exit is a dead end, so the boss on its only way in can't be skipped
-  if (lastFloor()) enemies.push({
-    x: lvl.guard[0], y: lvl.guard[1], zone: 4, boss: true,
-    group: [{...BOSS, max: BOSS.hp, bonus: 0, items: []}]
-  });
+  if (lastFloor()) {
+    const [hpX, dmgX] = STRETCH[FLOORS - 1][2], hp = Math.round(BOSS.hp * hpX);
+    enemies.push({x: lvl.guard[0], y: lvl.guard[1], zone: 4, boss: true,
+                  group: [{...BOSS, hp, max: hp, dmg: BOSS.dmg.map(v => Math.round(v * dmgX)), bonus: 0, items: []}]});
+  }
   const sy = map.findIndex(r => r.includes('S'));
   p.x = map[sy].indexOf('S');
   p.y = sy;
@@ -883,6 +950,7 @@ function shopNote(it) {
   if (it.type === 'bag') return `carry ${it.to} potions` + (maxPotions >= it.to ? ', owned'
     : maxPotions < it.from ? `, needs the ${BAGS.find(b => b.to === it.from).name} first` : '');
   if (it.type === 'satchel') return `carry ${BAG_SLOTS + 1} scrolls` + (bagSlots > BAG_SLOTS ? ', owned' : '');
+  if (it.type === 'hone') return `hone your blade: +1 damage for good` + (honed ? ` (+${honed} so far)` : '');
   return `+${potionHeal()} HP, ${shopPotionsLeft} left` + (potions >= maxPotions ? ", you can't carry more" : '');
 }
 
@@ -991,11 +1059,6 @@ function enchanterClick(command) {
 function openChest(key) {
   opened.add(key);
   run.chests++;
-  if (Math.random() < SCROLL_CHANCE) {
-    const s = {id: randomEnchant(), t: roll(0, floorTier())};
-    openScroll(s, null);
-    return `It holds a Scroll of ${enchLabel(s)}!`;
-  }
   const r = roll(1, 3);
   if (r === 1) {
     const got = earn(roll(CHEST_GOLD[0], CHEST_GOLD[1]) + floor * CHEST_GOLD_PER_FLOOR);
@@ -1013,6 +1076,15 @@ function openChest(key) {
     return `It holds a health potion, but your bag is full. You take ${got} coins instead.`;
   }
   return 'It holds equipment. ' + loot();
+}
+
+// a capsa: a leather scroll case, with a scroll in it every time
+function openCapsa(key) {
+  opened.add(key);
+  run.capsae++;
+  const s = {id: randomEnchant(), t: roll(0, floorTier())};
+  openScroll(s, null);
+  return `It holds a Scroll of ${enchLabel(s)}!`;
 }
 
 function closeLoot() {
@@ -2097,7 +2169,7 @@ function drawTitle(g, t, e = 99) {
     fg.setTransform(1, 0, 0, 1, 0, 0); fg.globalCompositeOperation = 'source-over'; fg.drawImage(room.low, 0, 0);
     room.flames.forEach((f, i) => { fg.setTransform(f.m); liveFlame(fg, f.x, f.y, f.s, ts, i); });
     fg.setTransform(1, 0, 0, 1, 0, 0);
-    if (ignite > 0.02) liveFlame(fg, T_KTORCH[0], T_KTORCH[1], 0.55 * ignite, ts, 9);   // your torch
+    if (ignite > 0.02) liveFlame(fg, T_KTORCH[0], T_KTORCH[1], 0.55 * ignite, ts, 9, flameOf().c);   // your torch
     const top = TG.spring - Math.sqrt(TG.r1 * TG.r1 - (T_PUDDLE[0] - TG.cx) ** 2), q = (ts % T_DRIP) / 0.8;
     if (q < 1) { fg.fillStyle = '#a8bccc'; fg.fillRect(Math.round(T_PUDDLE[0]), Math.round(top + (T_PUDDLE[1] - 1 - top) * q * q), 1, 2); }   // a drop falling from the arch
   }
@@ -2123,10 +2195,10 @@ function drawTitle(g, t, e = 99) {
   g.globalCompositeOperation = 'multiply'; g.drawImage(lc, 0, 0, W, H);
   g.globalCompositeOperation = 'lighter';
   g.globalAlpha = ignite * (0.86 + 0.14 * (fl - 0.85) / 0.3); g.drawImage(room.bl, 0, 0, W, H); g.globalAlpha = 1;
-  if (ignite > 0) stamp(g, '255,160,70', 0.26 * ignite, T_KTORCH[0], T_KTORCH[1] - 6, 15 * fl);
+  if (ignite > 0) stamp(g, flameOf().title, 0.26 * ignite, T_KTORCH[0], T_KTORCH[1] - 6, 15 * fl);
   driftMotes(g, room, ts, ignite);
   const [px, py, prx] = T_PUDDLE;                                          // the torch, shivering in the puddle; rings where the drop lands
-  if (ignite > 0) { g.globalAlpha = ignite * (0.55 + 0.25 * Math.sin(t * 5.3)); stamp(g, '255,150,60', 0.7, px - 10 + Math.sin(t * 3.1) * 1.4, py, 6, 1.5); g.globalAlpha = 1; }
+  if (ignite > 0) { g.globalAlpha = ignite * (0.55 + 0.25 * Math.sin(t * 5.3)); stamp(g, flameOf().glow, 0.7, px - 10 + Math.sin(t * 3.1) * 1.4, py, 6, 1.5); g.globalAlpha = 1; }
   const rq = ((t % T_DRIP) - 0.8) / 1.1;
   if (rq > 0 && rq < 1) { g.strokeStyle = `rgba(150,170,190,${0.5 * (1 - rq) * Math.max(0.3, reveal)})`; g.lineWidth = 0.8; g.beginPath(); g.ellipse(px, py, 2 + rq * (prx - 4), 0.6 + rq * 2.4, 0, 0, Math.PI * 2); g.stroke(); }
   for (const d of T_DUST) {                                                // dust in the cold light from above
@@ -2534,7 +2606,24 @@ const claws = (add, h, s, mat, far, len = 1) => { for (const [dx, dy] of [[5.4, 
 // ---- you: the prisoner who woke in the dungeon, in whatever you have found since ----
 const HERO_PAL = {skin: [206, 154, 118], hair: [74, 48, 30], tunic: [88, 114, 140], tunicDk: [58, 78, 100], pants: [74, 58, 44], rope: [168, 142, 94],
   patch: [106, 80, 46], bandage: [214, 206, 182], blood: [140, 28, 28], plume: [44, 84, 176], plumeLt: [72, 120, 214], dark: [36, 26, 22]};
-const heroOf = (gear = {}) => being(HERO_PAL, (add, P) => {
+// ---- your look, from the Vault: it changes nothing but how you look ----
+const LOOKS = {
+  flame: {ember: {c: ['#e0501c', '#ff9a2a', '#fff0b0'], light: '255,216,168', glow: '255,170,80', title: '255,160,80', pool: '255,150,70'},
+          ghost: {c: ['#2850c8', '#5aa8ff', '#e2f4ff'], light: '200,216,255', glow: '110,170,255', title: '120,170,255', pool: '110,160,255'},
+          witch: {c: ['#2a8430', '#5ed464', '#e8ffd0'], light: '206,240,198', glow: '110,220,110', title: '120,220,120', pool: '110,210,110'},
+          soul:  {c: ['#6a30c0', '#a878ff', '#f2e4ff'], light: '224,206,255', glow: '170,120,255', title: '170,130,255', pool: '160,120,240'}},
+  hair: {brown: [74, 48, 30], black: [34, 28, 30], ginger: [150, 66, 34], blond: [196, 158, 92], grey: [150, 146, 150]},
+  beard: {none: 0, short: 1, long: 2},
+  rags: {blue: [[88, 114, 140], [58, 78, 100]], red: [[122, 40, 34], [84, 26, 22]], green: [[78, 98, 46], [52, 66, 30]],
+         ochre: [[160, 118, 60], [116, 82, 40]], black: [[56, 50, 60], [36, 32, 40]], purple: [[96, 58, 130], [64, 38, 90]]},
+  plume: {blue: [[44, 84, 176], [72, 120, 214]], crimson: [[140, 28, 30], [192, 52, 44]], gold: [[196, 146, 46], [240, 196, 90]],
+          white: [[196, 192, 202], [238, 238, 246]], black: [[36, 32, 40], [72, 66, 80]]}
+};
+let LOOK = {flame: 'ember', hair: 'brown', beard: 'none', rags: 'blue', plume: 'blue'};
+const lookOf = (slot, look = LOOK) => LOOKS[slot][look[slot]] ?? Object.values(LOOKS[slot])[0];
+const flameOf = (look = LOOK) => lookOf('flame', look);
+const heroOf = (gear = {}, look = LOOK) => being({...HERO_PAL, hair: lookOf('hair', look), tunic: lookOf('rags', look)[0], tunicDk: lookOf('rags', look)[1],
+                                                  plume: lookOf('plume', look)[0], plumeLt: lookOf('plume', look)[1]}, (add, P) => {
   const G = kit(add, P, gear), line = lineOf(P);
   const knight = ARMOR.every(G.has), shining = knight && ARMOR.every(k => gear[k] === 2);
   const hipL = [5, -61], kneeL = [16, -35], ankL = [20, -7], hipR = [-5, -59], kneeR = [-9, -32], ankR = [-15, -6];
@@ -2580,6 +2669,12 @@ const heroOf = (gear = {}) => being(HERO_PAL, (add, P) => {
   add(off([[-7, -2], [-6.5, -7], [-3, -10.5], [2, -11.2], [6, -9.5], [8.2, -6], [8.6, -2.5], [9.6, 0.5], [8.4, 2], [8.6, 4.5], [7, 7.5], [3.5, 9.6], [-0.5, 9.2], [-4.5, 6.5], [-6.8, 2.5]], hc), 'skin');
   if (!G.has('helmet'))                                                    // messy, matted hair
     add(off([[-8.4, 3], [-8.8, -5], [-6, -10.6], [-1.6, -13.4], [3, -12.4], [6, -13.6], [8.6, -10.4], [9.4, -6.4], [6.6, -7.6], [3.4, -6.4], [0, -7.8], [-2.4, -5.4], [-4.6, -1.4], [-6.6, 4.4]], hc), 'hair');
+  const beard = lookOf('beard', look);
+  if (beard) {                                                             // a beard (from the Vault), in your hair color
+    add(off(beard > 1 ? [[-6.4, 1.4], [-3, 5], [0.6, 6.8], [4.6, 7], [8, 5], [9.2, 2.4], [9.4, 7.2], [7.8, 12.4], [4.6, 17], [1, 18.6], [-1.8, 15.4], [-4.8, 10.8], [-6.8, 6]]
+                      : [[-5.6, 3], [-3, 5.6], [0.6, 7.2], [4.6, 7.4], [7.8, 5.4], [8.8, 3.6], [8.6, 6.6], [6.8, 9.6], [3.4, 11.4], [-0.4, 11], [-4, 8.2]], hc), 'hair');
+    add(off([[2, 4.8], [4.4, 3.9], [7.4, 4.4], [8, 5.8], [4.8, 5.1], [2.2, 6]], hc), 'hair', 0, 1);   // and a moustache
+  }
   P.push({eye: [hc[0] + 1.4, hc[1] - 0.4], r: 0.95, col: [24, 16, 12]});
   P.push({eye: [hc[0] + 7.2, hc[1] - 0.6], r: 0.75, col: [24, 16, 12]});
   line(off([[-0.6, -2.6], [2.8, -2.4]], hc), 0.8, [52, 34, 24]); line(off([[5.8, -2.6], [8.2, -2.8]], hc), 0.7, [52, 34, 24]);
@@ -3106,11 +3201,11 @@ function roomFor(key, seed) {
   return rooms.get(k);
 }
 // a flame as it is this moment: it flickers and leans (the room's flames are drawn this way, live)
-function liveFlame(g, x, y, s, t, i) {
+function liveFlame(g, x, y, s, t, i, c = LOOKS.flame.ember.c) {   // c: its three colors, outside in (your torch can burn another color)
   const h = s * (1 + 0.13 * Math.sin(t * 9 + i * 1.7) + 0.07 * Math.sin(t * 23 + i * 3.1)), lean = Math.sin(t * 5 + i * 2.3) * 1.6 * s;
-  path(g, [[x - 7 * s, y], [x + lean + 1 * s, y - 22 * h], [x + 7 * s, y]]); g.fillStyle = '#e0501c'; g.fill();
-  path(g, [[x - 4.5 * s, y], [x + lean * 0.7 - 1 * s, y - 16 * h], [x + 5 * s, y]]); g.fillStyle = '#ff9a2a'; g.fill();
-  path(g, [[x - 2.4 * s, y], [x + lean * 0.4 + 0.5 * s, y - 9 * h], [x + 2.6 * s, y]]); g.fillStyle = '#fff0b0'; g.fill();
+  path(g, [[x - 7 * s, y], [x + lean + 1 * s, y - 22 * h], [x + 7 * s, y]]); g.fillStyle = c[0]; g.fill();
+  path(g, [[x - 4.5 * s, y], [x + lean * 0.7 - 1 * s, y - 16 * h], [x + 5 * s, y]]); g.fillStyle = c[1]; g.fill();
+  path(g, [[x - 2.4 * s, y], [x + lean * 0.4 + 0.5 * s, y - 9 * h], [x + 2.6 * s, y]]); g.fillStyle = c[2]; g.fill();
 }
 
 // a soft round glow (or shadow) as a small picture, made once per color and stamped wherever it is needed
@@ -3355,14 +3450,14 @@ function drawFight(g, spec) {
 
 // ---- you, for the Hero panel: drawn the same way, in a soft light of your own ----
 const dolls = new Map();
-function doll(gear) {
-  const k = JSON.stringify(gear);
+function doll(gear, look = LOOK) {
+  const k = JSON.stringify([gear, look]);
   if (dolls.has(k)) return dolls.get(k);
   const cv = document.createElement('canvas'); cv.width = 46; cv.height = 78;   // 92 x 156 units
   const cg = cv.getContext('2d'), w = cv.width, h = cv.height;
   cg.scale(1 / PIX, 1 / PIX);
   ACTIVE_LIGHTS = [[24, 30, 230, 1.05], [70, 120, 120, 0.3]];
-  place(heroOf(gear), 36, 154, false, 1.12).forEach((q, i) => partLow(cg, q, i));
+  place(heroOf(gear, look), 36, 154, false, 1.12).forEach((q, i) => partLow(cg, q, i));
   ACTIVE_LIGHTS = null;
   const id = cg.getImageData(0, 0, w, h), d = id.data, solid = new Uint8Array(w * h);
   for (let i = 0; i < w * h; i++) { solid[i] = d[i * 4 + 3] >= 110 ? 1 : 0; d[i * 4 + 3] = solid[i] ? 255 : 0; }
@@ -3377,8 +3472,8 @@ function doll(gear) {
   return cv;
 }
 // draw you in the Hero panel: feet at (x, y), h tall, glowing where your gear is enchanted
-function drawDoll(g, x, y, h, gear, glows, weapon, t) {
-  const cv = doll(gear), k = h / 156;
+function drawDoll(g, x, y, h, gear, glows, weapon, t, look) {
+  const cv = doll(gear, look), k = h / 156;
   g.save();
   g.imageSmoothingEnabled = false;
   g.drawImage(cv, x - 36 * k, y - 154 * k, 92 * k, 156 * k);
@@ -3519,6 +3614,18 @@ function trapdoor(g, X, Y) {
   g.strokeStyle = '#8a8490'; g.lineWidth = 1.1; g.beginPath(); g.arc(X + 16, Y + 17, 2.4, 0, Math.PI * 2); g.stroke();   // the ring
 }
 // a shopkeeper: a robed figure with a lantern on a pole (the merchants) or a pointed hat and a glowing staff (the Enchanter)
+function campfire(g, X, Y, lit) {
+  const cx = X + 16, cy = Y + 24;
+  ell(g, cx, cy + 1, 12, 4.4, 'rgba(0,0,0,0.45)');
+  for (let k = 0; k < 10; k++) { const a = k / 10 * Math.PI * 2; if (Math.sin(a) < 0) ell(g, cx + Math.cos(a) * 10, cy + Math.sin(a) * 3.8, 2.4, 1.7, '#6c665e'); }
+  ell(g, cx, cy, 7, 2.6, lit ? 'rgb(230,110,40)' : 'rgb(118,112,104)');                         // embers, or ash
+  g.lineCap = 'round';
+  for (const [a, b] of [[[cx - 8, cy + 1.5], [cx + 5, cy - 3]], [[cx + 8, cy + 1.5], [cx - 5, cy - 3]]]) {
+    g.strokeStyle = lit ? '#5c3a1c' : '#26201c'; g.lineWidth = 3.2; g.beginPath(); g.moveTo(...a); g.lineTo(...b); g.stroke();
+    g.strokeStyle = lit ? '#e0702a' : '#3a322c'; g.lineWidth = 1; g.beginPath(); g.moveTo(...a); g.lineTo(...b); g.stroke();
+  }
+  for (let k = 0; k < 10; k++) { const a = k / 10 * Math.PI * 2; if (Math.sin(a) >= 0) ell(g, cx + Math.cos(a) * 10, cy + Math.sin(a) * 3.8, 2.4, 1.7, '#7a746a'); }
+}
 function robed(g, cx, by, C, wizard) {
   ell(g, cx, by, 10, 2.6, 'rgba(0,0,0,0.5)');
   path(g, [[cx - 8, by], [cx - 4, by - 15], [cx + 4, by - 15], [cx + 8, by]]); g.fillStyle = rgb(C, 0.85); g.fill();
@@ -3542,6 +3649,47 @@ function robed(g, cx, by, C, wizard) {
     g.fillStyle = '#3a3030'; g.fillRect(cx + 11.4, by - 23.5, 3.2, 1);
     g.fillStyle = '#ffd070'; g.fillRect(cx + 11.6, by - 22.5, 2.8, 3.4);                          // the lantern
   }
+}
+// a merchant's stall: a striped awning on two posts, the hooded merchant behind a plank counter with wares on it,
+// and the lantern hanging from the awning's corner (its light is a glow, laid on each frame)
+function merchantStall(g, X, Y, C) {
+  const wood = [104, 70, 42], stripes = [C, [196, 178, 142]], cx = X + 16, by = Y + 23;
+  ell(g, cx, Y + 28.5, 14, 3, 'rgba(0,0,0,0.5)');                                               // the shadow
+  for (const px of [X + 3, X + 27]) {                                                           // the posts
+    g.fillStyle = rgb(wood, 0.62); g.fillRect(px, Y + 2, 2.2, 26.5);
+    g.fillStyle = rgb(wood, 1.05); g.fillRect(px, Y + 2, 0.9, 26.5);
+  }
+  g.fillStyle = rgb(wood, 0.5); g.fillRect(X + 5, Y + 9, 22, 1);                                // a rail across the back
+  // the merchant, standing behind the counter
+  path(g, [[cx - 7, by], [cx - 4, by - 12], [cx + 4, by - 12], [cx + 7, by]]); g.fillStyle = rgb(C, 0.85); g.fill();
+  path(g, [[cx + 0.5, by], [cx + 0.5, by - 12], [cx + 4, by - 12], [cx + 7, by]]); g.fillStyle = rgb(C, 0.6); g.fill();
+  ell(g, cx, by - 14, 5.2, 4.8, rgb(C, 0.95));                                                  // the hood
+  path(g, [[cx, by - 19], [cx + 5.2, by - 14], [cx + 3, by - 10]]); g.fillStyle = rgb(C, 0.68); g.fill();
+  ell(g, cx + 0.8, by - 13.2, 2.8, 2.2, '#100c12');                                             // the face in shadow
+  g.fillStyle = '#ffd890'; g.fillRect(cx - 0.6, by - 13.7, 1, 1); g.fillRect(cx + 1.6, by - 13.7, 1, 1);
+  // the counter: planks under a lit top board
+  g.fillStyle = rgb(wood, 0.88); g.fillRect(X + 4, Y + 18, 24, 10);
+  g.fillStyle = rgb(wood, 0.6); for (const px of [X + 10, X + 16, X + 22]) g.fillRect(px, Y + 19, 0.8, 8);
+  g.fillStyle = rgb(wood, 0.5); g.fillRect(X + 4, Y + 26.6, 24, 1.4);
+  g.fillStyle = rgb(wood, 1.32); g.fillRect(X + 3.4, Y + 16.8, 25.2, 1.8);
+  g.fillStyle = rgb(C, 0.7); g.fillRect(cx - 6.4, by - 6.6, 2.6, 1.8); g.fillRect(cx + 3.8, by - 6.6, 2.6, 1.8);   // his sleeves on the counter
+  // wares: a health potion and a fat coin purse
+  g.fillStyle = '#2a1a14'; g.fillRect(X + 6.2, Y + 11.6, 1.2, 1.4);                             // the cork
+  g.fillStyle = rgb([190, 36, 44]); g.fillRect(X + 5.2, Y + 13, 3.2, 3.8);
+  g.fillStyle = 'rgba(255,190,190,0.7)'; g.fillRect(X + 5.6, Y + 13.4, 0.8, 1.6);
+  ell(g, X + 24.6, Y + 15, 2.6, 2.1, rgb([120, 84, 48]));
+  g.fillStyle = rgb([214, 170, 70]); g.fillRect(X + 23.6, Y + 12.4, 2, 0.9);                    // its drawstring
+  // the awning: cloth in stripes, the merchant's color and bone, with a scalloped edge
+  for (let k = 0; k < 6; k++) {
+    const x0 = X + 1 + k * 5, c = stripes[k % 2];
+    g.fillStyle = rgb(c, 0.92); g.fillRect(x0, Y - 2, 5, 5);
+    ell(g, x0 + 2.5, Y + 3, 2.5, 1.7, rgb(c, 0.74));
+  }
+  g.fillStyle = rgb(stripes[0], 0.45); g.fillRect(X + 1, Y - 3, 30, 1.2);
+  // the lantern, on a short chain from the awning's corner
+  g.fillStyle = '#2a2426'; g.fillRect(X + 27.6, Y + 4, 0.8, 2.6); g.fillRect(X + 26.4, Y + 6.4, 3.2, 1);
+  g.fillStyle = '#ffd070'; g.fillRect(X + 26.6, Y + 7.4, 2.8, 3.4);
+  g.fillStyle = '#2a2426'; g.fillRect(X + 26.4, Y + 10.8, 3.2, 0.9);
 }
 function torchBracket(g, x, y) {
   g.fillStyle = '#1e1a1c'; g.fillRect(x - 0.8, y, 1.6, 6);
@@ -3597,7 +3745,7 @@ function mapFor(key, rows) {
   // what lies on each floor tile
   for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
     if (wall(x, y)) continue;
-    const ch = rows[y][x], X = x * MT, Y = y * MT, P = th.props, plain = ch === '.' || ch === 'C';
+    const ch = rows[y][x], X = x * MT, Y = y * MT, P = th.props, plain = ch === '.' || ch === 'C' || ch === 'K';
     if (carpet.has(`${x},${y}`)) {
       g.fillStyle = rgb([128, 28, 34]); g.fillRect(X + 4, Y, 24, MT);
       g.fillStyle = rgb([200, 160, 70]); g.fillRect(X + 5, Y, 1.2, MT); g.fillRect(X + 25.8, Y, 1.2, MT);
@@ -3606,7 +3754,12 @@ function mapFor(key, rows) {
     if (ch === 'D') { stairsDown(g, X, Y, th); glows.push({tx: x, ty: y, x: X + 16, y: Y + 18, col: '80,200,255', reach: 30, a: 0.4}); continue; }
     if (ch === 'E') { exitDoor(g, X, Y, th, r); glows.push({tx: x, ty: y, x: X + 16, y: Y + 20, col: '255,226,150', reach: 70, a: 1, sun: true}); continue; }
     if (ch === 'S') { trapdoor(g, X, Y); continue; }
-    if (ch === 'M' || ch === 'N') { robed(g, X + 15, Y + 28, [120, 80, 172], false); glows.push({tx: x, ty: y, x: X + 28, y: Y + 7, col: '255,196,110', reach: 46, a: 0.8, flicker: true}); continue; }
+    if (ch === 'F' || ch === 'f') {
+      campfire(g, X, Y, ch === 'F');
+      if (ch === 'F') glows.push({tx: x, ty: y, x: X + 16, y: Y + 23, col: '255,150,60', reach: 60, a: 0.95, flicker: true, fire: true});
+      continue;
+    }
+    if (ch === 'M' || ch === 'N') { merchantStall(g, X, Y, [120, 80, 172]); glows.push({tx: x, ty: y, x: X + 28, y: Y + 9, col: '255,196,110', reach: 46, a: 0.8, flicker: true}); continue; }
     if (ch === 'X') {
       g.strokeStyle = 'rgba(90,216,208,0.75)'; g.lineWidth = 1; g.beginPath(); g.ellipse(X + 16, Y + 27, 13, 3.6, 0, 0, Math.PI * 2); g.stroke();   // a circle of runes
       for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2; g.fillStyle = '#5ad8d0'; g.fillRect(X + 16 + Math.cos(a) * 13 - 0.8, Y + 27 + Math.sin(a) * 3.6 - 0.8, 1.6, 1.6); }
@@ -3673,7 +3826,33 @@ function figureSprite(key, build, flip, maxH = 25, maxW = 28) {
   mapSprites.set(key, out);
   return out;
 }
-function chestSprite(open) {
+function capsaSprite(open) {
+  const key = 'capsa:' + open;
+  if (mapSprites.has(key)) return mapSprites.get(key);
+  const cv = mapCanvas(24, 22), g = cv.getContext('2d'), hide = [132, 64, 38], brass = [214, 170, 70];
+  ell(g, 12.5, 19.6, 5.2, 1.5, 'rgba(0,0,0,0.55)');                                           // its shadow
+  // a tall leather tube on end: lit on the left, dark on the right, a round foot
+  g.fillStyle = rgb(hide, 0.9); g.fillRect(9, 6, 7.4, 13);
+  g.fillStyle = rgb(hide, 1.2); g.fillRect(9, 6, 1.8, 13);
+  g.fillStyle = rgb(hide, 0.58); g.fillRect(14.2, 6, 2.2, 13);
+  ell(g, 12.7, 19, 3.7, 1.1, rgb(hide, 0.7));
+  g.fillStyle = rgb(brass, 0.95); g.fillRect(9, 8.4, 7.4, 1.2); g.fillRect(9, 16, 7.4, 1.2);   // the bands
+  g.fillStyle = rgb(brass, 0.6); g.fillRect(14.2, 8.4, 2.2, 1.2); g.fillRect(14.2, 16, 2.2, 1.2);
+  if (open) {
+    ell(g, 12.7, 6, 3.7, 1.3, '#140c06');                                                       // the empty mouth
+    g.fillStyle = rgb(hide, 1.3); g.fillRect(9, 5.6, 7.4, 0.7);
+    ell(g, 20, 18.8, 2.6, 1.2, rgb(hide, 0.95)); ell(g, 20, 18.2, 2.6, 0.9, rgb(hide, 1.2));   // the lid, on the floor
+  } else {
+    g.strokeStyle = rgb([150, 92, 52]); g.lineWidth = 1.6; g.beginPath(); g.moveTo(9.4, 9); g.quadraticCurveTo(12.7, -8.5, 16, 9); g.stroke();   // the strap
+    g.fillStyle = rgb(hide, 1.05); g.fillRect(8.6, 3.4, 8.2, 3);                                // the lid
+    g.fillStyle = rgb(hide, 0.62); g.fillRect(14.4, 3.4, 2.4, 3);
+    ell(g, 12.7, 3.4, 4.1, 1.3, rgb(hide, 1.35));
+    g.fillStyle = rgb(brass, 1.2); g.fillRect(11.9, 6, 1.6, 2.6);                               // the clasp
+  }
+  const out = {cv: finishSprite(cv), ax: 12, ay: 19};
+  mapSprites.set(key, out);
+  return out;
+}function chestSprite(open) {
   const key = 'chest:' + open;
   if (mapSprites.has(key)) return mapSprites.get(key);
   const cv = mapCanvas(24, 20), g = cv.getContext('2d'), wood = [132, 88, 46], gold = [214, 170, 70];
@@ -3698,7 +3877,7 @@ function chestSprite(open) {
 
 // ---- one frame of the map ----
 // spec: {key, rows, vis: Uint8Array (2 in sight, 1 walked but out of sight, 0 dark), sight, t,
-//        hero: {x, y (tiles, in between while you step), face: 1 | -1, gear}, chests: [{x, y, open}],
+//        hero: {x, y (tiles, in between while you step), face: 1 | -1, gear}, chests: [{x, y, open, capsa}],
 //        foes: [{x, y, name, gear, piece, color, boss, count}]}
 function drawMapScene(g, spec) {
   const M = mapFor(spec.key, spec.rows), t = spec.t, vis = spec.vis, V = (x, y) => vis[y * MW + x] || 0;
@@ -3719,7 +3898,7 @@ function drawMapScene(g, spec) {
   g.imageSmoothingEnabled = false;
   g.drawImage(M.base, 0, 0);
   // chests, enemies and you, each on its tile (feet low in the tile, so they stand on it)
-  for (const c of spec.chests) { const S = chestSprite(c.open); g.drawImage(S.cv, c.x * MT + 16 - S.ax, c.y * MT + 27 - S.ay); }
+  for (const c of spec.chests) { const S = c.capsa ? capsaSprite(c.open) : chestSprite(c.open); g.drawImage(S.cv, c.x * MT + 16 - S.ax, c.y * MT + 27 - S.ay); }
   for (const f of spec.foes) {
     const X = f.x * MT + 16, Y = f.y * MT + 28, K = KINDS[f.name] || KINDS.Goblin;
     g.fillStyle = 'rgba(0,0,0,0.5)'; g.beginPath(); g.ellipse(X, Y, 11, 3.2, 0, 0, Math.PI * 2); g.fill();
@@ -3744,7 +3923,8 @@ function drawMapScene(g, spec) {
     lg.fillStyle = gr; lg.fillRect(x - reach, y - reach, reach * 2, reach * 2);
   };
   const fl = 1 + 0.05 * Math.sin(t * 9.1) + 0.03 * Math.sin(t * 23.3);
-  glow(tx, ty, (spec.sight + 1.25) * MT * fl, '255,216,168', 1.15);
+  const FL = flameOf();                                                     // your torch's flame (from the Vault)
+  glow(tx, ty, (spec.sight + 1.25) * MT * fl, FL.light, 1.15);
   M.torches.forEach((T, i) => { if (V(T.tx, T.ty + 1) === 2) glow(T.x, T.y, 62 * (1 + 0.06 * Math.sin(t * 8.3 + i * 2.1)), '255,170,90', 0.85); });
   for (const G of M.glows) if (V(G.tx, G.ty) === 2) glow(G.x, G.y, G.reach * (G.flicker ? 1 + 0.07 * Math.sin(t * 7 + G.x) : 1), G.col, G.a);
   lg.imageSmoothingEnabled = true;
@@ -3755,7 +3935,7 @@ function drawMapScene(g, spec) {
   g.drawImage(L, 0, 0);
   // what shines on its own: flames, lanterns, runes, crystals, lava, the daylight at the exit
   g.globalCompositeOperation = 'lighter';
-  stamp(g, '255,170,80', 0.55, tx, ty - 3, 14 * fl);
+  stamp(g, FL.glow, 0.55, tx, ty - 3, 14 * fl);
   M.torches.forEach(T => { if (V(T.tx, T.ty + 1) === 2) stamp(g, '255,150,60', 0.5, T.x, T.y - 3, 12); });
   for (const G of M.glows) {
     const v = V(G.tx, G.ty);
@@ -3770,7 +3950,8 @@ function drawMapScene(g, spec) {
   }
   g.globalCompositeOperation = 'source-over';
   M.torches.forEach((T, i) => { if (V(T.tx, T.ty + 1) === 2) liveFlame(g, T.x, T.y, 0.28, t, i); });
-  liveFlame(g, tx, ty, 0.3, t, 9);
+  liveFlame(g, tx, ty, 0.3, t, 9, FL.c);
+  for (const G of M.glows) if (G.fire && V(G.tx, G.ty) === 2) liveFlame(g, G.x, G.y, 0.42, t, 5);   // the campfire
   // a group shows how many stand there
   g.font = `600 9px ${'"EB Garamond", Georgia, serif'}`; g.textAlign = 'center';
   for (const f of spec.foes) if (f.count > 1 && V(f.x, f.y) === 2) {
@@ -3782,7 +3963,17 @@ function drawMapScene(g, spec) {
 }
 const roomTitle = i => (SCENES.find(s => s.key === ROOM_OF_FLOOR[Math.min(i, ROOM_OF_FLOOR.length - 1)]) || {}).title || '';
 
-return {drawFight, drawDoll, drawMap: drawMapScene, drawTitle, roomTitle, roomFor, ROOM_OF_FLOOR, KINDS};
+// wear a look from the Vault: every picture of you is drawn again, and the knight's torch before the gate takes your flame
+function setLook(look) {
+  LOOK = {...LOOK, ...look};
+  heroCache.clear(); dolls.clear(); mapSprites.clear();
+  if (heroHolder.rasters) heroHolder.rasters.clear();
+  const sc = SCENES.find(s => s.key === 'title'), F = flameOf();
+  if (sc) { sc.lights[0].c = F.title; sc.lights[1].c = F.pool; }
+}
+// a torch flame in a look (the Vault's preview)
+const drawFlame = (g, x, y, s, t, look) => liveFlame(g, x, y, s, t, 3, flameOf({...LOOK, ...look}).c);
+return {drawFight, drawDoll, drawMap: drawMapScene, drawTitle, roomTitle, roomFor, ROOM_OF_FLOOR, KINDS, LOOKS, setLook, drawFlame};
 })();
 
 
@@ -3973,12 +4164,12 @@ function drawMap() {
   // Pathfinder spots enemies in sight before you bump into them
   const spotted = e => perkN('pathfinder') && inSight(e.x, e.y);
   const foesShown = enemies.filter(e => (e.seen || e.boss || spotted(e)) && !e.dead && visible(e.x, e.y)).map(e => {
-    if (!e.group) e.group = makeGroup(e.zone);
+    if (!e.group) e.group = makeGroup(e.zone, e);
     const live = e.group.filter(f => f.hp > 0), f = live[0] || e.group[0];
     return {x: e.x, y: e.y, name: f.name, gear: f.gear || {}, piece: f.piece, color: f.color, boss: !!e.boss, count: live.length};
   });
   const chests = [];
-  map.forEach((row, y) => [...row].forEach((ch, x) => { if (ch === 'C' && visible(x, y)) chests.push({x, y, open: opened.has(`${x},${y}`)}); }));
+  map.forEach((row, y) => [...row].forEach((ch, x) => { if ((ch === 'C' || ch === 'K') && visible(x, y)) chests.push({x, y, open: opened.has(`${x},${y}`), capsa: ch === 'K'}); }));
   ART.drawMap(ctx, {key: ART.ROOM_OF_FLOOR[Math.min(floor, 4)], rows: map, vis, sight: sight(), t: now / 1000,
     hero: {x: hero.x, y: hero.y, face: hero.face, gear: heroLook().gear}, chests, foes: foesShown});
   if (phase === 'explore' && !over) drawMoveHints(now);
@@ -4504,6 +4695,7 @@ function screenItems() {
   else if (phase === 'level') levelScreen(L, add, menu);
   else if (phase === 'shop') shopScreen(L, add, menu);
   else if (phase === 'enchanter') enchanterScreen(L, add, menu);
+  else if (phase === 'camp') campScreen(L, add, menu);
   else if (phase === 'scroll' && scrollNow) scrollScreen(L, add, menu);
   else playControls(L, add);
   return items;
@@ -4623,6 +4815,11 @@ function shopScreen(L, add, menu) {
         note: !it ? 'nothing worn' : saleArmed(id) ? 'Tap again to sell it' : `+${it.power}` + (it.ench ? `, ${enchText(it.ench)}` : ''),
         price: it ? sellValue(gearRetail(it)) : undefined, edge: it ? TIER_EDGE[it.tier] : null, act: () => sellGear(k)});
     }
+    scrolls.forEach((s, i) => {
+      const id = 'sell:scroll:' + i;
+      rows.push({id, text: `Scroll of ${enchLabel(s)}`, note: saleArmed(id) ? 'Tap again to sell it' : enchText(s),
+        price: sellValue(TIER_PRICE[s.t]), edge: ENCH_GLOW[s.id], act: () => sellScroll(i)});
+    });
     return rowStack(add, P.x + 8, top, end, P.w - 16, rows);
   }
   rowStack(add, P.x + 8, P.y + 46, end, P.w - 16, shopStock.map((it, i) => ({
@@ -4635,6 +4832,17 @@ function menuPrompt(add, P, text, y = P.y + 50) {
   const lines = Math.min(2, wrapText(text, P.w - 28).length);
   add({draw: () => { ctx.font = textFont(13, 400); ctx.fillStyle = '#b8ae9a'; ctx.textAlign = 'left'; paragraph(text, P.x + 14, y, P.w - 28, 16, 2); }});
   return y + lines * 16 + 2;
+}
+function campScreen(L, add, menu) {
+  const P = L.panel, toNext = xpToNext(level + levelUps) - xp, heal = Math.min(campHeal(), p.max - p.hp);
+  menu('Campfire');
+  const end = menuFooter(L, add, [{id: 'camp:leave', label: 'Leave', act: () => campChoice('leave')}]);
+  const top = menuPrompt(add, P, 'The fire will last for one thing before it burns out. Leave it, and it waits for you.');
+  rowStack(add, P.x + 8, top, end, P.w - 16, [
+    {id: 'camp:rest', text: 'Rest', note: heal ? `recover ${heal} HP (${pct(CAMP_HEAL_SHARE)} of your max)` : 'you are already at full health',
+      act: () => campChoice('rest')},
+    {id: 'camp:train', text: 'Train', note: `+${campXp()} XP` + (campXp() >= toNext ? ', enough for a level-up' : `, ${toNext} to your next level`),
+      act: () => campChoice('train')}]);
 }
 function enchanterScreen(L, add, menu) {
   const P = L.panel, it = ench.slot && worn[ench.slot];
@@ -4721,7 +4929,7 @@ function heroScreen(L, add, menu) {
     paragraph(heroDetail(o.pick), P.x + 14, dy + 14, P.w - 28, 14, 2);
   }});
   const sy = dy + 42, stats = [
-    ['Hit', `${8 + power('weapon') + bonusDmg + purseDmg()}-${14 + power('weapon') + bonusDmg + purseDmg()}`], ['Defense', defense()], ['Max HP', p.max],
+    ['Hit', `${8 + power('weapon') + bonusDmg + honed + purseDmg()}-${14 + power('weapon') + bonusDmg + honed + purseDmg()}`], ['Defense', defense()], ['Max HP', p.max],
     ['Block', pct(1 - blockMult())], ['Stun', pct(stunChance())], ['Crit', pct(critChance())],
     ['Miss', pct(PLAYER_MISS * missKeep())], ['Flee', pct(fleeChance())]];
   add({draw: () => stats.forEach(([label, value], i) => {
@@ -4753,7 +4961,7 @@ function bagTab(L, add) {
     ctx.font = textFont(13, 400); ctx.fillStyle = '#b8ae9a'; ctx.textAlign = 'left';
     paragraph(scrolls.length
       ? `Scrolls ${scrolls.length}/${bagSlots}. ` + (phase === 'explore' ? 'Tap Use to put one on your gear.' : 'You can use them while exploring.')
-      : `Your bag holds ${bagSlots} scrolls and is empty. Chests sometimes hold a scroll; keep one here for better gear later.`,
+      : `Your bag holds ${bagSlots} scrolls and is empty. Every floor has a capsa with a scroll in it; keep one here for better gear later.`,
       P.x + 14, top + 4, P.w - 28, 16, 3);
   }});
   rowStack(add, P.x + 8, top + 40, P.y + P.h - 10, P.w - 16, scrolls.map((s, i) => ({
@@ -5043,7 +5251,7 @@ function strike(t, heavy, label) {
     msg.textContent += label + (heavy ? `Your heavy swing misses the ${t.name}.` : `You swing at ${t.name} and miss.`);
     return result;
   }
-  let dmg = Math.max(1, roll(8, 14) + power('weapon') + bonusDmg + purseDmg() - t.def);
+  let dmg = Math.max(1, roll(8, 14) + power('weapon') + bonusDmg + honed + purseDmg() - t.def);
   if (heavy) dmg = Math.round(dmg * HEAVY_MULT);
   const finisher = perkN('executioner') && t.hp < t.max * EXEC_THRESHOLD;
   if (finisher) dmg = Math.round(dmg * (1 + execBonus()));
@@ -5139,6 +5347,25 @@ function drinkPotion() {
   draw();
 }
 
+// the campfire: 'rest', 'train' or 'leave' (it waits for you). Using it burns it down to ashes (the tile turns 'f')
+function campChoice(kind) {
+  if (phase !== 'camp') return;
+  phase = 'explore';
+  if (kind === 'leave') { msg.textContent = 'You leave the fire burning. It will wait for you.'; refresh(); return; }
+  map[p.y] = map[p.y].slice(0, p.x) + 'f' + map[p.y].slice(p.x + 1);
+  if (kind === 'rest') {
+    const healed = Math.min(campHeal(), p.max - p.hp);
+    p.hp += healed;
+    if (healed) popup('player', `+${healed}`, 'heal');
+    msg.textContent = `You rest by the fire until it burns down. You recover ${healed} HP.`;
+  } else {
+    gainXp(campXp());
+    msg.textContent = `You drill by the firelight until it burns down. +${campXp()} XP.`;
+    showLevelUp();
+  }
+  refresh();
+}
+
 function leaveShop() {
   if (phase !== 'shop') return;
   phase = 'explore';
@@ -5167,12 +5394,12 @@ function sellGear(k) {
     msg.textContent = `Sold your ${itemName(it)} for ${got} coins.`;
   });
 }
-// sell scroll i from your bag to the Enchanter (tap twice)
+// sell scroll i from your bag to a merchant (or the Enchanter) (tap twice)
 function sellScroll(i) {
-  const s = scrolls[i];
-  if (phase !== 'enchanter' || !ench.sell || !s) return;
+  const s = scrolls[i], atShop = phase === 'shop' && shopMode === 'sell';
+  if (!(atShop || phase === 'enchanter' && ench.sell) || !s) return;
   const got = sellValue(TIER_PRICE[s.t]);
-  confirmSale('ench:sell:' + i, `Sell the Scroll of ${enchLabel(s)} for ${got} coins? Tap it again to sell.`, () => {
+  confirmSale((atShop ? 'sell:scroll:' : 'ench:sell:') + i, `Sell the Scroll of ${enchLabel(s)} for ${got} coins? Tap it again to sell.`, () => {
     scrolls.splice(i, 1);
     coins += got;
     msg.textContent = `Sold the Scroll of ${enchLabel(s)} for ${got} coins.`;
@@ -5195,6 +5422,10 @@ function buyItem(i) {
   } else if (it.type === 'satchel') {
     bagSlots++;
     msg.textContent = `Bought the ${it.name}. You can now carry ${bagSlots} scrolls.`;
+  } else if (it.type === 'hone') {
+    honed++;
+    it.price = honePrice();
+    msg.textContent = `The merchant hones your blade: +1 damage for good (+${honed} in all).`;
   } else {
     worn[it.slot] = {name: it.name, power: it.power, tier: it.tier};
     refreshMax();
@@ -5299,7 +5530,7 @@ function handleTap(pt) {
   const hit = enemies.find(e => e.x === nx && e.y === ny && !e.dead);
   const sh = shops[map[ny][nx]];
   if (hit) {
-    if (!hit.group) hit.group = makeGroup(hit.zone);
+    if (!hit.group) hit.group = makeGroup(hit.zone, hit);
     hit.seen = true;
     current = hit;
     foes = hit.group;
@@ -5320,6 +5551,9 @@ function handleTap(pt) {
       : live.length > 1
         ? `Enemies appear: ${live.map(describe).join(', ')}!`
         : `A ${describe(live[0])} appears!`;
+  } else if (map[ny][nx] === 'F') {
+    phase = 'camp';
+    msg.textContent = 'A campfire crackles at the last camp. It will last for one thing before it burns out.';
   } else if (sh && sh.enchanter) {
     ench = {};
     saleArm = null;
@@ -5332,6 +5566,8 @@ function handleTap(pt) {
     saleArm = null;
     phase = 'shop';
     msg.textContent = "Merchant: what'll it be?";
+  } else if (map[ny][nx] === 'K' && !opened.has(key)) {
+    msg.textContent = 'You open a capsa! ' + openCapsa(key);
   } else if (map[ny][nx] === 'C' && !opened.has(key)) {
     msg.textContent = 'You open a chest! ' + openChest(key);
   } else if (map[ny][nx] === 'D') {
@@ -5367,7 +5603,37 @@ function recordRun(won) {
     r.log = (r.log + (won ? 'W' : 'D')).slice(-RECORD_LOG);
     localStorage.setItem(RECORD_KEY, JSON.stringify(r));
   } catch (e) {}
+  if (won) { const v = readVault(); v.coins += coins; saveVault(v); }   // escape, and the Vault keeps what you carry out
 }
+
+// ---- the Vault: the coins you escape with are kept here, to spend on how you look (and nothing else) ----
+// owned: "slot:id" for each look bought; wear: the look you have on. The first look of each slot is free
+const VAULT_KEY = 'crawlspace:vault', LOOK_SLOTS = ['flame', 'hair', 'beard', 'rags', 'plume'];
+const COSMETICS = {
+  flame: {label: 'Torch flame', note: 'Your torch and its light, on the map and before the gate.',
+          items: [['ember', 'Ember', 0], ['ghost', 'Ghostfire', 300], ['witch', 'Witchfire', 300], ['soul', 'Soulfire', 300]]},
+  hair:  {label: 'Hair', note: 'Shows when you wear no helmet.',
+          items: [['brown', 'Brown', 0], ['black', 'Black', 75], ['ginger', 'Ginger', 75], ['blond', 'Blond', 75], ['grey', 'Grey', 75]]},
+  beard: {label: 'Beard', note: 'In your hair color.', items: [['none', 'None', 0], ['short', 'Short', 100], ['long', 'Long', 150]]},
+  rags:  {label: "Prisoner's rags", note: 'Shows until you find chest armor.',
+          items: [['blue', 'Faded blue', 0], ['red', 'Oxblood', 120], ['green', 'Moss', 120], ['ochre', 'Ochre', 120], ['black', 'Soot', 120], ['purple', 'Plum', 120]]},
+  plume: {label: "Knight's plume", note: 'Shows in a full suit of armor with a Steel helm.',
+          items: [['blue', 'Blue', 0], ['crimson', 'Crimson', 200], ['gold', 'Gold', 200], ['white', 'White', 200], ['black', 'Black', 200]]}
+};
+const lookItem = (slot, id) => COSMETICS[slot] && COSMETICS[slot].items.find(it => it[0] === id);
+const ownsLook = (v, slot, id) => lookItem(slot, id)[2] === 0 || v.owned.includes(slot + ':' + id);
+function readVault() {
+  const v = {coins: 0, owned: [], wear: Object.fromEntries(LOOK_SLOTS.map(s => [s, COSMETICS[s].items[0][0]]))};
+  try {
+    const r = JSON.parse(localStorage.getItem(VAULT_KEY) || '{}');
+    v.coins = Math.max(0, Math.floor(+r.coins || 0));
+    if (Array.isArray(r.owned)) v.owned = r.owned.filter(k => typeof k === 'string' && lookItem(...k.split(':')));
+    for (const s of LOOK_SLOTS) { const id = r.wear && r.wear[s]; if (lookItem(s, id) && ownsLook(v, s, id)) v.wear[s] = id; }
+  } catch (e) {}
+  return v;
+}
+function saveVault(v) { try { localStorage.setItem(VAULT_KEY, JSON.stringify(v)); } catch (e) {} }
+ART.setLook(readVault().wear);
 const SKULL_SVG = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="#ddd3bd" d="M8 1.4C4.5 1.4 2 3.9 2 7c0 1.9.9 3.3 2.2 4.1V13c0 .8.6 1.4 1.4 1.4h4.8c.8 0 1.4-.6 1.4-1.4v-1.9C13.1 10.3 14 8.9 14 7c0-3.1-2.5-5.6-6-5.6z"/>' +
   '<circle cx="5.6" cy="7.4" r="1.7" fill="#0b0a0d"/><circle cx="10.4" cy="7.4" r="1.7" fill="#0b0a0d"/><path fill="#0b0a0d" d="M8 9.2l-1 1.7h2z"/>' +
   '<path stroke="#0b0a0d" stroke-width=".8" d="M6.5 12.1v2.3M8 12.1v2.3M9.5 12.1v2.3"/></svg>';
@@ -5396,7 +5662,9 @@ const WHISPERS = [
   'The knight strikes back when you miss.',
   "The wyvern's bite festers. Keep a potion.",
   'Orcs grow savage when you bleed.',
-  'The last merchant waits on the fourth floor.',
+  'A campfire waits on the third floor, and on the fifth.',
+  'A capsa always holds a scroll.',
+  'Escape, and the Vault keeps your coins.',
   'He waits by the door.'
 ];
 showRecord(readRecord());
@@ -5441,7 +5709,7 @@ function newEmber(w, h, t, anywhere) {
 // low, and embers rising, swaying, flickering and burning out
 function paintTitle(now) {
   titleFrameId = 0;
-  if (title.hidden || !howto.hidden) return;
+  if (title.hidden || !howto.hidden || !vault.hidden) return;
   const vw = window.innerWidth, vh = window.innerHeight, dpr = Math.min(2, window.devicePixelRatio || 1);
   const cw = Math.round(vw * dpr), ch = Math.round(vh * dpr);
   if (titleArt.width !== cw || titleArt.height !== ch) { titleArt.width = cw; titleArt.height = ch; }
@@ -5508,9 +5776,84 @@ function paintTitle(now) {
 const startTitle = () => { if (!titleFrameId) titleFrameId = requestAnimationFrame(paintTitle); };
 // Play starts the run, How to Play swaps in the guide (the embers rest while you read)
 const showHowTo = on => { titleMain.hidden = on; howto.hidden = !on; titleArt.hidden = on; title.scrollTop = 0; if (!on) startTitle(); };
+// the Vault: a look's first tap tries it on (and readies the purchase), a second tap buys it; a look you own is worn with one tap
+let vaultArm = null, vaultTry = null, vaultFrame = 0;
+const vaultView = () => { const v = readVault(); return vaultTry ? {...v.wear, [vaultTry.slot]: vaultTry.id} : v.wear; };
+function swatchOf(slot, id, v) {
+  const L = ART.LOOKS, c = a => `rgb(${a.join(',')})`;
+  if (slot === 'flame') { const f = L.flame[id].c; return `radial-gradient(circle at 50% 62%, ${f[2]}, ${f[1]} 42%, ${f[0]} 78%)`; }
+  if (slot === 'hair') return c(L.hair[id]);
+  if (slot === 'beard') return id === 'none' ? 'transparent' : c(L.hair[v.wear.hair] || L.hair.brown);
+  return `linear-gradient(135deg, ${c(L[slot][id][1])}, ${c(L[slot][id][0])})`;
+}
+function renderVault() {
+  const v = readVault();
+  vaultCoins.textContent = v.coins;
+  vaultList.textContent = '';
+  for (const slot of LOOK_SLOTS) {
+    const C = COSMETICS[slot], h = document.createElement('h4'), note = document.createElement('p'), grid = document.createElement('div');
+    h.textContent = C.label; note.className = 'vnote'; note.textContent = C.note; grid.className = 'vgrid';
+    for (const [id, name, price] of C.items) {
+      const b = document.createElement('button'), owned = ownsLook(v, slot, id), wearing = v.wear[slot] === id;
+      const armed = !!(vaultArm && vaultArm.slot === slot && vaultArm.id === id), trying = !!(vaultTry && vaultTry.slot === slot && vaultTry.id === id);
+      b.className = [wearing && 'wearing', (armed || trying) && 'armed', !owned && v.coins < price && 'poor'].filter(Boolean).join(' ');
+      const sw = document.createElement('span'), nm = document.createElement('span'), st = document.createElement('span');
+      sw.className = 'sw2'; sw.style.background = swatchOf(slot, id, v); nm.textContent = name; st.className = 'state';
+      st.textContent = wearing ? 'Wearing' : owned ? 'Wear' : armed ? `Tap again: ${price}` : trying ? `Need ${price - v.coins} more` : `${price} coins`;
+      b.append(sw, nm, st);
+      b.onclick = () => vaultTap(slot, id);
+      grid.append(b);
+    }
+    vaultList.append(h, note, grid);
+  }
+  if (!vaultFrame) vaultFrame = requestAnimationFrame(paintVault);
+}
+function vaultTap(slot, id) {
+  const v = readVault(), price = lookItem(slot, id)[2];
+  if (ownsLook(v, slot, id) || (vaultArm && vaultArm.slot === slot && vaultArm.id === id && v.coins >= price)) {
+    if (!ownsLook(v, slot, id)) { v.coins -= price; v.owned.push(slot + ':' + id); }
+    v.wear[slot] = id;
+    saveVault(v);
+    vaultArm = vaultTry = null;
+    ART.setLook(v.wear);
+  } else {                                                                 // try it on; tap again to buy it
+    vaultTry = {slot, id};
+    vaultArm = v.coins >= price ? {slot, id} : null;
+  }
+  renderVault();
+}
+// the preview: you, in the look you are trying on, beside a torch on an iron stand burning in your flame. Trying on a
+// plume dresses you in full Steel (it only shows on a knight); anything else shows you as you start, in your rags
+function paintVault(now) {
+  vaultFrame = 0;
+  if (vault.hidden) return;
+  const dpr = Math.min(2, window.devicePixelRatio || 1), w = 220, h = 200, t = now / 1000, look = vaultView(), F = ART.LOOKS.flame[look.flame];
+  if (vaultArt.width !== w * dpr) { vaultArt.width = w * dpr; vaultArt.height = h * dpr; }
+  const g = vaultArt.getContext('2d'), fl = 1 + 0.06 * Math.sin(t * 9.1) + 0.04 * Math.sin(t * 23.3);
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  g.clearRect(0, 0, w, h);
+  let gr = g.createRadialGradient(167, 98, 3, 160, 116, 58 * fl);          // the torchlight, fading out well inside the picture
+  gr.addColorStop(0, `rgba(${F.glow},0.34)`); gr.addColorStop(0.45, `rgba(${F.glow},0.1)`); gr.addColorStop(1, `rgba(${F.glow},0)`);
+  g.fillStyle = gr; g.fillRect(0, 0, w, h);
+  gr = g.createRadialGradient(105, 190, 2, 105, 190, 80);                  // a floor under your feet
+  gr.addColorStop(0, 'rgba(0,0,0,0.55)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = gr; g.fillRect(25, 175, 160, 25);
+  const knight = (vaultTry && vaultTry.slot) === 'plume';
+  ART.drawDoll(g, 96, 192, 170, knight ? {weapon: 2, shield: 2, helmet: 2, chest: 2, bracers: 2, greaves: 2} : {}, {}, {}, t, look);
+  g.fillStyle = '#2a2426'; g.fillRect(166, 108, 3, 84); g.fillRect(160, 190, 15, 3);   // the stand
+  g.fillStyle = '#4a4246'; g.fillRect(161, 104, 13, 5);
+  ART.drawFlame(g, 167.5, 104, 1.05, t, look);
+  if (!stillTitle) vaultFrame = requestAnimationFrame(paintVault);
+}
+const showVault = on => {
+  titleMain.hidden = on; vault.hidden = !on; titleArt.hidden = on; title.scrollTop = 0; vaultArm = vaultTry = null;
+  if (on) renderVault(); else startTitle();
+};
 playBtn.onclick = () => { title.hidden = true; run.start = Date.now(); requestFrames(); };
 howBtn.onclick = () => showHowTo(true);
 backBtn.onclick = () => showHowTo(false);
+vaultBtn.onclick = () => showVault(true);
+vaultBack.onclick = () => showVault(false);
 if (location.hash === '#play') title.hidden = true;
 else startTitle();
 window.addEventListener('resize', () => { if (stillTitle) startTitle(); });

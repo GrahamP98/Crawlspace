@@ -18,12 +18,13 @@ if ($Patch) {
     if ($html -eq $before) { throw "patch '$pp' did not match: $($pr[0])" }
   } }
 }
-$gdir = Join-Path $S 'games'; New-Item -ItemType Directory -Force $gdir | Out-Null
+$Work = Join-Path $env:LOCALAPPDATA 'CrawlspaceSim'   # game copies, results and browser profiles live here, outside OneDrive
+$gdir = Join-Path $Work 'games'; New-Item -ItemType Directory -Force $gdir | Out-Null
 $gfile = Join-Path $gdir "$Label.html"
 [IO.File]::WriteAllText($gfile, $html)
 Copy-Item (Join-Path $root '*.png') $gdir -Force
 $url = 'file:///' + ($gfile -replace '\\', '/') + '#play'
-$rdir = Join-Path $S "res\$Label"; New-Item -ItemType Directory -Force $rdir | Out-Null
+$rdir = Join-Path $Work "res\$Label"; New-Item -ItemType Directory -Force $rdir | Out-Null
 $procs = @(); $port = $PortBase
 foreach ($pol in $Pols) {
   for ($wi = 0; $wi -lt $W; $wi++) {

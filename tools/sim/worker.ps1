@@ -5,7 +5,7 @@ $Here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Edge = @("${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe", "$env:ProgramFiles\Microsoft\Edge\Application\msedge.exe") |
   Where-Object { Test-Path $_ } | Select-Object -First 1
 if (-not $Edge) { throw 'Microsoft Edge not found' }
-$Prof = Join-Path $Here "prof\$Port"
+$Prof = Join-Path $env:LOCALAPPDATA "CrawlspaceSim\prof\$Port"   # outside OneDrive: profiles are big and thrown away
 
 function Test-Up { try { Invoke-RestMethod "http://127.0.0.1:$Port/json/version" -TimeoutSec 2 | Out-Null; $true } catch { $false } }
 $proc = Start-Process $Edge -PassThru -ArgumentList @('--headless=new', "--remote-debugging-port=$Port", '--remote-allow-origins=*',

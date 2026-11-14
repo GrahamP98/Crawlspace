@@ -1,7 +1,7 @@
 # Summarize a batch folder: res\<Label>\<pol>-<w>.json
 param([string]$Label = 'base', [switch]$Detail)
 $S = Split-Path -Parent $MyInvocation.MyCommand.Path
-$rdir = Join-Path $S "res\$Label"
+$rdir = Join-Path $env:LOCALAPPDATA "CrawlspaceSim\res\$Label"
 $byPol = @{}
 foreach ($f in Get-ChildItem $rdir -Filter *.json) {
   $pol = $f.BaseName -replace '-\d+$', ''
