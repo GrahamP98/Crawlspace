@@ -1,0 +1,2 @@
+const perks = {}; ==> const perks = {attack: 2};
+let level = 1, xp = 0, levelUps = 0, bonusDmg = 0; ==> let level = 1, xp = 0, levelUps = 0, bonusDmg = 3;

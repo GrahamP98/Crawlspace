@@ -1,0 +1,2 @@
+const perks = {}; ==> const perks = {secondwind: 1};
+let hand = [], redraws = 0, secondWinds = 0; ==> let hand = [], redraws = 0, secondWinds = 1;

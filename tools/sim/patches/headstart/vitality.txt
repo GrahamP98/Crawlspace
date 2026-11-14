@@ -1,0 +1,2 @@
+const perks = {}; ==> const perks = {vitality: 2};
+let p = {x: 4, y: 9, hp: 100, max: 100, base: 100}; ==> let p = {x: 4, y: 9, hp: 150, max: 150, base: 150};

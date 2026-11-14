@@ -22,7 +22,7 @@
     preBossHp: 0.8,
     heavy: 'ev',            // 'ev' | 'never' | 'always'
     block: 'ev',            // 'ev' | 'never' | 'main'
-    perk: {secondwind: 10, vitality: 8, attack: 7.5, focus: 6, executioner: 5, shieldbash: 4.5, pathfinder: 4, antidote: 3, purse: 2},
+    perk: {secondwind: 10, vitality: 8, attack: 7.5, focus: 6, executioner: 5, ambusher: 5, shieldbash: 4.5, pathfinder: 4, antidote: 3, purse: 2},
     redraw: 0,              // redraw when best card weight < this (and coins allow)
     redrawReserve: 20,
     potionsKeep: 3,         // potions to buy first at a merchant
@@ -92,13 +92,15 @@
   }
   function arrive() { ST.arrive[floor] = [p.hp, p.max, potions, level, coins, defense(), power('weapon'), power('shield')]; }
 
-  // what the player can see: tiles in sight; Pathfinder spots enemies (the game does this when it draws the map)
+  // what the player can see: tiles in sight; Pathfinder spots enemies in sight (the game shows them on the map)
   function see() {
     const r = sight();
     for (let y = p.y - r; y <= p.y + r; y++) for (let x = p.x - r; x <= p.x + r; x++) if (map[y] && map[y][x]) K.known.add(`${x},${y}`);
     if (perkN('pathfinder')) enemies.forEach(e => { if (inSight(e.x, e.y) && e !== current) { e.spottedEarly = true; if (!e.group) e.group = makeGroup(e.zone); } });
+    if (P.omni) enemies.forEach(e => { if (!e.group && !e.boss && e !== current) e.group = makeGroup(e.zone); });
   }
-  const knownEnemy = e => !e.dead && (e.seen || e.boss && K.known.has(`${e.x},${e.y}`) || (perkN('pathfinder') && e.spottedEarly));
+  // P.omni: knows every enemy, as if it had a perfect map (a ceiling on what information is worth)
+  const knownEnemy = e => !e.dead && (P.omni || e.seen || e.boss && K.known.has(`${e.x},${e.y}`) || (perkN('pathfinder') && e.spottedEarly));
 
   function step() {
     if (overlay) { overlay = null; return; }

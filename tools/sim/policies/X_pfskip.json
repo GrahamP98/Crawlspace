@@ -1,1 +1,1 @@
-{"name":"X_pfskip","fleeScout":true,"fightKnown":"smart","fleeLowHp":0,"potionExplore":0.6,"perk":{"pathfinder":11,"attack":9,"executioner":8,"vitality":7,"secondwind":6,"focus":4,"antidote":2,"shieldbash":1,"purse":1},"decay":{"pathfinder":2.5}}
+{"name":"X_pfskip","fleeScout":true,"fightKnown":"smart","fleeLowHp":0,"potionExplore":0.6,"perk":{"ambusher":8,"pathfinder":11,"attack":9,"executioner":8,"vitality":7,"secondwind":6,"focus":4,"antidote":2,"shieldbash":1,"purse":1},"decay":{"pathfinder":2.5}}

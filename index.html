@@ -143,7 +143,7 @@
       <summary>Health and potions</summary>
       <p>You start with 100 health and one potion, and health does not come back on its own. Your ways to heal:</p>
       <ul>
-        <li><b>Potions</b>: heal 40 and cure poison. Tap the <b>potion flask</b> in the top bar while exploring or during a fight (drinking in a fight uses your turn). The flask glows green when you're hurt enough to use a whole potion, and purple while you're poisoned.</li>
+        <li><b>Potions</b>: heal 40 (more with Antidote or Fortitude gear) and cure poison. Tap the <b>potion flask</b> in the top bar while exploring or during a fight (drinking in a fight uses your turn). The flask glows green when you're hurt enough to use a whole potion, and purple while you're poisoned.</li>
         <li><b>Level-ups</b>: +10 max HP (already filled in), then heal 16% of your max HP.</li>
         <li>Some perks and enchantments, like Vitality, Mending and Vampiric.</li>
       </ul>
@@ -154,7 +154,7 @@
       <summary>Levels and perk cards</summary>
       <p>Kills give XP (bigger enemies give more), shown by the thin gold bar under your health. The first level needs 25 XP, and each level after needs 20 more than the last.</p>
       <p>Each level-up gives you +10 max HP (already filled in), heals 16% of your max HP and deals you <b>three perk cards</b>. Pick one. A card shows the total you would have after taking it, and its edge shows how rare it is: <b>grey</b> is common, <b>blue</b> uncommon, <b>gold</b> rare. One card is always a basic. Don't like the hand? <b>Redraw</b> costs 10 coins, then 20, then 30 in the same level-up.</p>
-      <p>Every perk can be taken again and again. The specials grow a little less with each repeat, and specials you already own turn up more often.</p>
+      <p>Every perk except Pathfinder and Second Wind can be taken again and again. The specials grow a little less with each repeat, and specials you already own turn up more often. Pathfinder and Second Wind can only be taken once, and once you have one it is never dealt again.</p>
       <h4>Basics</h4>
       <ul>
         <li><b>Attack</b>: more damage on every hit. Your first pick gives +2, and the total grows to +3, +4, +5, +6 with more picks.</li>
@@ -163,12 +163,13 @@
       </ul>
       <h4>Specials</h4>
       <ul>
-        <li><b>Pathfinder</b>: see 1 more tile around you, and enemies within sight show on the map before you meet them. Your first hit in every fight is an <b>Ambush</b> for +50% damage (a miss doesn't use it up).</li>
+        <li><b>Pathfinder</b> (rare, once): see 1 more tile around you, and enemies within sight show on the map, with their gear and group size, before you meet them.</li>
+        <li><b>Ambusher</b>: your first hit in every fight is an <b>Ambush</b> for +35% damage (a miss doesn't use it up). More picks raise it to +47%, +52% and so on. Running away and coming back doesn't give you a second ambush on the same group.</li>
         <li><b>Executioner</b>: +50% damage to enemies below half health.</li>
         <li><b>Antidote</b>: potions heal 10 more, and poison is weaker and shorter.</li>
         <li><b>Shield Bash</b>: when you Block, you also bash your target for 5 damage, and the stun chance rises to 21%.</li>
-        <li><b>Second Wind</b> (rare): the next blow that would kill you leaves you at 1 health instead. Used up when it saves you; each pick gives one save.</li>
-        <li><b>Tight Purse</b>: Goblins can't steal from you, and you find 30% more gold.</li>
+        <li><b>Second Wind</b> (rare, once): the first blow that would kill you leaves you at 10% of your max health instead. It saves you one time.</li>
+        <li><b>Tight Purse</b>: Goblins can't steal from you, you find 30% more gold, and you deal +1 damage for every 80 coins you carry (up to +2). Spending your gold lowers the damage bonus, so you choose between buying now and hitting harder.</li>
       </ul>
     </details>
 
@@ -191,17 +192,17 @@
       <p>Enchantments come in three tiers. <b>Minor</b> fits any gear, <b>Good</b> needs Iron or Steel gear, and <b>Major</b> needs Steel gear. Numbers below are Minor / Good / Major.</p>
       <h4>Weapon</h4>
       <ul>
-        <li><b>Flaming</b>: hits set the enemy on fire for 2 / 3 / 4 damage a turn for 3 turns. A burning Troll can't regenerate.</li>
-        <li><b>Vampiric</b>: heal 5% / 8% / 12% of the damage you deal.</li>
-        <li><b>Balanced</b>: Heavy misses 15% / 25% / 35% less often.</li>
-        <li><b>Giantslayer</b>: +10% / 20% / 30% damage to big enemies (100+ health).</li>
-        <li><b>Swift</b>: 8% / 12% / 16% chance to strike a second time.</li>
+        <li><b>Flaming</b>: hits set the enemy on fire for 3 / 4 / 5 damage a turn for 3 turns. A burning Troll can't regenerate.</li>
+        <li><b>Vampiric</b>: heal 4% / 6% / 9% of the damage you deal.</li>
+        <li><b>Balanced</b>: Heavy misses 25% / 35% / 45% less often.</li>
+        <li><b>Giantslayer</b>: +20% / 40% / 55% damage to big enemies (100+ health).</li>
+        <li><b>Swift</b>: 12% / 20% / 26% chance to strike a second time.</li>
       </ul>
       <h4>Armor and shield</h4>
       <ul>
         <li><b>Thorns</b>: enemies that hit you take 2 / 3 / 4 damage, but not on a turn you Block.</li>
         <li><b>Mending</b>: heal 4 / 7 / 10 after every fight you win.</li>
-        <li><b>Fortitude</b>: +20 / 35 / 50 max health.</li>
+        <li><b>Fortitude</b>: +20 / 35 / 50 max health, and each potion heals 1 / 2 / 3 more.</li>
         <li><b>Purity</b>: poison lasts 1 / 2 / 3 fewer turns, and Wraith drain is cut 25% / 50% / 75%.</li>
         <li><b>Fleetfoot</b> (greaves only): +6% / 8% / 10% chance to flee.</li>
         <li><b>Fortune</b>: +10% / 20% / 30% gold.</li>
@@ -218,7 +219,8 @@
     <details>
       <summary>Gold and shops</summary>
       <p>Gold comes from kills and chests, and there is never enough of it. Spend it at the merchants on floors 2 and 4 (potions, potion bags, the Scroll Satchel, gear), at the Enchanter on floor 3, and on Redraws. The floor 4 merchant is the last shop, so after that gold is only good for Redraws. Spend it while you can.</p>
-      <p>You can also sell. Tap <b>Sell</b> at a merchant to sell potions or any piece of gear you wear, and tap <b>Sell scrolls</b> at the Enchanter to sell scrolls from your bag. You get 20% of what the thing costs to buy (an enchantment on gear adds its Enchanter price). Gear and scrolls take two taps to sell, so you never sell one by accident; gear you sell leaves its slot empty.</p>
+      <p>You can also sell. Tap <b>Sell</b> at a merchant to sell potions or any piece of gear you wear, and tap <b>Sell scrolls</b> at the Enchanter to sell scrolls from your bag. You get 25% of what the thing costs to buy (an enchantment on gear adds its Enchanter price). Gear and scrolls take two taps to sell, so you never sell one by accident; gear you sell leaves its slot empty.</p>
+      <p>Buying gear for a slot you already fill trades in your old piece: the merchant buys it for the same 25%, and that counts toward the price. The shop list shows what your piece is worth as "trade-in". If your old piece is enchanted, the enchantment goes with it.</p>
     </details>
 
     <details>
@@ -316,11 +318,14 @@ const REDRAW_COST = 10;         // coins; each extra redraw in the same level-up
 const ATTACK_TOP = 10;                               // Attack: total +2, 3, 4, 5, 6... damage
 const VITALITY_HP = 25, VITALITY_MEND = 1;           // Vitality: +25 max HP; heal 1 per pick after each won fight
 const FOCUS_CRIT = 0.04, FOCUS_MISS_KEEP = 0.90;     // Focus: +4% crit, miss chance x0.90
-const AMBUSH_TOP = 1.0;                              // Pathfinder: your first hit in each fight +50%, 67%, 75%...
+const AMBUSH_TOP = 0.7;                              // Ambusher: your first hit in each fight +35%, 47%, 52%...
 const EXEC_THRESHOLD = 0.50, EXEC_TOP = 1.0;         // Executioner: +50%, 67%, 75%... vs enemies under 50% HP
 const ANTIDOTE_HEAL_TOP = 20;                        // Antidote: potions heal +10, 13, 15...
 const BASH_TOP = 0.32, BASH_DMG_TOP = 14;            // Shield Bash: stun 21%, 26%, 29%...; bash 5, 7, 8...
 const PURSE_TOP = 0.60;                              // Tight Purse: gold +30%, 40%, 45%...
+const PURSE_DMG_COINS = 80, PURSE_DMG_MAX = 2;       // Tight Purse: also +1 damage per 80 coins you carry, up to +2
+const SECOND_WIND_SHARE = 0.10;                      // Second Wind: the save leaves you at 10% of your max HP
+// Pathfinder and Second Wind are 'once' perks: after you take one, it is never dealt again
 
 // k = how many times the perk is taken; each helper defaults to your current count
 const perkN = id => perks[id] || 0;
@@ -341,10 +346,11 @@ const poisonDmg = (k = perkN('antidote')) => Math.max(1, Math.round(POISON_DMG *
 const poisonTurns = (k = perkN('antidote')) => Math.max(1, Math.round(POISON_TURNS * poisonScale(k)));
 const stunChance = (k = perkN('shieldbash')) => STUN_CHANCE + curve(BASH_TOP, 2, k) + SHIELD_STUN * power('shield');
 const bashDmg = (k = perkN('shieldbash')) => Math.round(curve(BASH_DMG_TOP, 2, k));
-const ambushBonus = (k = perkN('pathfinder')) => curve(AMBUSH_TOP, 1, k);
+const ambushBonus = (k = perkN('ambusher')) => curve(AMBUSH_TOP, 1, k);
 const potionBonus = (k = perkN('antidote')) => Math.round(curve(ANTIDOTE_HEAL_TOP, 1, k));
-const potionHeal = () => POTION_HEAL + potionBonus();
+const potionHeal = () => POTION_HEAL + potionBonus() + fortPotion();
 const purseBonus = (k = perkN('purse')) => curve(PURSE_TOP, 1, k);
+const purseDmg = () => perkN('purse') ? Math.min(PURSE_DMG_MAX, Math.floor(coins / PURSE_DMG_COINS)) : 0;
 
 // card = short text on the button, info = the full sentence under the cards (k = count after taking it)
 const PERKS = {
@@ -357,9 +363,12 @@ const PERKS = {
   focus: {name: 'Focus', rarity: 'common',
     card: k => `Crit ${pct(critChance(k))}`,
     info: k => `Crit chance ${pct(critChance(k))}, and you miss ${pct(1 - missKeep(k))} less often.`},
-  pathfinder: {name: 'Pathfinder', rarity: 'uncommon',
-    card: k => `See ${sight(k)}, ambush +${pct(ambushBonus(k))}`,
-    info: k => `See ${sight(k)} tiles around you and spot enemies in sight. Your first hit in every fight is an Ambush for ${pct(ambushBonus(k))} more damage.`},
+  pathfinder: {name: 'Pathfinder', rarity: 'rare', once: true,
+    card: k => `See ${sight(k)}, spot enemies`,
+    info: k => `See ${sight(k)} tiles around you, and enemies in sight show on the map before you meet them. You can only take it once.`},
+  ambusher: {name: 'Ambusher', rarity: 'uncommon',
+    card: k => `Ambush +${pct(ambushBonus(k))}`,
+    info: k => `Your first hit in every fight is an Ambush for ${pct(ambushBonus(k))} more damage (a miss doesn't use it up).`},
   executioner: {name: 'Executioner', rarity: 'uncommon',
     card: k => `+${pct(execBonus(k))} finishers`,
     info: k => `Deal ${pct(execBonus(k))} more damage to enemies under ${pct(EXEC_THRESHOLD)} HP.`},
@@ -369,12 +378,12 @@ const PERKS = {
   shieldbash: {name: 'Shield Bash', rarity: 'uncommon',
     card: k => `Bash ${bashDmg(k)}, stun ${pct(stunChance(k))}`,
     info: k => `When you Block, you bash your target for ${bashDmg(k)}, and each hit on your shield has a ${pct(stunChance(k))} chance to stun.`},
-  secondwind: {name: 'Second Wind', rarity: 'rare',
-    card: k => '+1 save',
-    info: k => 'The next blow that would kill you leaves you at 1 HP instead. Used up when it saves you.'},
+  secondwind: {name: 'Second Wind', rarity: 'rare', once: true,
+    card: k => 'Cheat death once',
+    info: k => `The first blow that would kill you leaves you at ${pct(SECOND_WIND_SHARE)} of your max HP instead. You can only take it once.`},
   purse: {name: 'Tight Purse', rarity: 'uncommon',
-    card: k => `Gold +${pct(purseBonus(k))}`,
-    info: k => `Goblins can't steal from you, and you find ${pct(purseBonus(k))} more gold.`}
+    card: k => `Gold +${pct(purseBonus(k))}, coins hit`,
+    info: k => `Goblins can't steal from you, you find ${pct(purseBonus(k))} more gold, and you deal +1 damage for every ${PURSE_DMG_COINS} coins you carry (up to +${PURSE_DMG_MAX}).`}
 };
 
 // ---- equipment enchantments: one per item, it stays on the item, the same one stacks across items ----
@@ -388,24 +397,25 @@ const SCROLL_CHANCE = 0.25;              // a chest holds a scroll instead of co
 const BAG_SLOTS = 2, SATCHEL_PRICE = 25; // scroll bag; the Scroll Satchel adds one slot
 const BURN_TURNS = 3, GIANT_HP = 100;
 const PURITY_DRAIN = [0.25, 0.50, 0.75]; // share of Wraith drain each Purity item blocks
+const FORT_POTION = [1, 2, 3];           // each Fortitude item also makes potions heal this much more
 // vals = strength at Minor / Good / Major
 const ENCHANTS = {
-  flaming:     {name: 'Flaming', slot: 'weapon', vals: [2, 3, 4], desc: 'sets enemies on fire',
+  flaming:     {name: 'Flaming', slot: 'weapon', vals: [3, 4, 5], desc: 'sets enemies on fire',
                 text: v => `hits burn for ${v} a turn for ${BURN_TURNS} turns, and burning Trolls can't regenerate`},
-  vampiric:    {name: 'Vampiric', slot: 'weapon', vals: [0.05, 0.08, 0.12], desc: 'heals you as you hit',
+  vampiric:    {name: 'Vampiric', slot: 'weapon', vals: [0.04, 0.06, 0.09], desc: 'heals you as you hit',
                 text: v => `heal ${pct(v)} of the damage you deal`},
-  balanced:    {name: 'Balanced', slot: 'weapon', vals: [0.15, 0.25, 0.35], desc: 'Heavy misses less',
+  balanced:    {name: 'Balanced', slot: 'weapon', vals: [0.25, 0.35, 0.45], desc: 'Heavy misses less',
                 text: v => `Heavy misses ${pct(v)} less often`},
-  giantslayer: {name: 'Giantslayer', slot: 'weapon', vals: [0.10, 0.20, 0.30], desc: 'hurts big enemies more',
+  giantslayer: {name: 'Giantslayer', slot: 'weapon', vals: [0.20, 0.40, 0.55], desc: 'hurts big enemies more',
                 text: v => `+${pct(v)} damage to enemies with ${GIANT_HP}+ HP`},
-  swift:       {name: 'Swift', slot: 'weapon', vals: [0.08, 0.12, 0.16], desc: 'may strike twice',
+  swift:       {name: 'Swift', slot: 'weapon', vals: [0.12, 0.20, 0.26], desc: 'may strike twice',
                 text: v => `${pct(v)} chance to strike a second time`},
   thorns:      {name: 'Thorns', slot: 'armor', vals: [2, 3, 4], desc: 'hurts enemies that hit you',
                 text: v => `enemies that hit you take ${v} damage (not when you Block)`},
   mending:     {name: 'Mending', slot: 'armor', vals: [4, 7, 10], desc: 'heals you after fights',
                 text: v => `heal ${v} HP after every fight you win`},
-  fortitude:   {name: 'Fortitude', slot: 'armor', vals: [20, 35, 50], desc: 'more max HP',
-                text: v => `+${v} max HP`},
+  fortitude:   {name: 'Fortitude', slot: 'armor', vals: [20, 35, 50], desc: 'more max HP, stronger potions',
+                text: v => `+${v} max HP, and potions heal ${FORT_POTION[ENCHANTS.fortitude.vals.indexOf(v)]} more`},
   purity:      {name: 'Purity', slot: 'armor', vals: [1, 2, 3], desc: 'resists poison and drain',
                 text: v => `poison lasts ${v} fewer turns and Wraith drain is cut ${pct(PURITY_DRAIN[v - 1])}`},
   // Fleetfoot only goes on greaves (slots), so it takes fleeing from 25% to at most 35%
@@ -424,6 +434,9 @@ const enchSum = id => Object.values(worn).reduce((s, it) =>
   s + (it && it.ench && it.ench.id === id ? ENCHANTS[id].vals[it.ench.t] : 0), 0);
 const purityKeep = () => Object.values(worn).reduce((m, it) =>
   m * (it && it.ench && it.ench.id === 'purity' ? 1 - PURITY_DRAIN[it.ench.t] : 1), 1);
+// extra potion healing from the Fortitude items you wear
+const fortPotion = () => Object.values(worn).reduce((s, it) =>
+  s + (it && it.ench && it.ench.id === 'fortitude' ? FORT_POTION[it.ench.t] : 0), 0);
 // highest tier drops and scrolls can have on this floor
 const floorTier = () => TIER_FLOOR.filter(f => floor + 1 >= f).length - 1;
 const randomEnchant = slotKey => {
@@ -604,9 +617,12 @@ let shopStock = [], shopTitle = '';
 // ---- selling: the merchants buy potions and the gear you wear, the Enchanter buys scrolls ----
 // you get SELL_SHARE of what the thing costs to buy: gear costs 5 coins per point, plus what its
 // enchantment costs at the Enchanter; a scroll costs what its enchantment costs there
-const POTION_PRICE = 10, SELL_SHARE = 0.20;
+const POTION_PRICE = 10, SELL_SHARE = 0.25;
 const sellValue = price => Math.max(1, Math.round(price * SELL_SHARE));
 const gearRetail = it => it.power * 5 + (it.ench ? TIER_PRICE[it.ench.t] : 0);
+// buying gear for a slot you already fill sells the old piece to the merchant; what it fetches counts toward the price
+const tradeIn = it => it.type === 'gear' && worn[it.slot] ? sellValue(gearRetail(worn[it.slot])) : 0;
+const coinWord = n => `${n} coin${n === 1 ? '' : 's'}`;
 let shopMode = 'buy';        // the merchant's screen: 'buy' or 'sell'
 // selling gear or a scroll takes two taps (the first asks), so a slip of the thumb never sells your sword
 let saleArm = null;          // {id, t}: the sale waiting for its second tap
@@ -824,7 +840,8 @@ function refresh() {
 function shopNote(it) {
   if (it.type === 'gear') {
     const cur = worn[it.slot];
-    return `+${it.power}` + (cur ? (cur.ench ? `, you lose ${enchLabel(cur.ench)}` : '') + `, yours is ${cur.name} +${cur.power}` : ', slot empty');
+    return `+${it.power}` + (cur ? (cur.ench ? `, you lose ${enchLabel(cur.ench)}` : '') +
+      `, trade-in ${tradeIn(it)}, yours is ${cur.name} +${cur.power}` : ', slot empty');
   }
   if (it.type === 'bag') return `carry ${it.to} potions` + (maxPotions >= it.to ? ', owned'
     : maxPotions < it.from ? `, needs the ${BAGS.find(b => b.to === it.from).name} first` : '');
@@ -833,7 +850,7 @@ function shopNote(it) {
 }
 
 function canBuy(it) {
-  if (coins < it.price) return false;
+  if (coins + tradeIn(it) < it.price) return false;
   if (it.type === 'potion') return shopPotionsLeft > 0 && potions < maxPotions;
   if (it.type === 'bag') return maxPotions === it.from;
   if (it.type === 'satchel') return bagSlots === BAG_SLOTS;
@@ -981,7 +998,7 @@ function gainXp(amount) {
 // deal a hand: one random basic, then cards drawn by rarity (no duplicates in a hand)
 function dealHand() {
   const basic = BASICS[roll(0, BASICS.length - 1)];
-  const pool = Object.keys(PERKS).filter(id => id !== basic);
+  const pool = Object.keys(PERKS).filter(id => id !== basic && !(PERKS[id].once && perkN(id)));
   hand = [basic];
   while (hand.length < HAND_SIZE && pool.length) {
     const weights = pool.map(id => RARITY_WEIGHT[PERKS[id].rarity] *
@@ -3627,7 +3644,6 @@ function drawMap() {
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) vis[y * W + x] = inSight(x, y) ? 2 : visited.has(`${x},${y}`) ? 1 : 0;
   // Pathfinder spots enemies in sight before you bump into them
   const spotted = e => perkN('pathfinder') && inSight(e.x, e.y);
-  enemies.forEach(e => { if (spotted(e) && e !== current) e.spottedEarly = true; }); // you can ambush it
   const foesShown = enemies.filter(e => (e.seen || e.boss || spotted(e)) && !e.dead && visible(e.x, e.y)).map(e => {
     if (!e.group) e.group = makeGroup(e.zone);
     const live = e.group.filter(f => f.hp > 0), f = live[0] || e.group[0];
@@ -4052,6 +4068,11 @@ function drawPerkIcon(id, x, y, r) {
     ctx.arc(0, 0, 6.5, 0, Math.PI * 2); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(0, -6); ctx.lineTo(2.4, 0); ctx.lineTo(-2.4, 0); ctx.closePath(); ctx.fill();
     line([0, 0], [0, 5]);
+  } else if (id === 'ambusher') {                                                                      // a dagger
+    ctx.moveTo(0, -7.5); ctx.lineTo(1.9, 0.5); ctx.lineTo(-1.9, 0.5); ctx.closePath(); ctx.fill();   // the blade
+    line([-4.5, 1.5], [4.5, 1.5]);                                                                    // the guard
+    line([0, 1.5], [0, 5.5]);                                                                         // the grip
+    ctx.beginPath(); ctx.arc(0, 6.6, 1.2, 0, Math.PI * 2); ctx.fill();                                // the pommel
   } else if (id === 'executioner') {                                                                   // an axe
     line([-5, 7], [3, -4]);
     ctx.beginPath(); ctx.moveTo(0, -7); ctx.quadraticCurveTo(8, -7, 7, 1); ctx.lineTo(2, -3); ctx.closePath(); ctx.fill();
@@ -4372,7 +4393,7 @@ function heroScreen(L, add, menu) {
     paragraph(heroDetail(o.pick), P.x + 14, dy + 14, P.w - 28, 14, 2);
   }});
   const sy = dy + 42, stats = [
-    ['Hit', `${8 + power('weapon') + bonusDmg}-${14 + power('weapon') + bonusDmg}`], ['Defense', defense()], ['Max HP', p.max],
+    ['Hit', `${8 + power('weapon') + bonusDmg + purseDmg()}-${14 + power('weapon') + bonusDmg + purseDmg()}`], ['Defense', defense()], ['Max HP', p.max],
     ['Block', pct(1 - blockMult())], ['Stun', pct(stunChance())], ['Crit', pct(critChance())],
     ['Miss', pct(PLAYER_MISS * missKeep())], ['Flee', pct(fleeChance())]];
   add({draw: () => stats.forEach(([label, value], i) => {
@@ -4480,9 +4501,9 @@ function checkDeath(killer, text) {
   if (p.hp > 0) return true;
   if (secondWinds > 0) {
     secondWinds--;
-    p.hp = 1;
+    p.hp = Math.max(1, Math.round(p.max * SECOND_WIND_SHARE));
     popup('player', 'SECOND WIND', 'gold');
-    msg.textContent += ' SECOND WIND! You refuse to fall and stand back up with 1 HP.';
+    msg.textContent += ` SECOND WIND! You refuse to fall and stand back up with ${p.hp} HP.`;
     refresh();
     return true;
   }
@@ -4694,7 +4715,7 @@ function strike(t, heavy, label) {
     msg.textContent += label + (heavy ? `Your heavy swing misses the ${t.name}.` : `You swing at ${t.name} and miss.`);
     return result;
   }
-  let dmg = Math.max(1, roll(8, 14) + power('weapon') + bonusDmg - t.def);
+  let dmg = Math.max(1, roll(8, 14) + power('weapon') + bonusDmg + purseDmg() - t.def);
   if (heavy) dmg = Math.round(dmg * HEAVY_MULT);
   const finisher = perkN('executioner') && t.hp < t.max * EXEC_THRESHOLD;
   if (finisher) dmg = Math.round(dmg * (1 + execBonus()));
@@ -4834,7 +4855,8 @@ function sellScroll(i) {
 function buyItem(i) {
   const it = shopStock[i];
   if (phase !== 'shop' || !it || !canBuy(it)) return;
-  coins -= it.price;
+  const old = it.type === 'gear' ? worn[it.slot] : null, refund = tradeIn(it);
+  coins += refund - it.price;
   if (it.type === 'potion') {
     potions++;
     shopPotionsLeft--;
@@ -4848,7 +4870,7 @@ function buyItem(i) {
   } else {
     worn[it.slot] = {name: it.name, power: it.power, tier: it.tier};
     refreshMax();
-    msg.textContent = `Bought and equipped ${it.name}.`;
+    msg.textContent = `Bought and equipped ${it.name}.` + (old ? ` Your ${itemName(old)} sold for ${coinWord(refund)}.` : '');
   }
   refresh();
 }
@@ -4954,9 +4976,9 @@ function handleTap(pt) {
     current = hit;
     foes = hit.group;
     foes.forEach(f => f.fresh = true); // a new fight: the Minotaur gets to charge again
-    // Pathfinder: your first hit in the fight is an ambush (with Pathfinder you always see an
-    // enemy before you can walk into it, so every encounter gets one; a miss doesn't use it up)
-    hit.ambushReady = !!(hit.spottedEarly && perkN('pathfinder') && !hit.ambushed);
+    // Ambusher: your first hit in the fight is an ambush (a miss doesn't use it up). Each group can only be
+    // ambushed once, so running away and coming back doesn't give you another
+    hit.ambushReady = !!(perkN('ambusher') && !hit.ambushed);
     // switch to the combat screen
     combatView = true;
     sceneFoes = foes;

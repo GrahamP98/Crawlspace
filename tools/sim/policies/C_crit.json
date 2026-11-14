@@ -1,1 +1,1 @@
-{"name":"C_crit","fleeScout":false,"fightKnown":"all","fleeLowHp":0,"potionExplore":0.6,"perk":{"focus":11,"executioner":10,"attack":8,"vitality":7,"secondwind":6,"pathfinder":3,"antidote":2,"shieldbash":1,"purse":1},"decay":{"executioner":2},"enchPref":{"swift":1.5,"balanced":1}}
+{"name":"C_crit","fleeScout":false,"fightKnown":"all","fleeLowHp":0,"potionExplore":0.6,"perk":{"ambusher":7,"focus":11,"executioner":10,"attack":8,"vitality":7,"secondwind":6,"pathfinder":3,"antidote":2,"shieldbash":1,"purse":1},"decay":{"executioner":2},"enchPref":{"swift":1.5,"balanced":1}}
