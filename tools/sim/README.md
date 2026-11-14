@@ -44,7 +44,7 @@ Everything a run makes goes to `%LOCALAPPDATA%\CrawlspaceSim`, outside OneDrive:
 | `neutral` | Values every perk the same. With a head-start patch, it shows how much one perk is worth on its own |
 | `nomni` | `neutral`, but it knows where every enemy is: the most map information can be worth |
 
-**Head-start test.** `neutral` starts with two free picks of one perk (Pathfinder and Second Wind get one, since they can only be taken once), and its win rate is compared with no head start. A perk that adds much more than the others is too strong. The patches are in `patches\headstart\`:
+**Head-start test.** `neutral` starts with two free picks of one perk (Pathfinder, Second Wind and Tight Purse get one, since they can only be taken once), and its win rate is compared with no head start. A perk that adds much more than the others is too strong. The patches are in `patches\headstart\`:
 
 ```powershell
 .\batch.ps1 -Pols neutral -W 12 -N 50 -Label hs_none

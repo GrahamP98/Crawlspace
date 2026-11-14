@@ -213,7 +213,7 @@
       <summary>Levels and perk cards</summary>
       <p>Kills give XP (bigger enemies give more), shown by the thin gold bar under your health. The first level needs 25 XP, and each level after needs 20 more than the last.</p>
       <p>Each level-up gives you +10 max HP (already filled in), heals 16% of your max HP and deals you <b>three perk cards</b>. Pick one. A card shows the total you would have after taking it, and its edge shows how rare it is: <b>grey</b> is common, <b>blue</b> uncommon, <b>gold</b> rare. One card is always a basic. Don't like the hand? <b>Redraw</b> costs 10 coins, then 20, then 30 in the same level-up.</p>
-      <p>Every perk except Pathfinder and Second Wind can be taken again and again. The specials grow a little less with each repeat, and specials you already own turn up more often. Pathfinder and Second Wind can only be taken once, and once you have one it is never dealt again.</p>
+      <p>Every perk except Pathfinder, Second Wind and Tight Purse can be taken again and again. The specials grow a little less with each repeat, and specials you already own turn up more often. Pathfinder, Second Wind and Tight Purse can only be taken once, and once you have one it is never dealt again.</p>
       <h4>Basics</h4>
       <ul>
         <li><b>Attack</b>: more damage on every hit. Your first pick gives +2, and the total grows to +3, +4, +5, +6 with more picks.</li>
@@ -396,7 +396,7 @@ const AMBUSH_TOP = 0.7;                              // Ambusher: your first hit
 const EXEC_THRESHOLD = 0.50, EXEC_TOP = 1.0;         // Executioner: +50%, 67%, 75%... vs enemies under 50% HP
 const ANTIDOTE_HEAL_TOP = 20;                        // Antidote: potions heal +10, 13, 15...
 const BASH_TOP = 0.32, BASH_DMG_TOP = 14;            // Shield Bash: stun 21%, 26%, 29%...; bash 5, 7, 8...
-const PURSE_TOP = 0.60;                              // Tight Purse: gold +30%, 40%, 45%...
+const PURSE_TOP = 0.60;                              // Tight Purse: gold +30% (it can only be taken once)
 const PURSE_DMG_COINS = 80, PURSE_DMG_MAX = 2;       // Tight Purse: also +1 damage per 80 coins you carry, up to +2
 const SECOND_WIND_SHARE = 0.10;                      // Second Wind: the save leaves you at 10% of your max HP
 // Pathfinder and Second Wind are 'once' perks: after you take one, it is never dealt again
@@ -455,9 +455,9 @@ const PERKS = {
   secondwind: {name: 'Second Wind', rarity: 'rare', once: true,
     card: k => 'Cheat death once',
     info: k => `The first blow that would kill you leaves you at ${pct(SECOND_WIND_SHARE)} of your max HP instead. You can only take it once.`},
-  purse: {name: 'Tight Purse', rarity: 'uncommon',
+  purse: {name: 'Tight Purse', rarity: 'uncommon', once: true,
     card: k => `Gold +${pct(purseBonus(k))}, coins hit`,
-    info: k => `Goblins can't steal from you, you find ${pct(purseBonus(k))} more gold, and you deal +1 damage for every ${PURSE_DMG_COINS} coins you carry (up to +${PURSE_DMG_MAX}).`}
+    info: k => `Goblins can't steal from you, you find ${pct(purseBonus(k))} more gold, and you deal +1 damage for every ${PURSE_DMG_COINS} coins you carry (up to +${PURSE_DMG_MAX}). You can only take it once.`}
 };
 
 // ---- equipment enchantments: one per item, it stays on the item, the same one stacks across items ----
