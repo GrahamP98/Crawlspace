@@ -64,6 +64,7 @@
     requestFrames = () => {};
     refresh = () => {};
     LEVEL_TAP_GUARD_MS = 0;
+    LOOT_TAP_GUARD_MS = 0;
     title.hidden = true;
     K = {known: new Set(), avoid: new Set(), shopVisits: {}, floorFights: 0};
     ST = {fights: 0, fled: 0, fleeTry: 0, turns: 0, heavy: 0, block: 0, normal: 0, potFight: 0, potExplore: 0, bought: [], enchBought: [],
@@ -274,7 +275,7 @@
     const cur = worn[pending.slot];
     const a = pending.power * (pending.slot === 'shield' ? P.shieldWeight * 1.4 : 1) + enchVal(pending.ench);
     const b = cur ? cur.power * (pending.slot === 'shield' ? P.shieldWeight * 1.4 : 1) + enchVal(cur.ench) : -1;
-    return a > b ? equipItem() : leaveItem();
+    return a > b ? (equipItem(), equipItem()) : (leaveItem(), leaveItem());   // each takes two taps
   }
   const scrollTarget = s => {
     const ok = enchSlots(s.id).filter(k => worn[k] && worn[k].tier >= s.t);
@@ -283,8 +284,8 @@
   };
   function scrollPick() {
     const s = scrollNow, k = scrollTarget(s);
-    if (k) return scrollChoice(k);
-    if (s.fromBag === null) { if (scrolls.length < bagSlots) return scrollChoice('keep'); return scrollChoice('discard'); }
+    if (k) { scrollChoice(k); return scrollChoice(k); }   // two taps
+    if (s.fromBag === null) { if (scrolls.length < bagSlots) return scrollChoice('keep'); scrollChoice('discard'); return scrollChoice('discard'); }
     return scrollChoice('back');
   }
 
@@ -298,7 +299,7 @@
   function shopping() {
     K.headFor = null;
     K.shopVisits[floor] = (K.shopVisits[floor] || 0) + 1;
-    const buy = i => { const it = shopStock[i]; const c0 = coins; buyItem(i); if (coins < c0) { ST.bought.push(floor + 1 + ':' + (it.slot || it.type)); return true; } return false; };
+    const buy = i => { const it = shopStock[i]; const c0 = coins; if (!saleArmed('buy:' + i)) buyItem(i); buyItem(i); if (coins < c0) { ST.bought.push(floor + 1 + ':' + (it.slot || it.type)); return true; } return false; };
     const idx = pred => shopStock.findIndex(pred);
     if (P.sellScrolls && scrolls.some(s => !scrollTarget(s))) {
       shopMode = 'sell';
@@ -323,7 +324,6 @@
       if (!done && P.buyBandolier) done = buy(idx(s => s.type === 'bag' && s.from === 7 && maxPotions === 7));
       if (!done) { const i = idx(s => s.type === 'potion'); if (i >= 0 && shopStock[i].price <= (P.maxPotPrice || 999) && coins - shopStock[i].price >= (floor === 1 ? (P.potReserve || 0) : 0)) done = buy(i); }
       if (!done && P.buySatchel) done = buy(idx(s => s.type === 'satchel'));
-      if (!done && P.hone !== false) { const i = idx(s => s.type === 'hone'); if (i >= 0 && coins - shopStock[i].price >= (P.honeReserve ?? 15)) done = buy(i); }   // spare gold into the blade
       if (!done) break;
     }
     leaveShop();
@@ -441,7 +441,6 @@
     if (coins < 10) return false;
     if (potions < maxPotions && shopPotionsLeft > 0) return true;
     if (coins >= 30 && p.hp < p.max * 0.65 && !(window.__rest || {})[floor] && typeof makeStock === 'function' && makeStock(1).some(s => s.type === 'rest')) return true;
-    if (P.hone !== false && typeof honePrice === 'function' && coins - honePrice() >= (P.honeReserve ?? 15)) return true;
     const tier = shops[FLOOR_SHOPS[floor]].tier;
     return Object.keys(slots).some(k => { const [, pow] = slots[k].items[tier]; return !(worn[k] && worn[k].power >= pow) && coins >= pow * 5; });
   }
