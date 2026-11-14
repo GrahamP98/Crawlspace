@@ -84,7 +84,19 @@
   #howto ul { margin: 4px 0 0; padding-left: 20px; display: grid; gap: 5px; }
   #howto .sw { display: inline-block; width: 12px; height: 12px; vertical-align: -1px; margin-right: 4px; border: 1px solid #666; }
   #howto b { color: #fff; }
-  #titleMain .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  /* hover (or focus, or a press on a phone): gold vines grow from both ends of a title button, curling toward its label */
+  #titleMain .actions button, #backBtn, #vaultBack { position: relative; }
+  #titleMain .actions button::before, #titleMain .actions button::after, #backBtn::before, #backBtn::after, #vaultBack::before, #vaultBack::after {
+    content: ''; position: absolute; top: 50%; width: min(72px, 20%); aspect-ratio: 64 / 24; pointer-events: none; opacity: 0;
+    background: center / contain no-repeat; transition: opacity 0.3s ease-out, transform 0.4s ease-out; }
+  #titleMain .actions button::before, #backBtn::before, #vaultBack::before { left: 7px; transform-origin: left center; transform: translateY(-50%) scaleX(0.2);
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 24'><g fill='none' stroke='%23d9a441' stroke-width='1.7' stroke-linecap='round'><path d='M3 12c0-4 5-5 6.5-2.2S8 15.5 5.5 13.5'/><path d='M9 12c7-6.5 15-6.5 21 0s13 6.5 20 0'/><path d='M19 7.4c-.6-3 1.4-5 4.4-4.8'/><path d='M40 16.6c.6 3-1.4 5-4.4 4.8'/></g><g fill='%23d9a441'><path d='M23.4 2.6c3 0 5 1.8 4.4 4-3 .2-5-1.6-4.4-4z'/><path d='M35.6 21.4c-3 0-5-1.8-4.4-4 3-.2 5 1.6 4.4 4z'/><path d='M28 11c2-2.2 5-2.2 6.4 0-1.6 2.2-4.6 2.2-6.4 0z'/><path d='M51 12c2.6-2.4 6.6-3 10.6 0-4 3-8 2.4-10.6 0z'/><path d='M52.6 11.4c.6-3.4 3-5.6 5.6-5.6-1 2-1.6 3.6-2.6 5.6z'/><path d='M52.6 12.6c.6 3.4 3 5.6 5.6 5.6-1-2-1.6-3.6-2.6-5.6z'/><rect x='50' y='10.4' width='2' height='3.2' rx='.6'/></g><g fill='%23e0b050'><circle cx='14' cy='15.4' r='1.4'/><circle cx='15.8' cy='17.2' r='1.4'/><circle cx='14' cy='19' r='1.4'/><circle cx='12.2' cy='17.2' r='1.4'/></g><circle cx='14' cy='17.2' r='.9' fill='%23fff0c0'/></svg>"); }
+  #titleMain .actions button::after, #backBtn::after, #vaultBack::after { right: 7px; transform-origin: right center; transform: translateY(-50%) scaleX(0.2);
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 24'><g transform='translate(64 0) scale(-1 1)'><g fill='none' stroke='%23d9a441' stroke-width='1.7' stroke-linecap='round'><path d='M3 12c0-4 5-5 6.5-2.2S8 15.5 5.5 13.5'/><path d='M9 12c7-6.5 15-6.5 21 0s13 6.5 20 0'/><path d='M19 7.4c-.6-3 1.4-5 4.4-4.8'/><path d='M40 16.6c.6 3-1.4 5-4.4 4.8'/></g><g fill='%23d9a441'><path d='M23.4 2.6c3 0 5 1.8 4.4 4-3 .2-5-1.6-4.4-4z'/><path d='M35.6 21.4c-3 0-5-1.8-4.4-4 3-.2 5 1.6 4.4 4z'/><path d='M28 11c2-2.2 5-2.2 6.4 0-1.6 2.2-4.6 2.2-6.4 0z'/><path d='M51 12c2.6-2.4 6.6-3 10.6 0-4 3-8 2.4-10.6 0z'/><path d='M52.6 11.4c.6-3.4 3-5.6 5.6-5.6-1 2-1.6 3.6-2.6 5.6z'/><path d='M52.6 12.6c.6 3.4 3 5.6 5.6 5.6-1-2-1.6-3.6-2.6-5.6z'/><rect x='50' y='10.4' width='2' height='3.2' rx='.6'/></g><g fill='%23e0b050'><circle cx='14' cy='15.4' r='1.4'/><circle cx='15.8' cy='17.2' r='1.4'/><circle cx='14' cy='19' r='1.4'/><circle cx='12.2' cy='17.2' r='1.4'/></g><circle cx='14' cy='17.2' r='.9' fill='%23fff0c0'/></g></svg>"); }
+  #titleMain .actions button:is(:hover, :focus-visible, :active)::before, #titleMain .actions button:is(:hover, :focus-visible, :active)::after,
+  :is(#backBtn, #vaultBack):is(:hover, :focus-visible, :active)::before, :is(#backBtn, #vaultBack):is(:hover, :focus-visible, :active)::after {
+    opacity: 1; transform: translateY(-50%) scaleX(1); }
+  @media (prefers-reduced-motion: reduce) { #titleMain .actions button::before, #titleMain .actions button::after, #backBtn::before, #backBtn::after, #vaultBack::before, #vaultBack::after { transition: opacity 0.2s; } }  #titleMain .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   #titleMain .pair button { font-size: 20px; }
   #vault h2 { font-family: var(--title-font); font-weight: 400; font-size: 30px; color: #fc3; margin: 8px 0 0; text-align: center; }
   #vault .lead { text-align: center; color: #aaa; margin: 0; font-style: italic; line-height: 1.4; }
@@ -1980,6 +1992,8 @@ const T_KNIGHT = {x: 144, y: 348, s: 1.05}, KNIGHT_TORCH = [43, -138];  // where
 const T_KTORCH = [T_KNIGHT.x + KNIGHT_TORCH[0] * T_KNIGHT.s, T_KNIGHT.y + KNIGHT_TORCH[1] * T_KNIGHT.s];
 const T_EYES_AT = [[130, 172], [154, 172]];                              // his eyes, each between two bars
 const T_CROWN = {x: 142, y: 152, w: 56, h: 20};                          // his crown: the middle of its band, its width and height
+let T_NO_CROWN = false;                                                  // true while the picture is built without it (so it can fade in)
+let T_LETTER_PIX = [], T_LETTER_AT = [];                                 // the carved letters' pixels [index, 0 edge / 1 face / 2 lit edge], their centers
 const T_BAR = 12;                                                        // the portcullis's bars, this far apart
 const T_PUDDLE = [214, 307, 18, 3.4], T_DRIP = 4.6;                      // a puddle at the gate's foot, and how often the arch drips into it
 // arch stone k (0 = the left end): its corners and the angle through its middle; the keystone stands proud and flares
@@ -2007,6 +2021,7 @@ function letterMask(ch) {
 // curve (the end letters a little less), its face catching the light along the top and casting a shadow down to the right
 function carveTitle(img, pix) {
   const w = img.width, d = img.data, FACE = PALETTE[8], HI = PALETTE[31], DEEP = PALETTE[0];
+  T_LETTER_PIX = []; T_LETTER_AT = [];
   const set = (x, y, c) => { const i = (y * w + x) * 4; d[i] = c[0]; d[i + 1] = c[1]; d[i + 2] = c[2]; };
   T_WORD.forEach((ch, k) => {
     if (!ch) return;
@@ -2014,6 +2029,7 @@ function carveTitle(img, pix) {
     const la = 1.5 * Math.PI + (st.mid - 1.5 * Math.PI) * 0.85;
     const c = [TG.cx + Math.cos(st.mid) * rm, TG.spring + Math.sin(st.mid) * rm], up = [Math.cos(la), Math.sin(la)], right = [-up[1], up[0]];
     const [x0, y0, x1, y1] = bbox(st.pts), L = new Set(), soft = [];
+    T_LETTER_AT.push(c);
     for (let py = Math.floor(y0 / pix); py <= Math.ceil(y1 / pix); py++) for (let px = Math.floor(x0 / pix); px <= Math.ceil(x1 / pix); px++) {
       let n = 0;                                                           // four looks inside each pixel: how much of it the letter covers
       for (const [sx, sy] of [[0.25, 0.25], [0.75, 0.25], [0.25, 0.75], [0.75, 0.75]]) {
@@ -2024,8 +2040,12 @@ function carveTitle(img, pix) {
     }
     const has = (px, py) => L.has(py * w + px);
     for (const i of L) { const px = i % w, py = (i / w) | 0; if (!has(px + 1, py + 1)) set(px + 1, py + 1, DEEP); if (!has(px + 1, py + 2) && !has(px, py + 1)) set(px + 1, py + 2, PALETTE[1]); }
-    for (const i of soft) set(i % w, (i / w) | 0, PALETTE[6]);             // the half-covered edge, half-lit: smoother curves
-    for (const i of L) { const px = i % w, py = (i / w) | 0; set(px, py, !has(px, py - 1) || !has(px - 1, py) ? HI : FACE); }
+    for (const i of soft) { set(i % w, (i / w) | 0, PALETTE[6]); T_LETTER_PIX.push([i, 0]); }   // the half-covered edge, half-lit: smoother curves
+    for (const i of L) {
+      const px = i % w, py = (i / w) | 0, lit = !has(px, py - 1) || !has(px - 1, py);
+      set(px, py, lit ? HI : FACE);
+      T_LETTER_PIX.push([i, lit ? 2 : 1]);
+    }
   });
 }
 function titleGate(g, r) {
@@ -2045,10 +2065,10 @@ function titleGate(g, r) {
   const {x: kx, y: ky, w: kw, h: kh} = T_CROWN, tips = [0.72, 0.48, 1, 0.48, 0.72], crown = [[kx - kw / 2 - 1, ky], [kx - kw / 2, ky - 5]];
   tips.forEach((t, i) => crown.push([kx - kw / 2 + (i + 0.5) * kw / 5, ky - 5 - kh * t], [kx - kw / 2 + (i + 1) * kw / 5, ky - 5]));
   crown.push([kx + kw / 2 + 1, ky]);
-  lump(g, crown, [236, 186, 70], 1777, 1, 0.42);
+  if (!T_NO_CROWN) lump(g, crown, [236, 186, 70], 1777, 1, 0.42);
   const gold = rgb([255, 214, 110], litK(kx, ky - kh, 1, 0.45));
-  tips.forEach((t, i) => { g.beginPath(); g.arc(kx - kw / 2 + (i + 0.5) * kw / 5, ky - 5 - kh * t - 1.2, 1.9, 0, Math.PI * 2); g.fillStyle = gold; g.fill(); });
-  for (const [dx, c] of [[-14, [170, 30, 34]], [0, [60, 90, 190]], [14, [170, 30, 34]]]) {   // jewels in the band
+  if (!T_NO_CROWN) tips.forEach((t, i) => { g.beginPath(); g.arc(kx - kw / 2 + (i + 0.5) * kw / 5, ky - 5 - kh * t - 1.2, 1.9, 0, Math.PI * 2); g.fillStyle = gold; g.fill(); });
+  if (!T_NO_CROWN) for (const [dx, c] of [[-14, [170, 30, 34]], [0, [60, 90, 190]], [14, [170, 30, 34]]]) {   // jewels in the band
     g.beginPath(); g.ellipse(kx + dx, ky - 2.6, 2.4, 1.8, 0, 0, Math.PI * 2); g.fillStyle = rgb(c, litK(kx, ky, 1, 0.45)); g.fill();
   }
   for (let x = cx - r1 + 6; x < cx + r1 - 2; x += T_BAR) {                 // the portcullis, down: iron bars from the arch to the floor
@@ -2143,7 +2163,7 @@ function titleKnight(b, low, pix) {
 
 // his eyes, between the bars, looking down at you: bright where they look, glowing; they narrow and blink now and then.
 // open (0..1) is how far they have opened (they open during the title's first moments, with a flare)
-function titleEyes(g, t, open) {
+function titleEyes(g, t, open, room) {
   if (open <= 0) return;
   const blink = open >= 1 && t % 6.3 < 0.16, narrow = 0.75 + 0.25 * Math.sin(t * 0.45), flare = 1 + 0.9 * Math.sin(Math.min(1, open) * Math.PI);
   const pulse = (0.85 + 0.15 * Math.sin(t * 1.9)) * Math.min(1, open * 1.6);
@@ -2156,27 +2176,62 @@ function titleEyes(g, t, open) {
     g.fillStyle = '#ff4a1c'; g.fill();
     if (open > 0.4) { g.fillStyle = '#ffe2a0'; g.fillRect(ex - 1.8, ey + 0.2, 3.6, 1.8 * open); }   // the bright of each eye, low: he is looking down at you
   }
-  if (open >= 1 && t % 4.7 < 0.8) {                                      // now and then his crown catches the light
-    g.globalAlpha = Math.sin(t % 4.7 / 0.8 * Math.PI) * 0.6; stamp(g, '255,210,120', 0.8, T_CROWN.x, T_CROWN.y - 5 - T_CROWN.h, 6); g.globalAlpha = 1;
+  // torchlight moving over his crown: a slanted band of light slides across it from left to right, lighting only the
+  // crown's own pixels (the bars still cover theirs). Once as the crown comes out of the dark, then every 12 seconds, softly
+  const q = open > 0.5 && open < 1 ? (open - 0.5) / 0.5 : open >= 1 && t % 12 < 1.1 ? (t % 12) / 1.1 : -1;
+  if (q >= 0 && room && room.crown) {
+    const {x: kx, y: ky, w: kw} = T_CROWN, sx = kx - kw / 2 - 10 + q * (kw + 20), fade = Math.sin(q * Math.PI);
+    const cw = room.crown.width, ch = room.crown.height;
+    const sheen = titleSheen || (titleSheen = document.createElement('canvas'));
+    if (sheen.width !== cw) { sheen.width = cw; sheen.height = ch; }
+    const s = sheen.getContext('2d');
+    s.globalCompositeOperation = 'source-over'; s.clearRect(0, 0, cw, ch); s.drawImage(room.crown, 0, 0);
+    s.globalCompositeOperation = 'source-in';
+    const band = s.createLinearGradient(sx - 9, ky - 18, sx + 9, ky + 6);
+    band.addColorStop(0, 'rgba(255,236,180,0)'); band.addColorStop(0.5, 'rgba(255,240,190,1)'); band.addColorStop(1, 'rgba(255,236,180,0)');
+    s.fillStyle = band; s.fillRect(0, 0, cw, ch);
+    g.globalAlpha = 0.35 * fade; g.imageSmoothingEnabled = false; g.drawImage(sheen, 0, 0, W, H); g.imageSmoothingEnabled = true; g.globalAlpha = 1;
   }
 }
+let titleSheen = null;
 // dust hanging in the cold light over the arch: where each mote drifts to, slowly
 const T_DUST = Array.from({length: 16}, (_, i) => ({x: 64 + ((i * 97) % 160), y: 26 + ((i * 53) % 96), ph: i * 1.7, sp: 0.12 + (i % 5) * 0.03}));
 // one frame of the title picture, in play units (288 x 352): drawn the way a fight is, with the same light, embers and
 // fog. e = seconds since the title first appeared: in the first moments your torch catches, its light spreads over
 // the gate, and then his eyes open (e large: all of it already lit)
 let titleRoom = null, titleCv = null, titleLight = null, titleAt = -1;
+// The title's picture is built twice, with his crown and without it: the pixels that differ are the crown (where the
+// bars don't hide it), kept as a layer that fades in when his eyes open. The carved letters' pixels make a second
+// layer, in gold, laid over the picture as light: the name lit from within the stone
+function buildTitleRoom() {
+  T_NO_CROWN = true;
+  const bare = buildRoom('title', 3, 1);
+  T_NO_CROWN = false;
+  const room = buildRoom('title', 3, 1), w = room.low.width, h = room.low.height;
+  const a = room.low.getContext('2d').getImageData(0, 0, w, h).data, b = bare.low.getContext('2d').getImageData(0, 0, w, h).data;
+  const layer = () => { const cv = document.createElement('canvas'); cv.width = w; cv.height = h; const g = cv.getContext('2d'); return [cv, g, g.createImageData(w, h)]; };
+  const [crown, cg, ci] = layer();
+  for (let i = 0; i < w * h * 4; i += 4) if (a[i] !== b[i] || a[i + 1] !== b[i + 1] || a[i + 2] !== b[i + 2]) {
+    ci.data[i] = a[i]; ci.data[i + 1] = a[i + 1]; ci.data[i + 2] = a[i + 2]; ci.data[i + 3] = 255;
+  }
+  cg.putImageData(ci, 0, 0);
+  const [letters, lg, li] = layer(), GOLD = [[224, 80, 28, 170], [255, 228, 150, 255], [255, 154, 42, 255]];   // the default torch's flame: ember edge, hot core, orange rim
+  for (const [i, k] of T_LETTER_PIX) { const o = i * 4, c = GOLD[k]; li.data[o] = c[0]; li.data[o + 1] = c[1]; li.data[o + 2] = c[2]; li.data[o + 3] = c[3]; }
+  lg.putImageData(li, 0, 0);
+  return {...room, low: bare.low, crown, letters};
+}
 function drawTitle(g, t, e = 99) {
-  const room = titleRoom || (titleRoom = buildRoom('title', 3, 1)), ts = Math.floor(t / STEP) * STEP;
+  const room = titleRoom || (titleRoom = buildTitleRoom()), ts = Math.floor(t / STEP) * STEP;
   const ease = v => 1 - (1 - v) * (1 - v);
   const ignite = ease(clamp((e - 0.3) / 0.9, 0, 1)), reveal = ease(clamp((e - 0.6) / 1.6, 0, 1)), open = clamp((e - 2.1) / 0.8, 0, 1);
   const fl = 1 + 0.07 * Math.sin(t * 9.1) + 0.05 * Math.sin(t * 23.3) + 0.03 * Math.sin(t * 41.7);   // the torch's flicker
   const fr = titleCv || (titleCv = lowCanvas(1));
-  const step = `${ts}|${Math.round(ignite * 20)}`;
+  const step = `${ts}|${Math.round(ignite * 20)}|${Math.round(open * 20)}`;
   if (step !== titleAt) {                                                  // the picture at pixel resolution, twelve times a second
     titleAt = step;
     const fg = fr.getContext('2d');
     fg.setTransform(1, 0, 0, 1, 0, 0); fg.globalCompositeOperation = 'source-over'; fg.drawImage(room.low, 0, 0);
+    if (open > 0) { fg.globalAlpha = open; fg.drawImage(room.crown, 0, 0); fg.globalAlpha = 1; }   // his crown, coming out of the dark with his eyes
     room.flames.forEach((f, i) => { fg.setTransform(f.m); liveFlame(fg, f.x, f.y, f.s, ts, i); });
     fg.setTransform(1, 0, 0, 1, 0, 0);
     if (ignite > 0.02) liveFlame(fg, T_KTORCH[0], T_KTORCH[1], 0.55 * ignite, ts, 9, flameOf().c);   // your torch
@@ -2215,7 +2270,14 @@ function drawTitle(g, t, e = 99) {
     const x = d.x + Math.sin(t * d.sp + d.ph) * 10, y = d.y + Math.cos(t * d.sp * 0.8 + d.ph) * 7, a = (0.25 + 0.2 * Math.sin(t * 0.7 + d.ph)) * reveal;
     g.fillStyle = `rgba(200,210,255,${a})`; g.fillRect(Math.round(x), Math.round(y), 1, 1);
   }
-  titleEyes(g, t, open);
+  // the name, burning like your torch from within the stone as his eyes open, and flickering with its flame
+  const lit = open * (0.8 + 0.2 * clamp((fl - 0.85) / 0.3, 0, 1));
+  if (lit > 0) {
+    g.imageSmoothingEnabled = false; g.globalAlpha = 0.9 * lit; g.drawImage(room.letters, 0, 0, W, H); g.imageSmoothingEnabled = true;
+    g.globalAlpha = 1;
+    for (const [lx2, ly2] of T_LETTER_AT) { stamp(g, '255,150,60', 0.26 * lit, lx2, ly2, 14 * fl); stamp(g, '224,80,28', 0.08 * lit, lx2, ly2, 24); }
+  }
+  titleEyes(g, t, open, room);
   g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
   for (let k = 0; k < 3; k++) {                                            // smoke off your torch
     const q = (t * 0.22 + k / 3) % 1;
