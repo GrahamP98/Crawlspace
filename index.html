@@ -10,7 +10,7 @@
 <link rel="icon" href="goblin-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;600&family=Pirata+One&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@900&family=EB+Garamond:wght@400;600&family=Pirata+One&display=swap">
 <style>
   /* blackletter for buttons and titles, a classic serif for everything you read; each falls back to a serif */
   :root {
@@ -35,14 +35,44 @@
   [hidden] { display: none !important; }
   /* title screen and How to Play: covers the game until you press Play */
   #title {
-    position: fixed; inset: 0; z-index: 10; overflow-y: auto; background: #111; color: #ddd;
+    position: fixed; inset: 0; z-index: 10; overflow-y: auto; background: #07060a; color: #ddd;
     padding: max(24px, env(safe-area-inset-top, 0px)) 16px max(24px, env(safe-area-inset-bottom, 0px));
   }
-  #title .inner { max-width: 360px; margin: 0 auto; display: grid; gap: 12px; }
-  #title h1 { font-family: var(--title-font); font-weight: 400; font-size: 60px; line-height: 1; color: #fc3;
-              text-align: center; margin: 48px 0 0; }
-  #title .tag { text-align: center; color: #aaa; margin: 0 0 20px; font-style: italic; }
-  #title button { width: 100%; font-size: 22px; padding: 12px; }
+  /* behind the menu (drawn by paintTitle): the gate, with the name carved into its arch, filling the stage; under it
+     the dark, with firelight from below, embers rising and fog drifting low */
+  #titleArt { position: fixed; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
+  #title .inner { position: relative; max-width: 360px; margin: 0 auto; display: grid; gap: 12px; }
+  #title #titleMain { max-width: 520px; min-height: 100%; display: flex; flex-direction: column; gap: 0; }
+  /* the menu waits for the reveal (the torch catching, his eyes opening), then fades in; the Play button breathes like an ember */
+  #titleMain .record, #titleMain .actions { opacity: 0; transform: translateY(8px); transition: opacity 0.9s ease-out, transform 0.9s ease-out; }
+  #title.shown #titleMain .record, #title.shown #titleMain .actions { opacity: 1; transform: none; }
+  #title.shown #playBtn { animation: ember 3.4s ease-in-out 1.2s infinite; }
+  @keyframes ember { 0%, 100% { box-shadow: inset 0 1px 0 rgba(255, 210, 150, 0.25), 0 0 16px rgba(255, 110, 30, 0.16); }
+                     50% { box-shadow: inset 0 1px 0 rgba(255, 210, 150, 0.32), 0 0 30px rgba(255, 120, 40, 0.42); } }
+  .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  #titleMain .stage { flex: 1; min-height: 56vh; }
+  /* your record: a skull for every death and a crown for every escape, oldest first, fading into the past */
+  #title .record { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 3px 4px; max-width: 330px; margin: 0 auto 18px; }
+  #title .record i { display: block; width: 16px; height: 16px; }
+  #title .record svg { display: block; width: 100%; height: 100%; }
+  #title .record .crown { filter: drop-shadow(0 0 4px rgba(255, 190, 80, 0.7)); }
+  #title.shown .record .new { animation: newmark 1.3s ease-out 0.5s both; }
+  #title .record .more { font-size: 13px; color: #8e8574; margin-right: 4px; letter-spacing: 0.04em; }
+  #titleMain .actions { display: grid; gap: 10px; width: 100%; max-width: 360px; margin: 0 auto; }
+  #title button { width: 100%; font-size: 22px; padding: 11px; cursor: pointer; letter-spacing: 0.03em; color: #e6d6b2;
+                  background: rgba(14, 11, 16, 0.8); border: 1px solid #6e5a3a; border-radius: 6px; box-shadow: inset 0 1px 0 rgba(255, 220, 160, 0.08); }
+  #title button:hover, #title button:focus-visible { border-color: #c9923e; color: #ffe3a8; outline: none; }
+  #title button:active { transform: translateY(1px); }
+  #title #playBtn { font-size: 30px; padding: 10px; color: #ffe2a0; border-color: #c9892b; background: linear-gradient(#5e2414, #2a0c08);
+                    text-shadow: 0 0 10px rgba(255, 160, 60, 0.55); box-shadow: inset 0 1px 0 rgba(255, 210, 150, 0.25), 0 0 22px rgba(255, 110, 30, 0.22); }
+  #title #playBtn:hover, #title #playBtn:focus-visible { box-shadow: inset 0 1px 0 rgba(255, 210, 150, 0.3), 0 0 30px rgba(255, 130, 40, 0.45); }
+  #title .whisper { margin: 4px 6px 0; text-align: center; font-style: italic; font-size: 15px; color: #8e8574; text-shadow: 0 1px 4px #000; }
+  #title .whisper span { color: #cdbb94; }
+  #title .whisper .bulb { display: inline-block; width: 17px; height: 17px; vertical-align: -3px; filter: drop-shadow(0 0 5px rgba(255, 200, 90, 0.75)); }
+  #title .whisper .bulb svg { display: block; width: 100%; height: 100%; }
+  @keyframes newmark { 0% { opacity: 0; transform: scale(0.3); filter: drop-shadow(0 0 10px rgba(255, 170, 80, 1)); }
+                       60% { opacity: 1; transform: scale(1.3); } 100% { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { #title.shown #playBtn, #title.shown .record .new { animation: none; } }
   #howto h2 { font-family: var(--title-font); font-weight: 400; font-size: 30px; color: #fc3; margin: 8px 0 0; text-align: center; }
   #howto .lead { text-align: center; color: #aaa; margin: 0; font-style: italic; }
   #howto details { border-top: 1px solid #333; padding: 6px 0; }
@@ -56,11 +86,16 @@
   #howto b { color: #fff; }
 </style>
 <div id="title">
+  <canvas id="titleArt" aria-hidden="true"></canvas>
   <div class="inner" id="titleMain">
-    <h1>Crawlspace</h1>
-    <p class="tag">Five floors down. One way out.</p>
-    <button id="playBtn">Play</button>
-    <button id="howBtn">How to Play</button>
+    <h1 class="sr-only">Crawlspace</h1>
+    <div class="stage" aria-hidden="true"></div>
+    <div class="record" id="record" role="img" hidden></div>
+    <div class="actions">
+      <button id="playBtn">Play</button>
+      <button id="howBtn">How to Play</button>
+      <p class="whisper" id="whisper"></p>
+    </div>
   </div>
   <div class="inner" id="howto" hidden>
     <h2>How to Play</h2>
@@ -70,6 +105,7 @@
       <summary>The goal</summary>
       <p>Fight your way down five floors. Every floor is a new random maze. The stairs down sit at the far end of each floor, and an enemy always guards them. On floor 5 the stairs are replaced by the exit, daylight spilling through it, and the <b>Ogre King</b> stands before it. Beat him and you win: you're free.</p>
       <p>You have one life. If your health hits 0, the run ends and you see a summary of how far you got.</p>
+      <p>The title screen keeps count: a skull for every run that ended in death and a crown for every escape, oldest first.</p>
     </details>
 
     <details>
@@ -761,6 +797,7 @@ let runSummary = null;
 function endRun(won, killer) {
   over = true;
   overlay = null;
+  recordRun(won);                    // a mark on your slab on the title screen
   const secs = Math.round((Date.now() - run.start) / 1000);
   const time = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
   const total = Object.values(run.kills).reduce((a, b) => a + b, 0);
@@ -1851,6 +1888,269 @@ function barrel(g, x, y, s) {
   for (const yy of [y - 4 * s, y - 16 * s]) { g.fillStyle = rgb([60, 56, 60], litK(x, yy, 1, 0.3)); g.fillRect(x - 9.6 * s, yy, 19.2 * s, 1.4 * s); }
 }
 
+// ---- the title screen: a dungeon gate. A great stone arch with the name carved into its stones, one letter to a stone;
+// its portcullis is down. You stand before it in the middle, a dark shape against your own torch. Behind the bars, in
+// the dark, the Ogre King looks back down at you: all you see of him are his eyes and his crown ----
+const TG = {cx: 144, spring: 140, r1: 86, r2: 122, base: 300};          // the arch: its center, inner and outer radius, and the floor
+const T_WORD = ['C', 'R', 'A', 'W', 'L', null, 'S', 'P', 'A', 'C', 'E'];  // one letter to each arch stone; the keystone in the middle
+const T_LETTER = 19;                                                     // how tall the carved capitals stand
+const T_KNIGHT = {x: 144, y: 348, s: 1.05}, KNIGHT_TORCH = [43, -138];  // where you stand; your torch's tip (feet at 0, 0)
+const T_KTORCH = [T_KNIGHT.x + KNIGHT_TORCH[0] * T_KNIGHT.s, T_KNIGHT.y + KNIGHT_TORCH[1] * T_KNIGHT.s];
+const T_EYES_AT = [[130, 172], [154, 172]];                              // his eyes, each between two bars
+const T_CROWN = {x: 142, y: 152, w: 56, h: 20};                          // his crown: the middle of its band, its width and height
+const T_BAR = 12;                                                        // the portcullis's bars, this far apart
+const T_PUDDLE = [214, 307, 18, 3.4], T_DRIP = 4.6;                      // a puddle at the gate's foot, and how often the arch drips into it
+// arch stone k (0 = the left end): its corners and the angle through its middle; the keystone stands proud and flares
+function archStone(k) {
+  const d = Math.PI / T_WORD.length, a0 = Math.PI + k * d, a1 = a0 + d, key = T_WORD[k] === null, gap = 0.01;
+  const P = (a, rr) => [TG.cx + Math.cos(a) * rr, TG.spring + Math.sin(a) * rr], out = TG.r2 + (key ? 12 : 0), fl = key ? 0.03 : 0;
+  return {pts: [P(a0 + gap, TG.r1), P(a0 + gap - fl, out), P(a1 - gap + fl, out), P(a1 - gap, TG.r1)], mid: (a0 + a1) / 2, key};
+}
+// a capital as a mask, drawn once from the carved-letters font: at(x, y) is true inside the letter (mask pixels,
+// the letter's middle at S / 2); cap = how tall a capital stands in mask pixels
+const letterMasks = new Map();
+function letterMask(ch) {
+  if (letterMasks.has(ch)) return letterMasks.get(ch);
+  const S = 96, cv = document.createElement('canvas'); cv.width = cv.height = S;
+  const g = cv.getContext('2d');
+  g.font = '900 64px Cinzel, "Trajan Pro", Georgia, serif'; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+  const cap = g.measureText('H').actualBoundingBoxAscent || 46;
+  g.fillStyle = '#fff'; g.fillText(ch, S / 2, S / 2 + cap / 2);
+  const d = g.getImageData(0, 0, S, S).data;
+  const m = {S, cap, at: (x, y) => { const ix = Math.round(x), iy = Math.round(y); return ix >= 0 && iy >= 0 && ix < S && iy < S && d[(iy * S + ix) * 4 + 3] > 110; }};
+  letterMasks.set(ch, m);
+  return m;
+}
+// the name, carved pixel by pixel into the finished arch: each capital raised from its stone, turned to follow the
+// curve (the end letters a little less), its face catching the light along the top and casting a shadow down to the right
+function carveTitle(img, pix) {
+  const w = img.width, d = img.data, FACE = PALETTE[8], HI = PALETTE[31], DEEP = PALETTE[0];
+  const set = (x, y, c) => { const i = (y * w + x) * 4; d[i] = c[0]; d[i + 1] = c[1]; d[i + 2] = c[2]; };
+  T_WORD.forEach((ch, k) => {
+    if (!ch) return;
+    const st = archStone(k), m = letterMask(ch), q = m.cap / T_LETTER, rm = (TG.r1 + TG.r2) / 2;
+    const la = 1.5 * Math.PI + (st.mid - 1.5 * Math.PI) * 0.85;
+    const c = [TG.cx + Math.cos(st.mid) * rm, TG.spring + Math.sin(st.mid) * rm], up = [Math.cos(la), Math.sin(la)], right = [-up[1], up[0]];
+    const [x0, y0, x1, y1] = bbox(st.pts), L = new Set(), soft = [];
+    for (let py = Math.floor(y0 / pix); py <= Math.ceil(y1 / pix); py++) for (let px = Math.floor(x0 / pix); px <= Math.ceil(x1 / pix); px++) {
+      let n = 0;                                                           // four looks inside each pixel: how much of it the letter covers
+      for (const [sx, sy] of [[0.25, 0.25], [0.75, 0.25], [0.25, 0.75], [0.75, 0.75]]) {
+        const ux = (px + sx) * pix - c[0], uy = (py + sy) * pix - c[1];
+        if (m.at(m.S / 2 + (ux * right[0] + uy * right[1]) * q, m.S / 2 - (ux * up[0] + uy * up[1]) * q)) n++;
+      }
+      if (n >= 3) L.add(py * w + px); else if (n === 2) soft.push(py * w + px);
+    }
+    const has = (px, py) => L.has(py * w + px);
+    for (const i of L) { const px = i % w, py = (i / w) | 0; if (!has(px + 1, py + 1)) set(px + 1, py + 1, DEEP); if (!has(px + 1, py + 2) && !has(px, py + 1)) set(px + 1, py + 2, PALETTE[1]); }
+    for (const i of soft) set(i % w, (i / w) | 0, PALETTE[6]);             // the half-covered edge, half-lit: smoother curves
+    for (const i of L) { const px = i % w, py = (i / w) | 0; set(px, py, !has(px, py - 1) || !has(px - 1, py) ? HI : FACE); }
+  });
+}
+function titleGate(g, r) {
+  const {cx, spring, r1, r2, base} = TG;
+  g.fillStyle = '#09080c'; g.fillRect(0, 0, W, H);
+  for (let y = base - 24, row = 0; y > -24; y -= 24, row++) for (let x = -(row % 2) * 20 - r() * 10; x < W; ) {   // the dungeon wall, course on course
+    const bw = 30 + r() * 20;
+    stoneBlock(g, x, y, bw, 24, stoneShade([74, 68, 80], r, 0.74, 0.34), litK(x + bw / 2, y + 12, 1, 0.1), r);
+    x += bw;
+  }
+  // behind the gate: the dark, and him in it. His bulk is barely there; his crown catches your torchlight
+  const opening = () => { g.beginPath(); g.moveTo(cx - r1, base); g.lineTo(cx - r1, spring); g.arc(cx, spring, r1, Math.PI, 0); g.lineTo(cx + r1, base); g.closePath(); };
+  g.save(); opening(); g.clip();
+  g.fillStyle = '#070609'; g.fillRect(cx - r1, spring - r1, r1 * 2, base - spring + r1);
+  path(g, [[cx - r1, base], [cx - r1 + 8, 238], [cx - 46, 206], [cx + 46, 206], [cx + r1 - 8, 238], [cx + r1, base]]); g.fillStyle = '#0f0b0f'; g.fill();
+  g.beginPath(); g.ellipse(T_CROWN.x, 178, 34, 32, 0, 0, Math.PI * 2); g.fillStyle = '#110c11'; g.fill();
+  const {x: kx, y: ky, w: kw, h: kh} = T_CROWN, tips = [0.72, 0.48, 1, 0.48, 0.72], crown = [[kx - kw / 2 - 1, ky], [kx - kw / 2, ky - 5]];
+  tips.forEach((t, i) => crown.push([kx - kw / 2 + (i + 0.5) * kw / 5, ky - 5 - kh * t], [kx - kw / 2 + (i + 1) * kw / 5, ky - 5]));
+  crown.push([kx + kw / 2 + 1, ky]);
+  lump(g, crown, [236, 186, 70], 1777, 1, 0.42);
+  const gold = rgb([255, 214, 110], litK(kx, ky - kh, 1, 0.45));
+  tips.forEach((t, i) => { g.beginPath(); g.arc(kx - kw / 2 + (i + 0.5) * kw / 5, ky - 5 - kh * t - 1.2, 1.9, 0, Math.PI * 2); g.fillStyle = gold; g.fill(); });
+  for (const [dx, c] of [[-14, [170, 30, 34]], [0, [60, 90, 190]], [14, [170, 30, 34]]]) {   // jewels in the band
+    g.beginPath(); g.ellipse(kx + dx, ky - 2.6, 2.4, 1.8, 0, 0, Math.PI * 2); g.fillStyle = rgb(c, litK(kx, ky, 1, 0.45)); g.fill();
+  }
+  for (let x = cx - r1 + 6; x < cx + r1 - 2; x += T_BAR) {                 // the portcullis, down: iron bars from the arch to the floor
+    const top = spring - Math.sqrt(Math.max(0, r1 * r1 - (x - cx) ** 2));
+    path(g, [[x - 1.5, top], [x + 1.5, top], [x + 1.5, base], [x - 1.5, base]]); g.fillStyle = rgb([54, 52, 62], litK(x, 230, 1, 0.12)); g.fill();
+    g.fillStyle = rgb([96, 94, 108], litK(x, 230, 1, 0.12)); g.fillRect(x - 1.5, top, 0.8, base - top);
+  }
+  for (const yy of [104, 186, 252]) { path(g, [[cx - r1, yy], [cx + r1, yy], [cx + r1, yy + 3], [cx - r1, yy + 3]]); g.fillStyle = rgb([48, 46, 56], litK(cx, yy, 1, 0.12)); g.fill(); }
+  for (let x = cx - r1 + 6; x < cx + r1 - 2; x += T_BAR) {               // rivets where the bars cross, spiked feet sunk in the floor
+    for (const yy of [104, 186, 252]) { g.fillStyle = rgb([118, 114, 126], litK(x, yy, 1, 0.14)); g.fillRect(x - 1, yy + 0.5, 2, 2); }
+    path(g, [[x - 2.2, base - 4], [x + 2.2, base - 4], [x, base + 1]]); g.fillStyle = rgb([60, 58, 68], litK(x, base, 1, 0.14)); g.fill();
+  }
+  g.restore();
+  for (const s of [-1, 1]) {                                             // the jambs: great blocks, an impost where the arch springs, a plinth
+    const xo = s < 0 ? cx - r2 : cx + r1, jw = r2 - r1;
+    for (let y = spring + 6; y < base - 12; y += 23) stoneBlock(g, xo, y, jw, Math.min(23, base - 12 - y), stoneShade([108, 100, 112], r, 0.85, 0.24), litK(xo + jw / 2, y + 11, 1, 0.14), r);
+    stoneBlock(g, xo - 4, spring - 3, jw + 8, 9, [122, 114, 124], litK(xo + jw / 2, spring, 1.05, 0.16), r);
+    stoneBlock(g, xo - 5, base - 12, jw + 10, 12, [96, 90, 102], litK(xo + jw / 2, base - 6, 1, 0.16), r);
+  }
+  T_WORD.forEach((ch, k) => { const st = archStone(k); lump(g, st.pts, st.key ? [128, 120, 128] : [112, 106, 118], 1600 + k, 1, 0.22); });
+  T_WORD.forEach((ch, k) => {                                            // the arch's inner edge catches the light from below; age has
+    const st = archStone(k), [a, , , b] = st.pts;                        // cracked a few stones and grown moss in the joints
+    g.strokeStyle = rgb([170, 160, 168], litK((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, 1, 0.16)); g.lineWidth = 1.3;
+    g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke();
+    if (k === 2 || k === 7 || k === 9) {
+      const [p0, p1, p2, p3] = st.pts, s0 = mid(p0, p1, 0.75), s1 = mid(p3, p2, 0.3), m1 = mid(s0, s1, 0.5);
+      g.strokeStyle = 'rgba(14,11,16,0.95)'; g.lineWidth = 0.9;
+      g.beginPath(); g.moveTo(...s0); g.lineTo(m1[0] + 2, m1[1] - 1.5); g.lineTo(...s1); g.stroke();
+    }
+    if (k < 3 || k > 7) for (let j = 0; j < 4; j++) {
+      const p = mid(st.pts[0], st.pts[1], 0.2 + r() * 0.6);
+      g.fillStyle = r() < 0.5 ? '#2c3a1a' : '#4a5e24'; g.fillRect(p[0] - 0.6 + r(), p[1] - 0.6 + r(), 1.2, 1.2);
+    }
+  });
+  skullAt(g, cx - 0.5, spring - r2 - 0.5, 1.5);                         // a skull carved on the keystone
+  for (const [x, y0, y1] of [[9, 96, 178], [279, 88, 160]]) {          // chains on the wall, ending in open cuffs
+    hangChain(g, x, y0, y1, r);
+    g.strokeStyle = rgb([112, 106, 114], litK(x, y1, 1, 0.3)); g.lineWidth = 1.6;
+    g.beginPath(); g.ellipse(x, y1 + 4, 3.6, 4.2, 0, Math.PI * 0.15, Math.PI * 1.85); g.stroke();
+  }
+  g.fillStyle = '#0d0b10'; g.fillRect(0, base, W, H - base);           // the floor: flagstones running up to the gate
+  for (const [i, ya, yb] of [[0, base, 313], [1, 313, 328], [2, 328, 345], [3, 345, 366]]) for (let c = -126 + (i % 2) * 18; c < W + 126; c += 36) {
+    const q = [[fpx(c, ya), ya], [fpx(c + 36, ya), ya], [fpx(c + 36, yb), yb], [fpx(c, yb), yb]], cc = cen(q);
+    tri(g, q.map(p => mid(p, cc, 0.035)), stoneShade([78, 72, 82], r, 0.78, 0.3), litK(cc[0], cc[1], 1, 0.12));
+  }
+  const [px, py, prx, pry] = T_PUDDLE;                                   // a puddle where the drip lands, black and still
+  g.beginPath(); g.ellipse(px, py, prx, pry, 0, 0, Math.PI * 2); g.fillStyle = '#0a0d12'; g.fill();
+  g.strokeStyle = rgb([44, 52, 64], litK(px, py, 1, 0.3)); g.lineWidth = 0.9;
+  g.beginPath(); g.ellipse(px, py - 0.3, prx, pry, 0, Math.PI * 1.05, Math.PI * 1.95); g.stroke();
+}
+// you, as a shape: not the knight from the fights but a silhouette of him from behind (great helm and plume, broad
+// pauldrons, the sword low in your left hand, the torch raised in your right), dark against the light. Feet at 0, 0
+const KN_BODY = [[-20, 0], [-6, 0], [-5, -12], [-3, -38], [0, -44], [3, -38], [5, -12], [6, 0], [20, 0], [17, -14], [14, -40], [16, -52], [17, -58],   // legs apart, tassets at the hips
+  [13, -64], [15, -76], [21, -86], [30, -90], [31, -98], [24, -103], [12, -104],                                       // a narrow waist, broad pauldrons
+  [10, -105], [11, -118], [10, -125], [6, -127], [-6, -127], [-10, -125], [-11, -118], [-10, -105],                    // the great helm, flat-topped
+  [-12, -104], [-24, -103], [-31, -98], [-30, -90], [-21, -86], [-15, -76], [-13, -64], [-17, -58], [-16, -52], [-14, -40], [-17, -14]];
+const KN_PLUME = [[-1, -127], [-4, -137], [-11, -140], [-17, -135], [-20, -125], [-21, -113], [-18, -104], [-15, -110], [-14, -121], [-11, -129], [-6, -131], [-3, -128]];   // a horsetail plume
+const KN_BLADE = [[-32.6, -52.5], [-29.4, -52.5], [-41, -8], [-44, -4], [-44.6, -9]];
+const knightShapes = () => [KN_BODY, KN_PLUME,
+  tube([25, -94], [36, -103], 10, 9), tube([36, -103], [40, -118], 9, 8), ellipsePts(40, -119, 4.6, 4.4, 10),                    // the torch arm
+  tube([40.6, -112], [43, -136], 3, 3.6), tube([42.3, -131], [43.2, -138], 5, 5.4),                                             // the torch
+  tube([-25, -92], [-30, -72], 10, 9), tube([-30, -72], [-31, -58], 9, 8), ellipsePts(-31, -57, 4.6, 4.4, 10),                  // the sword arm
+  [[-37, -55], [-25, -55], [-25, -52.5], [-37, -52.5]], KN_BLADE];                                                              // its guard and blade
+// the silhouette at the title's pixel size: black, its edges lit gold where they face your torch (brighter the nearer
+// they are), and a faint cold edge elsewhere so the shape still reads in the dark
+function titleKnight(b, low, pix) {
+  const cv = lowCanvas(pix), g = cv.getContext('2d'), {x, y, s} = T_KNIGHT, T = p => [x + p[0] * s, y + p[1] * s];
+  g.scale(1 / pix, 1 / pix);
+  g.fillStyle = '#fff';
+  for (const pts of knightShapes()) { path(g, pts.map(T)); g.fill(); }
+  g.fillStyle = '#f00';                                                  // the blade, marked so it can shine like steel
+  path(g, KN_BLADE.map(T)); g.fill();
+  const w = cv.width, h = cv.height, img = g.getImageData(0, 0, w, h), d = img.data;
+  const at = (px, py) => px >= 0 && py >= 0 && px < w && py < h && d[(py * w + px) * 4 + 3] >= 128;
+  const blade = (px, py) => d[(py * w + px) * 4 + 1] < 100;
+  const [tx, ty] = T_KTORCH, paint = [];
+  for (let py = 0; py < h; py++) for (let px = 0; px < w; px++) {
+    if (!at(px, py)) continue;
+    const ux = (px + 0.5) * pix, uy = (py + 0.5) * pix, dx = tx - ux, dy = ty - uy, dist = Math.hypot(dx, dy) || 1;
+    let face = -1, edge = false;
+    for (const [nx, ny] of [[1, 0], [-1, 0], [0, -1], [0, 1], [1, -1], [-1, -1]]) if (!at(px + nx, py + ny)) { edge = true; face = Math.max(face, (nx * dx + ny * dy) / (Math.hypot(nx, ny) * dist)); }
+    const v = face * Math.max(0, 1 - dist / 160);
+    if (blade(px, py)) { paint.push([px, py, !at(px + 1, py) ? PALETTE[7] : PALETTE[5]]); continue; }   // cold steel, its edge bright
+    paint.push([px, py, !edge ? [11, 9, 13] : v > 0.42 ? PALETTE[20] : v > 0.2 ? PALETTE[19] : v > 0.06 ? PALETTE[11] : !at(px, py - 1) ? PALETTE[4] : PALETTE[3]]);
+  }
+  d.fill(0);
+  for (const [px, py, c] of paint) { const i = (py * w + px) * 4; d[i] = c[0]; d[i + 1] = c[1]; d[i + 2] = c[2]; d[i + 3] = 255; }
+  g.putImageData(img, 0, 0);
+  shadowLow(b, x, y, 26);
+  b.save(); b.setTransform(1, 0, 0, 1, 0, 0); b.drawImage(cv, 0, 0); b.restore();
+}
+
+// his eyes, between the bars, looking down at you: bright where they look, glowing; they narrow and blink now and then.
+// open (0..1) is how far they have opened (they open during the title's first moments, with a flare)
+function titleEyes(g, t, open) {
+  if (open <= 0) return;
+  const blink = open >= 1 && t % 6.3 < 0.16, narrow = 0.75 + 0.25 * Math.sin(t * 0.45), flare = 1 + 0.9 * Math.sin(Math.min(1, open) * Math.PI);
+  const pulse = (0.85 + 0.15 * Math.sin(t * 1.9)) * Math.min(1, open * 1.6);
+  for (const [ex, ey] of T_EYES_AT) {
+    g.globalAlpha = Math.min(1, pulse * flare); stamp(g, '255,60,25', 0.85, ex, ey, 15 * Math.min(1.5, flare));
+    g.globalAlpha = 1;
+    if (blink) { g.fillStyle = '#ff6a30'; g.fillRect(ex - 5, ey, 10, 1); continue; }
+    const hh = 2.9 * narrow * open;
+    path(g, [[ex - 5.6, ey - 0.8 * open], [ex - 2, ey - hh], [ex + 2.2, ey - hh], [ex + 5.6, ey - 0.3 * open], [ex + 2.2, ey + hh * 0.85], [ex - 2.2, ey + hh * 0.85]]);
+    g.fillStyle = '#ff4a1c'; g.fill();
+    if (open > 0.4) { g.fillStyle = '#ffe2a0'; g.fillRect(ex - 1.8, ey + 0.2, 3.6, 1.8 * open); }   // the bright of each eye, low: he is looking down at you
+  }
+  if (open >= 1 && t % 4.7 < 0.8) {                                      // now and then his crown catches the light
+    g.globalAlpha = Math.sin(t % 4.7 / 0.8 * Math.PI) * 0.6; stamp(g, '255,210,120', 0.8, T_CROWN.x, T_CROWN.y - 5 - T_CROWN.h, 6); g.globalAlpha = 1;
+  }
+}
+// dust hanging in the cold light over the arch: where each mote drifts to, slowly
+const T_DUST = Array.from({length: 16}, (_, i) => ({x: 64 + ((i * 97) % 160), y: 26 + ((i * 53) % 96), ph: i * 1.7, sp: 0.12 + (i % 5) * 0.03}));
+// one frame of the title picture, in play units (288 x 352): drawn the way a fight is, with the same light, embers and
+// fog. e = seconds since the title first appeared: in the first moments your torch catches, its light spreads over
+// the gate, and then his eyes open (e large: all of it already lit)
+let titleRoom = null, titleCv = null, titleLight = null, titleAt = -1;
+function drawTitle(g, t, e = 99) {
+  const room = titleRoom || (titleRoom = buildRoom('title', 3, 1)), ts = Math.floor(t / STEP) * STEP;
+  const ease = v => 1 - (1 - v) * (1 - v);
+  const ignite = ease(clamp((e - 0.3) / 0.9, 0, 1)), reveal = ease(clamp((e - 0.6) / 1.6, 0, 1)), open = clamp((e - 2.1) / 0.8, 0, 1);
+  const fl = 1 + 0.07 * Math.sin(t * 9.1) + 0.05 * Math.sin(t * 23.3) + 0.03 * Math.sin(t * 41.7);   // the torch's flicker
+  const fr = titleCv || (titleCv = lowCanvas(1));
+  const step = `${ts}|${Math.round(ignite * 20)}`;
+  if (step !== titleAt) {                                                  // the picture at pixel resolution, twelve times a second
+    titleAt = step;
+    const fg = fr.getContext('2d');
+    fg.setTransform(1, 0, 0, 1, 0, 0); fg.globalCompositeOperation = 'source-over'; fg.drawImage(room.low, 0, 0);
+    room.flames.forEach((f, i) => { fg.setTransform(f.m); liveFlame(fg, f.x, f.y, f.s, ts, i); });
+    fg.setTransform(1, 0, 0, 1, 0, 0);
+    if (ignite > 0.02) liveFlame(fg, T_KTORCH[0], T_KTORCH[1], 0.55 * ignite, ts, 9);   // your torch
+    const top = TG.spring - Math.sqrt(TG.r1 * TG.r1 - (T_PUDDLE[0] - TG.cx) ** 2), q = (ts % T_DRIP) / 0.8;
+    if (q < 1) { fg.fillStyle = '#a8bccc'; fg.fillRect(Math.round(T_PUDDLE[0]), Math.round(top + (T_PUDDLE[1] - 1 - top) * q * q), 1, 2); }   // a drop falling from the arch
+  }
+  // the light: the room's still light (fading in at first), your torch's light flickering with its flame, and the red
+  // of his eyes on the bars and his crown
+  const lc = titleLight || (titleLight = (() => { const cv = document.createElement('canvas'); cv.width = W; cv.height = H; return cv; })()), lx = lc.getContext('2d');
+  lx.globalCompositeOperation = 'source-over'; lx.globalAlpha = 1; lx.fillStyle = '#000'; lx.fillRect(0, 0, W, H);
+  lx.globalAlpha = reveal; lx.drawImage(room.lm, 0, 0, W, H); lx.globalAlpha = 1;
+  lx.globalCompositeOperation = 'lighter';
+  for (const L of room.sc.lights) if (L.live && ignite > 0) {
+    const s = L.s * ignite * fl, rr = L.reach * (0.9 + 0.1 * ignite) * (0.98 + 0.02 * fl);
+    const tg = lx.createRadialGradient(L.x, L.y, 2, L.x, L.y + rr * 0.2, rr);
+    tg.addColorStop(0, `rgba(${L.c},${0.95 * s})`); tg.addColorStop(0.45, `rgba(${L.c},${0.38 * s})`); tg.addColorStop(1, 'rgba(0,0,0,0)');
+    lx.fillStyle = tg; lx.fillRect(0, 0, W, H);
+  }
+  if (open > 0) for (const [ex, ey] of T_EYES_AT) {
+    const tg = lx.createRadialGradient(ex, ey, 1, ex, ey, 34);
+    tg.addColorStop(0, `rgba(255,70,30,${0.42 * open})`); tg.addColorStop(1, 'rgba(255,70,30,0)');
+    lx.fillStyle = tg; lx.fillRect(ex - 34, ey - 34, 68, 68);
+  }
+  g.save();
+  g.imageSmoothingEnabled = false; g.drawImage(fr, 0, 0, W, H); g.imageSmoothingEnabled = true;
+  g.globalCompositeOperation = 'multiply'; g.drawImage(lc, 0, 0, W, H);
+  g.globalCompositeOperation = 'lighter';
+  g.globalAlpha = ignite * (0.86 + 0.14 * (fl - 0.85) / 0.3); g.drawImage(room.bl, 0, 0, W, H); g.globalAlpha = 1;
+  if (ignite > 0) stamp(g, '255,160,70', 0.26 * ignite, T_KTORCH[0], T_KTORCH[1] - 6, 15 * fl);
+  driftMotes(g, room, ts, ignite);
+  const [px, py, prx] = T_PUDDLE;                                          // the torch, shivering in the puddle; rings where the drop lands
+  if (ignite > 0) { g.globalAlpha = ignite * (0.55 + 0.25 * Math.sin(t * 5.3)); stamp(g, '255,150,60', 0.7, px - 10 + Math.sin(t * 3.1) * 1.4, py, 6, 1.5); g.globalAlpha = 1; }
+  const rq = ((t % T_DRIP) - 0.8) / 1.1;
+  if (rq > 0 && rq < 1) { g.strokeStyle = `rgba(150,170,190,${0.5 * (1 - rq) * Math.max(0.3, reveal)})`; g.lineWidth = 0.8; g.beginPath(); g.ellipse(px, py, 2 + rq * (prx - 4), 0.6 + rq * 2.4, 0, 0, Math.PI * 2); g.stroke(); }
+  for (const d of T_DUST) {                                                // dust in the cold light from above
+    const x = d.x + Math.sin(t * d.sp + d.ph) * 10, y = d.y + Math.cos(t * d.sp * 0.8 + d.ph) * 7, a = (0.25 + 0.2 * Math.sin(t * 0.7 + d.ph)) * reveal;
+    g.fillStyle = `rgba(200,210,255,${a})`; g.fillRect(Math.round(x), Math.round(y), 1, 1);
+  }
+  titleEyes(g, t, open);
+  g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+  for (let k = 0; k < 3; k++) {                                            // smoke off your torch
+    const q = (t * 0.22 + k / 3) % 1;
+    g.globalAlpha = ignite * Math.sin(q * Math.PI) * 0.5;
+    stamp(g, '58,54,66', 0.28, T_KTORCH[0] + Math.sin(q * 6 + k) * 4 - q * 6, T_KTORCH[1] - 16 - q * 70, 5 + q * 16);
+  }
+  const bq = (t % 5.2) / 2.4;                                              // his breath, misting out through the bars
+  if (open >= 1 && bq < 1) { g.globalAlpha = Math.sin(bq * Math.PI) * 0.22; stamp(g, '150,150,170', 0.6, T_CROWN.x + Math.sin(bq * 3) * 3, 198 - bq * 22, 7 + bq * 16, 5 + bq * 10); }
+  for (let k = 0; k < 4; k++) {                                            // fog creeping along the floor
+    const x = ((t * (5 + k * 2) + k * 90) % (W + 160)) - 80;
+    g.globalAlpha = 0.16 * Math.max(0.4, reveal); stamp(g, '40,36,48', 0.9, x, 318 + k * 9, 70, 12);
+  }
+  g.globalAlpha = 1;
+  g.drawImage(room.ov, 0, 0, W, H);
+  g.restore();
+}
+
 // ---- the five rooms ----
 const SCENES = [
   {
@@ -2063,6 +2363,18 @@ const SCENES = [
     },
     fg(g, r) { for (const [x, y] of [[268, 346], [280, 340], [274, 334]]) skullAt(g, x, y, 1.6); },
     props: r => ({bones: randomBones(r, 5, [20, 230, 270, 345]), skulls: []})
+  },
+  {
+    key: 'title', title: 'Crawlspace', floor: 0,
+    desc: 'The title screen: a great stone gate, the name carved into its arch and its portcullis down. A knight with a torch stands before it; behind the bars, in the dark, the Ogre King looks back: only his eyes and his crown show.',
+    ambient: [28, 26, 38], fog: '46,40,52', vignette: 0.72,
+    lights: [{x: T_KTORCH[0], y: T_KTORCH[1] - 4, c: '255,160,80', reach: 200, s: 1.05, bloom: 10, fire: 1, motes: 6, live: 1},        // your torch
+             {x: T_KNIGHT.x + 22, y: T_KNIGHT.y - 18, c: '255,150,70', reach: 110, s: 0.32, bloom: 0, live: 1},                    // its light pooled on the floor
+             {x: TG.cx, y: 58, c: '136,144,186', reach: 172, s: 0.66, bloom: 0}],                                                  // a cold light from above, on the name
+    draw(g, r) { titleGate(g, r); },
+    post(img, pix) { carveTitle(img, pix); },
+    after(b, low, pix) { titleKnight(b, low, pix); },
+    props: r => ({bones: randomBones(r, 3, [200, 306, 280, 346]), skulls: [[262, 308], [26, 318]]})
   }
 ];
 
@@ -2737,15 +3049,17 @@ const ogreKingOf = () => being({skin: [128, 56, 46], skinLt: [158, 84, 66], skin
 // ======================================================================
 const ROOM_OF_FLOOR = ['gate', 'crypt', 'cave', 'deep', 'feast'];
 const STEP = 1 / 12;                                                       // figures and flames move twelve times a second, like hand-drawn frames
-const lowCanvas = () => { const cv = document.createElement('canvas'); cv.width = W / PIX; cv.height = H / PIX; return cv; };
+const lowCanvas = (pix = PIX) => { const cv = document.createElement('canvas'); cv.width = W / pix; cv.height = H / pix; return cv; };
 let rooms = new Map();
 // a room, once: the still picture at pixel resolution (its flames left out, they are drawn live), the light
-// map, the fog and vignette, and the embers and spores that drift through its lights
-function buildRoom(key, seed) {
+// map, the fog and vignette, and the embers and spores that drift through its lights. pix = units per pixel (the
+// title screen uses finer pixels than the fights); a scene's post(img, pix) works on the finished pixels, and its
+// after(b, low, pix) lays more over them
+function buildRoom(key, seed, pix = PIX) {
   const sc = SCENES.find(s => s.key === key), s0 = seed * 7919 + 13;
   ACTIVE_LIGHTS = sc.lights.map(L => [L.x, L.y, L.reach * 0.95, L.s]);
-  const low = lowCanvas(), b = low.getContext('2d');
-  b.scale(1 / PIX, 1 / PIX);
+  const low = lowCanvas(pix), b = low.getContext('2d');
+  b.scale(1 / pix, 1 / pix);
   FLAMES = [];
   sc.draw(b, rngSeed(s0));
   if (sc.fg) sc.fg(b, rngSeed(s0 + 5));
@@ -2754,12 +3068,15 @@ function buildRoom(key, seed) {
   FLAMES = null;
   const img = b.getImageData(0, 0, low.width, low.height);
   quantize(img, PALETTE2, 20);
+  if (sc.post) sc.post(img, pix);
   b.putImageData(img, 0, 0);
+  if (sc.after) sc.after(b, low, pix);
   const big = () => { const cv = document.createElement('canvas'); cv.width = W * 2; cv.height = H * 2; const g = cv.getContext('2d'); g.scale(2, 2); return [cv, g]; };
   const [lm, lg] = big();                                                  // the light map: each light's own color pooling in the dark
   lg.fillStyle = rgb(sc.ambient); lg.fillRect(0, 0, W, H);
   lg.globalCompositeOperation = 'lighter';
   for (const L of sc.lights) {
+    if (L.live) continue;                                                  // (a live light is laid on each frame instead, flickering)
     const tg = lg.createRadialGradient(L.x, L.y, 2, L.x, L.y + L.reach * 0.2, L.reach);
     tg.addColorStop(0, `rgba(${L.c},${0.95 * L.s})`); tg.addColorStop(0.45, `rgba(${L.c},${0.38 * L.s})`); tg.addColorStop(1, 'rgba(0,0,0,0)');
     lg.fillStyle = tg; lg.fillRect(0, 0, W, H);
@@ -2897,6 +3214,19 @@ function enchantGlows(g, at, s, glows, weapon, t) {
   }
 }
 
+// embers rising from a room's fires, and spores (or dust) drifting round its glowing things
+function driftMotes(g, room, ts, k = 1) {                                 // k: how strongly they show (the title fades them in)
+  for (const m of room.motes) {
+    const L = m.L, q = (ts * m.speed + m.ph) % 1;
+    const ex = Math.round((L.x + m.dx + (L.fire ? Math.sin(ts * 2 + m.ph * 9) * 3 : Math.sin(ts * 0.7 + m.ph * 9) * 8)) / PIX) * PIX;
+    const ey = Math.round((L.fire ? L.y - 16 - q * 60 : L.y - 40 + m.dy * 80 + Math.cos(ts * 0.6 + m.ph * 7) * 6) / PIX) * PIX;
+    const col = L.fire ? '255,150,60' : L.spores, a = L.fire ? Math.sin(q * Math.PI) : 1;
+    g.globalAlpha = a * k; stamp(g, col, 0.5, ex + 1, ey + 1, 5);
+    g.fillStyle = L.fire ? 'rgba(255,220,150,0.9)' : `rgba(${col},0.95)`; g.fillRect(ex, ey, PIX, PIX);
+  }
+  g.globalAlpha = 1;
+}
+
 // ---- one frame of a fight ----
 // spec: {room: [key, seed], hero: {gear, glows, weapon: {tier, ench}}, foes: [{f, x, y, s, fall, gone}], ring: f or null, t}
 // Draws into g, in play units (288 x 352), and returns where each figure ended up: Map(f -> box), and your box.
@@ -2953,8 +3283,15 @@ function figuresAt(room, spec, ts) {
   fg.setTransform(1 / PIX, 0, 0, 1 / PIX, 0, 0);
   for (const a of cast) if (!(a.fade >= 1)) shadowLow(fg, a.x, a.y, a.rx * (a.dead ? 1.15 : 1));
   fg.setTransform(1, 0, 0, 1, 0, 0);
-  const figs = LOWS.figs || (LOWS.figs = lowCanvas()), cg = figs.getContext('2d'), w = figs.width, h = figs.height;
-  const id = LOWS.img || (LOWS.img = cg.createImageData(w, h)), d = id.data, solid = LOWS.solid || (LOWS.solid = new Uint8Array(w * h));
+  const figs = castPixels(LOWS, cast);
+  fg.drawImage(figs, 0, 0);
+  return {cast, boxes, hero: heroBox, figs, eyes};
+}
+// the figures in cast, laid one over another at pixel resolution, outlined and snapped to the palette, into
+// buffers kept in buf (so a step makes no new canvases); returns the canvas holding them
+function castPixels(buf, cast) {
+  const figs = buf.figs || (buf.figs = lowCanvas()), cg = figs.getContext('2d'), w = figs.width, h = figs.height;
+  const id = buf.img || (buf.img = cg.createImageData(w, h)), d = id.data, solid = buf.solid || (buf.solid = new Uint8Array(w * h));
   d.fill(0);
   for (const a of cast) {                                                  // each figure laid over the ones behind it
     const s = a.R.d;
@@ -2975,8 +3312,7 @@ function figuresAt(room, spec, ts) {
   }
   quantizeSolid(d, w);
   cg.putImageData(id, 0, 0);
-  fg.drawImage(figs, 0, 0);
-  return {cast, boxes, hero: heroBox, figs, eyes};
+  return figs;
 }
 function drawFight(g, spec) {
   const room = roomFor(...spec.room), t = spec.t, ts = Math.floor(t / STEP) * STEP;
@@ -2994,15 +3330,7 @@ function drawFight(g, spec) {
   g.globalAlpha = room.fiery ? 0.93 + 0.05 * Math.sin(t * 9.3) + 0.03 * Math.sin(t * 23.7) : 1;   // the glows round the lights, flickering with the flames
   g.drawImage(room.bl, 0, 0, W, H);
   g.globalAlpha = 1;
-  for (const m of room.motes) {                                            // embers rising from the fires, spores drifting round the glowing things
-    const L = m.L, q = (ts * m.speed + m.ph) % 1;
-    const ex = Math.round((L.x + m.dx + (L.fire ? Math.sin(ts * 2 + m.ph * 9) * 3 : Math.sin(ts * 0.7 + m.ph * 9) * 8)) / PIX) * PIX;
-    const ey = Math.round((L.fire ? L.y - 16 - q * 60 : L.y - 40 + m.dy * 80 + Math.cos(ts * 0.6 + m.ph * 7) * 6) / PIX) * PIX;
-    const col = L.fire ? '255,150,60' : L.spores, a = L.fire ? Math.sin(q * Math.PI) : 1;
-    g.globalAlpha = a; stamp(g, col, 0.5, ex + 1, ey + 1, 5);
-    g.fillStyle = L.fire ? 'rgba(255,220,150,0.9)' : `rgba(${col},0.95)`; g.fillRect(ex, ey, PIX, PIX);
-  }
-  g.globalAlpha = 1;
+  driftMotes(g, room, ts);
   for (const q of eyes) stamp(g, q.col.join(','), 0.55, q.eye[0], q.eye[1], 4.5);   // eyes glowing in the dark
   enchantGlows(g, [70, 298], 1.12, spec.hero.glows, spec.hero.weapon || {}, t);
   g.globalCompositeOperation = 'source-over';
@@ -3454,7 +3782,7 @@ function drawMapScene(g, spec) {
 }
 const roomTitle = i => (SCENES.find(s => s.key === ROOM_OF_FLOOR[Math.min(i, ROOM_OF_FLOOR.length - 1)]) || {}).title || '';
 
-return {drawFight, drawDoll, drawMap: drawMapScene, roomTitle, roomFor, ROOM_OF_FLOOR, KINDS};
+return {drawFight, drawDoll, drawMap: drawMapScene, drawTitle, roomTitle, roomFor, ROOM_OF_FLOOR, KINDS};
 })();
 
 
@@ -5017,12 +5345,175 @@ function handleTap(pt) {
 
 fitScreen();   // sizes the canvas to the screen and draws the first frame
 
-// title screen: Play starts the run, How to Play swaps in the guide
-const showHowTo = on => { titleMain.hidden = on; howto.hidden = !on; title.scrollTop = 0; };
+// ---- the title screen: the name in gold over the dark, firelight from below, embers rising and fog drifting low ----
+// Your runs are kept in this browser for the record under the name: a skull for every death and a crown for every
+// escape, oldest first. A hint, after a light bulb, changes every time the title screen opens.
+const RECORD_KEY = 'crawlspace:record', RECORD_LOG = 60;   // log = your latest results in order, W (escaped) or D (died)
+const readRecord = () => {
+  try {
+    const r = JSON.parse(localStorage.getItem(RECORD_KEY) || '{}'), runs = Math.max(0, r.runs | 0), wins = Math.min(Math.max(0, r.wins | 0), runs);
+    const log = typeof r.log === 'string' ? r.log.replace(/[^WD]/g, '') : 'W'.repeat(wins) + 'D'.repeat(runs - wins);
+    return {runs, wins, log: log.slice(-RECORD_LOG)};
+  } catch (e) { return {runs: 0, wins: 0, log: ''}; }
+};
+let runRecorded = false;
+function recordRun(won) {
+  if (runRecorded) return;
+  runRecorded = true;
+  try {
+    const r = readRecord();
+    r.runs++;
+    if (won) r.wins++;
+    r.log = (r.log + (won ? 'W' : 'D')).slice(-RECORD_LOG);
+    localStorage.setItem(RECORD_KEY, JSON.stringify(r));
+  } catch (e) {}
+}
+const SKULL_SVG = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="#ddd3bd" d="M8 1.4C4.5 1.4 2 3.9 2 7c0 1.9.9 3.3 2.2 4.1V13c0 .8.6 1.4 1.4 1.4h4.8c.8 0 1.4-.6 1.4-1.4v-1.9C13.1 10.3 14 8.9 14 7c0-3.1-2.5-5.6-6-5.6z"/>' +
+  '<circle cx="5.6" cy="7.4" r="1.7" fill="#0b0a0d"/><circle cx="10.4" cy="7.4" r="1.7" fill="#0b0a0d"/><path fill="#0b0a0d" d="M8 9.2l-1 1.7h2z"/>' +
+  '<path stroke="#0b0a0d" stroke-width=".8" d="M6.5 12.1v2.3M8 12.1v2.3M9.5 12.1v2.3"/></svg>';
+const CROWN_SVG = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="#f2c25a" d="M1.6 5.2l3.3 3.2L8 3l3.1 5.4 3.3-3.2-1.3 7.2H2.9z"/><path fill="#b07626" d="M2.9 12.6h10.2v1.9H2.9z"/>' +
+  '<circle cx="1.6" cy="4.6" r="1.1" fill="#f2c25a"/><circle cx="8" cy="2.4" r="1.1" fill="#f2c25a"/><circle cx="14.4" cy="4.6" r="1.1" fill="#f2c25a"/><circle cx="8" cy="9.6" r="1" fill="#c0392b"/></svg>';
+// the record under the name: your latest 40 results, oldest first and faded, the newest arriving last; crowns stay bright
+function showRecord(rec) {
+  if (!rec.runs) { record.hidden = true; return; }
+  const shown = rec.log.slice(-40), more = rec.runs - shown.length;
+  record.innerHTML = (more > 0 ? `<span class="more">+${more}</span>` : '') + [...shown].map((c, i) => {
+    const fade = 0.35 + 0.65 * (i + 1) / shown.length, won = c === 'W';
+    return `<i class="${won ? 'crown' : 'skull'}${i === shown.length - 1 ? ' new' : ''}" style="opacity:${(won ? Math.max(0.85, fade) : fade).toFixed(2)}">${won ? CROWN_SVG : SKULL_SVG}</i>`;
+  }).join('');
+  const label = `${rec.runs} ${rec.runs === 1 ? 'attempt' : 'attempts'}, ${rec.wins} ${rec.wins === 1 ? 'escape' : 'escapes'}`;
+  record.title = label;
+  record.setAttribute('aria-label', label);
+  record.hidden = false;
+}
+const WHISPERS = [
+  'Block the third blow.',
+  'Kill the goblins first. They steal.',
+  'Fire stops a troll from healing.',
+  "Don't swing heavy at bats.",
+  'The bull charges first. Raise your shield.',
+  'Crit the skeletons, or they get back up.',
+  'The knight strikes back when you miss.',
+  "The wyvern's bite festers. Keep a potion.",
+  'Orcs grow savage when you bleed.',
+  'The last merchant waits on the fourth floor.',
+  'He waits by the door.'
+];
+showRecord(readRecord());
+const BULB_SVG = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="#f2c25a" d="M8 1.2a4.6 4.6 0 0 0-2.9 8.2c.6.5.9 1.1.9 1.8v.6h4v-.6c0-.7.3-1.3.9-1.8A4.6 4.6 0 0 0 8 1.2z"/>' +
+  '<path fill="#fff1c8" opacity=".8" d="M5.4 5.4c.2-1.3 1.1-2.2 2.4-2.5-.5.6-1.2 1.4-1.6 2.7z"/><path fill="#b07626" d="M6 12.4h4v1.1H6zM6.6 14.1h2.8v1H6.6z"/></svg>';
+whisper.innerHTML = `<span class="bulb" role="img" aria-label="Hint">${BULB_SVG}</span>: `;
+whisper.appendChild(document.createElement('span')).textContent = WHISPERS[Math.floor(Math.random() * WHISPERS.length)];
+const titleCtx = titleArt.getContext('2d');
+const stillTitle = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+let titleFrameId = 0, titleLastT = 0;
+// the reveal, the first time the title appears: your torch catches, its light spreads over the gate, his eyes open,
+// and then the menu fades in. A tap or a key skips it; with reduced motion there is none
+const T_MENU_AT = 2.6;                                                   // when the menu starts to fade in
+let introAt = null, introSkipped = stillTitle;
+const showMenu = () => title.classList.add('shown');
+const skipIntro = () => { introSkipped = true; showMenu(); };
+if (introSkipped) showMenu();
+title.addEventListener('pointerdown', () => { if (!introSkipped) skipIntro(); });
+window.addEventListener('keydown', () => { if (!introSkipped && !title.hidden) skipIntro(); });
+// the name on the arch is carved from the Cinzel font: wait for it (a moment at most) before the gate is first drawn
+let titleFontReady = !document.fonts;
+if (document.fonts) Promise.race([document.fonts.load('900 64px Cinzel'), new Promise(ok => setTimeout(ok, 1500))])
+  .then(() => { titleFontReady = true; }, () => { titleFontReady = true; });
+// a soft round glow, drawn once per color and stamped for every ember (and stretched for the fog)
+const glowDot = col => {
+  const cv = document.createElement('canvas'); cv.width = cv.height = 32;
+  const g = cv.getContext('2d'), gr = g.createRadialGradient(16, 16, 0, 16, 16, 16);
+  gr.addColorStop(0, `rgba(${col},1)`); gr.addColorStop(0.35, `rgba(${col},0.45)`); gr.addColorStop(1, `rgba(${col},0)`);
+  g.fillStyle = gr; g.fillRect(0, 0, 32, 32);
+  return cv;
+};
+const EMBER_HOT = glowDot('255,196,110'), EMBER_DEEP = glowDot('255,120,40'), FOG_PUFF = glowDot('120,78,48');
+const embers = [], fogs = [];
+// an ember: most are tiny sparks rising off the fire below, a few are big and soft, close and out of focus
+function newEmber(w, h, t, anywhere) {
+  const big = Math.random() < 0.07;
+  return {x: Math.random() * w, y: anywhere ? Math.random() * h : h + 8 + Math.random() * 30, born: t, life: 4 + Math.random() * 7,
+          vy: big ? 10 + Math.random() * 12 : 16 + Math.random() * 38, sway: 4 + Math.random() * 16, ph: Math.random() * 6.3,
+          r: big ? 7 + Math.random() * 9 : 0.7 + Math.random() * 1.6, hot: Math.random() < 0.3, big};
+}
+// one frame of the dark behind the menu: firelight from somewhere below, a warm glow behind the name, fog drifting
+// low, and embers rising, swaying, flickering and burning out
+function paintTitle(now) {
+  titleFrameId = 0;
+  if (title.hidden || !howto.hidden) return;
+  const vw = window.innerWidth, vh = window.innerHeight, dpr = Math.min(2, window.devicePixelRatio || 1);
+  const cw = Math.round(vw * dpr), ch = Math.round(vh * dpr);
+  if (titleArt.width !== cw || titleArt.height !== ch) { titleArt.width = cw; titleArt.height = ch; }
+  const t = stillTitle ? 3 : now / 1000, dt = Math.min(0.05, Math.max(0, t - (titleLastT || t)));
+  titleLastT = t;
+  const want = Math.round(Math.min(70, Math.max(24, vw * vh / 15000)));
+  while (embers.length < want) embers.push(newEmber(vw, vh, t - Math.random() * 3, true));   // the first frame scatters them
+  embers.length = Math.min(embers.length, want);
+  if (!fogs.length) for (let i = 0; i < 6; i++) fogs.push({x: Math.random() * 1.4 - 0.4, y: 0.58 + Math.random() * 0.42, w: 0.5 + Math.random() * 0.7,
+                                                           v: (Math.random() < 0.5 ? -1 : 1) * (0.004 + Math.random() * 0.008), a: 0.05 + Math.random() * 0.05});
+  const g = titleCtx;
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1;
+  g.fillStyle = '#07060a'; g.fillRect(0, 0, vw, vh);
+  const flick = 1 + 0.06 * Math.sin(t * 7.3) + 0.04 * Math.sin(t * 17.9) + 0.025 * Math.sin(t * 31.7);
+  let gr = g.createLinearGradient(0, vh, 0, vh * 0.35);                    // firelight from below
+  gr.addColorStop(0, `rgba(255,110,30,${0.09 * flick})`); gr.addColorStop(0.35, `rgba(190,70,20,${0.03 * flick})`); gr.addColorStop(1, 'rgba(120,40,10,0)');
+  g.fillStyle = gr; g.fillRect(0, vh * 0.35, vw, vh * 0.65);
+  if (titleFontReady) {                                                    // the gate, its arch near the top of the screen, as big as the space allows
+    const top = Math.max(6, parseFloat(getComputedStyle(title).paddingTop) - 10);
+    const bottom = (record.hidden ? titleMain.querySelector('.actions') : record).getBoundingClientRect().top - 4;
+    // as wide as the game's column, or a little wider when the screen is tall (losing a sliver of wall at each side)
+    const k = Math.min(Math.min(vw, vh * 0.6) / CANVAS_W * 1.12, (bottom - top) / (PLAY_H - 2)), sw = CANVAS_W * k, sh = PLAY_H * k, x0 = (vw - sw) / 2, y0 = top - 2 * k;
+    if (introAt === null) introAt = t;                                     // the reveal starts with the first picture
+    const e = introSkipped ? 99 : t - introAt;
+    if (e > T_MENU_AT) showMenu();
+    g.save(); g.translate(x0, y0); g.scale(k, k);
+    ART.drawTitle(g, t, e);
+    g.restore();
+    const fade = (xa, ya, xb, yb, x, y, w, h) => {                         // its edges fade into the dark
+      const fg = g.createLinearGradient(xa, ya, xb, yb);
+      fg.addColorStop(0, 'rgba(7,6,10,1)'); fg.addColorStop(1, 'rgba(7,6,10,0)');
+      g.fillStyle = fg; g.fillRect(x, y, w, h);
+    };
+    fade(0, y0, 0, y0 + 5 * k, x0, y0, sw, 5 * k);
+    fade(0, y0 + sh, 0, y0 + sh - 56 * k, x0, y0 + sh - 56 * k, sw, 56 * k);
+    if (x0 > 0.5) { fade(x0, 0, x0 + 84 * k, 0, x0, y0, 84 * k, sh); fade(x0 + sw, 0, x0 + sw - 84 * k, 0, x0 + sw - 84 * k, y0, 84 * k, sh); }
+  }
+  for (const f of fogs) {                                                  // fog
+    f.x += f.v * dt;
+    if (f.x < -0.9) f.x += 1.9; else if (f.x > 1) f.x -= 1.9;
+    g.globalAlpha = f.a * (0.8 + 0.2 * Math.sin(t * 0.3 + f.y * 9));
+    g.drawImage(FOG_PUFF, f.x * vw, f.y * vh - f.w * vh * 0.12, f.w * vw * 1.4, f.w * vh * 0.24);
+  }
+  g.globalCompositeOperation = 'lighter';
+  for (let i = 0; i < embers.length; i++) {                                // embers
+    const e = embers[i], age = t - e.born;
+    e.y -= e.vy * dt;
+    if (e.y < -30 || age > e.life) { embers[i] = newEmber(vw, vh, t, false); continue; }
+    const fade = Math.max(0, Math.min(1, age / 0.8, (e.life - age) / 1.5, (e.y + 30) / (vh * 0.25)));
+    const x = e.x + Math.sin(t * 0.9 + e.ph) * e.sway;
+    if (e.big) { g.globalAlpha = 0.07 * fade; g.drawImage(EMBER_DEEP, x - e.r * 2, e.y - e.r * 2, e.r * 4, e.r * 4); continue; }
+    g.globalAlpha = fade * (0.65 + 0.35 * Math.sin(t * (6 + i % 5) + e.ph));
+    const s = e.r * 7;
+    g.drawImage(e.hot ? EMBER_HOT : EMBER_DEEP, x - s / 2, e.y - s / 2, s, s);
+    g.fillStyle = e.hot ? '#ffdc96' : '#ffa050'; g.fillRect(x - e.r / 2, e.y - e.r / 2, e.r, e.r);
+  }
+  g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+  gr = g.createRadialGradient(vw / 2, vh * 0.42, Math.min(vw, vh) * 0.25, vw / 2, vh * 0.42, Math.max(vw, vh) * 0.8);   // a vignette
+  gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,0.6)');
+  g.fillStyle = gr; g.fillRect(0, 0, vw, vh);
+  if (!stillTitle) titleFrameId = requestAnimationFrame(paintTitle);
+}
+const startTitle = () => { if (!titleFrameId) titleFrameId = requestAnimationFrame(paintTitle); };
+// Play starts the run, How to Play swaps in the guide (the embers rest while you read)
+const showHowTo = on => { titleMain.hidden = on; howto.hidden = !on; titleArt.hidden = on; title.scrollTop = 0; if (!on) startTitle(); };
 playBtn.onclick = () => { title.hidden = true; run.start = Date.now(); requestFrames(); };
 howBtn.onclick = () => showHowTo(true);
 backBtn.onclick = () => showHowTo(false);
 if (location.hash === '#play') title.hidden = true;
+else startTitle();
+window.addEventListener('resize', () => { if (stillTitle) startTitle(); });
 
 // everything on screen is drawn on the canvas, so redraw once the two fonts have downloaded
 if (document.fonts) Promise.all([document.fonts.load(`600 14px ${GAME_FONT}`), document.fonts.load(`20px ${TITLE_FONT}`)])
