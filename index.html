@@ -5308,17 +5308,25 @@ function verdictGlyph(ctx, v) {                                                /
 function paintLootCard() {
   if (!pending) return;
   const x = 8, w = 272, h = 100, y = view.controls - h - 6, cur = worn[pending.slot], v = lootVerdict(pending, cur), V = VERDICTS[v];
-  ctx.fillStyle = 'rgba(16,13,20,0.95)';
+  ctx.fillStyle = 'rgba(16,13,20,0.96)';
   chamfer(x, y, w, h, 7);
   ctx.fill();
-  ctx.strokeStyle = V.col;
-  ctx.lineWidth = 1.4;
-  ctx.stroke();
+  ctx.save(); ctx.clip(); stoneGrain(x, y, w, h, 77, 70); ctx.restore();
+  ctx.strokeStyle = '#060508'; ctx.lineWidth = 3; chamfer(x, y, w, h, 7); ctx.stroke();
+  ctx.strokeStyle = V.col; ctx.lineWidth = 1.4; ctx.stroke();
+  ctx.strokeStyle = 'rgba(212,164,70,0.22)'; ctx.lineWidth = 1; chamfer(x + 4, y + 4, w - 8, h - 8, 4); ctx.stroke();
+  const acx = x + w / 2, m = ['bronze', 'iron', 'silver'][pending.tier] || 'iron';
+  ctx.save(); gothicArch(acx - 18, y + 9, 36, 43); ctx.clip();
+  ctx.fillStyle = ctx.createPattern(tooledGround(m), 'repeat'); ctx.fillRect(acx - 18, y + 9, 36, 43);
+  ctx.fillStyle = 'rgba(10,6,12,0.45)'; ctx.fillRect(acx - 18, y + 9, 36, 43);
+  ctx.restore();
+  gothicArch(acx - 18, y + 9, 36, 43); ctx.strokeStyle = mcol(m); ctx.lineWidth = 1.2; ctx.stroke();
+  drawOrn(fleurOrn(7, m), acx - 3.5, y + 1);
   lootSide(pending, pending.slot, x + 10, y, 'Found', false);
   lootSide(cur, pending.slot, x + w - 10, y, 'Equipped', true);
   const cx = x + w / 2, dp = pending.power - (cur ? cur.power : 0);
   drawVerdict(v, cx, y + 36, 14);
-  centerText(V.word, cx, y + 66, textFont(13), V.col);
+  centerText(V.word, cx, y + 68, textFont(13), V.col);
   if (dp) centerText(`${dp > 0 ? '+' : '\u2212'}${Math.abs(dp)} ${statWord(pending.slot)}`, cx, y + 80, textFont(10, 400), '#9a9080');
 }
 // ---- symbols in the game's look: each one is painted on a small canvas of its own at twice the size it will have,
@@ -5601,10 +5609,14 @@ function paintSlot(b) {
   chamfer(b.x, b.y, b.w, b.h, 5);
   ctx.fill();
   ctx.restore();
+  ctx.save(); chamfer(b.x, b.y, b.w, b.h, 5); ctx.clip(); stoneGrain(b.x, b.y, b.w, b.h, idSeed(b.id), 70);
+  ctx.fillStyle = 'rgba(255,236,200,0.07)'; ctx.fillRect(b.x, b.y, b.w, 1); ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(b.x, b.y + b.h - 1.2, b.w, 1.2);
+  ctx.restore();
   ctx.strokeStyle = it ? TIER_EDGE[it.tier] : '#3a3440';
   ctx.lineWidth = picked ? 2.2 : 1.2;
   chamfer(b.x, b.y, b.w, b.h, 5);
   ctx.stroke();
+  if (it) { ctx.save(); ctx.globalAlpha = 0.35; ctx.lineWidth = 0.8; chamfer(b.x + 3, b.y + 3, b.w - 6, b.h - 6, 3); ctx.stroke(); ctx.restore(); }
   drawSlotIcon(b.slot, b.x + 16, b.y + b.h / 2, 11, it ? it.tier : 1, it ? null : '#4a4452');
   ctx.textAlign = 'left';
   if (!it) { ctx.font = textFont(16); ctx.fillStyle = '#4e4856'; ctx.fillText('\u2014', b.x + 33, b.y + b.h / 2 + 5); return; }
@@ -5623,6 +5635,37 @@ function paintSlot(b) {
   }
   drawPerkIcon(b.perk, b.x + b.w / 2, b.y + 14, 12);
   centerText(`${TIMES}${perkN(b.perk)}`, b.x + b.w / 2, b.y + 39, textFont(11), '#e8dcc0');
+}
+// the niche you stand in on the Hero panel: a pointed arch cut into the stone, a trefoil pierced in its point, a warm
+// light behind you, and a plinth under your feet (x, y, w, h: the niche; feet: where your feet are)
+function paintNiche(x, y, w, h, feet) {
+  const cx = x + w / 2, a = w / 2, ah = a * Math.sqrt(1.6);
+  gothicArch(x - 4, y - 3, w + 8, h + 6); ctx.fillStyle = '#2c2632'; ctx.fill();
+  ctx.save(); ctx.clip(); stoneGrain(x - 4, y - 3, w + 8, h + 6, 4711, 50); ctx.restore();
+  gothicArch(x - 4, y - 3, w + 8, h + 6); ctx.strokeStyle = '#060508'; ctx.lineWidth = 1.6; ctx.stroke();
+  const g = ctx.createLinearGradient(0, y, 0, y + h);
+  g.addColorStop(0, '#0a080c'); g.addColorStop(1, '#17121b');
+  gothicArch(x, y + 1, w, h - 1); ctx.fillStyle = g; ctx.fill();
+  ctx.save(); ctx.clip();
+  const lg = ctx.createRadialGradient(cx, y + h * 0.58, 4, cx, y + h * 0.58, w * 0.75);
+  lg.addColorStop(0, 'rgba(255,170,90,0.2)'); lg.addColorStop(1, 'rgba(255,150,70,0)');
+  ctx.fillStyle = lg; ctx.fillRect(x, y, w, h);
+  ctx.restore();
+  gothicArch(x, y + 1, w, h - 1); ctx.strokeStyle = 'rgba(0,0,0,0.8)'; ctx.lineWidth = 2; ctx.stroke();   // the cut edge, in shadow above
+  gothicArch(x + 1, y + 2.5, w - 2, h - 2.5); ctx.strokeStyle = 'rgba(255,226,180,0.12)'; ctx.lineWidth = 1; ctx.stroke();   // and catching the light
+  if (h > ah + 40) {                                                       // a trefoil pierced in the point of the arch
+    const ty = y + ah * 0.55, r = Math.min(4.5, w * 0.05);
+    for (const [dx, dy] of [[0, -r * 0.9], [-r * 0.85, r * 0.5], [r * 0.85, r * 0.5]]) {
+      ctx.beginPath(); ctx.arc(cx + dx, ty + dy, r, 0, Math.PI * 2); ctx.fillStyle = '#060408'; ctx.fill();
+    }
+    ctx.strokeStyle = 'rgba(255,226,180,0.14)'; ctx.lineWidth = 0.8;
+    for (const [dx, dy] of [[0, -r * 0.9], [-r * 0.85, r * 0.5], [r * 0.85, r * 0.5]]) { ctx.beginPath(); ctx.arc(cx + dx, ty + dy, r, 0.2, Math.PI * 0.9); ctx.stroke(); }
+  }
+  const pw = Math.min(w * 0.8, 64), px = cx - pw / 2, py = Math.min(y + h - 9, feet - 2);   // the plinth
+  chamfer(px, py, pw, 9, 3); ctx.fillStyle = '#3a3240'; ctx.fill();
+  ctx.save(); ctx.clip(); stoneGrain(px, py, pw, 9, 4712, 30); ctx.restore();
+  ctx.fillStyle = 'rgba(255,226,180,0.22)'; ctx.fillRect(px + 2, py, pw - 4, 1);
+  ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(px + 2, py + 8, pw - 4, 1);
 }
 // what the Hero panel says about the slot or perk you tapped
 function heroDetail(pick) {
@@ -6174,8 +6217,9 @@ function heroScreen(L, add, menu) {
   const bw = 74, bh = 40, lx = P.x + 8, rx = P.x + P.w - 8 - bw, step = (dollH - bh) / 2;
   // armor down the right, from head to feet; weapon, shield and bracers down the left
   const at = {helmet: [rx, y0], chest: [rx, y0 + step], greaves: [rx, y0 + 2 * step], weapon: [lx, y0], shield: [lx, y0 + step], bracers: [lx, y0 + 2 * step]};
-  add({draw: () => {                                     // you, in what you wear, as big as fits between the slots
+  add({draw: () => {                                     // you, in what you wear, as big as fits between the slots, standing in a niche
     const h = Math.min(dollH, (rx - lx - bw) * 156 / 92), L = heroLook();
+    paintNiche(lx + bw + 8, y0, rx - lx - bw - 16, dollH, y0 + (dollH + h) / 2);
     ART.drawDoll(ctx, (lx + bw + rx) / 2 - 5.5 * h / 156, y0 + (dollH + h) / 2, h, L.gear, L.glows, L.weapon, performance.now() / 1000);
   }});
   for (const k of Object.keys(slots))
@@ -6204,6 +6248,7 @@ function heroScreen(L, add, menu) {
   })});
   const py = sy + 70, owned = Object.keys(PERKS).filter(perkN), per = Math.floor((P.w - 16) / 38);
   add({draw: () => {
+    if (owned.length) { const dv = dividerOrn(Math.round(P.w - 84)); drawOrn(dv, P.x + 70, py + 2); }   // a flowered rule beside the heading
     ctx.font = `20px ${TITLE_FONT}`;
     titleText('Perks', P.x + 12, py + 12, 17, '#fc3', 'left');
     if (!owned.length) {
@@ -6226,7 +6271,9 @@ function bagTab(L, add) {
   rowStack(add, P.x + 8, top + 40, P.y + P.h - 10, P.w - 16, scrolls.map((s, i) => ({
     id: 'bagUse:' + i, text: enchLabel(s), note: `${enchShort(s)} \u00b7 ${TIER_FITS[s.t]}`, tag: 'Use',
     icon: (ix, iy) => drawEnchIcon(s.id, ix, iy, 10, ENCH_GLOW[s.id]),
-    enabled: phase === 'explore', edge: ENCH_GLOW[s.id], act: () => useBagScroll(i)})), 52);
+    enabled: phase === 'explore', edge: ENCH_GLOW[s.id], act: () => useBagScroll(i)})).concat(
+    Array.from({length: Math.max(0, bagSlots - scrolls.length)}, (_, i) => ({id: 'bagEmpty:' + i, text: 'Empty', note: 'room for a scroll', enabled: false,
+      icon: (ix, iy) => pixelIcon('ghostScroll', 10, g => shopGlyph(g, 'satchel', 0), ix, iy)}))), 52);
 }
 
 // ---- the log history: newest at the bottom, a page at a time ----
@@ -6234,7 +6281,7 @@ function logScreen(L, add, menu) {
   const P = L.panel, o = overlay;
   menu('Log');
   add({id: 'close', x: P.x + P.w - 44, y: P.y + 6, w: 38, h: 36, act: () => { overlay = null; }, draw: paintClose});
-  const top = P.y + 48, bottom = P.y + P.h - 10 - 44 - 8, w = P.w - 28, lineH = 16;
+  const top = P.y + 48, bottom = P.y + P.h - 10 - 44 - 8, w = P.w - 44, lineH = 16;
   ctx.font = textFont(13, 400);
   const blocks = [];
   let used = 0, i = logEntries.length - 1 - o.back, newer = null;
@@ -6251,12 +6298,15 @@ function logScreen(L, add, menu) {
     ctx.textAlign = 'left';
     if (!logEntries.length) { ctx.fillStyle = '#8a8478'; ctx.fillText('Nothing has happened yet.', P.x + 14, top + 14); return; }
     let y = bottom;
-    for (const b of blocks) {
-      if (b.gap) { y -= b.gap; ctx.fillStyle = '#2e2934'; ctx.fillRect(P.x + 14, y + b.gap / 2 - 0.5, w, 1); }
+    blocks.forEach((b, k) => {
+      if (b.gap) { y -= b.gap; ctx.fillStyle = '#2e2934'; ctx.fillRect(P.x + 30, y + b.gap / 2 - 0.5, w, 1); }
       y -= b.lines.length * lineH;
+      const older = blocks[k + 1];
+      if (!older || older.e.batch !== b.e.batch) drawOrn(medallionOrn(11, b.e.batch === logBatch ? 'gold' : 'bronze'), P.x + 14, y + 2);
+      ctx.font = textFont(13, 400); ctx.textAlign = 'left';
       ctx.fillStyle = b.e.batch === logBatch ? '#ece4d2' : '#a8a094';
-      b.lines.forEach((ln, j) => ctx.fillText(ln, P.x + 14, y + (j + 1) * lineH - 4));
-    }
+      b.lines.forEach((ln, j) => ctx.fillText(ln, P.x + 30, y + (j + 1) * lineH - 4));
+    });
   }});
   buttonRow(add, P.x + 8, P.y + P.h - 10 - 44, P.w - 16, 44, [
     {id: 'log:older', label: 'Older', enabled: olderLeft, act: () => { o.back += shown; }},
