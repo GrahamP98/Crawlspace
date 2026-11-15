@@ -99,6 +99,9 @@
     opacity: 1; transform: translateY(-50%) scaleX(1); }
   @media (prefers-reduced-motion: reduce) { #titleMain .actions button::before, #titleMain .actions button::after, #backBtn::before, #backBtn::after, #vaultBack::before, #vaultBack::after { transition: opacity 0.2s; } }  #titleMain .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   #titleMain .pair button { font-size: 20px; }
+  #titleMain .pair.sound { margin-top: 10px; }
+  #titleMain .pair.sound button { font-size: 15px; padding: 6px; color: #b8a884; }
+  #titleMain .pair.sound button.off { color: #6e665a; text-decoration: line-through; text-decoration-color: rgba(200, 80, 60, 0.7); }
   #vault h2 { font-family: var(--title-font); font-weight: 400; font-size: 30px; color: #fc3; margin: 8px 0 0; text-align: center; }
   #vault .lead { text-align: center; color: #aaa; margin: 0; font-style: italic; line-height: 1.4; }
   #vault .vhead { display: grid; justify-items: center; gap: 2px; }
@@ -146,6 +149,7 @@
     <div class="actions">
       <button id="playBtn">Play</button>
       <div class="pair"><button id="howBtn">How to Play</button><button id="vaultBtn">Vault</button></div>
+      <div class="pair sound"><button id="musicBtn" aria-pressed="true">Music</button><button id="sfxBtn" aria-pressed="true">Sounds</button></div>
       <p class="whisper" id="whisper"></p>
     </div>
   </div>
@@ -329,6 +333,12 @@
       <p>Escape, and every coin you still carry goes into the <b>Vault</b> (tap <b>Vault</b> on the title screen, or on the screen at the end of a run). Die, and your coins are lost with you. So at the last merchant there is a choice: spend to get stronger, or save for the Vault.</p>
       <p>The Vault sells looks: the color of your torch's flame (Ghostfire, Witchfire or Soulfire), your hair, a beard, the dye of your prisoner's rags, and the plume you wear in full armor with a Steel helm. They change nothing but how you look. Tap a look to try it on, tap it again to buy it, and tap one you own to wear it.</p>
     </details>
+
+    <details>
+      <summary>Sound and music</summary>
+      <p>Every floor has its own music, and so do fights, the Ogre King, the campfire and the merchant. A blow sounds like what it hits: a slime squelches, bones crack and rattle, flesh thuds, armor rings, and a wraith only sighs. When your health runs low in a fight, you hear your heart.</p>
+      <p>Switch the <b>Music</b> and the <b>Sounds</b> on or off on the title screen, or with the speaker button at the top of the Hero panel (it steps through: both on, music off, both off).</p>
+    </details>
     <button id="backBtn">Back</button>
   </div>
   <div class="inner" id="vault" hidden>
@@ -344,6 +354,657 @@
 </div>
 <canvas id="c" width="288" height="400"></canvas>
 <div id="rotate">Turn your phone upright to play</div>
+<script>
+// ======================================================================
+// ---- sound and music: every sound in the game is made here, in code, as it plays (there are no sound files) ----
+// A Web Audio graph: each sound has its own short chain (its envelope, a pan to where it happens on screen) into the
+// sound or the music bus, and a share of it goes to the dungeon's echo (a reverb from generated noise). Both buses
+// meet in a limiter, so nothing clips however many things hit at once. Browsers only allow sound after a tap, so it
+// all starts on the first tap or key. The game calls SND.fx(name, opts, delay) for a sound and SND.mood(name) for
+// the music (which crossfades when the mood changes); SND.setMusic / SND.setSfx switch them on and off (remembered).
+// ======================================================================
+const SND = (() => {
+  const PREF_KEY = 'crawlspace:sound', AC = window.AudioContext || window.webkitAudioContext;
+  const prefs = {music: true, sfx: true};
+  try { const r = JSON.parse(localStorage.getItem(PREF_KEY) || '{}'); for (const k of ['music', 'sfx']) if (typeof r[k] === 'boolean') prefs[k] = r[k]; } catch (e) {}
+  const savePrefs = () => { try { localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); } catch (e) {} };
+  const MUSIC_LEVEL = 0.4, SFX_LEVEL = 0.9;
+  let A = null, G = null;                                                  // the audio context, and its graph (buses, echo, noise)
+  const rr = (a, b) => a + Math.random() * (b - a);
+  const vary = (k = 0.06) => 1 + rr(-k, k);                                // so a sound never repeats exactly
+  const midi = m => 440 * Math.pow(2, (m - 69) / 12);
+
+  // ---- the graph, for a live context or an offline one (the tests render sounds offline and measure them) ----
+  function graph(ac) {
+    const g = {ac};
+    g.out = ac.createDynamicsCompressor();
+    g.out.threshold.value = -12; g.out.knee.value = 12; g.out.ratio.value = 5; g.out.attack.value = 0.003; g.out.release.value = 0.25;
+    g.out.connect(ac.destination);
+    g.sfx = ac.createGain(); g.sfx.gain.value = prefs.sfx ? SFX_LEVEL : 0; g.sfx.connect(g.out);
+    g.music = ac.createGain(); g.music.gain.value = prefs.music ? MUSIC_LEVEL : 0; g.music.connect(g.out);
+    const n = Math.floor(ac.sampleRate * 2.8), ir = ac.createBuffer(2, n, ac.sampleRate);   // the echo of stone halls
+    for (let ch = 0; ch < 2; ch++) {
+      const d = ir.getChannelData(ch);
+      for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2.6) * (i < 90 ? i / 90 : 1);
+    }
+    const verb = ac.createConvolver(); verb.buffer = ir;
+    const wet = ac.createGain(); wet.gain.value = 0.5; verb.connect(wet); wet.connect(g.out);
+    g.sfxWet = ac.createGain(); g.sfxWet.gain.value = prefs.sfx ? 1 : 0; g.sfxWet.connect(verb);
+    g.musicWet = ac.createGain(); g.musicWet.gain.value = prefs.music ? 1 : 0; g.musicWet.connect(verb);
+    const nb = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate), nd = nb.getChannelData(0);
+    for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+    g.noise = nb;
+    return g;
+  }
+
+  // ---- sources, kept per tag so a skipped fight turn can silence the sounds it had queued ----
+  let tag = null;
+  const live = [];
+  function keep(src, end) {
+    if (!tag) return;
+    live.push({src, end, tag});
+    if (live.length > 400) live.splice(0, live.length - 300);
+  }
+  // a sound's own little chain: gain, pan (where on screen it happens: -1 left .. 1 right), into its bus and the echo
+  function voice(gr, {pan = 0, wet = 0.2, gain = 1, bus = 'sfx'} = {}) {
+    const ac = gr.ac, v = ac.createGain();
+    v.gain.value = gain;
+    let node = v;
+    if (pan && ac.createStereoPanner) { const p = ac.createStereoPanner(); p.pan.value = Math.max(-1, Math.min(1, pan)); v.connect(p); node = p; }
+    node.connect(bus === 'music' ? gr.music : gr.sfx);
+    if (wet > 0) { const s = ac.createGain(); s.gain.value = wet; node.connect(s); s.connect(bus === 'music' ? gr.musicWet : gr.sfxWet); }
+    return v;
+  }
+  // an envelope on a gain: up to peak in a, then down to silence by dur (hold: stay up until then, for pads)
+  function env(gn, t, a, dur, peak, hold = 0) {
+    const p = gn.gain;
+    p.setValueAtTime(0.0001, t);
+    p.linearRampToValueAtTime(peak, t + a);
+    if (hold) p.setValueAtTime(peak, t + a + hold);
+    p.exponentialRampToValueAtTime(0.0001, t + Math.max(dur, a + hold + 0.01));
+  }
+  // a tone: type, f (Hz) gliding to `to`; dur, attack a, peak; optional lowpass `lp` (with its own sweep to lpTo)
+  function tone(dest, t, o) {
+    const ac = dest.context, osc = ac.createOscillator(), gn = ac.createGain(), dur = o.dur || 0.2;
+    t = Math.max(t, ac.currentTime);                                       // (a lead-in asked for before now starts now)
+    osc.type = o.type || 'sine';
+    osc.frequency.setValueAtTime(o.f, t);
+    if (o.to) osc.frequency.exponentialRampToValueAtTime(Math.max(5, o.to), t + (o.glide || dur));
+    if (o.detune) osc.detune.value = o.detune;
+    if (o.vib) {                                                             // vibrato: a slow wobble of the pitch, in cents
+      const l = ac.createOscillator(), lg = ac.createGain(); l.frequency.value = o.vibRate || 5.5; lg.gain.value = o.vib;
+      l.connect(lg); lg.connect(osc.detune); l.start(t); l.stop(t + dur + 0.1);
+    }
+    let last = osc;
+    if (o.lp) {
+      const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.Q.value = o.lpQ || 0.7; f.frequency.setValueAtTime(o.lp, t);
+      if (o.lpTo) f.frequency.exponentialRampToValueAtTime(o.lpTo, t + (o.lpGlide || dur));
+      osc.connect(f); last = f;
+    }
+    last.connect(gn); gn.connect(dest);
+    env(gn, t, o.a || 0.004, dur, o.peak || 0.3, o.hold || 0);
+    osc.start(t); osc.stop(t + dur + 0.05); keep(osc, t + dur);
+  }
+  // a breath of filtered noise: filter type and f, sweeping through fs ([[fraction of dur, Hz], ...]) or to `to`
+  function hiss(dest, t, o) {
+    const ac = dest.context, s = ac.createBufferSource(), f = ac.createBiquadFilter(), gn = ac.createGain(), dur = o.dur || 0.1;
+    t = Math.max(t, ac.currentTime);
+    s.buffer = G.noise; s.loop = true;
+    if (o.rate) s.playbackRate.value = o.rate;
+    f.type = o.type || 'bandpass'; f.Q.value = o.q || 1; f.frequency.setValueAtTime(o.f || 1000, t);
+    if (o.fs) for (const [k, hz] of o.fs) f.frequency.exponentialRampToValueAtTime(hz, t + dur * k);
+    else if (o.to) f.frequency.exponentialRampToValueAtTime(o.to, t + dur);
+    s.connect(f); f.connect(gn); gn.connect(dest);
+    env(gn, t, o.a || 0.002, dur, o.peak || 0.3, o.hold || 0);
+    s.start(t, Math.random() * 1.5); s.stop(t + dur + 0.05); keep(s, t + dur);
+  }
+  // a bell or a struck metal: inharmonic partials, each dying away at its own rate
+  function bell(dest, t, f, {dur = 1.4, peak = 0.25, parts = [[1, 1, 1], [2.0, 0.5, 0.7], [2.42, 0.45, 0.55], [3.0, 0.3, 0.5], [4.07, 0.22, 0.35], [5.43, 0.12, 0.25]]} = {}) {
+    for (const [m, pk, d] of parts) tone(dest, t, {f: f * m, dur: dur * d, peak: peak * pk, a: 0.002});
+  }
+  // a voice-like growl or wail: a sawtooth through two vowel formants, with a tremble
+  function growl(dest, t, {f = 90, to, dur = 0.6, peak = 0.5, f1 = 520, f2 = 1150, rough = 22, a = 0.06} = {}) {
+    const ac = dest.context, o = ac.createOscillator(), o2 = ac.createOscillator(), gn = ac.createGain(), mix = ac.createGain();
+    t = Math.max(t, ac.currentTime);
+    o.type = 'sawtooth'; o2.type = 'sawtooth';
+    o.frequency.setValueAtTime(f, t); o2.frequency.setValueAtTime(f * 1.012, t);
+    if (to) { o.frequency.exponentialRampToValueAtTime(to, t + dur); o2.frequency.exponentialRampToValueAtTime(to * 1.012, t + dur); }
+    o.connect(mix); o2.connect(mix);
+    for (const [fq, q, k] of [[f1, 4, 1], [f2, 6, 0.6], [f1 * 0.45, 2, 0.5]]) {
+      const b = ac.createBiquadFilter(), bg = ac.createGain(); b.type = 'bandpass'; b.frequency.value = fq; b.Q.value = q; bg.gain.value = k;
+      mix.connect(b); b.connect(bg); bg.connect(gn);
+    }
+    if (rough) {                                                             // the rasp in the throat
+      const l = ac.createOscillator(), lg = ac.createGain(); l.frequency.value = rough; lg.gain.value = 0.45;
+      const tr = ac.createGain(); tr.gain.value = 0.55; l.connect(lg); lg.connect(tr.gain); gn.connect(tr); tr.connect(dest);
+      l.start(t); l.stop(t + dur + 0.1);
+    } else gn.connect(dest);
+    env(gn, t, a, dur, peak, dur * 0.35);
+    for (const x of [o, o2]) { x.start(t); x.stop(t + dur + 0.05); keep(x, t + dur); }
+  }
+
+  // ======================================================================
+  // ---- the sound effects: S.name(graph, t, opts) ----
+  // ======================================================================
+  const S = {};
+  const V = (gr, o, wet = 0.2, gain = 1) => voice(gr, {pan: o.pan || 0, wet: o.wet ?? wet, gain: gain * (o.gain ?? 1)});
+
+  // ---- what a blow sounds like on what it hits ----
+  S.goop = (gr, t, o) => {                                                  // a slime: a wet squelch, and bubbles popping after it
+    const v = V(gr, o, 0.18), k = vary() / Math.sqrt(o.size || 1);
+    hiss(v, t, {dur: 0.24, peak: 0.85, type: 'bandpass', f: 1500 * k, to: 200 * k, q: 2.2, a: 0.004});
+    tone(v, t, {type: 'sine', f: 210 * k, to: 52 * k, dur: 0.24, peak: 0.8});
+    tone(v, t + 0.015, {type: 'triangle', f: 380 * k, to: 110 * k, dur: 0.13, peak: 0.3});
+    for (let i = 0; i < 4; i++) { const d = t + 0.07 + i * rr(0.025, 0.06); tone(v, d, {f: rr(300, 650) * k, to: rr(900, 1500) * k, dur: 0.045, peak: rr(0.1, 0.2)}); }
+  };
+  S.bone = (gr, t, o) => {                                                  // a skeleton: a dry crack, then the bones rattle
+    const v = V(gr, o, 0.3), k = vary(0.1) / Math.sqrt(o.size || 1);
+    hiss(v, t, {dur: 0.022, peak: 0.9, type: 'highpass', f: 2600, q: 0.7, a: 0.001});
+    tone(v, t, {type: 'triangle', f: 1180 * k, to: 760 * k, dur: 0.075, peak: 0.65, a: 0.001});
+    tone(v, t, {type: 'square', f: 590 * k, to: 420 * k, dur: 0.035, peak: 0.12, a: 0.001, lp: 2400});
+    const n = o.heavy ? 7 : 5;
+    for (let i = 0; i < n; i++) {
+      const d = t + 0.04 + i * rr(0.018, 0.045);
+      hiss(v, d, {dur: 0.018, peak: rr(0.25, 0.55) * (1 - i / (n + 1)), type: 'bandpass', f: rr(1700, 3600), q: 10, a: 0.001});
+      if (i % 2) tone(v, d, {type: 'triangle', f: rr(900, 1500), dur: 0.03, peak: 0.12, a: 0.001});
+    }
+  };
+  S.flesh = (gr, t, o) => {                                                 // goblins, orcs, bats: a meaty thump and slap
+    const v = V(gr, o, 0.14), k = vary() / Math.pow(o.size || 1, 0.6);
+    tone(v, t, {type: 'sine', f: 160 * k, to: 46 * k, dur: 0.19, peak: 1, a: 0.002});
+    hiss(v, t, {dur: 0.075, peak: 0.75, type: 'lowpass', f: 2200 * k, to: 450 * k, q: 0.9, a: 0.001});
+    hiss(v, t + 0.004, {dur: 0.045, peak: 0.35, type: 'bandpass', f: 1000 * k, q: 1.6});
+    tone(v, t + 0.01, {type: 'triangle', f: 260 * k, to: 120 * k, dur: 0.07, peak: 0.25});
+  };
+  S.hide = (gr, t, o) => {                                                  // trolls, the minotaur, the Ogre King: a deep, heavy thud
+    const v = V(gr, o, 0.2), k = vary();
+    tone(v, t, {type: 'sine', f: 118 * k, to: 32 * k, dur: 0.34, peak: 1.15});
+    tone(v, t, {type: 'triangle', f: 74 * k, to: 38 * k, dur: 0.26, peak: 0.5});
+    hiss(v, t, {dur: 0.12, peak: 0.6, type: 'lowpass', f: 1300, to: 260, q: 0.8});
+    hiss(v, t + 0.01, {dur: 0.06, peak: 0.3, type: 'bandpass', f: 700, q: 1.2});
+  };
+  S.spirit = (gr, t, o) => {                                                // a wraith: the blade passes through something cold
+    const v = V(gr, o, 0.75);
+    hiss(v, t, {dur: 0.45, peak: 0.45, type: 'bandpass', f: 450, fs: [[0.4, 2400], [1, 900]], q: 5, a: 0.03});
+    tone(v, t, {type: 'sine', f: 760, to: 500, dur: 0.7, peak: 0.2, a: 0.01, vib: 25});
+    tone(v, t, {type: 'sine', f: 1141, to: 752, dur: 0.6, peak: 0.12, a: 0.01, vib: 25});
+    tone(v, t, {type: 'triangle', f: 150, to: 70, dur: 0.14, peak: 0.3});
+  };
+  S.scale = (gr, t, o) => {                                                 // a wyvern: a dry crunch of scales over the meat
+    const v = V(gr, o, 0.18);
+    for (let i = 0; i < 4; i++) hiss(v, t + i * 0.011, {dur: 0.028, peak: 0.55, type: 'bandpass', f: rr(2200, 4200), q: 3, a: 0.001});
+    tone(v, t, {type: 'sine', f: 130, to: 48, dur: 0.18, peak: 0.75});
+    hiss(v, t, {dur: 0.09, peak: 0.4, type: 'lowpass', f: 1500, to: 380});
+  };
+  S.metal = (gr, t, o) => {                                                 // steel on armor: a bright clang, ringing away
+    const v = V(gr, o, 0.35), f0 = (o.f || 480) * vary(0.04), r = o.ring || 1.3;
+    hiss(v, t, {dur: 0.03, peak: 0.85, type: 'highpass', f: 3200, q: 0.7, a: 0.001});
+    for (const [m, pk, d] of [[1, 0.45, 0.55], [2.76, 0.32, 0.36], [5.4, 0.2, 0.22], [8.93, 0.1, 0.12]])
+      tone(v, t, {type: 'sine', f: f0 * m, dur: d * r, peak: pk, a: 0.001});
+  };
+  S.wood = (gr, t, o) => {                                                  // a wooden shield: a hollow knock
+    const v = V(gr, o, 0.2);
+    hiss(v, t, {dur: 0.07, peak: 0.85, type: 'bandpass', f: 520, q: 3, a: 0.001});
+    tone(v, t, {type: 'triangle', f: 240, to: 150, dur: 0.12, peak: 0.6, a: 0.001});
+    tone(v, t, {type: 'sine', f: 95, to: 60, dur: 0.12, peak: 0.5});
+  };
+  // a blow landing: what it hits (mat), any armor over it (0 none, 1 iron, 2 steel), a shield that caught it,
+  // and how hard (heavy, crit). size scales the pitch (big things sound deeper)
+  // a cry of pain from something that can feel it (deeper the bigger it is)
+  const PAIN = {Goblin: [520, 1300, 2300, 0], Orc: [150, 600, 1150, 20], Troll: [95, 450, 1000, 14], Minotaur: [120, 520, 1050, 16], 'Ogre King': [80, 400, 900, 12],
+    Wyvern: [700, 1700, 2900, 28], Bat: [2600, 3000, 4000, 0]};
+  S.pain = (gr, t, o) => {
+    const P = PAIN[o.name]; if (!P) return;
+    const v = V(gr, o, 0.25, 0.8), f = P[0] * vary(0.08);
+    if (o.name === 'Bat') { tone(v, t, {f, to: f * 1.5, dur: 0.06, peak: 0.12}); return; }
+    growl(v, t, {f: f * 1.15, to: f * 0.8, dur: o.big ? 0.4 : 0.22, peak: 0.3, f1: P[1], f2: P[2], rough: P[3], a: 0.01});
+  };
+  S.hit = (gr, t, o) => {
+    const k = o.heavy ? 1.15 : 1;
+    if (o.name && (o.crit || o.heavy || Math.random() < 0.45)) S.pain(gr, t + 0.06, {...o, big: o.crit || o.heavy});
+    (S[o.mat] || S.flesh)(gr, t, {...o, gain: k * (o.armor ? 0.75 : 1) * (o.gain ?? 1)});
+    if (o.armor) S.metal(gr, t, {pan: o.pan, f: o.armor > 1 ? 590 : 420, gain: o.armor > 1 ? 0.6 : 0.45, ring: o.armor > 1 ? 1.7 : 1});
+    if (o.caught) (o.caught === 'wood' ? S.wood : S.metal)(gr, t, {pan: o.pan, gain: 0.85, f: 360, ring: 1.1});
+    if (o.heavy) { const v = V(gr, o, 0.3); tone(v, t, {type: 'sine', f: 70, to: 30, dur: 0.4, peak: 0.7}); }
+    if (o.crit) {                                                           // a critical: a bright ring of steel and a deep boom
+      const v = V(gr, o, 0.45);
+      bell(v, t, 1560 * vary(0.03), {dur: 0.9, peak: 0.16});
+      tone(v, t, {type: 'sine', f: 90, to: 28, dur: 0.5, peak: 0.85});
+      hiss(v, t, {dur: 0.2, peak: 0.35, type: 'highpass', f: 5000, q: 0.7});
+    }
+  };
+  // ---- swings ----
+  S.swing = (gr, t, o) => {                                                 // your blade through the air: up, then down, in pitch
+    const v = V(gr, o, 0.12), h = o.heavy;
+    hiss(v, t, {dur: h ? 0.32 : 0.2, a: h ? 0.14 : 0.08, peak: h ? 0.5 : 0.38, type: 'bandpass', f: h ? 260 : 450,
+      fs: [[0.55, h ? 1500 : 2300], [1, h ? 400 : 700]], q: 1.8});
+    if (h) { const g2 = V(gr, o, 0.1, 0.5); growl(g2, t - 0.08, {f: 150, to: 115, dur: 0.22, peak: 0.25, f1: 650, f2: 1100, rough: 0, a: 0.03}); }   // a grunt of effort
+  };
+  // an enemy's attack, by how it fights
+  const FOE_ATTACK = {Goblin: 'stab', Skeleton: 'blade', Orc: 'blade', Troll: 'club', 'Dark Knight': 'blade', Wraith: 'ghost', Bat: 'bite',
+    Slime: 'lunge', 'Little Slime': 'lunge', Minotaur: 'charge', Wyvern: 'bite', 'Ogre King': 'club'};
+  S.foeSwing = (gr, t, o) => {
+    const v = V(gr, o, 0.15), how = FOE_ATTACK[o.name] || 'blade';
+    if (['Orc', 'Troll', 'Minotaur', 'Ogre King'].includes(o.name) && Math.random() < 0.6) { const P = PAIN[o.name]; growl(V(gr, o, 0.2, 0.6), t - 0.12, {f: P[0], to: P[0] * 1.1, dur: 0.2, peak: 0.25, f1: P[1], f2: P[2], rough: P[3], a: 0.03}); }   // a grunt of effort
+    if (how === 'club' || how === 'charge') {
+      hiss(v, t, {dur: 0.34, a: 0.16, peak: 0.55, type: 'bandpass', f: 160, fs: [[0.6, 800], [1, 220]], q: 1.4});
+      if (how === 'charge') for (let i = 0; i < 4; i++) tone(v, t - 0.3 + i * 0.08, {type: 'sine', f: 80, to: 45, dur: 0.08, peak: 0.45});   // hooves
+    } else if (how === 'bite') {
+      hiss(v, t, {dur: 0.12, a: 0.05, peak: 0.35, type: 'bandpass', f: 900, to: 2600, q: 1.5});
+      if (o.name === 'Bat') for (let i = 0; i < 2; i++) tone(v, t + i * 0.05, {f: 3200, to: 4300, dur: 0.035, peak: 0.12});   // a squeak
+    } else if (how === 'lunge') {
+      hiss(v, t, {dur: 0.18, a: 0.06, peak: 0.35, type: 'bandpass', f: 700, to: 250, q: 2.5});
+      tone(v, t, {f: 140, to: 260, dur: 0.12, peak: 0.25});
+    } else if (how === 'ghost') {
+      hiss(v, t, {dur: 0.4, a: 0.2, peak: 0.35, type: 'bandpass', f: 300, fs: [[0.6, 1200], [1, 400]], q: 4});
+      tone(v, t, {f: 330, to: 250, dur: 0.5, peak: 0.12, vib: 40, a: 0.1});
+    } else {                                                                // a blade or a jab
+      const quick = how === 'stab';
+      hiss(v, t, {dur: quick ? 0.13 : 0.2, a: quick ? 0.05 : 0.08, peak: 0.38, type: 'bandpass', f: 600, fs: [[0.55, quick ? 3000 : 2200], [1, 800]], q: 2});
+      if (how === 'blade') tone(v, t + 0.05, {f: 2100, dur: 0.12, peak: 0.04});
+    }
+  };
+  S.whiff = (gr, t, o) => { const v = V(gr, o, 0.15); hiss(v, t, {dur: 0.14, a: 0.03, peak: 0.18, type: 'highpass', f: 2600, to: 5200, q: 0.8}); };
+  // ---- you, hurt: the blow (on your armor if you wear any) and a grunt ----
+  S.hurt = (gr, t, o) => {
+    S.flesh(gr, t, {pan: o.pan, gain: o.armor ? 0.6 : 0.9, size: 1.1});
+    if (o.armor) S.metal(gr, t, {pan: o.pan, f: o.armor > 1 ? 520 : 380, gain: 0.4, ring: 0.8});
+    const v = V(gr, o, 0.12, 0.6);
+    growl(v, t + 0.02, {f: rr(135, 160), to: rr(95, 110), dur: o.big ? 0.3 : 0.18, peak: o.big ? 0.42 : 0.3, f1: 620, f2: 1050, rough: 0, a: 0.015});
+  };
+  S.block = (gr, t, o) => {                                                 // a blow on your shield (or on your blade, with none)
+    if (o.shield === undefined) S.metal(gr, t, {pan: o.pan, f: 720, gain: 0.55, ring: 0.9});
+    else if (o.shield === 0) { S.wood(gr, t, {pan: o.pan, gain: 1}); }
+    else S.metal(gr, t, {pan: o.pan, f: o.shield > 1 ? 470 : 330, gain: 0.8, ring: o.shield > 1 ? 1.6 : 1.1});
+    const v = V(gr, o, 0.1); tone(v, t, {f: 90, to: 50, dur: 0.15, peak: 0.6});
+  };
+  S.guard = (gr, t, o) => { const v = V(gr, o, 0.1); hiss(v, t, {dur: 0.12, a: 0.03, peak: 0.25, type: 'lowpass', f: 900, to: 300}); tone(v, t + 0.06, {type: 'triangle', f: 300, to: 220, dur: 0.06, peak: 0.15}); };
+
+  // ---- voices: what each kind of enemy sounds like when it appears ----
+  S.voice = (gr, t, o) => {
+    const v = V(gr, o, 0.35), n = o.name;
+    if (n === 'Goblin') for (let i = 0; i < 4; i++) {                      // a nasty cackle
+      const d = t + i * 0.085, f = rr(560, 700) * (1 - i * 0.04);
+      growl(v, d, {f, to: f * 0.85, dur: 0.07, peak: 0.28, f1: 1300, f2: 2400, rough: 0, a: 0.008});
+    } else if (n === 'Skeleton') S.rattle(gr, t, o);
+    else if (n === 'Slime' || n === 'Little Slime') { tone(v, t, {f: 110, to: 330, dur: 0.18, peak: 0.45}); tone(v, t + 0.17, {f: 330, to: 90, dur: 0.22, peak: 0.4}); S.goop(gr, t + 0.1, {...o, gain: 0.4}); }
+    else if (n === 'Bat') for (let i = 0; i < 3; i++) tone(v, t + i * 0.07 + rr(0, 0.03), {f: rr(2900, 3400), to: rr(4000, 4800), dur: 0.04, peak: 0.13});
+    else if (n === 'Wraith') {
+      const w = V(gr, o, 0.85);
+      tone(w, t, {f: 420, to: 880, glide: 0.5, dur: 1.4, peak: 0.16, vib: 45, vibRate: 6, a: 0.3});
+      tone(w, t + 0.12, {f: 630, to: 1320, glide: 0.5, dur: 1.2, peak: 0.08, vib: 45, vibRate: 6.4, a: 0.3});
+      hiss(w, t, {dur: 1.2, a: 0.4, peak: 0.14, type: 'bandpass', f: 800, to: 2400, q: 6});
+    } else if (n === 'Wyvern') {
+      growl(v, t, {f: 640, to: 1300, dur: 0.55, peak: 0.32, f1: 1800, f2: 3000, rough: 30, a: 0.04});
+      hiss(v, t + 0.1, {dur: 0.5, peak: 0.25, type: 'highpass', f: 3000, q: 0.7, a: 0.05});
+    } else if (n === 'Dark Knight') {
+      S.metal(gr, t, {pan: o.pan, f: 330, gain: 0.4, ring: 0.8}); S.metal(gr, t + 0.16, {pan: o.pan, f: 360, gain: 0.35, ring: 0.8});
+      growl(v, t + 0.2, {f: 68, to: 60, dur: 0.9, peak: 0.42, f1: 420, f2: 900, rough: 16});
+    } else if (n === 'Minotaur') {
+      hiss(v, t, {dur: 0.25, peak: 0.5, type: 'lowpass', f: 900, to: 300, a: 0.01});           // a snort
+      growl(v, t + 0.25, {f: 92, to: 74, dur: 0.8, peak: 0.55, f1: 480, f2: 1000, rough: 18});
+    } else if (n === 'Ogre King') {
+      const w = V(gr, o, 0.6, 1.2);
+      growl(w, t, {f: 58, to: 46, dur: 1.6, peak: 0.75, f1: 380, f2: 820, rough: 13, a: 0.12});
+      growl(w, t, {f: 87, to: 70, dur: 1.5, peak: 0.35, f1: 600, f2: 1300, rough: 17, a: 0.15});
+      tone(w, t, {f: 45, to: 30, dur: 1.6, peak: 0.6, a: 0.1});
+    } else {                                                                // orcs, trolls: a growl, deeper the bigger
+      const f = n === 'Troll' ? 62 : 96;
+      growl(v, t, {f, to: f * 0.8, dur: n === 'Troll' ? 0.9 : 0.6, peak: 0.5, f1: n === 'Troll' ? 400 : 560, f2: 1100, rough: n === 'Troll' ? 14 : 22});
+    }
+  };
+  S.rattle = (gr, t, o) => {                                                // bones knocking together
+    const v = V(gr, o, 0.3);
+    for (let i = 0; i < 14; i++) {
+      const d = t + i * rr(0.018, 0.04) + (o.rise ? i * 0.01 : 0);
+      hiss(v, d, {dur: 0.016, peak: rr(0.15, 0.4), type: 'bandpass', f: o.rise ? 1400 + i * 160 : rr(1500, 3400), q: 9, a: 0.001});
+      if (i % 3 === 0) tone(v, d, {type: 'triangle', f: rr(700, 1300), dur: 0.03, peak: 0.1, a: 0.001});
+    }
+  };
+  // ---- deaths, by what the enemy is made of ----
+  S.die = (gr, t, o) => {
+    const v = V(gr, o, 0.3), m = o.mat;
+    if (m === 'goop') {                                                     // a big splat, then the puddle bubbles
+      hiss(v, t, {dur: 0.45, peak: 0.8, type: 'lowpass', f: 1800, to: 160, q: 2, a: 0.004});
+      tone(v, t, {f: 160, to: 40, dur: 0.4, peak: 0.7});
+      for (let i = 0; i < 7; i++) tone(v, t + 0.15 + i * rr(0.04, 0.09), {f: rr(250, 500), to: rr(700, 1200), dur: 0.05, peak: rr(0.06, 0.14)});
+    } else if (m === 'bone') {                                              // the skeleton falls apart: bones clattering down
+      for (let i = 0; i < 16; i++) {
+        const d = t + i * rr(0.02, 0.05) + i * i * 0.0015;
+        hiss(v, d, {dur: 0.02, peak: rr(0.2, 0.55) * (1 - i / 22), type: 'bandpass', f: rr(1200, 3400) * (1 - i / 40), q: 9, a: 0.001});
+        if (i % 2) tone(v, d, {type: 'triangle', f: rr(600, 1400), to: rr(400, 700), dur: 0.05, peak: 0.15, a: 0.001});
+      }
+      tone(v, t + 0.5, {f: 110, to: 50, dur: 0.15, peak: 0.4});
+    } else if (m === 'spirit') {                                            // the wraith comes apart in a fading wail
+      tone(v, t, {f: 900, to: 180, dur: 1.1, peak: 0.18, vib: 60, a: 0.02});
+      hiss(v, t, {dur: 1, peak: 0.3, type: 'bandpass', f: 2600, to: 300, q: 4, a: 0.05});
+    } else {                                                                // a body hitting the floor (in a clatter of armor)
+      const big = m === 'hide' || o.size > 1.3;
+      tone(v, t + 0.12, {f: big ? 80 : 110, to: big ? 26 : 38, dur: big ? 0.55 : 0.35, peak: big ? 1.1 : 0.8});
+      hiss(v, t + 0.12, {dur: big ? 0.5 : 0.3, peak: 0.45, type: 'lowpass', f: 600, to: 150, a: 0.004});   // dust
+      if (o.armor) for (let i = 0; i < 3; i++) S.metal(gr, t + 0.14 + i * rr(0.07, 0.12), {pan: o.pan, f: rr(300, 520), gain: 0.35 - i * 0.08, ring: 0.7});
+      if (m === 'scale') hiss(v, t, {dur: 0.6, peak: 0.25, type: 'highpass', f: 2600, a: 0.05});   // a last hiss
+    }
+  };
+  // ---- the fight's other sounds ----
+  S.burn = (gr, t, o) => {                                                  // flames crackling on an enemy
+    const v = V(gr, o, 0.2);
+    hiss(v, t, {dur: 0.35, a: 0.04, peak: 0.25, type: 'highpass', f: 2500, q: 0.7});
+    for (let i = 0; i < 6; i++) hiss(v, t + rr(0, 0.3), {dur: 0.012, peak: rr(0.2, 0.45), type: 'bandpass', f: rr(1500, 4500), q: 4, a: 0.001});
+  };
+  S.ignite = (gr, t, o) => { const v = V(gr, o, 0.25); hiss(v, t, {dur: 0.35, a: 0.05, peak: 0.45, type: 'lowpass', f: 250, to: 3200, q: 1.2}); S.burn(gr, t + 0.1, o); };
+  S.poison = (gr, t, o) => {                                                // a sick bubbling
+    const v = V(gr, o, 0.25);
+    hiss(v, t, {dur: 0.35, peak: 0.2, type: 'bandpass', f: 700, q: 6, a: 0.05});
+    for (let i = 0; i < 5; i++) tone(v, t + i * rr(0.04, 0.08), {f: rr(200, 380), to: rr(500, 800), dur: 0.05, peak: 0.12});
+  };
+  S.stun = (gr, t, o) => { const v = V(gr, o, 0.4); tone(v, t, {type: 'triangle', f: 950, to: 520, dur: 0.12, peak: 0.4}); bell(v, t + 0.05, 1900, {dur: 0.7, peak: 0.1}); bell(v, t + 0.17, 2400, {dur: 0.6, peak: 0.07}); };
+  S.drain = (gr, t, o) => { const v = V(gr, o, 0.5); hiss(v, t, {dur: 0.45, a: 0.08, peak: 0.35, type: 'bandpass', f: 2600, to: 280, q: 5}); tone(v, t, {f: 700, to: 180, dur: 0.45, peak: 0.15, vib: 30}); };
+  S.regen = (gr, t, o) => { const v = V(gr, o, 0.3); hiss(v, t, {dur: 0.4, a: 0.1, peak: 0.2, type: 'bandpass', f: 400, to: 900, q: 3}); tone(v, t, {f: 110, to: 160, dur: 0.4, peak: 0.25, a: 0.1}); };
+  S.heal = (gr, t, o) => {                                                  // a soft shimmer of light
+    const v = V(gr, o, 0.6);
+    [880, 1320, 1760, 2217].forEach((f, i) => tone(v, t + i * 0.05, {f, dur: 0.6, peak: 0.07, a: 0.04}));
+  };
+  S.split = (gr, t, o) => { S.goop(gr, t, {...o, size: 0.8}); S.goop(gr, t + 0.12, {...o, size: 0.7, pan: (o.pan || 0) + 0.2}); };
+  S.steal = (gr, t, o) => { S.coins(gr, t, {...o, n: 3}); S.voice(gr, t + 0.1, {...o, name: 'Goblin', gain: 0.7}); };
+  S.heart = (gr, t, o) => {                                                 // your heart, pounding at low health
+    const v = V(gr, o, 0.05, 1.1);
+    tone(v, t, {f: 62, to: 40, dur: 0.14, peak: 0.85}); tone(v, t + 0.19, {f: 56, to: 38, dur: 0.14, peak: 0.55});
+  };
+  S.flee = (gr, t, o) => { for (let i = 0; i < 6; i++) S.step(gr, t + i * 0.09, {...o, gain: 0.8 - i * 0.1, pan: -0.3 - i * 0.1}); };
+  S.stumble = (gr, t, o) => { S.step(gr, t, o); const v = V(gr, o, 0.1); tone(v, t + 0.08, {f: 120, to: 50, dur: 0.18, peak: 0.6}); hiss(v, t + 0.08, {dur: 0.15, peak: 0.3, type: 'lowpass', f: 700}); };
+  S.encounter = (gr, t, o) => {                                             // the sting when enemies appear: a drum and a dark swell
+    const v = V(gr, o, 0.5, o.boss ? 1.3 : 1);
+    tone(v, t, {f: 95, to: 40, dur: 0.5, peak: 0.9});
+    hiss(v, t, {dur: 0.25, peak: 0.35, type: 'lowpass', f: 500, to: 120});
+    for (const [f, d] of [[73.4, 0], [77.8, 0], [146.8, 0.02]]) tone(v, t + d, {type: 'sawtooth', f, dur: 0.9, peak: 0.07, a: 0.15, lp: 500, lpTo: 1400});
+  };
+  S.youDie = (gr, t, o) => {                                                // you fall, and a bell tolls
+    S.die(gr, t, {mat: 'flesh', armor: o.armor, size: 1});
+    const v = V(gr, o, 0.7);
+    bell(v, t + 0.6, 98, {dur: 5, peak: 0.4}); bell(v, t + 0.6, 196.5, {dur: 3, peak: 0.12});
+  };
+  S.bossFall = (gr, t, o) => {                                              // the Ogre King hits the floor
+    const v = V(gr, o, 0.6, 1.2);
+    tone(v, t, {f: 55, to: 22, dur: 1.8, peak: 1.2}); tone(v, t, {type: 'triangle', f: 40, to: 25, dur: 1.4, peak: 0.6});
+    hiss(v, t, {dur: 1.4, peak: 0.6, type: 'lowpass', f: 700, to: 90, q: 0.7, a: 0.005});
+    S.metal(gr, t + 0.05, {f: 260, gain: 0.4, ring: 1.6});
+  };
+  S.roar = (gr, t, o) => S.voice(gr, t, {...o, name: 'Ogre King'});
+
+  // ---- out of the fight ----
+  S.tap = (gr, t, o) => { const v = V(gr, o, 0.04, 0.8); hiss(v, t, {dur: 0.018, peak: 0.35, type: 'bandpass', f: 2300, q: 4, a: 0.001}); tone(v, t, {type: 'triangle', f: 1250, to: 880, dur: 0.035, peak: 0.12, a: 0.001}); };
+  S.page = (gr, t, o) => { const v = V(gr, o, 0.1); hiss(v, t, {dur: 0.16, a: 0.04, peak: 0.16, type: 'bandpass', f: 2600, to: 4200, q: 0.9}); hiss(v, t + 0.08, {dur: 0.1, a: 0.02, peak: 0.1, type: 'bandpass', f: 3600, q: 1}); };
+  S.coin = (gr, t, o) => { const v = V(gr, o, 0.3); tone(v, t, {f: 2637 * vary(0.02), dur: 0.22, peak: 0.12}); tone(v, t + 0.055, {f: 3520 * vary(0.02), dur: 0.3, peak: 0.1}); tone(v, t, {type: 'triangle', f: 5274, dur: 0.06, peak: 0.04}); };
+  S.coins = (gr, t, o) => { const n = o.n || 5; for (let i = 0; i < n; i++) { const v = V(gr, o, 0.3); const d = t + i * rr(0.03, 0.07); tone(v, d, {f: rr(2300, 3400), dur: rr(0.12, 0.25), peak: rr(0.05, 0.11)}); tone(v, d, {type: 'triangle', f: rr(4800, 6000), dur: 0.04, peak: 0.03}); } };
+  S.chest = (gr, t, o) => {                                                 // a lid creaking open, then thunking back
+    const v = V(gr, o, 0.25);
+    tone(v, t, {type: 'sawtooth', f: 95, to: 160, dur: 0.38, peak: 0.12, a: 0.05, lp: 900, vib: 60, vibRate: 23});
+    S.wood(gr, t + 0.38, {...o, gain: 0.7});
+  };
+  S.capsa = (gr, t, o) => { const v = V(gr, o, 0.2); hiss(v, t, {dur: 0.12, peak: 0.3, type: 'lowpass', f: 900, a: 0.01}); S.page(gr, t + 0.12, o); };
+  S.potion = (gr, t, o) => {                                                // pulling the cork and drinking it down
+    const v = V(gr, o, 0.15);
+    tone(v, t, {f: 600, to: 300, dur: 0.05, peak: 0.25, a: 0.001});         // pop
+    for (let i = 0; i < 3; i++) { const d = t + 0.12 + i * 0.12; tone(v, d, {f: 170, to: 420, dur: 0.09, peak: 0.35}); hiss(v, d, {dur: 0.09, peak: 0.12, type: 'lowpass', f: 700}); }
+    S.heal(gr, t + 0.5, o);
+  };
+  S.levelUp = (gr, t, o) => {                                               // rising bells and a held chord of voices
+    const v = V(gr, o, 0.5);
+    [62, 65, 69, 74, 77].forEach((m, i) => bell(v, t + i * 0.1, midi(m + 12), {dur: 1.6, peak: 0.1}));
+    const w = V(gr, o, 0.6);
+    for (const m of [50, 57, 62, 65]) growl(w, t + 0.2, {f: midi(m), dur: 1.6, peak: 0.08, f1: 720, f2: 1150, rough: 0, a: 0.4});
+  };
+  S.deal = (gr, t, o) => { const v = V(gr, o, 0.08); hiss(v, t, {dur: 0.05, peak: 0.25, type: 'highpass', f: 3500, a: 0.004}); tone(v, t + 0.03, {type: 'triangle', f: 600, to: 400, dur: 0.03, peak: 0.08}); };
+  S.flip = (gr, t, o) => { const v = V(gr, o, 0.15); hiss(v, t, {dur: 0.06, peak: 0.25, type: 'bandpass', f: 2400, to: 3800, q: 1}); bell(v, t + 0.04, 2093 + (o.i || 0) * 260, {dur: 0.5, peak: 0.05}); };
+  S.pick = (gr, t, o) => { const v = V(gr, o, 0.55); hiss(v, t, {dur: 0.4, a: 0.1, peak: 0.25, type: 'bandpass', f: 600, to: 4000, q: 2}); bell(v, t + 0.25, midi(86), {dur: 1.4, peak: 0.13}); bell(v, t + 0.33, midi(93), {dur: 1.4, peak: 0.08}); };
+  S.shuffle = (gr, t, o) => { for (let i = 0; i < 7; i++) S.deal(gr, t + i * 0.045, {...o, gain: 0.7}); };
+  S.scroll = (gr, t, o) => {                                                // parchment unrolling, and a shimmer of magic
+    const v = V(gr, o, 0.15);
+    for (let i = 0; i < 14; i++) hiss(v, t + i * rr(0.012, 0.03), {dur: 0.01, peak: rr(0.1, 0.25), type: 'bandpass', f: rr(2500, 5000), q: 3, a: 0.001});
+    S.magic(gr, t + 0.2, o);
+  };
+  S.magic = (gr, t, o) => { const v = V(gr, o, 0.75); for (let i = 0; i < 6; i++) tone(v, t + i * 0.06, {f: rr(1100, 2600), dur: rr(0.5, 0.9), peak: 0.05, a: 0.06, vib: 15}); };
+  S.enchant = (gr, t, o) => { S.magic(gr, t, o); const v = V(gr, o, 0.6); hiss(v, t, {dur: 0.6, a: 0.25, peak: 0.25, type: 'bandpass', f: 300, to: 3000, q: 3}); bell(v, t + 0.55, midi(81), {dur: 1.6, peak: 0.12}); };
+  S.equip = (gr, t, o) => { const v = V(gr, o, 0.15); hiss(v, t, {dur: 0.14, peak: 0.2, type: 'lowpass', f: 1300, a: 0.02}); S.metal(gr, t + 0.1, {...o, f: 900, gain: 0.25, ring: 0.5}); };
+  S.buy = (gr, t, o) => { S.coins(gr, t, {...o, n: 4}); S.wood(gr, t + 0.25, {...o, gain: 0.35}); };
+  S.sell = (gr, t, o) => S.coins(gr, t, {...o, n: 3});
+  S.shopBell = (gr, t, o) => { const v = V(gr, o, 0.4); bell(v, t, 1318, {dur: 0.9, peak: 0.1}); bell(v, t + 0.16, 1046, {dur: 1.1, peak: 0.1}); };
+  // a footstep, in what the floor is made of: stone, the crypt's shallow water, the caverns' grit, ash, the hall's boards
+  S.step = (gr, t, o) => {
+    const v = V(gr, o, 0.12, 1.4), f = o.floor || 0;
+    hiss(v, t, {dur: 0.05, peak: 0.28, type: 'lowpass', f: 650 * vary(0.15), q: 0.8, a: 0.003});
+    tone(v, t, {f: 95 * vary(0.1), to: 60, dur: 0.06, peak: 0.25});
+    if (f === 1) { hiss(v, t + 0.01, {dur: 0.14, peak: 0.16, type: 'bandpass', f: 1400, to: 700, q: 1.5}); tone(v, t + 0.05, {f: rr(400, 600), to: rr(900, 1300), dur: 0.04, peak: 0.05}); }
+    else if (f === 2) for (let i = 0; i < 4; i++) hiss(v, t + i * 0.012, {dur: 0.01, peak: 0.12, type: 'bandpass', f: rr(2500, 5000), q: 3, a: 0.001});
+    else if (f === 3) hiss(v, t, {dur: 0.09, peak: 0.08, type: 'highpass', f: 2800});
+    else if (f === 4) tone(v, t, {type: 'triangle', f: 210, to: 160, dur: 0.05, peak: 0.12});
+  };
+  S.stairs = (gr, t, o) => {
+    for (let i = 0; i < 5; i++) S.step(gr, t + i * 0.17, {...o, gain: 0.9 - i * 0.12, floor: 0});
+    const v = V(gr, o, 0.6); hiss(v, t + 0.3, {dur: 1.6, a: 0.6, peak: 0.25, type: 'lowpass', f: 120, to: 420}); tone(v, t + 0.4, {f: 52, to: 40, dur: 1.4, peak: 0.35, a: 0.3});
+  };
+  S.camp = (gr, t, o) => { const v = V(gr, o, 0.25, 2.2); hiss(v, t, {dur: 0.4, a: 0.1, peak: 0.3, type: 'lowpass', f: 300, to: 2400}); S.burn(gr, t + 0.2, {...o, gain: 0.8}); };
+  S.train = (gr, t, o) => { for (let i = 0; i < 3; i++) S.swing(gr, t + i * 0.28, {...o, heavy: i === 2}); };
+  S.victory = (gr, t, o) => {                                               // a fanfare: horns and a roll of drums
+    const v = V(gr, o, 0.5, 5.5);
+    const horn = (d, m, dur, pk = 0.12) => { for (const det of [-6, 6]) tone(v, t + d, {type: 'sawtooth', f: midi(m), dur, peak: pk, a: 0.04, hold: dur * 0.6, detune: det, lp: 700, lpTo: 2400, lpGlide: 0.15}); };
+    horn(0, 62, 0.25); horn(0.25, 62, 0.15); horn(0.4, 69, 0.4); horn(0.8, 74, 1.6, 0.14); horn(0.8, 66, 1.6, 0.09); horn(0.8, 57, 1.6, 0.09);
+    for (let i = 0; i < 12; i++) tone(v, t + 0.8 + i * 0.045, {f: 82, to: 60, dur: 0.12, peak: 0.12 + i * 0.02});
+  };
+
+  // ======================================================================
+  // ---- music: pieces composed as they play, bar by bar, a little ahead of time ----
+  // ======================================================================
+  // instruments, each (dest, t, f, dur, peak)
+  const I = {
+    pad(d, t, f, dur, pk = 0.05, lp = 900) { for (const det of [-9, 0, 8]) tone(d, t, {type: 'sawtooth', f, dur: dur + 1.2, peak: pk, a: Math.min(1.2, dur * 0.4), hold: dur * 0.6, detune: det, lp, lpQ: 0.5}); },
+    organ(d, t, f, dur, pk = 0.06) { for (const [m, k] of [[1, 1], [2, 0.6], [3, 0.3], [4, 0.25], [0.5, 0.5]]) tone(d, t, {f: f * m, dur: dur + 0.4, peak: pk * k, a: 0.06, hold: dur * 0.8}); },
+    choir(d, t, f, dur, pk = 0.06) { growl(d, t, {f, dur: dur + 0.6, peak: pk, f1: 700, f2: 1150, rough: 0, a: Math.min(0.7, dur * 0.4)}); growl(d, t, {f: f * 1.005, dur: dur + 0.6, peak: pk * 0.7, f1: 650, f2: 1050, rough: 0, a: Math.min(0.8, dur * 0.45)}); },
+    pluck(d, t, f, dur, pk = 0.1) { tone(d, t, {type: 'triangle', f, dur: Math.min(1.4, dur + 0.6), peak: pk, a: 0.003}); tone(d, t, {type: 'sawtooth', f, dur: 0.35, peak: pk * 0.35, a: 0.002, lp: 3200, lpTo: 300, lpGlide: 0.3}); },
+    bell(d, t, f, dur, pk = 0.06) { bell(d, t, f, {dur: Math.max(1, dur * 2), peak: pk}); },
+    string(d, t, f, dur, pk = 0.06) { tone(d, t, {type: 'sawtooth', f, dur: dur * 0.9, peak: pk, a: 0.01, lp: 700, lpTo: 260, lpGlide: dur}); },
+    drone(d, t, f, dur, pk = 0.06, lp = 260) { for (const det of [-4, 4]) tone(d, t, {type: 'sawtooth', f, dur: dur + 0.8, peak: pk, a: 0.8, hold: dur * 0.7, detune: det, lp, lpQ: 1.2}); },
+    gurdy(d, t, f, dur, pk = 0.05) { tone(d, t, {type: 'sawtooth', f, dur: dur + 0.3, peak: pk, a: 0.15, hold: dur * 0.8, lp: 1600, lpQ: 3, vib: 8, vibRate: 5}); },
+    drum(d, t, f = 90, pk = 0.5, dur = 0.4) { tone(d, t, {f, to: f * 0.45, dur, peak: pk, a: 0.002}); hiss(d, t, {dur: 0.08, peak: pk * 0.35, type: 'lowpass', f: 500, to: 150}); },
+    rim(d, t, pk = 0.12) { hiss(d, t, {dur: 0.05, peak: pk, type: 'bandpass', f: 1900, q: 2.5, a: 0.001}); },
+    shaker(d, t, pk = 0.05) { hiss(d, t, {dur: 0.05, peak: pk, type: 'highpass', f: 6000, a: 0.01}); },
+  };
+  // chords as MIDI notes, root first
+  const CH = {Dm: [50, 57, 62, 65], Bb: [46, 58, 62, 65], Gm: [43, 55, 62, 67], A: [45, 57, 61, 64], F: [41, 57, 60, 65], C: [48, 55, 60, 64],
+    Eb: [51, 58, 63, 67], Cm: [48, 55, 60, 63], Ab: [44, 56, 60, 63], Em: [40, 55, 59, 64], G: [43, 55, 59, 62], D: [50, 57, 62, 66], Am: [45, 57, 60, 64], Db: [49, 56, 61, 65]};
+  // a small, seeded random walk: the same bar of a piece always plays the same notes, but the piece doesn't loop exactly
+  const seeded = s => () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
+  const walkMel = (rnd, scale, start, n) => { let i = start; const out = []; for (let k = 0; k < n; k++) { i = Math.max(0, Math.min(scale.length - 1, i + [-2, -1, -1, 0, 1, 1, 2][Math.floor(rnd() * 7)])); out.push(scale[i]); } return out; };
+  const mode = (root, steps) => { const out = []; for (let o = 0; o < 3; o++) for (const s of steps) out.push(root + o * 12 + s); return out; };
+  const MINOR = [0, 2, 3, 5, 7, 8, 10], DORIAN = [0, 2, 3, 5, 7, 9, 10], PHRYG = [0, 1, 3, 5, 7, 8, 10], HIJAZ = [0, 1, 4, 5, 7, 8, 10];
+
+  // each piece: bpm, beats in a bar, and bar(d, t, n, b): what plays in bar n starting at t (b = one beat in seconds)
+  const PIECES = {
+    title: {bpm: 54, beats: 4, bar(d, t, n, b) {                            // a slow organ hymn in D minor, a bell tolling, voices above
+      const prog = [CH.Dm, CH.Bb, CH.Gm, CH.A], c = prog[n % 4];
+      for (const m of c) I.organ(d, t, midi(m), b * 4, 0.022);
+      I.drone(d, t, midi(c[0] - 12), b * 4, 0.03);
+      if (n % 2 === 0) I.bell(d, t, midi(50), b * 2, 0.08);
+      const mel = [[74, 72], [70, 69], [67, 70], [69, 61]][n % 4];
+      if (n % 8 >= 4) { I.choir(d, t + b, midi(mel[0]), b * 1.6, 0.05); I.choir(d, t + b * 2.5, midi(mel[1]), b * 1.4, 0.05); }
+    }},
+    floor0: {bpm: 60, beats: 4, vol: 1.9, bar(d, t, n, b) {                           // the Broken Gate: wind over a low drone, a lute picking out a lament
+      const rnd = seeded(n * 31 + 7), prog = [CH.Dm, CH.Dm, CH.Bb, CH.A, CH.Dm, CH.Gm, CH.Bb, CH.A], c = prog[n % 8];
+      I.drone(d, t, midi(c[0] - 12), b * 4, 0.035);
+      I.pad(d, t, midi(c[1]), b * 4, 0.012, 600); I.pad(d, t, midi(c[2]), b * 4, 0.01, 600);
+      const notes = walkMel(rnd, mode(62, MINOR), 4, 4), rh = [[0, 1.5, 2, 3], [0, 1, 2.5], [0.5, 2, 3.5], [0, 3]][n % 4];
+      rh.forEach((x, i) => { if (rnd() > 0.2) I.pluck(d, t + x * b, midi(notes[i]), b, 0.07); });
+      if (n % 4 === 3) hiss(d, t, {dur: b * 4, a: b * 1.5, peak: 0.05, type: 'bandpass', f: 300, fs: [[0.5, 900], [1, 250]], q: 4});   // a gust of wind
+    }},
+    floor1: {bpm: 52, beats: 4, vol: 1.9, bar(d, t, n, b) {                           // the Drowned Crypt: glassy bells, water dripping in the dark
+      const rnd = seeded(n * 17 + 3), prog = [CH.Cm, CH.Cm, CH.Ab, CH.Db], c = prog[n % 4];
+      I.drone(d, t, midi(c[0] - 12), b * 4, 0.035, 200);
+      I.pad(d, t, midi(c[2]), b * 4, 0.012, 500);
+      const notes = walkMel(rnd, mode(72, PHRYG), 3, 3);
+      [0, 1.5, 3].forEach((x, i) => { if (rnd() > 0.35) I.bell(d, t + x * b, midi(notes[i]), b * 1.5, 0.035); });
+      for (let i = 0, k = 1 + Math.floor(rnd() * 3); i < k; i++) { const x = t + rnd() * b * 4, f = 900 + rnd() * 900; tone(d, x, {f, to: f * 2.2, dur: 0.06, peak: 0.05}); tone(d, x + 0.25, {f: f * 1.5, to: f * 2.6, dur: 0.04, peak: 0.015}); }   // drips and their echo
+    }},
+    floor2: {bpm: 66, beats: 4, vol: 1.9, bar(d, t, n, b) {                           // the Glowing Caverns: crystals chiming in slow arpeggios
+      const prog = [CH.Em, CH.Em, CH.C, CH.D, CH.Em, CH.Am, CH.C, CH.D], c = prog[n % 8];
+      I.pad(d, t, midi(c[0] - 12), b * 4, 0.02, 400); I.pad(d, t, midi(c[1]), b * 4, 0.012, 1400); I.pad(d, t, midi(c[3]), b * 4, 0.01, 1400);
+      const arp = [c[1] + 12, c[2] + 12, c[3] + 12, c[2] + 24];
+      for (let i = 0; i < 8; i++) if ((n + i) % 3) I.bell(d, t + i * b / 2, midi(arp[i % 4]), b, 0.022 + (i % 4 === 0 ? 0.01 : 0));
+    }},
+    floor3: {bpm: 58, beats: 4, vol: 1.2, bar(d, t, n, b) {                           // the Burning Deep: a rumbling drone, a slow war drum, dark voices
+      const rnd = seeded(n * 13 + 5), roots = [36, 36, 37, 36, 36, 36, 41, 37], r = roots[n % 8];
+      I.drone(d, t, midi(r - 12), b * 4, 0.05, 160); I.drone(d, t, midi(r), b * 4, 0.025, 300);
+      I.drum(d, t, 60, 0.35, 0.6); I.drum(d, t + b * 2, 55, 0.25, 0.6);
+      if (n % 2) I.drum(d, t + b * 3.5, 70, 0.12, 0.3);
+      if (n % 4 >= 2) { const m = walkMel(rnd, mode(48, HIJAZ), 7, 2); I.choir(d, t, midi(m[0]), b * 2, 0.04); I.choir(d, t + b * 2, midi(m[1]), b * 2, 0.04); }
+    }},
+    floor4: {bpm: 76, beats: 3, vol: 1.9, bar(d, t, n, b) {                           // the Feast Hall: a hurdy-gurdy drone and an old, crooked dance
+      const rnd = seeded(n * 23 + 11), prog = [CH.Dm, CH.C, CH.Dm, CH.A], c = prog[n % 4];
+      I.gurdy(d, t, midi(50), b * 3, 0.025); I.gurdy(d, t, midi(57), b * 3, 0.018);
+      I.pluck(d, t, midi(c[0] - 12), b, 0.09);
+      const notes = walkMel(rnd, mode(62, DORIAN), 5, 4);
+      [0, 1, 1.5, 2].forEach((x, i) => { if (i < 2 || rnd() > 0.4) I.pluck(d, t + x * b, midi(notes[i]), b * 0.8, 0.065); });
+      I.drum(d, t, 120, 0.12, 0.2); I.rim(d, t + b * 2, 0.04);
+    }},
+    combat: {bpm: 128, beats: 4, bar(d, t, n, b) {                          // a fight: war drums, a driving bass, voices on the downbeats
+      const prog = [CH.Dm, CH.Dm, CH.Bb, CH.C, CH.Dm, CH.Dm, CH.Gm, CH.A], c = prog[n % 8], r = c[0] - 12;
+      const bass = [0, 0, 12, 0, 0, 12, 0, 10];
+      for (let i = 0; i < 8; i++) I.string(d, t + i * b / 2, midi(r + bass[i]), b / 2, 0.05);
+      I.drum(d, t, 82, 0.5); I.drum(d, t + b * 1.5, 100, 0.25, 0.25); I.drum(d, t + b * 2, 82, 0.4); I.drum(d, t + b * 3, 120, 0.22, 0.2); I.drum(d, t + b * 3.5, 110, 0.25, 0.2);
+      for (let i = 0; i < 4; i++) I.rim(d, t + (i + 0.5) * b, 0.05);
+      if (n % 2 === 0) for (const m of c.slice(1)) I.choir(d, t, midi(m), b * 1.5, 0.025);
+      I.pad(d, t, midi(c[2] + 12), b * 4, 0.008, 2000);
+    }},
+    boss: {bpm: 100, beats: 4, vol: 0.8, bar(d, t, n, b) {                            // the Ogre King: an organ, a choir and every drum in the hall
+      const prog = [CH.Dm, CH.Eb, CH.Dm, CH.A], c = prog[n % 4], r = c[0] - 12;
+      for (const m of c) I.organ(d, t, midi(m), b * 4, 0.018);
+      I.drone(d, t, midi(r - 12), b * 4, 0.045, 200);
+      for (let i = 0; i < 4; i++) { I.drum(d, t + i * b, i % 2 ? 70 : 58, i % 2 ? 0.35 : 0.6, 0.5); I.string(d, t + i * b, midi(r), b * 0.5, 0.06); I.string(d, t + (i + 0.5) * b, midi(r + 12), b * 0.4, 0.04); }
+      I.drum(d, t + b * 3.75, 90, 0.3, 0.2);
+      for (const m of c.slice(1)) I.choir(d, t, midi(m + 12), b * 3.5, 0.022);
+    }},
+    camp: {bpm: 70, beats: 3, vol: 2, bar(d, t, n, b) {                             // the campfire: a quiet lute by the fire, warm and low
+      const prog = [CH.Dm, CH.Bb, CH.F, CH.C], c = prog[n % 4];
+      I.pad(d, t, midi(c[0]), b * 3, 0.014, 700);
+      [0, 1, 2].forEach(i => I.pluck(d, t + i * b, midi([c[0], c[2], c[3]][i]), b, 0.07));
+      if (n % 2) I.pluck(d, t + b * 2.5, midi(c[1] + 12), b * 0.5, 0.05);
+      for (let i = 0; i < 5; i++) hiss(d, t + Math.random() * b * 3, {dur: 0.012, peak: 0.05 + Math.random() * 0.07, type: 'bandpass', f: 1500 + Math.random() * 3000, q: 3, a: 0.001});   // the fire crackling
+    }},
+    shop: {bpm: 104, beats: 3, vol: 1.6, bar(d, t, n, b) {                            // the merchant's wagon: a jaunty little tune
+      const rnd = seeded(n * 41 + 1), prog = [CH.Gm, CH.F, CH.Gm, CH.D], c = prog[n % 4];
+      I.pluck(d, t, midi(c[0] - 12), b, 0.1); I.pluck(d, t + b, midi(c[1]), b * 0.5, 0.05); I.pluck(d, t + b * 2, midi(c[2]), b * 0.5, 0.05);
+      const notes = walkMel(rnd, mode(67, DORIAN), 4, 3);
+      [0, 1, 2].forEach((x, i) => I.pluck(d, t + x * b + b * 0.02, midi(notes[i]), b * 0.7, 0.06));
+      I.shaker(d, t + b, 0.03); I.shaker(d, t + b * 2, 0.03);
+    }},
+    victory: {bpm: 66, beats: 4, vol: 1.8, bar(d, t, n, b) {                          // you escaped: bright chords, bells, morning
+      const prog = [CH.D, CH.G, CH.D, CH.A], c = prog[n % 4];
+      I.pad(d, t, midi(c[0]), b * 4, 0.018, 1600); for (const m of c.slice(1)) I.pad(d, t, midi(m), b * 4, 0.01, 1800);
+      [0, 1, 2, 3].forEach(i => I.bell(d, t + i * b, midi(c[(i % 3) + 1] + 12), b, 0.025));
+    }},
+    death: {bpm: 44, beats: 4, bar(d, t, n, b) {                            // you died: a dirge, a bell for the dead
+      const prog = [CH.Dm, CH.Gm, CH.Dm, CH.A], c = prog[n % 4];
+      for (const m of c) I.organ(d, t, midi(m - 12), b * 4, 0.02);
+      if (n % 2 === 0) I.bell(d, t, midi(38), b * 3, 0.1);
+      I.choir(d, t + b, midi(c[2]), b * 2.5, 0.03);
+    }}
+  };
+  let tracks = [], want = null, ticker = null;
+  function startPiece(name) {
+    const P = PIECES[name]; if (!P || !A) return;
+    const out = voice(G, {bus: 'music', wet: 0.45, gain: 1}), b = 60 / P.bpm;
+    out.gain.setValueAtTime(0.0001, A.currentTime); out.gain.exponentialRampToValueAtTime(P.vol || 1, A.currentTime + 1.6);
+    tracks.push({name, P, out, b, next: A.currentTime + 0.1, n: 0, stopping: false});
+  }
+  function stopPiece(tr, fade = 1.8) {
+    tr.stopping = true;
+    const g = tr.out.gain, now = A.currentTime;
+    g.cancelScheduledValues(now); g.setValueAtTime(Math.max(0.0001, g.value), now); g.exponentialRampToValueAtTime(0.0001, now + fade);
+    setTimeout(() => { try { tr.out.disconnect(); } catch (e) {} tracks = tracks.filter(x => x !== tr); }, (fade + 3) * 1000);
+  }
+  function tick() {
+    if (!A || A.state !== 'running') return;
+    const ahead = A.currentTime + 0.3;
+    for (const tr of tracks) {
+      if (tr.stopping) continue;
+      while (tr.next < ahead) { const saved = tag; tag = null; try { tr.P.bar(tr.out, tr.next, tr.n, tr.b); } catch (e) {} tag = saved; tr.next += tr.b * tr.P.beats; tr.n++; }
+    }
+  }
+  function setMood(name) {
+    want = name;
+    if (!A || !prefs.music) return;
+    const cur = tracks.find(tr => !tr.stopping);
+    if (cur && cur.name === name) return;
+    if (cur) stopPiece(cur, name === 'combat' || name === 'boss' ? 0.6 : 1.8);
+    if (name) startPiece(name);
+  }
+
+  // ---- starting up: on the first tap or key (browsers allow sound only after one) ----
+  function boot() {
+    if (A || !AC) return;
+    try { A = new AC(); G = graph(A); } catch (e) { A = null; return; }
+    ticker = setInterval(tick, 60);
+    if (want) setMood(want);
+  }
+  const wake = () => { boot(); if (A && A.state === 'suspended') A.resume().catch(() => {}); };
+  for (const ev of ['pointerdown', 'keydown', 'touchend']) window.addEventListener(ev, wake, {capture: true, passive: true});
+  document.addEventListener('visibilitychange', () => { if (!A) return; if (document.hidden) A.suspend().catch(() => {}); else A.resume().catch(() => {}); });
+
+  return {
+    S, PIECES, prefs,
+    // play sound name in delay seconds, with opts (pan, mat, size, ...); under the current tag
+    fx(name, opts = {}, delay = 0) {
+      if (!A || !prefs.sfx || A.state !== 'running' || !S[name]) return;
+      try { S[name](G, A.currentTime + 0.01 + Math.max(0, delay), opts); } catch (e) {}
+    },
+    tag(t) { tag = t; },
+    // silence what a tag queued that hasn't played yet (a fight turn the player skipped through)
+    hush(t) {
+      if (!A) return;
+      const now = A.currentTime;
+      for (const x of live) if (x.tag === t && x.end > now + 0.02) { try { x.src.stop(); } catch (e) {} }
+      for (let i = live.length - 1; i >= 0; i--) if (live[i].tag === t || live[i].end < now) live.splice(i, 1);
+    },
+    mood: setMood,
+    setMusic(on) {
+      prefs.music = on; savePrefs();
+      if (!A) return;
+      const now = A.currentTime;
+      G.music.gain.setTargetAtTime(on ? MUSIC_LEVEL : 0, now, 0.2); G.musicWet.gain.setTargetAtTime(on ? 1 : 0, now, 0.2);
+      if (!on) for (const tr of tracks) if (!tr.stopping) stopPiece(tr, 0.4);
+      if (on && want) setMood(want);
+    },
+    setSfx(on) {
+      prefs.sfx = on; savePrefs();
+      if (!A) return;
+      G.sfx.gain.setTargetAtTime(on ? SFX_LEVEL : 0, A.currentTime, 0.05); G.sfxWet.gain.setTargetAtTime(on ? 1 : 0, A.currentTime, 0.05);
+    },
+    // queue a sound ({name, opts}) or a piece ({piece}) into an offline context, to render it to a file (for listening tests)
+    async _renderInto(oc, what) {
+      const saveG = G, saveTag = tag, saveP = {...prefs};
+      prefs.music = prefs.sfx = true;
+      const gr = graph(oc); G = gr; tag = null;
+      try {
+        if (what.piece) { const P = PIECES[what.piece], b = 60 / P.bpm, out = voice(gr, {bus: 'music', wet: 0.45, gain: P.vol || 1}); for (let n = 0, t = 0.05; t < oc.length / oc.sampleRate; n++, t += b * P.beats) P.bar(out, t, n, b); }
+        else S[what.name](gr, 0.05, what.opts || {});
+      } finally { G = saveG; tag = saveTag; Object.assign(prefs, saveP); }
+    },
+    // render a sound (or a few bars of a piece) offline and measure it: {peak, rms, secs}. For the tests
+    async measure(name, opts = {}, secs = 2) {
+      const sr = 22050, oc = new OfflineAudioContext(2, sr * secs, sr), saveG = G, saveTag = tag;
+      const gr = graph(oc); G = gr; tag = null;
+      try {
+        if (PIECES[name]) { const P = PIECES[name], b = 60 / P.bpm, out = voice(gr, {bus: 'music', wet: 0.45, gain: P.vol || 1}); for (let n = 0, t = 0; t < secs; n++, t += b * P.beats) P.bar(out, t, n, b); }
+        else S[name](gr, 0.01, opts);
+      } finally { G = saveG; tag = saveTag; }
+      const buf = await oc.startRendering(), d = buf.getChannelData(0), e = buf.getChannelData(1);
+      let peak = 0, sum = 0, nan = 0;
+      for (let i = 0; i < d.length; i++) { const v = Math.max(Math.abs(d[i]), Math.abs(e[i])); if (v !== v) nan++; else { peak = Math.max(peak, v); sum += d[i] * d[i]; } }
+      return {peak: +peak.toFixed(3), rms: +Math.sqrt(sum / d.length).toFixed(4), nan};
+    }
+  };
+})();
+</script>
 <script>
 const ctx = c.getContext('2d'), T = 32;
 // ---- the screen: the canvas fills it, in portrait ----
@@ -1033,6 +1694,7 @@ function loot() {
 // ---- scrolls: put one on a worn item now, keep it in your bag, or throw it away ----
 function openScroll(s, fromBag) {
   scrollNow = {id: s.id, t: s.t, fromBag};
+  SND.fx('scroll');
   phase = 'scroll';
   saleArm = null;
 }
@@ -1059,6 +1721,7 @@ function scrollChoice(k) {
     if (scrolls.length >= bagSlots) return;
     saleArm = null;
     scrolls.push({id: s.id, t: s.t});
+    SND.fx('page');
     return closeScroll(`You put the Scroll of ${enchLabel(s)} in your bag.`);
   }
   // throwing it away and putting it on gear take two taps (the first asks)
@@ -1070,6 +1733,7 @@ function scrollChoice(k) {
     if (s.fromBag !== null) scrolls.splice(s.fromBag, 1);
     it.ench = {id: s.id, t: s.t};
     refreshMax();
+    SND.fx('enchant');
     closeScroll(`You read the scroll. Your ${itemName(it)} glows: ${enchText(it.ench)}.`);
   });
 }
@@ -1093,6 +1757,7 @@ function enchanterClick(command) {
     coins -= TIER_PRICE[t];
     it.ench = {id: ench.id, t};
     refreshMax();
+    SND.fx('enchant');
     msg.textContent = `Runes flare across your gear. Your ${itemName(it)}: ${enchText(it.ench)}.`;
     ench = {};
   }
@@ -1169,7 +1834,12 @@ function showLevelUp() {
   redraws = 0;
   dealHand();
   levelDealtAt = performance.now();
+  SND.fx('levelUp'); dealSounds();
   msg.textContent += ` Level up! You reached level ${level + 1}. Pick a perk.`;
+}
+// each card snapped down onto the table, then turned over (in time with the deal on screen)
+function dealSounds() {
+  for (let i = 0; i < HAND_SIZE; i++) { const pan = (i - 1) * 0.4; SND.fx('deal', {pan}, i * DEAL_GAP_MS / 1000); SND.fx('flip', {pan, i}, (i * DEAL_GAP_MS + DEAL_MS * 0.5) / 1000); }
 }
 
 // the moment the current cards were dealt: taps in the first moment after are ignored, so a quick
@@ -1185,12 +1855,14 @@ function redraw() {
   redraws++;
   dealHand();
   levelDealtAt = performance.now();
+  SND.fx('shuffle'); SND.fx('sell', {}, 0); dealSounds();
   msg.textContent = `You pay ${cost} coins and redraw the cards. Pick a perk.`;
   refresh();
 }
 
 function takePerk(id) {
   if (phase !== 'level' || !hand.includes(id)) return;
+  SND.fx('pick', {pan: (hand.indexOf(id) - 1) * 0.4});
   perks[id] = perkN(id) + 1;
   if (id === 'attack') bonusDmg = attackBonus();
   if (id === 'vitality') { p.base += VITALITY_HP; refreshMax(); popup('player', `+${VITALITY_HP}`, 'heal'); }
@@ -1213,12 +1885,31 @@ function takePerk(id) {
 // poisoned, gold for XP). Big ones (the top bar's) get iron end caps with a rivet each, and notches every quarter
 const BAR_FILL = {hp: ['#e0343c', '#7c0c14', 'rgba(255,170,150,0.55)'], poison: ['#b062e8', '#4a1670', 'rgba(236,200,255,0.5)'],
                   xp: ['#f6c844', '#8e5e0c', 'rgba(255,246,190,0.6)']};
-function bar(x, y, w, h, hp, max, kind = 'hp') {
+// what a health bar lost a moment ago, still shown pale while it drains away (key: whose bar)
+const TRAILS = new Map();
+let trailUntil = 0;                   // keep drawing while one drains
+let coinShow = null, coinStep = 0, coinGlint = 0;   // the coins the top bar shows, counting up to yours
+let floorFade = -1e9;                 // when you last went down the stairs: the new floor comes up out of the dark
+const FLOOR_FADE_MS = 700;
+function trailOf(key, hp) {
+  const now = performance.now(), T = TRAILS.get(key);
+  if (!T || hp >= T.v) { TRAILS.set(key, {v: hp, from: hp, t: now}); return hp; }
+  if (T.target !== hp) { T.from = T.shown ?? T.v; T.target = hp; T.t = now; }
+  const k = Math.max(0, (now - T.t - 260) / 380);                         // a beat, then it drains
+  T.shown = k >= 1 ? hp : T.from + (hp - T.from) * (1 - Math.pow(1 - k, 2));
+  if (k >= 1) T.v = hp;
+  return T.shown;
+}
+function bar(x, y, w, h, hp, max, kind = 'hp', key = null) {
   const [hi, lo, glint] = BAR_FILL[kind] || BAR_FILL.hp, f = Math.max(0, Math.min(1, hp / max)), big = h >= 10;
   ctx.fillStyle = '#070508'; ctx.fillRect(x - 2, y - 2, w + 4, h + 4);                 // the dark outline
   ctx.fillStyle = '#58525a'; ctx.fillRect(x - 1, y - 1, w + 2, h + 2);                 // the iron frame
   ctx.fillStyle = '#948c96'; ctx.fillRect(x - 1, y - 1, w + 2, 0.8);                   // its lit top edge
   ctx.fillStyle = '#26080c'; ctx.fillRect(x, y, w, h);                                 // the empty trough
+  if (key !== null) {                                                                  // the health just lost, pale, draining after
+    const tf = Math.max(0, Math.min(1, trailOf(key, hp) / max));
+    if (tf > f) { ctx.fillStyle = '#e8c8a8'; ctx.fillRect(x + w * f, y, w * (tf - f), h); trailUntil = performance.now() + 120; requestFrames(); }
+  }
   ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(x, y, w, Math.max(0.8, h * 0.18));
   if (f > 0) {
     const g = ctx.createLinearGradient(0, y, 0, y + h);
@@ -1282,16 +1973,294 @@ function heroLook() {
   return {gear, glows, weapon: worn.weapon ? {tier: worn.weapon.tier, ench: worn.weapon.ench && worn.weapon.ench.id} : {}};
 }
 
-// a floating number or word; kind = 'dmg' (red), 'heal' (green), 'miss' (white), 'stun' (blue) or 'gold'
-function popup(who, text, kind) {
-  pops.push({who, text: String(text), color: POP_COLORS[kind], t0: performance.now()});
+// a floating number or word; kind = 'dmg' (red), 'heal' (green), 'miss' (white), 'stun' (blue) or 'gold'.
+// In a fight turn it waits for its moment (see the turn below), and it records what the health bars show then
+function popup(who, text, kind, big = false) {
+  const delay = turnOpen() ? turn.at * 1000 : 0;
+  pops.push({who, text: String(text), color: POP_COLORS[kind], t0: performance.now() + delay, big});
+  if (turnOpen()) cue('hp', {who, hp: who === 'player' ? p.hp : who.hp, len: 0});
   requestFrames();
 }
+
+// ======================================================================
+// ---- a fight turn, played out blow by blow ----
+// A turn is worked out all at once (your swing, then every enemy's answer), but shown as it would happen: each
+// thing is cued at its moment in the turn (seconds from its start) and the numbers, the health bars, the sounds and
+// the motion all follow the cues. You lunge and your blade lands; the enemy reels; then each enemy in turn steps in
+// and strikes. Tapping again before a turn has played out finishes it at once and starts the next.
+// ======================================================================
+const TURN = {swing: 0.2, heavy: 0.3, lead: 0.4, gap: 0.42, foeSwing: 0.2, tail: 0.55};
+let turn = null, turnSeq = 0;        // {t0 (ms), at (s: where cues go now), beats, hp: Map(who -> hp at the start), end (s), open}
+const turnOpen = () => !!(turn && turn.open);
+const turnBusy = () => !!turn && performance.now() < turn.t0 + turn.end * 1000;
+const turnTime = () => turn ? (performance.now() - turn.t0) / 1000 : Infinity;
+function beginTurn() {
+  if (turnBusy()) finishTurnNow();
+  turn = {t0: performance.now(), at: 0, beats: [], hp: new Map([['player', p.hp], ...sceneFoes.map(f => [f, f.hp])]), end: 0, open: true, id: ++turnSeq};
+  SND.tag('turn' + turn.id);
+}
+function closeTurn() {
+  if (!turn) return;
+  turn.open = false;
+  SND.tag(null);
+  if (phase === 'loot') lootAt = turn.t0 + turn.end * 1000;                // the loot card waits for the last enemy to fall
+  requestFrames();
+}
+// played out already: what is left happens now (the sounds still to come are dropped)
+function finishTurnNow() {
+  const now = performance.now(), shift = turn.t0 + turn.end * 1000 - now;
+  for (const q of pops) if (q.t0 > now) q.t0 = now;
+  for (const e of fx) if (e.t0 > now) e.t0 = now;
+  SND.hush('turn' + turn.id);
+  turn.t0 -= Math.max(0, shift);
+  if (finale && finale.t0 * 1000 > now) { finale.t0 = now / 1000; }
+}
+const after = dt => { if (turnOpen()) turn.at += dt; };
+// a beat: kind, at the turn's current moment; len: how long the turn must last after it. Its sound is queued now
+function cue(kind, o = {}) {
+  if (!turnOpen()) return null;
+  const b = {kind, at: turn.at, ...o};
+  turn.beats.push(b);
+  turn.end = Math.max(turn.end, turn.at + (o.len ?? TURN.tail));
+  beatSound(b, turn.at);
+  return b;
+}
+// what the health bars show: during a turn, the health as of the last blow that has landed so far
+function shownHp(who) {
+  const real = who === 'player' ? p.hp : who.hp;
+  if (!turn || !turnBusy()) return real;
+  const e = turnTime();
+  let hp = turn.hp.has(who) ? turn.hp.get(who) : real;
+  for (const b of turn.beats) if (b.kind === 'hp' && b.who === who && b.at <= e) hp = b.hp;
+  return hp;
+}
+
+// ---- what everything is made of, for the sound of a blow and what flies off it ----
+const MATERIAL = {Slime: 'goop', 'Little Slime': 'goop', Skeleton: 'bone', 'Dark Knight': 'bone', Goblin: 'flesh', Orc: 'flesh', Bat: 'flesh',
+  Troll: 'hide', Minotaur: 'hide', 'Ogre King': 'hide', Wraith: 'spirit', Wyvern: 'scale'};
+const BULK = {Bat: 0.6, 'Little Slime': 0.7, Goblin: 0.85, Slime: 1, Skeleton: 1, Wraith: 1, Orc: 1.15, 'Dark Knight': 1.1, Wyvern: 1.3, Minotaur: 1.4, Troll: 1.5, 'Ogre King': 1.8};
+const matOf = f => MATERIAL[f.name] || 'flesh';
+const armorOf = f => { const g = f.gear || {}; return Math.max(0, ...['chest', 'helmet'].map(k => g[k] === undefined ? 0 : g[k])); };   // 1 iron, 2 steel (leather doesn't ring)
+const panOf = who => { if (who === 'player') return -0.45; const s = foeSpots().get(who); return s ? Math.max(-1, Math.min(1, (s.x - 144) / 150)) : 0.4; };
+const heroArmor = () => Math.max(0, ...['chest', 'helmet'].map(k => worn[k] ? worn[k].tier : 0));
+// the sound of a beat, queued to play at its moment
+function beatSound(b, at) {
+  const w = b.who, foe = w && w !== 'player' ? w : null, o = foe ? {pan: panOf(foe), mat: matOf(foe), size: BULK[foe.name] || 1, armor: armorOf(foe), name: foe.name} : {pan: -0.45};
+  switch (b.kind) {
+    case 'swing': SND.fx('swing', {pan: -0.3, heavy: b.heavy}, at); break;
+    case 'hit': SND.fx('hit', {...o, heavy: b.heavy, crit: b.crit, caught: b.caught ? ((foe.gear || {}).shield ? 'metal' : 'wood') : null}, at); break;
+    case 'miss': SND.fx('whiff', o, at); break;
+    case 'die': SND.fx(foe && foe.boss ? 'bossFall' : 'die', o, at + (foe && foe.boss ? FINALE.stagger + FINALE.topple : 0.05)); break;
+    case 'reassemble': SND.fx('rattle', {...o, rise: true}, at + 0.15); break;
+    case 'split': SND.fx('split', o, at + 0.1); break;
+    case 'ignite': SND.fx('ignite', o, at); break;
+    case 'burnTick': SND.fx('burn', o, at); break;
+    case 'regen': SND.fx('regen', o, at); break;
+    case 'stunned': SND.fx('stun', {...o, gain: 0.5}, at); break;
+    case 'stun': SND.fx('stun', o, at); break;
+    case 'foeSwing': SND.fx('foeSwing', o, at); break;
+    case 'foeMiss': SND.fx('whiff', {pan: -0.4}, at); break;
+    case 'struck': b.blocking ? SND.fx('block', {pan: -0.45, shield: worn.shield ? worn.shield.tier : undefined}, at)
+                              : SND.fx('hurt', {pan: -0.45, armor: heroArmor(), big: b.big}, at); break;
+    case 'drain': SND.fx('drain', o, at); break;
+    case 'poisoned': case 'poisonTick': SND.fx('poison', {pan: -0.45}, at); break;
+    case 'steal': SND.fx('steal', o, at); break;
+    case 'guard': SND.fx('guard', {pan: -0.45}, at); break;
+    case 'bash': SND.fx('hit', {...o, mat: 'wood', gain: 0.9}, at); break;
+    case 'drink': SND.fx('potion', {pan: -0.45}, at); break;
+    case 'heal': SND.fx('heal', o, at); break;
+    case 'rage': SND.fx('roar', o, at); break;
+    case 'youDie': SND.fx('youDie', {armor: heroArmor()}, at + 0.15); break;
+    case 'secondWind': SND.fx('levelUp', {gain: 0.7}, at); break;
+    case 'stumble': SND.fx('stumble', {pan: -0.45}, at); break;
+    case 'gold': SND.fx('coins', {pan: o.pan, n: 3}, at + 0.35); break;
+    case 'flee': SND.fx('flee', {pan: 0.5}, at); break;
+  }
+}
+
+// ---- the motion of a turn: lunges, recoils, flashes, and things flying off whatever was hit ----
+let fx = [];                          // effects on the fight screen: {kind, t0 (ms), ...}
+let shake = {t0: 0, amp: 0};          // the screen shaking from a big blow
+function shakeAt(t0, amp) { if (amp > shake.amp * Math.max(0, 1 - (performance.now() - shake.t0) / 260)) shake = {t0, amp}; }
+// where each figure is and how it stands at this moment of the turn: {hero: {dx, pose, flash, fall}, foes: Map(f -> {dx, dy, flash})}
+function turnMotion() {
+  const hero = {dx: 0, pose: null, flash: null, fall: 0}, foes = new Map();
+  if (!turn || !turnBusy()) return {hero, foes};
+  const e = turnTime(), ease = k => k * k * (3 - 2 * k), M = f => foes.get(f) || (foes.set(f, {dx: 0, dy: 0, flash: null}), foes.get(f));
+  for (const b of turn.beats) {
+    const u = e - b.at;
+    if (u < -0.12) continue;
+    if (b.kind === 'swing' && u < 0.5) {                                   // you: draw back, lunge in as the blade comes down, step back
+      const hit = b.heavy ? TURN.heavy : TURN.swing, reach = b.heavy ? 20 : 15;
+      if (u < 0) hero.dx += -4 * ease(Math.min(1, (u + 0.12) / 0.12)), hero.pose = 'wind';
+      else if (u < hit) { hero.dx += -4 + (reach + 4) * ease(u / hit); hero.pose = u < hit * 0.4 ? 'wind' : 'strike'; }
+      else if (u < hit + 0.12) { hero.dx += reach; hero.pose = 'strike'; }
+      else hero.dx += reach * (1 - ease(Math.min(1, (u - hit - 0.12) / 0.2)));
+    }
+    if (b.kind === 'guard' && u >= 0) hero.pose = 'guard';
+    if (b.kind === 'drink' && u >= 0 && u < 0.6) hero.pose = 'drink';
+    if (b.kind === 'struck' && u >= 0 && u < 0.3) { hero.dx -= (b.blocking ? 3 : 7) * (1 - u / 0.3); if (u < 0.09) hero.flash = b.blocking ? 'white' : 'red'; }
+    if (b.kind === 'youDie' && u >= 0) hero.fall = Math.min(1, u / 0.7);
+    if (!b.who || b.who === 'player') continue;
+    const m = M(b.who), s = foeSpots().get(b.who), k = s ? s.s : 1;
+    if ((b.kind === 'hit' || b.kind === 'bash') && u >= 0 && u < 0.3) { m.dx += (b.heavy || b.crit ? 11 : 7) * k * (1 - u / 0.3); if (u < 0.085) m.flash = b.crit ? 'gold' : 'white'; }
+    if (b.kind === 'foeSwing' && u > -0.12 && u < 0.5) {                   // an enemy: rears back, then lunges at you
+      const hit = TURN.foeSwing, reach = 22 * k * (b.who.boss ? 1.3 : 1);
+      if (u < 0) m.dx += 5 * k * ease((u + 0.12) / 0.12);
+      else if (u < hit) m.dx += 5 * k - (reach + 5 * k) * ease(u / hit);
+      else if (u < hit + 0.1) m.dx -= reach;
+      else m.dx -= reach * (1 - ease(Math.min(1, (u - hit - 0.1) / 0.2)));
+      if (b.who.name === 'Bat' || b.who.name === 'Wraith') m.dy += u > 0 && u < hit + 0.1 ? 10 * k * Math.sin(Math.min(1, u / hit) * Math.PI / 2) : 0;
+    }
+    if (b.kind === 'stunned' && u >= 0 && u < 0.4) m.dx += Math.sin(u * 60) * 2 * k;
+    if ((b.kind === 'burnTick' || b.kind === 'regen') && u >= 0 && u < 0.1) m.flash = b.kind === 'regen' ? 'green' : 'orange';
+  }
+  return {hero, foes};
+}
+// the beats that have just come due set off their effects: a slash, sparks, what flies off, a shake, a flash
+function fireBeats() {
+  if (!turn) return;
+  const e = turnTime();
+  for (const b of turn.beats) {
+    if (b.fired || b.at > e) continue;
+    b.fired = true;
+    const t0 = turn.t0 + b.at * 1000, w = b.who, foe = w && w !== 'player' ? w : null;
+    const box = foe && fightBoxes && fightBoxes.boxes.get(foe), hb = fightBoxes && fightBoxes.hero;
+    const at = box ? {x: (box.x0 + box.x1) / 2, y: box.y0 + (box.y1 - box.y0) * 0.38, w: box.x1 - box.x0, h: box.y1 - box.y0} : null;
+    if (b.kind === 'hit' && at) {
+      const ench = worn.weapon && worn.weapon.ench ? ENCH_GLOW[worn.weapon.ench.id] : null;
+      fx.push({kind: 'slash', t0, x: at.x, y: at.y, r: Math.max(18, Math.min(46, at.h * 0.42)), heavy: b.heavy, crit: b.crit, col: ench});
+      burst(t0, at.x, at.y, matOf(foe), b.crit ? 18 : b.heavy ? 14 : 9, foe);
+      if (armorOf(foe) || b.caught) burst(t0, at.x - 4, at.y, 'spark', 8);
+      if (b.crit) { fx.push({kind: 'flash', t0, col: '255,236,170', a: 0.2, ms: 120}); shakeAt(t0, 5); }
+      else if (b.heavy) shakeAt(t0, 3);
+    }
+    if (b.kind === 'miss' && at) fx.push({kind: 'whiff', t0, x: at.x - 10, y: at.y});
+    if (b.kind === 'bash' && at) { burst(t0, at.x - 8, at.y, 'spark', 6); shakeAt(t0, 2); }
+    if (b.kind === 'die' && at && !foe.boss) burst(t0 + 60, at.x, box.y1 - 10, matOf(foe), 22, foe, true);
+    if (b.kind === 'ignite' && at) burst(t0, at.x, at.y, 'ember', 12);
+    if (b.kind === 'burnTick' && at) burst(t0, at.x, at.y + 10, 'ember', 8);
+    if (b.kind === 'regen' && at) burst(t0, at.x, at.y + 10, 'life', 8);
+    if ((b.kind === 'stun' || b.kind === 'stunned') && box) fx.push({kind: 'stars', t0, x: at.x, y: box.y0 - 4, ms: 900});
+    if (b.kind === 'drain' && at && hb) fx.push({kind: 'drain', t0, x0: hb.x, y0: hb.y0 + 30, x1: at.x, y1: at.y, ms: 600});
+    if (b.kind === 'struck' && hb) {
+      if (b.blocking) { burst(t0, hb.x + 30, hb.y0 + 45, 'spark', 10); fx.push({kind: 'ring', t0, x: hb.x + 30, y: hb.y0 + 45}); }
+      else { burst(t0, hb.x + 6, hb.y0 + 40, heroArmor() ? 'spark' : 'flesh', 8); fx.push({kind: 'hurt', t0}); shakeAt(t0, b.big ? 6 : 3); }
+    }
+    if ((b.kind === 'poisoned' || b.kind === 'poisonTick') && hb) burst(t0, hb.x, hb.y0 + 40, 'venom', 8);
+    if (b.kind === 'drink' && hb) burst(t0 + 300, hb.x, hb.y0 + 40, 'life', 14);
+    if (b.kind === 'secondWind' && hb) { burst(t0, hb.x, hb.y0 + 50, 'gold', 20); fx.push({kind: 'flash', t0, col: '255,220,120', a: 0.4, ms: 300}); }
+    if (b.kind === 'rage' && at) { shakeAt(t0, 4); fx.push({kind: 'flash', t0, col: '200,30,20', a: 0.25, ms: 260}); }
+    if (b.kind === 'youDie') { fx.push({kind: 'flash', t0, col: '120,0,0', a: 0.45, ms: 900}); shakeAt(t0, 6); }
+  }
+}
+// things flying off a blow: what depends on what was hit
+const BITS = {
+  goop:   {cols: null, n: 1, speed: 120, grav: 380, life: 650, size: 3},
+  bone:   {cols: ['#ece6d0', '#c4bca4', '#fffbe8', '#9a927c'], speed: 150, grav: 520, life: 600, size: 2},
+  flesh:  {cols: ['#9a1c1c', '#6e1010', '#c4362a'], speed: 110, grav: 460, life: 520, size: 2},
+  hide:   {cols: ['#8a1a16', '#5e100c', '#7a6a58'], speed: 100, grav: 460, life: 560, size: 2.5},
+  spirit: {cols: ['#c6d0ff', '#eef0ff', '#8c9cff'], speed: 60, grav: -90, life: 800, size: 2},
+  scale:  {cols: ['#c03ca0', '#8a2a72', '#e8a0d8', '#7a1414'], speed: 130, grav: 480, life: 560, size: 2},
+  spark:  {cols: ['#fff6c0', '#ffd060', '#ffffff'], speed: 190, grav: 300, life: 260, size: 1.5},
+  ember:  {cols: ['#ff8a20', '#ffd060', '#ff4a10'], speed: 50, grav: -120, life: 700, size: 2},
+  life:   {cols: ['#7cf07a', '#c8ffb0', '#3cc060'], speed: 40, grav: -110, life: 800, size: 2},
+  venom:  {cols: ['#b060ff', '#7a30c0', '#e0b0ff'], speed: 35, grav: -90, life: 700, size: 2},
+  gold:   {cols: ['#ffd860', '#fff2b0', '#e0a020'], speed: 90, grav: -40, life: 900, size: 2}
+};
+function burst(t0, x, y, kind, n, foe, ground = false) {
+  const B = BITS[kind] || BITS.flesh, cols = B.cols || [foe && foe.color ? foe.color : '#6c6', '#b8f08a', '#3a7a2a'];
+  for (let i = 0; i < n; i++) {
+    const a = ground ? -Math.PI * (0.1 + Math.random() * 0.8) : Math.random() * Math.PI * 2 - (B.grav > 0 ? Math.PI * 0.35 : 0);
+    const v = B.speed * (0.4 + Math.random() * 0.8) * (ground ? 0.7 : 1);
+    fx.push({kind: 'bit', t0: t0 + Math.random() * 40, x, y, vx: Math.cos(a) * v + (ground ? 0 : 30), vy: Math.sin(a) * v, g: B.grav,
+      ms: B.life * (0.6 + Math.random() * 0.6), col: cols[i % cols.length], s: B.size * (0.7 + Math.random() * 0.8), floor: kind === 'goop' || kind === 'bone' || kind === 'flesh' || kind === 'hide' || kind === 'scale' ? y + 26 + Math.random() * 20 : null});
+  }
+}
+// the effects, drawn over the fight (in play units)
+function drawFx(now) {
+  fx = fx.filter(e => now - e.t0 < (e.ms || 400));
+  for (const e of fx) {
+    const u = (now - e.t0) / 1000;
+    if (u < 0) continue;
+    const k = Math.min(1, (now - e.t0) / (e.ms || 400));
+    if (e.kind === 'bit') {                                                // a fleck, in pixels, falling (or rising) and settling on the floor
+      let x = e.x + e.vx * u, y = e.y + e.vy * u + 0.5 * e.g * u * u;
+      if (e.floor !== null && y > e.floor) y = e.floor;
+      ctx.globalAlpha = Math.min(1, 2.2 * (1 - k));
+      ctx.fillStyle = e.col;
+      const s = Math.max(1, Math.round(e.s));
+      ctx.fillRect(Math.round(x / 2) * 2, Math.round(y / 2) * 2, s * 2, s * 2);
+    } else if (e.kind === 'slash') {                                       // the arc of your blade across what you hit
+      const r = e.r * (e.heavy ? 1.25 : 1) * (e.crit ? 1.2 : 1), sweep = Math.min(1, k * 2.6), fade = 1 - Math.max(0, (k - 0.35) / 0.65);
+      const a0 = -Math.PI * 0.85, a1 = a0 + Math.PI * 1.05 * sweep, col = e.crit ? '255,224,120' : e.col ? rgbOf(e.col).join(',') : '255,255,255';
+      ctx.save(); ctx.translate(e.x, e.y); ctx.rotate(-0.35); ctx.lineCap = 'round';
+      for (const [w, a] of [[e.heavy ? 9 : 6, 0.25], [e.heavy ? 4 : 3, 0.85], [1.2, 1]]) {
+        ctx.strokeStyle = `rgba(${a < 1 ? col : '255,255,255'},${a * fade})`; ctx.lineWidth = w;
+        ctx.beginPath(); ctx.ellipse(0, 0, r, r * 0.55, 0, Math.max(a0, a1 - 1.6), a1); ctx.stroke();
+      }
+      ctx.restore();
+      if (e.crit && k < 0.5) {                                             // a critical: a star of light where it lands
+        ctx.save(); ctx.globalAlpha = 1 - k * 2; ctx.fillStyle = '#fff4c0';
+        for (let i = 0; i < 4; i++) { ctx.save(); ctx.translate(e.x, e.y); ctx.rotate(i * Math.PI / 4 + 0.3); ctx.fillRect(-r * 0.8 * (1 - k), -1, r * 1.6 * (1 - k), 2); ctx.restore(); }
+        ctx.restore();
+      }
+    } else if (e.kind === 'whiff') {                                       // a miss: the blade's wake through empty air
+      ctx.strokeStyle = `rgba(255,255,255,${0.5 * (1 - k)})`; ctx.lineWidth = 1.5;
+      for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.moveTo(e.x - 26 + k * 30, e.y - 14 + i * 9); ctx.lineTo(e.x + 4 + k * 30, e.y - 20 + i * 9); ctx.stroke(); }
+    } else if (e.kind === 'ring') {                                        // a blow ringing off your shield
+      ctx.strokeStyle = `rgba(255,236,180,${0.8 * (1 - k)})`; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(e.x, e.y, 6 + 22 * k, 0, Math.PI * 2); ctx.stroke();
+    } else if (e.kind === 'stars') {                                       // stunned: sparks circling its head
+      for (let i = 0; i < 3; i++) {
+        const a = u * 7 + i * Math.PI * 2 / 3, x = e.x + Math.cos(a) * 12, y = e.y + Math.sin(a) * 4;
+        ctx.globalAlpha = 1 - k; ctx.fillStyle = i % 2 ? '#6df' : '#fff6a0'; ctx.fillRect(Math.round(x) - 2, Math.round(y) - 2, 4, 4);
+      }
+    } else if (e.kind === 'drain') {                                       // the wraith drinking your life: red motes streaming to it
+      for (let i = 0; i < 6; i++) {
+        const q = Math.min(1, Math.max(0, k * 1.6 - i * 0.1)), x = e.x0 + (e.x1 - e.x0) * q, y = e.y0 + (e.y1 - e.y0) * q - Math.sin(q * Math.PI) * 26;
+        ctx.globalAlpha = q > 0 && q < 1 ? 0.9 : 0; ctx.fillStyle = i % 2 ? '#e02040' : '#ff8090'; ctx.fillRect(Math.round(x) - 2, Math.round(y) - 2, 4, 4);
+      }
+    } else if (e.kind === 'flash') {                                       // a flash over the whole fight
+      ctx.globalAlpha = e.a * (1 - k); ctx.fillStyle = `rgb(${e.col})`; ctx.fillRect(0, 0, CANVAS_W, PLAY_H);
+    } else if (e.kind === 'hurt') {                                        // you're hit: the edges go red
+      const g = ctx.createRadialGradient(CANVAS_W / 2, PLAY_H / 2, PLAY_H * 0.3, CANVAS_W / 2, PLAY_H / 2, PLAY_H * 0.75);
+      g.addColorStop(0, 'rgba(160,0,0,0)'); g.addColorStop(1, `rgba(160,0,0,${0.5 * (1 - k)})`);
+      ctx.globalAlpha = 1; ctx.fillStyle = g; ctx.fillRect(0, 0, CANVAS_W, PLAY_H);
+    }
+    ctx.globalAlpha = 1;
+  }
+}
+// what lasts between turns: a burning enemy sheds embers, a stunned one sees stars, poison bubbles off you
+let statusAt = 0;
+function statusFx(now) {
+  if (!fightBoxes || now - statusAt < 110) return;
+  statusAt = now;
+  for (const f of sceneFoes) {
+    const b = fightBoxes.boxes.get(f);
+    if (!b || shownHp(f) <= 0) continue;
+    if (f.burn > 0) burst(now, b.x0 + Math.random() * (b.x1 - b.x0), b.y0 + (b.y1 - b.y0) * (0.3 + Math.random() * 0.6), 'ember', 1);
+    if (f.stunned && !fx.some(e => e.kind === 'stars' && e.f === f && now - e.t0 < 700)) fx.push({kind: 'stars', f, t0: now, x: (b.x0 + b.x1) / 2, y: b.y0 - 4, ms: 900});
+  }
+  const hb = fightBoxes.hero;
+  if (poison && hb && shownHp('player') > 0 && Math.random() < 0.6) burst(now, hb.x - 12 + Math.random() * 24, hb.y0 + 30 + Math.random() * 50, 'venom', 1);
+}
+// low on health in a fight: the edges pulse red with your heartbeat
+function drawLowHealth(now) {
+  const hp = shownHp('player');
+  if (over || hp <= 0 || hp > p.max * 0.3) return;
+  const beat = (now / 1000) % 0.95, pulse = Math.max(Math.exp(-beat * 9), 0.6 * Math.exp(-Math.max(0, beat - 0.19) * 9) * (beat > 0.19 ? 1 : 0));
+  const g = ctx.createRadialGradient(CANVAS_W / 2, PLAY_H / 2, PLAY_H * 0.35, CANVAS_W / 2, PLAY_H / 2, PLAY_H * 0.78);
+  g.addColorStop(0, 'rgba(120,0,0,0)'); g.addColorStop(1, `rgba(120,0,0,${0.22 + 0.25 * pulse})`);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, CANVAS_W, PLAY_H);
+}
+
 
 // ---- animation: keep redrawing while numbers float or a fight is on screen (torches, fog, drips) ----
 const FRAME_MS = 33;  // about 30 frames a second is plenty and easy on phone batteries
 let looping = false, lastFrame = 0;
-const wantFrames = () => pops.length > 0 || (inCombatScene() && !over) || uiAnimating() || mapLive();
+const wantFrames = () => pops.length > 0 || (inCombatScene() && !over) || turnBusy() || fx.length > 0 || performance.now() < trailUntil ||
+  (coinShow !== null && coinShow < coins) || performance.now() - floorFade < FLOOR_FADE_MS || uiAnimating() || mapLive();
 function requestFrames() {
   if (looping || !wantFrames()) return;
   looping = true;
@@ -1309,18 +2278,20 @@ function drawPops() {
   const stack = new Map();
   // newest first, so the latest number sits lowest and older ones are pushed up above it
   for (const q of [...pops].reverse()) {
+    if (q.t0 > now) continue;                                              // (still waiting for its moment in the turn)
     const at = spotOf(q.who);
     if (!at) continue;
     const n = stack.get(q.who) || 0;
     stack.set(q.who, n + 1);
-    const age = (now - q.t0) / POP_MS;
+    const age = (now - q.t0) / POP_MS, pop = Math.max(0, 1 - (now - q.t0) / 140);   // it pops in a little big, and settles
     ctx.globalAlpha = Math.max(0, 1 - age * age);
-    ctx.font = `600 ${q.text.length > 4 ? 14 : 18}px ${GAME_FONT}`;
+    const size = (q.text.length > 4 ? 14 : 18) * (q.big ? 1.35 : 1) * (1 + 0.45 * pop);
+    ctx.font = `600 ${Math.round(size)}px ${GAME_FONT}`;
     ctx.textAlign = 'center';
     ctx.lineWidth = 3;
     ctx.strokeStyle = '#000';
     // start on the figure itself (on the map: over your tile) and drift up a little
-    const y = at.y + 6 - n * 20 - age * 18;
+    const y = at.y + 6 - n * 20 - age * 18 - pop * 6;
     ctx.strokeText(q.text, at.x, y);
     ctx.fillStyle = q.color;
     ctx.fillText(q.text, at.x, y);
@@ -2845,14 +3816,22 @@ const LOOKS = {
 let LOOK = {flame: 'ember', hair: 'brown', beard: 'none', rags: 'blue', plume: 'blue'};
 const lookOf = (slot, look = LOOK) => LOOKS[slot][look[slot]] ?? Object.values(LOOKS[slot])[0];
 const flameOf = (look = LOOK) => lookOf('flame', look);
-// rest: lying back by the campfire (see REST below) instead of standing ready to fight
-const heroOf = (gear = {}, look = LOOK, rest = false) => being({...HERO_PAL, hair: lookOf('hair', look), tunic: lookOf('rags', look)[0], tunicDk: lookOf('rags', look)[1],
+// rest: lying back by the campfire (see REST below) instead of standing ready to fight.
+// pose, in a fight: 'wind' (the sword drawn back over your head), 'strike' (swung through, out in front) or 'guard'
+// (the shield thrust out, the sword held low); anything else stands ready
+const HERO_POSE = {
+  wind:   {elR: [-15, -103], hdR: [-6, -117], blade: [-0.62, -0.78]},
+  strike: {elR: [11, -87], hdR: [28, -83], blade: [0.95, 0.3]},
+  guard:  {elL: [27, -92], hdL: [34, -89], elR: [-7, -72], hdR: [6, -70], blade: [0.42, -0.9]}
+};
+const heroOf = (gear = {}, look = LOOK, rest = false, pose = null) => being({...HERO_PAL, hair: lookOf('hair', look), tunic: lookOf('rags', look)[0], tunicDk: lookOf('rags', look)[1],
                                                   plume: lookOf('plume', look)[0], plumeLt: lookOf('plume', look)[1]}, (add, P) => {
   const G = kit(add, P, gear), line = lineOf(P);
   const knight = ARMOR.every(G.has), shining = knight && ARMOR.every(k => gear[k] === 2);
   const hipL = [5, -61], kneeL = [16, -35], ankL = [20, -7], hipR = [-5, -59], kneeR = [-9, -32], ankR = [-15, -6];
   const footL = [[16, -10], [24, -10], [29, -5], [32, -2], [32, 0], [15, 0]], footR = [[-20, -10], [-11, -10], [-7, -5], [-4, -1.5], [-4, 0], [-21, 0]];
-  const shL = [11, -95], elL = [22, -82], hdL = [29, -70], shR = [-11, -93], elR = [-9, -75], hdR = [9, -80];
+  const PO = HERO_POSE[pose] || {};
+  const shL = [11, -95], elL = PO.elL || [22, -82], hdL = PO.hdL || [29, -70], shR = [-11, -93], elR = PO.elR || [-9, -75], hdR = PO.hdR || [9, -80];
   const arm = (sh, el, hd, far, inHand) => {
     add(member(sh, el, hd, [7.6, 8.2, 6.6, 6.4, 5]), 'skin', far);
     if (!G.sleeve(sh, el, 7.6, far)) add(limb(sh, mid(sh, el, 0.5), 9.4, 9.6, 8.8), 'tunic', far);   // a short, torn tunic sleeve
@@ -2927,7 +3906,7 @@ const heroOf = (gear = {}, look = LOOK, rest = false) => being({...HERO_PAL, hai
     G.sword(R.hilt, R.blade);                                              // the sword laid on the floor in front of him
     return;
   }
-  arm(shR, elR, hdR, 0, () => G.sword(hdR, [0.5, -0.866]));               // the sword arm, nearest you, the blade up toward them
+  arm(shR, elR, hdR, 0, () => G.sword(hdR, PO.blade || [0.5, -0.866]));   // the sword arm, nearest you, the blade up toward them
   G.pauldron([-10.5, -93, 6.5], true);
 });
 // a part moved by M (a point -> point function), whatever kind of part it is
@@ -3771,9 +4750,9 @@ const HERO_ANCHOR_UP = {helmet: [3, -116], chest: [0, -80], bracers: [0, -77], g
 const BLADE_UP = [0.5, -0.866];
 // your figure, from what you wear: gear = {weapon, helmet, chest, bracers, greaves} as tiers
 const heroCache = new Map();
-function heroParts(gear, rest = false) {
-  const k = JSON.stringify(gear) + (rest ? '|rest' : '');
-  if (!heroCache.has(k)) { if (heroCache.size > 8) heroCache.clear(); heroCache.set(k, heroOf(gear, LOOK, rest)); }
+function heroParts(gear, rest = false, pose = null) {
+  const k = JSON.stringify(gear) + (rest ? '|rest' : '') + (pose ? '|' + pose : '');
+  if (!heroCache.has(k)) { if (heroCache.size > 12) heroCache.clear(); heroCache.set(k, heroOf(gear, LOOK, rest, pose)); }
   return heroCache.get(k);
 }
 // enchanted gear glows in its enchantment's color; the weapon's enchantment also shows along the blade
@@ -3820,7 +4799,9 @@ let memo = null;
 // how long one cycle of a figure's idle motion lasts, and in how many frames
 const cycleOf = K => K.idle === 'squash' ? [Math.PI * 2 / (3.6 * (K.quick || 1)), 8] : K.idle === 'hover' ? [Math.PI * 2 / 1.8, 8] : K.idle === 'flap' ? [Math.PI * 2 / 5.5, 12] : [K.slow ? 3.2 : 2.4, 6];
 // a figure at pixel resolution, drawn once for each of its frames: {cv, box, eyes}
-function rasterOf(holder, key, build, x, fade, lights) {
+// a flash over a figure the moment it's hit: [r, g, b, how much]
+const FLASH = {white: [255, 255, 255, 0.75], gold: [255, 230, 140, 0.7], red: [255, 60, 40, 0.38], green: [120, 255, 120, 0.45], orange: [255, 150, 40, 0.5]};
+function rasterOf(holder, key, build, x, fade, lights, flash) {
   const cache = holder.rasters || (holder.rasters = new Map());
   if (cache.has(key)) return cache.get(key);
   const parts = build(), cv = lowCanvas(), g = cv.getContext('2d'), w = cv.width, h = cv.height;
@@ -3830,13 +4811,16 @@ function rasterOf(holder, key, build, x, fade, lights) {
   ACTIVE_LIGHTS = null;
   const d = g.getImageData(0, 0, w, h).data;                               // kept as plain pixels: a step composes them itself, without new canvases
   if (fade > 0) for (let i = 0; i < w * h; i++) if (BAYER[((i / w | 0) & 3) * 4 + (i % w & 3)] / 16 < fade) d[i * 4 + 3] = 0;   // dissolving: its pixels drop out in a dither pattern
+  const F = flash && FLASH[flash];
+  if (F) for (let i = 0; i < d.length; i += 4) if (d[i + 3]) for (let c = 0; c < 3; c++) d[i + c] += (F[c] - d[i + c]) * F[3];
   const r = {d, box: boxOf(parts), eyes: parts.filter(q => q.eye && !q.hole)};
   if (cache.size > 12) cache.clear();
   cache.set(key, r);
   return r;
 }
 function figuresAt(room, spec, ts) {
-  const roomKey = spec.room.join(':'), rest = !!spec.hero.rest, [hx, hy] = rest ? REST_AT : [70, 298], hs = 1.12;
+  const H0 = spec.hero, roomKey = spec.room.join(':'), rest = !!H0.rest, [hx0, hy] = rest ? REST_AT : [70, 298], hs = 1.12;
+  const hx = hx0 + Math.round((H0.dx || 0) / PIX) * PIX;                   // stepping in to swing, or knocked back (on the pixel grid)
   const order = [{x: hx, y: hy}, ...spec.foes].map((o, i) => ({o, i})).sort((a, b) => a.o.y - b.o.y);
   const lights = room.sc.lights.map(L => [L.x, L.y, L.reach * 0.95, L.s]).concat(order.map(({o}) => [o.x, o.y - 78, 110, 0.32]));
   const cast = [], boxes = new Map(), eyes = [];
@@ -3844,15 +4828,17 @@ function figuresAt(room, spec, ts) {
   for (const {o, i} of order) {
     if (i === 0) {                                                         // you
       const [len, n] = cycleOf({}), tq = Math.floor((ts + 0.7) / (len / n)) * (len / n), gearKey = JSON.stringify(spec.hero.gear);
-      const R = rasterOf(heroHolder, `${roomKey}|${gearKey}|${rest}|${(tq % len).toFixed(3)}`, () => place(posed(heroParts(spec.hero.gear, rest), {}, tq, 0), hx, hy, false, hs), hx, 0, lights);
+      const fall = H0.fall || 0, pose = fall ? null : H0.pose || null;
+      const R = rasterOf(heroHolder, `${roomKey}|${gearKey}|${rest}|${hx}|${pose}|${H0.flash}|${fall.toFixed(2)}|${(tq % len).toFixed(3)}`,
+        () => place(posed(heroParts(spec.hero.gear, rest, pose), {}, tq, fall), hx, hy, false, hs), hx, 0, lights, H0.flash);
       cast.push({R, x: hx, y: hy, rx: rest ? HERO.rx * 2.4 : HERO.rx}); heroBox = {...R.box, x: hx, y: hy}; eyes.push(...R.eyes);
       continue;
     }
     const f = o.f, K = KINDS[f.name] || KINDS.Goblin, down = o.fall > 0, s = o.s * (K.size || 1);
     const kind = o.gone ? {...K, death: 'fade'} : K, fade = (kind.death === 'fade') && down ? o.fall : 0;
     const [len, n] = cycleOf(K), tq = down ? (f.fellAt || 0) : Math.floor((ts + (f.animPhase || 0)) / (len / n)) * (len / n);
-    const key = `${o.x},${o.y},${s.toFixed(3)}|${down ? 'down' + Math.round(o.fall * 24) : (tq % len).toFixed(3)}|${o.gone ? 1 : 0}`;
-    const R = rasterOf(f, key, () => { const base = K.idle === 'flap' ? K.make(f, tq) : (f._art || (f._art = K.make(f, 0))); return place(posed(base, kind, tq, o.fall), o.x, o.y, true, s); }, o.x, fade, lights);
+    const key = `${o.x},${o.y},${s.toFixed(3)}|${down ? 'down' + Math.round(o.fall * 24) : (tq % len).toFixed(3)}|${o.gone ? 1 : 0}|${o.flash}`;
+    const R = rasterOf(f, key, () => { const base = K.idle === 'flap' ? K.make(f, tq) : (f._art || (f._art = K.make(f, 0))); return place(posed(base, kind, tq, o.fall), o.x, o.y, true, s); }, o.x, fade, lights, o.flash);
     cast.push({R, x: o.x, y: o.y, rx: K.rx * s / 1.12, fade, dead: down, f});
     boxes.set(f, {...R.box, x: o.x, y: o.y});
     if (!down) eyes.push(...R.eyes);
@@ -3897,7 +4883,9 @@ function castPixels(buf, cast) {
 }
 function drawFight(g, spec) {
   const room = roomFor(...spec.room), t = spec.t, ts = Math.floor(t / STEP) * STEP;
-  const sig = [spec.room.join(':'), ts, JSON.stringify(spec.hero.gear), spec.hero.rest ? 'rest' : '', ...spec.foes.map(o => [o.f.name, o.f.piece, o.x, o.y, o.s.toFixed(3), Math.round(o.fall * 24), o.gone ? 1 : 0].join(','))].join('|');
+  const H0 = spec.hero;
+  const sig = [spec.room.join(':'), ts, JSON.stringify(H0.gear), H0.rest ? 'rest' : '', Math.round((H0.dx || 0) / PIX), H0.pose, H0.flash, (H0.fall || 0).toFixed(2),
+    ...spec.foes.map(o => [o.f.name, o.f.piece, o.x, o.y, o.s.toFixed(3), Math.round(o.fall * 24), o.gone ? 1 : 0, o.flash].join(','))].join('|');
   if (!memo || memo.sig !== sig) memo = {sig, ...figuresAt(room, spec, ts)};
   const {cast, boxes, figs, eyes} = memo;
   g.save();
@@ -3913,7 +4901,7 @@ function drawFight(g, spec) {
   g.globalAlpha = 1;
   driftMotes(g, room, ts);
   for (const q of eyes) stamp(g, q.col.join(','), 0.55, q.eye[0], q.eye[1], 4.5);   // eyes glowing in the dark
-  enchantGlows(g, spec.hero.rest ? REST_AT : [70, 298], 1.12, spec.hero.glows, spec.hero.weapon || {}, t, !!spec.hero.rest);
+  if (!H0.pose && !H0.fall) enchantGlows(g, H0.rest ? REST_AT : [70 + Math.round((H0.dx || 0) / PIX) * PIX, 298], 1.12, H0.glows, H0.weapon || {}, t, !!H0.rest);
   g.globalCompositeOperation = 'source-over';
   for (const [sx, sy] of room.sc.smoke || []) for (let k = 0; k < 4; k++) {   // smoke drifting up
     const q = (t * 0.05 + k / 4) % 1, rr = 10 + q * 28;
@@ -4502,9 +5490,10 @@ let fightSeed = 1;    // the room layout of the fight on screen (from the encoun
 const FINALE = {stagger: 1.1, topple: 1.3, after: 1.3};
 let finale = null;    // {t0, f, timer}: when the last blow landed, and the Ogre King
 function startBossFinale(boss) {
-  finale = {t0: performance.now() / 1000, f: boss};
+  const delay = turnOpen() ? turn.at : 0;                                  // (it starts when the killing blow lands)
+  finale = {t0: performance.now() / 1000 + delay, f: boss};
   phase = 'finale';
-  finale.timer = setTimeout(finishBossFinale, (FINALE.stagger + FINALE.topple + FINALE.after) * 1000);
+  finale.timer = setTimeout(finishBossFinale, (delay + FINALE.stagger + FINALE.topple + FINALE.after) * 1000);
   requestFrames();
 }
 function finishBossFinale() {
@@ -4512,11 +5501,13 @@ function finishBossFinale() {
   clearTimeout(finale.timer);
   finale = null;
   endRun(true);
+  SND.fx('victory');
   draw();
 }
 // where the finale is at time t: {T (seconds since the blow), fall (0..1), shake (x jitter on him), quake (on the hall)}
 function finaleAt(t) {
   const T = t - finale.t0, hit = FINALE.stagger + FINALE.topple;
+  if (T < 0) return {T, hit, fall: 0, shake: 0, quake: 0};                 // (your blow hasn't landed yet)
   const k = Math.max(0, Math.min(1, (T - FINALE.stagger) / FINALE.topple));
   const shake = T < FINALE.stagger ? Math.sin(T * 47) * (1.5 + 3 * T / FINALE.stagger) : 0;
   const q = (T - hit) / 0.5, quake = q >= 0 && q < 1 ? (1 - q) * 6 : 0;
@@ -4526,6 +5517,7 @@ function finaleAt(t) {
 // the daylight and the title at the end
 function drawFinale(t) {
   const F = finaleAt(t), s = foeSpots().get(finale.f);
+  if (F.T < 0) return;
   if (F.T < 0.3) { ctx.fillStyle = `rgba(255,255,255,${0.55 * (1 - F.T / 0.3)})`; ctx.fillRect(0, 0, CANVAS_W, PLAY_H); }
   const d = (F.T - F.hit) / 1.1;                                          // the dust cloud, rolling out from where he lands
   if (s && d >= 0 && d < 1) for (let i = 0; i < 9; i++) {
@@ -4551,10 +5543,16 @@ function drawFinale(t) {
   }
 }
 
+let fightIntro = 0;   // when the fight screen came up: the enemies step out of the dark
+const FIGHT_INTRO_MS = 480;
 function drawCombat() {
-  const t = performance.now() / 1000, F = finale ? finaleAt(t) : null;
+  const now = performance.now(), t = now / 1000, F = finale ? finaleAt(t) : null;
+  fireBeats();
+  const mo = turnMotion(), intro = Math.min(1, (now - fightIntro) / FIGHT_INTRO_MS), slide = 70 * Math.pow(1 - intro, 3);
   ctx.save();
   if (F && F.quake) ctx.translate((Math.random() - 0.5) * F.quake, (Math.random() - 0.5) * F.quake);   // the hall shakes as he lands
+  const sk = shake.amp * Math.max(0, 1 - (now - shake.t0) / 260);          // a big blow shakes the screen
+  if (sk > 0.2 && now >= shake.t0) ctx.translate(Math.round((Math.random() - 0.5) * 2 * sk), Math.round((Math.random() - 0.5) * 2 * sk));
   // the fight, in its floor's room (the Ogre King fights you in his own hall); each fight has its own seed,
   // so the props are laid out a little differently every time. The target stands on a yellow ring
   const boss = sceneFoes.some(f => f.boss), spots = foeSpots(), tgt = liveTarget();
@@ -4563,39 +5561,46 @@ function drawCombat() {
     if (current.roomSeed === undefined) current.roomSeed = 1 + Math.floor(Math.random() * 1e6);
     fightSeed = current.roomSeed;
   }
-  const foeList = sceneFoes.map(f => {
-    const s = spots.get(f), dead = f.hp <= 0;
+  const foeList = sceneFoes.filter(f => !(f.bornAt > now)).map(f => {
+    const s = spots.get(f), dead = shownHp(f) <= 0, m = mo.foes.get(f) || {dx: 0, dy: 0, flash: null};   // (it falls when the blow that kills it lands)
     if (f.animPhase === undefined) f.animPhase = Math.random() * 10;      // so a group doesn't move in step
     if (!dead) f.fellAt = undefined;                                      // (a Skeleton can rise again)
     else if (f.fellAt === undefined) f.fellAt = t;
-    if (F && f === finale.f) return {f, x: s.x + F.shake, y: s.y, s: s.s, fall: F.fall, gone: false};   // the Ogre King's long fall
-    return {f, x: s.x, y: s.y, s: s.s, fall: dead ? Math.min(1, (t - f.fellAt) / FALL_S) : 0, gone: !!f.fled};
+    if (F && f === finale.f) return {f, x: s.x + F.shake, y: s.y, s: s.s, fall: F.fall, gone: false, flash: m.flash};   // the Ogre King's long fall
+    const x = Math.round((s.x + m.dx + slide) / 2) * 2, y = Math.round((s.y + m.dy) / 2) * 2;
+    return {f, x, y, s: s.s, fall: dead ? Math.min(1, (t - f.fellAt) / FALL_S) : 0, gone: !!f.fled && dead, flash: dead ? null : m.flash};
   });
   fightBoxes = ART.drawFight(ctx, {room: [boss ? 'throne' : ART.ROOM_OF_FLOOR[Math.min(floor, 4)], fightSeed],
-    hero: heroLook(), foes: foeList, ring: phase !== 'loot' ? tgt : null, t});
+    hero: {...heroLook(), ...mo.hero}, foes: foeList, ring: phase !== 'loot' && intro >= 1 ? tgt : null, t});
+  if (!over && phase !== 'loot' && phase !== 'finale') statusFx(now);
+  drawFx(now);
+  drawLowHealth(now);
 
   // your health: a bar over your head, the numbers at your feet
-  const hb = fightBoxes.hero;
-  bar(hb.x - 26, hb.y0 - 12, 52, 6, p.hp, p.max, poison ? 'poison' : 'hp');
-  ctx.font = `600 13px ${GAME_FONT}`;
-  ctx.textAlign = 'center';
-  outlinedText(`${p.hp}/${p.max}`, hb.x, hb.y + 16, '#fff');
+  const hb = fightBoxes.hero, hp = shownHp('player');
+  if (!mo.hero.fall) {
+    bar(hb.x - 26, hb.y0 - 12, 52, 6, hp, p.max, poison ? 'poison' : 'hp', 'hero');
+    ctx.font = `600 13px ${GAME_FONT}`;
+    ctx.textAlign = 'center';
+    outlinedText(`${hp}/${p.max}`, hb.x, hb.y + 16, '#fff');
+  }
   // each enemy's name over its head, with its green health bar under the name (kept on screen at the edges)
   ctx.font = `600 11px ${GAME_FONT}`;
-  for (const f of F ? [] : sceneFoes) {                                   // (no labels while the Ogre King falls)
+  for (const f of (F && F.T >= 0) || intro < 1 ? [] : sceneFoes) {         // (no labels while the Ogre King falls, or as they step in)
     const b = fightBoxes.boxes.get(f);
-    if (!b) continue;
-    const dead = f.hp <= 0, label = f.name + (f.items.length ? '*' : '') + (f.burn > 0 && !dead ? ' (burning)' : '');
+    if (!b || f.bornAt > now) continue;
+    const fh = shownHp(f), dead = fh <= 0, label = f.name + (f.items.length ? '*' : '') + (f.burn > 0 && !dead ? ' (burning)' : '');
     const half = ctx.measureText(label).width / 2, cx = Math.max(half + 4, Math.min(284 - half, (b.x0 + b.x1) / 2)), top = Math.max(b.y0, 26);
     if (!dead) {                                                           // a dark plaque with a gilt edge behind the name and its bar
       const pw = Math.max(54, ctx.measureText(label).width + 12), px = Math.max(2, Math.min(286 - pw, cx - pw / 2));
       chamfer(px, top - 24, pw, 22, 3); ctx.fillStyle = 'rgba(14,10,16,0.62)'; ctx.fill(); ctx.strokeStyle = 'rgba(214,170,80,0.55)'; ctx.lineWidth = 0.8; ctx.stroke();
-      bar(Math.max(4, Math.min(236, cx - 24)), top - 9, 48, 5, f.hp, f.max, 'hp');
+      bar(Math.max(4, Math.min(236, cx - 24)), top - 9, 48, 5, fh, f.max, 'hp', f);
     }
     outlinedText(label, cx, top - 12, dead ? '#777' : '#fff');
   }
   ctx.textAlign = 'left';
   if (F) drawFinale(t);
+  if (intro < 1) { ctx.fillStyle = `rgba(6,4,8,${Math.pow(1 - intro, 2) * 0.9})`; ctx.fillRect(-10, -10, CANVAS_W + 20, PLAY_H + 20); }   // out of the dark
   ctx.restore();
 }
 
@@ -4684,6 +5689,8 @@ function drawMap() {
   ART.drawMap(ctx, {key: ART.ROOM_OF_FLOOR[Math.min(floor, 4)], rows: map, vis, sight: sight(), t: now / 1000,
     hero: {x: hero.x, y: hero.y, face: hero.face, gear: heroLook().gear}, chests, foes: foesShown});
   if (phase === 'explore' && !over) drawMoveHints(now);
+  const k = (now - floorFade) / FLOOR_FADE_MS;                             // down the stairs: the new floor out of the dark
+  if (k < 1) { ctx.fillStyle = `rgba(4,3,6,${1 - k * k})`; ctx.fillRect(0, 0, CANVAS_W, PLAY_H); }
 }
 
 // small gold arrows at the edges of the map, one for each way you can step from where you stand
@@ -4781,21 +5788,27 @@ function drawTopBar() {
   ctx.font = `600 13px ${GAME_FONT}`;
   // the last argument squeezes the text to fit if a wider backup font is showing
   ctx.fillText(`Lv ${level} - Floor ${floor + 1}/${FLOORS}`, 8, 14, 140);
-  bar(12, 19, 132, 13, p.hp, p.max, poison ? 'poison' : 'hp');           // purple while poisoned
+  const hp = shownHp('player');                                            // (in a fight, as of the last blow that has landed)
+  bar(12, 19, 132, 13, hp, p.max, poison ? 'poison' : 'hp', 'top');      // purple while poisoned
   ctx.font = `600 11px ${GAME_FONT}`;
   ctx.textAlign = 'center';
   ctx.lineWidth = 2.5;
   ctx.strokeStyle = 'rgba(0,0,0,0.8)';
-  ctx.strokeText(`${p.hp}/${p.max}`, 78, 29.5);
+  ctx.strokeText(`${hp}/${p.max}`, 78, 29.5);
   ctx.fillStyle = '#fff';
-  ctx.fillText(`${p.hp}/${p.max}`, 78, 29.5);
+  ctx.fillText(`${hp}/${p.max}`, 78, 29.5);
   bar(12, 37, 132, 3, xp, xpToNext(level + levelUps), 'xp');
-  // gold
-  drawCoin(168, 23, 8.5);
+  // gold: counting up to what you have (after a fight's blows have landed), the coin glinting as it does
+  const now = performance.now();
+  if (coinShow === null || coins < coinShow) coinShow = coins;
+  else if (coins > coinShow && !turnBusy() && now - coinStep > 40) { coinShow += Math.max(1, Math.ceil((coins - coinShow) * 0.18)); coinStep = coinGlint = now; }
+  const gl = Math.max(0, 1 - (now - coinGlint) / 300);
+  drawCoin(168, 23, 8.5 * (1 + 0.18 * gl));
+  if (gl > 0) { ctx.fillStyle = `rgba(255,250,210,${0.8 * gl})`; ctx.fillRect(163, 22.5, 10, 1); ctx.fillRect(167.5, 18, 1, 10); }
   ctx.textAlign = 'left';
   ctx.font = `600 17px ${GAME_FONT}`;
-  ctx.fillStyle = '#fc3';
-  ctx.fillText(String(coins), 181, 29, 40);
+  ctx.fillStyle = gl > 0 ? '#ffe680' : '#fc3';
+  ctx.fillText(String(coinShow), 181, 29, 40);
   // potions: tap the flask to drink one
   const glow = poison && potions ? '#c060ff' : potions && p.hp <= p.max - potionHeal() ? '#4e4' : null;
   drawFlask(238, 22, potions / maxPotions, glow);
@@ -4865,7 +5878,7 @@ const hoverGrow = b => hoverId && hoverId === b.id ? Math.min(1, (performance.no
 const PRESS_MS = 160;
 const TIER_EDGE = ['#a8743c', '#aab0ba', '#f2f6fc'];   // leather (and cloth), iron, steel
 const RARITY_EDGE = {common: '#8c857c', uncommon: '#cdd4e0', rare: '#f0c048'};   // iron, silver, gold (and the frames differ: studs, then gilt corners)
-const openLog = () => { overlay = {kind: 'log', back: 0}; };
+const openLog = () => { overlay = {kind: 'log', back: 0}; SND.fx('page'); };
 const uiAnimating = () => !!(pressed && performance.now() - pressed.t < PRESS_MS) || logStepping() || dealing() ||
   (hoverId !== null && performance.now() - hoverAt < HOVER_GROW_MS + 40) ||
   (phase === 'camp' && !overlay && !over) ||                              // the campfire burns
@@ -5308,6 +6321,20 @@ function paintClose(b) {
   ctx.moveTo(cx + 7, cy - 7); ctx.lineTo(cx - 7, cy + 7);
   ctx.stroke();
 }
+// music and sounds: a speaker (struck through when sounds are off) and a note (struck through when the music is off)
+function paintSoundBtn(b) {
+  const x = b.x + b.w / 2 - 8, y = b.y + b.h / 2, col = isLit(b) ? '#ffffff' : '#c9b994', s = SND.prefs.sfx, m = SND.prefs.music;
+  ctx.fillStyle = s ? col : '#6e665a';
+  ctx.beginPath(); ctx.moveTo(x - 6, y - 3); ctx.lineTo(x - 2, y - 3); ctx.lineTo(x + 3, y - 8); ctx.lineTo(x + 3, y + 8); ctx.lineTo(x - 2, y + 3); ctx.lineTo(x - 6, y + 3); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = s ? col : '#6e665a'; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
+  if (s) for (const r of [5, 9]) { ctx.beginPath(); ctx.arc(x + 3, y, r, -0.7, 0.7); ctx.stroke(); }
+  else { ctx.strokeStyle = '#c84a3a'; ctx.beginPath(); ctx.moveTo(x - 7, y - 9); ctx.lineTo(x + 7, y + 9); ctx.stroke(); }
+  const nx = x + 17, ny = y - 1;                                           // the note
+  ctx.fillStyle = ctx.strokeStyle = m ? col : '#6e665a'; ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.ellipse(nx, ny + 6, 2.6, 2, -0.4, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(nx + 2.2, ny + 5.5); ctx.lineTo(nx + 2.2, ny - 7); ctx.lineTo(nx + 6, ny - 5); ctx.stroke();
+  if (!m) { ctx.strokeStyle = '#c84a3a'; ctx.beginPath(); ctx.moveTo(nx - 4, ny - 7); ctx.lineTo(nx + 7, ny + 9); ctx.stroke(); }
+}
 function paintTab(b) {
   const on = overlay && overlay.tab === b.tab;
   titleText(b.label, b.x + b.w / 2, b.y + 23, 21, on ? '#fc3' : '#8a8070');
@@ -5415,7 +6442,14 @@ function verdictGlyph(ctx, v) {                                                /
   ctx.restore();
 }
 function paintLootCard() {
-  if (!pending) return;
+  if (!pending || turnBusy()) return;                                      // (the last enemy falls first)
+  const rise = Math.max(0, Math.min(1, (performance.now() - lootAt) / 260));   // it rises into place as it appears
+  if (rise >= 1) return lootCardBody();
+  ctx.save(); ctx.globalAlpha = rise; ctx.translate(0, Math.round(20 * Math.pow(1 - rise, 2)));
+  lootCardBody();
+  ctx.restore(); requestFrames();
+}
+function lootCardBody() {
   const x = 8, w = 272, h = 100, y = view.controls - h - 6, cur = worn[pending.slot], v = lootVerdict(pending, cur), V = VERDICTS[v];
   ctx.fillStyle = 'rgba(16,13,20,0.96)';
   chamfer(x, y, w, h, 7);
@@ -5817,7 +6851,7 @@ function screenItems() {
     add({x: 0, y: view.top + TOP_H, w: CANVAS_W, h: view.h, draw: () => paintPanel(L.panel, title, !plain)});
   };
   add({id: 'potion', x: 222, y: view.top, w: 66, h: TOP_H, act: drinkPotion});   // the flask (the top bar draws it)
-  if (over && runSummary) summaryScreen(L, add, menu);
+  if (over && runSummary && !turnBusy()) summaryScreen(L, add, menu);    // (after your fall has played out)
   else if (overlay && overlay.kind === 'log') logScreen(L, add, menu);
   else if (overlay && overlay.kind === 'hero') heroScreen(L, add, menu);
   else if (phase === 'level') levelScreen(L, add, menu);
@@ -6237,6 +7271,12 @@ function levelScreen(L, add, menu) {
     const cy = P.y + P.h * 0.5, fade = ctx.createRadialGradient(P.x + P.w / 2, cy, P.w * 0.15, P.x + P.w / 2, cy, P.h * 0.55);
     fade.addColorStop(0, 'rgba(24,20,28,0)'); fade.addColorStop(1, 'rgba(22,18,26,1)');
     ctx.fillStyle = fade; ctx.fillRect(P.x, P.y + 60, P.w, P.h);
+    const age = (performance.now() - levelDealtAt) / (DEAL_MS + DEAL_GAP_MS * 3);   // a burst of gold light as the cards are dealt
+    if (age < 1) {
+      const bx = P.x + P.w / 2, g = ctx.createRadialGradient(bx, cy, 4, bx, cy, P.w * (0.35 + 0.55 * age));
+      g.addColorStop(0, `rgba(255,214,120,${0.5 * (1 - age)})`); g.addColorStop(1, 'rgba(255,190,80,0)');
+      ctx.fillStyle = g; ctx.fillRect(P.x, P.y + 60, P.w, P.h);
+    }
     ctx.restore();
     centerText(`Pick a perk for level ${level + 1}` + (levelUps > 1 ? ` (${levelUps} level-ups waiting)` : ''), P.x + P.w / 2, P.y + 54, textFont(13, 400), '#b8ae9a');
   }});
@@ -6383,6 +7423,7 @@ function heroScreen(L, add, menu) {
     add({id: 'tab:' + tab, tab, x: P.x + 10 + i * 92, y: P.y + 6, w: 88, h: 36, label: tab === 'gear' ? 'Gear' : 'Bag',
          act: () => { o.tab = tab; o.pick = null; }, draw: paintTab});
   add({id: 'close', x: P.x + P.w - 44, y: P.y + 6, w: 38, h: 36, act: () => { overlay = null; }, draw: paintClose});
+  add({id: 'sound', x: P.x + P.w - 84, y: P.y + 6, w: 38, h: 36, act: cycleSound, draw: paintSoundBtn});
   if (o.tab === 'bag') return bagTab(L, add);
   const y0 = P.y + 48, rest = 40 + 70 + 88;              // detail, stats (three rows), perks below the doll
   const dollH = Math.max(96, Math.min(240, P.y + P.h - 8 - rest - y0));
@@ -6538,12 +7579,15 @@ function checkDeath(killer, text) {
   if (secondWinds > 0) {
     secondWinds--;
     p.hp = Math.max(1, Math.round(p.max * SECOND_WIND_SHARE));
+    after(0.3); cue('secondWind', {len: 0.9});
     popup('player', 'SECOND WIND', 'gold');
     msg.textContent += ` SECOND WIND! You refuse to fall and stand back up with ${p.hp} HP.`;
     refresh();
     return true;
   }
   msg.textContent = text;
+  if (turnOpen()) cue('youDie', {len: 2});                                 // you fall where you stand; the summary waits
+  else SND.fx('youDie', {armor: heroArmor()});
   endRun(false, killer);
   draw();
   return false;
@@ -6556,6 +7600,7 @@ function tickPoison() {
   const hurt = Math.min(poisonDmg(), p.hp);
   p.hp -= hurt;
   run.taken += hurt;
+  if (turnOpen()) { after(0.15); cue('poisonTick'); } else SND.fx('poison', {pan: 0});
   popup('player', hurt, 'dmg');
   msg.textContent += ` Poison burns you for ${hurt}` + (poison ? ` (${poison} more).` : '. The poison wears off.');
   refresh();
@@ -6573,7 +7618,11 @@ function foeStrike(f, mult, blocking = false) {
   // the Crushing Blow and the Charge always land, and never crit
   const result = crush || charge ? 'hit' : swingResult(FOE_MISS, FOE_CRIT);
   f.landed = result !== 'miss';
+  after(turnOpen() && turn.beats.length ? TURN.gap - TURN.foeSwing : 0);  // each enemy steps in after the last
+  cue('foeSwing', {who: f});
+  after(TURN.foeSwing);
   if (result === 'miss') {
+    cue('foeMiss', {who: f});
     popup('player', 'MISS', 'miss');
     msg.textContent += ` ${f.name} misses you.`;
   } else {
@@ -6584,7 +7633,8 @@ function foeStrike(f, mult, blocking = false) {
     hurt = Math.max(1, Math.round(hurt * mult));
     run.taken += Math.min(hurt, p.hp);
     p.hp = Math.max(0, p.hp - hurt);
-    popup('player', hurt, 'dmg');
+    cue('struck', {by: f, blocking, big: crush || charge || result === 'crit' || hurt >= p.max * 0.2});
+    popup('player', hurt, 'dmg', crush || charge || result === 'crit');
     msg.textContent += crush
       ? ` ${f.name} lands a CRUSHING BLOW through your armor for ${hurt}!`
       : charge
@@ -6596,23 +7646,27 @@ function foeStrike(f, mult, blocking = false) {
       const heal = Math.min(Math.round(hurt * f.drain * purityKeep()), f.max - f.hp);
       if (heal > 0) {
         f.hp += heal;
+        cue('drain', {who: f});
         popup(f, `+${heal}`, 'heal');
         msg.textContent += ` It drains ${heal} HP from you.`;
       }
     }
     if (f.poison && p.hp > 0 && Math.random() < POISON_CHANCE) {
       poison = Math.max(1, poisonTurns() - enchSum('purity'));
+      cue('poisoned');
       msg.textContent += ' You are poisoned!';
     }
     if (f.thief && !f.stolen && !perkN('purse') && p.hp > 0 && coins > 0 && Math.random() < THIEF_CHANCE) {
       f.stolen = Math.min(coins, roll(THIEF_STEAL[0], THIEF_STEAL[1]));
       f.fleeIn = THIEF_TURNS;
       coins -= f.stolen;
+      cue('steal', {who: f});
       msg.textContent += ` The ${f.name} snatches ${f.stolen} coins!`;
     }
     const thorns = enchSum('thorns');
     if (thorns && !blocking && p.hp > 0 && f.hp > 0) {
       msg.textContent += ` Thorns cut the ${f.name} for ${Math.min(thorns, f.hp)}.`;
+      after(0.08); cue('hit', {who: f});
       damageFoe(f, thorns, false);
     }
     refresh();
@@ -6623,11 +7677,13 @@ function foeStrike(f, mult, blocking = false) {
 }
 
 function foesAttack(mult = 1, blocking = false) {
+  after(turnOpen() && turn.beats.length ? TURN.lead - (TURN.gap - TURN.foeSwing) : 0);   // a breath after your blow, then they answer
   for (const f of foes.filter(f => f.hp > 0)) {
     const burning = f.burn > 0;
     if (burning) {
       f.burn--;
       msg.textContent += ` The ${f.name} burns for ${Math.min(f.burnDmg, f.hp)}.`;
+      after(0.1); cue('burnTick', {who: f});
       damageFoe(f, f.burnDmg, false);
       if (f.hp <= 0) continue;
     }
@@ -6639,6 +7695,7 @@ function foesAttack(mult = 1, blocking = false) {
       } else if (f.hp < f.max) {
         const heal = Math.min(f.regen, f.max - f.hp);
         f.hp += heal;
+        after(0.1); cue('regen', {who: f});
         popup(f, `+${heal}`, 'heal');
         msg.textContent += ` The ${f.name} regenerates ${heal} HP.`;
       }
@@ -6647,6 +7704,7 @@ function foesAttack(mult = 1, blocking = false) {
       if (f.fleeIn === 0) {
         f.hp = 0;
         f.fled = true;
+        after(0.2); cue('hp', {who: f, hp: 0}); cue('flee', {who: f});
         msg.textContent += ` The ${f.name} runs off with your ${f.stolen} coins!`;
         continue;
       }
@@ -6655,6 +7713,7 @@ function foesAttack(mult = 1, blocking = false) {
     if (f.stunned) {
       f.stunned = false;
       f.stunProof = true;            // stuns don't chain: its next attack can't stun it again (others in the group still can be)
+      after(0.2); cue('stunned', {who: f});
       msg.textContent += ` The ${f.name} is stunned and can't attack.`;
       continue;
     }
@@ -6662,6 +7721,7 @@ function foesAttack(mult = 1, blocking = false) {
     // a hit that lands on your raised shield may stun the attacker for its next turn (unless it was stunned just before)
     if (blocking && f.landed && f.hp > 0 && !f.stunProof && Math.random() < stunChance()) {
       f.stunned = true;
+      cue('stun', {who: f});
       popup(f, 'STUNNED', 'stun');
       msg.textContent += ` The ${f.name} staggers off your shield, stunned!`;
     }
@@ -6677,6 +7737,7 @@ function killFoe(t) {
   gainXp(gained);
   run.kills[t.name] = (run.kills[t.name] || 0) + 1;
   msg.textContent += ` ${t.name} defeated! +${got} coins, +${gained} XP.`;
+  cue('gold', {who: t, len: 0});
   if (t.stolen) {
     coins += t.stolen;
     msg.textContent += ` You get your ${t.stolen} coins back.`;
@@ -6684,7 +7745,9 @@ function killFoe(t) {
   if (t.split) {
     // foes is the encounter's group, so the halves stay if you flee and come back
     // piece: which half of the big slime's half-skull each little one carries off
-    foes.push(...[0, 1].map(piece => ({...LITTLE_SLIME, max: LITTLE_SLIME.hp, bonus: 0, def: 0, items: [], piece})));
+    const born = turnOpen() ? turn.t0 + (turn.at + 0.2) * 1000 : 0;       // (they appear as it bursts)
+    foes.push(...[0, 1].map(piece => ({...LITTLE_SLIME, max: LITTLE_SLIME.hp, bonus: 0, def: 0, items: [], piece, bornAt: born})));
+    cue('split', {who: t});
     msg.textContent += ` The ${t.name} splits in two!`;
   }
   refresh();
@@ -6697,6 +7760,7 @@ function endFight() {
   const mend = Math.min(enchSum('mending') + VITALITY_MEND * perkN('vitality'), p.max - p.hp);
   if (killedAny && mend > 0) {
     p.hp += mend;
+    after(0.35); cue('heal', {who: 'player'});
     popup('player', `+${mend}`, 'heal');
     msg.textContent += ` You recover ${mend} HP.`;
   }
@@ -6724,16 +7788,21 @@ function damageFoe(t, amount, crit) {
   const dealt = Math.min(amount, t.hp);
   t.hp -= dealt;
   run.dealt += dealt;
-  if (dealt > 0) popup(t, dealt, 'dmg');
+  if (dealt > 0) popup(t, dealt, 'dmg', crit);
   if (t.hp === 0 && t.reassemble && !t.rose && !crit && Math.random() < REASSEMBLE_CHANCE) {
     t.rose = true;
+    cue('die', {who: t});                                                  // it falls apart... and pulls itself back together
+    after(0.45);
     t.hp = Math.round(t.max * REASSEMBLE_HP);
+    cue('reassemble', {who: t});
     popup(t, `+${t.hp}`, 'heal');
     msg.textContent += ` The ${t.name}'s bones rattle back together!`;
   } else if (t.hp === 0) {
+    cue('die', {who: t, len: t.boss ? 0.2 : 0.9});
     killFoe(t);
   } else if (t.boss && !t.raged && t.hp <= t.max / 2) {
     t.raged = true;
+    cue('rage', {who: t, len: 1});
     msg.textContent += ` The ${t.name} roars in a rage!`;
   }
   return dealt;
@@ -6745,8 +7814,11 @@ function strike(t, heavy, label) {
   const base = (t.evasion ?? PLAYER_MISS) + (heavy ? HEAVY_MISS : 0);
   const missChance = base * missKeep() * (heavy ? 1 - enchSum('balanced') : 1);
   const result = swingResult(missChance, critChance());
+  cue('swing', {who: t, heavy});                                           // you draw back and swing; it lands a moment later
+  after(heavy ? TURN.heavy : TURN.swing);
   if (result === 'miss') {
     run.misses++;
+    cue('miss', {who: t});
     popup(t, 'MISS', 'miss');
     msg.textContent += label + (heavy ? `Your heavy swing misses the ${t.name}.` : `You swing at ${t.name} and miss.`);
     return result;
@@ -6776,10 +7848,11 @@ function strike(t, heavy, label) {
     t.noRegen = true;
     msg.textContent += ` The ${t.name}'s wounds stop closing.`;
   }
+  cue('hit', {who: t, heavy, crit: result === 'crit', caught});
   const dealt = damageFoe(t, dmg, result === 'crit');
   const burn = enchSum('flaming');
   if (burn && t.hp > 0) {
-    if (!t.burn) msg.textContent += ` The ${t.name} catches fire!`;
+    if (!t.burn) { msg.textContent += ` The ${t.name} catches fire!`; cue('ignite', {who: t}); }
     t.burn = BURN_TURNS;
     t.burnDmg = burn;
   }
@@ -6795,16 +7868,23 @@ function strike(t, heavy, label) {
 // kind: 'normal', 'heavy' or 'block'
 function act(kind) {
   if (over || phase !== 'fight') return;
+  beginTurn();
+  try { takeTurn(kind); } finally { closeTurn(); }
+  draw();
+}
+function takeTurn(kind) {
   if (kind === 'block') {
     msg.textContent = 'You raise your guard.';
+    cue('guard', {len: 0.3});
     const front = liveTarget();
     if (perkN('shieldbash') && front) {
+      after(0.16);
       msg.textContent += ` You bash the ${front.name} for ${Math.min(bashDmg(), front.hp)}.`;
+      cue('bash', {who: front});
       damageFoe(front, bashDmg(), false);
     }
     if (foes.some(f => f.hp > 0)) foesAttack(blockMult(), true);
     else endFight();
-    draw();
     return;
   }
   const heavy = kind === 'heavy';
@@ -6815,7 +7895,7 @@ function act(kind) {
   // a Swift weapon may strike again (your target, or the next enemy if your target fell)
   if (result !== 'miss' && Math.random() < enchSum('swift')) {
     const next = liveTarget();
-    if (next) strike(next, heavy, ' Swift strike! ');
+    if (next) { after(0.18); strike(next, heavy, ' Swift strike! '); }
   }
   if (result === 'miss' && t.riposte && !t.stunned && t.hp > 0) {
     msg.textContent += ` The ${t.name} ripostes!`;
@@ -6826,7 +7906,6 @@ function act(kind) {
   } else {
     endFight();
   }
-  draw();
 }
 // drink a potion (tap the flask in the top bar); in a fight it uses your turn
 function drinkPotion() {
@@ -6835,15 +7914,20 @@ function drinkPotion() {
   if (p.hp === p.max && !poison) { msg.textContent = 'Already at full health.'; return; }
   potions--;
   run.potions++;
-  const heal = Math.min(potionHeal(), p.max - p.hp);
-  p.hp += heal;
-  if (heal > 0) popup('player', `+${heal}`, 'heal');
-  msg.textContent = `You drink a potion and heal ${heal}.`;
-  if (poison) {
-    poison = 0;
-    msg.textContent += ' The poison is cured.';
-  }
-  if (phase === 'fight') foesAttack();
+  const fight = phase === 'fight';
+  if (fight) { beginTurn(); cue('drink', {len: 0.6}); after(0.45); }       // in a fight it takes your turn
+  else SND.fx('potion', {pan: 0});
+  try {
+    const heal = Math.min(potionHeal(), p.max - p.hp);
+    p.hp += heal;
+    if (heal > 0) popup('player', `+${heal}`, 'heal');
+    msg.textContent = `You drink a potion and heal ${heal}.`;
+    if (poison) {
+      poison = 0;
+      msg.textContent += ' The poison is cured.';
+    }
+    if (fight) foesAttack();
+  } finally { if (fight) closeTurn(); }
   draw();
 }
 
@@ -6857,9 +7941,11 @@ function campChoice(kind) {
     const healed = Math.min(campHeal(), p.max - p.hp);
     p.hp += healed;
     if (healed) popup('player', `+${healed}`, 'heal');
+    SND.fx('heal');
     msg.textContent = `You rest by the fire until it burns down. You recover ${healed} HP.`;
   } else {
     gainXp(campXp());
+    SND.fx('train');
     msg.textContent = `You drill by the firelight until it burns down. +${campXp()} XP.`;
     showLevelUp();
   }
@@ -6882,6 +7968,7 @@ function sellPotion() {
   confirmSale('sell:potion', `Sell a health potion for ${got} coins? Tap it again to sell.`, () => {
     potions--;
     coins += got;
+    SND.fx('sell');
     msg.textContent = `Sold a health potion for ${got} coins.`;
   });
 }
@@ -6893,6 +7980,7 @@ function sellGear(k) {
   confirmSale('sell:' + k, `Sell your ${itemName(it)} for ${got} coins? Tap it again to sell.`, () => {
     delete worn[k];
     coins += got;
+    SND.fx('sell');
     refreshMax();
     msg.textContent = `Sold your ${itemName(it)} for ${got} coins.`;
   });
@@ -6905,6 +7993,7 @@ function sellScroll(i) {
   confirmSale((atShop ? 'sell:scroll:' : 'ench:sell:') + i, `Sell the Scroll of ${enchLabel(s)} for ${got} coins? Tap it again to sell.`, () => {
     scrolls.splice(i, 1);
     coins += got;
+    SND.fx('sell');
     msg.textContent = `Sold the Scroll of ${enchLabel(s)} for ${got} coins.`;
   });
 }
@@ -6920,6 +8009,7 @@ function buyItem(i) {
   });
 }
 function buyNow(it) {
+  SND.fx('buy');
   const old = it.type === 'gear' ? worn[it.slot] : null, refund = tradeIn(it);
   coins += refund - it.price;
   if (it.type === 'potion') {
@@ -6966,10 +8056,12 @@ function tryFlee() {
     phase = 'explore';
     combatView = false;
     msg.textContent = 'You slipped away!';
+    SND.fx('flee', {pan: -0.3});
   } else {
     phase = 'fight';
     msg.textContent = 'Flee failed!';
-    foesAttack();
+    beginTurn();
+    try { cue('stumble', {len: 0.3}); after(0.15); foesAttack(); } finally { closeTurn(); }
     if (!over && phase === 'fight') msg.textContent += ' Normal, Heavy or Block?';
   }
   draw();
@@ -6981,6 +8073,7 @@ function equipItem() {
     const {slot, ...item} = pending;
     worn[slot] = item;
     refreshMax();
+    SND.fx('equip');
     msg.textContent = `Equipped ${itemName(item)}.`;
     closeLoot();
   });
@@ -7046,7 +8139,7 @@ function handleTap(pt) {
   // a button, a card, a menu row... (and any open panel swallows taps that miss its buttons)
   const item = itemAt(pt);
   if (item) {
-    if (item.act && item.enabled !== false) { pressed = {id: item.id, t: performance.now()}; item.act(); }
+    if (item.act && item.enabled !== false) { pressed = {id: item.id, t: performance.now()}; SND.fx('tap'); item.act(); }
     return;
   }
   if (over) return;
@@ -7075,6 +8168,7 @@ function handleTap(pt) {
   visited.add(`${nx},${ny}`);
   run.steps++;
   msg.textContent = '';
+  SND.fx('step', {floor: Math.min(floor, 4), pan: (nx - prev.x) * 0.25});
   if (!tickPoison()) return;
 
   const key = `${nx},${ny}`;
@@ -7094,9 +8188,14 @@ function handleTap(pt) {
     sceneFoes = foes;
     target = foes.find(f => f.hp > 0);
     pops = [];
+    fx = [];
+    turn = null;
     phase = 'choice';
+    fightIntro = performance.now();
     const live = foes.filter(f => f.hp > 0);
     const bossFoe = live.find(f => f.boss);
+    SND.fx('encounter', {boss: !!bossFoe});                                // a drum and a dark swell, then each kind of enemy calls out
+    [...new Set(live.map(f => f.name))].forEach((name, i) => SND.fx('voice', {name, pan: panOf(live.find(f => f.name === name))}, 0.3 + i * 0.35));
     msg.textContent = bossFoe
       ? `The ${bossFoe.name} blocks the exit! No running from this one.`
       : live.length > 1
@@ -7104,6 +8203,7 @@ function handleTap(pt) {
         : `A ${describe(live[0])} appears!`;
   } else if (map[ny][nx] === 'F') {
     phase = 'camp';
+    SND.fx('camp');
     msg.textContent = 'A campfire crackles at the last camp. It will last for one thing before it burns out.';
   } else if (sh && sh.enchanter) {
     ench = {};
@@ -7116,12 +8216,20 @@ function handleTap(pt) {
     shopMode = 'buy';
     saleArm = null;
     phase = 'shop';
+    SND.fx('shopBell');
     msg.textContent = "Merchant: what'll it be?";
   } else if (map[ny][nx] === 'K' && !opened.has(key)) {
+    SND.fx('capsa');
     msg.textContent = 'You open a capsa! ' + openCapsa(key);
   } else if (map[ny][nx] === 'C' && !opened.has(key)) {
+    SND.fx('chest');
+    const coins0 = coins, potions0 = potions;
     msg.textContent = 'You open a chest! ' + openChest(key);
+    if (coins > coins0) { SND.fx('coins', {n: 6}, 0.45); popup('player', `+${coins - coins0}`, 'gold'); }
+    else if (potions > potions0) { SND.fx('equip', {}, 0.45); popup('player', '+1 potion', 'heal'); }
   } else if (map[ny][nx] === 'D') {
+    SND.fx('stairs');
+    floorFade = performance.now();
     loadFloor(floor + 1);
     msg.textContent = lastFloor()
       ? `You descend to floor ${floor + 1}. The air reeks of ogre...`
@@ -7131,6 +8239,35 @@ function handleTap(pt) {
 }
 
 fitScreen();   // sizes the canvas to the screen and draws the first frame
+
+// ---- the music follows where you are (see SND); low on health in a fight, your heart pounds with the red at the edges ----
+const moodNow = () => !title.hidden ? 'title'
+  : over && !turnBusy() ? (runSummary && runSummary.won ? 'victory' : 'death')
+  : finale || (inCombatScene() && sceneFoes.some(f => f.boss && f.hp > 0)) ? 'boss'
+  : inCombatScene() && phase !== 'loot' ? 'combat'
+  : phase === 'camp' ? 'camp' : phase === 'shop' ? 'shop' : 'floor' + Math.min(floor, 4);
+let heartBeat = 0;
+setInterval(() => {
+  SND.mood(moodNow());
+  const k = Math.floor(performance.now() / 950), hp = shownHp('player');
+  if (k !== heartBeat) { heartBeat = k; if (inCombatScene() && !over && phase !== 'loot' && hp > 0 && hp <= p.max * 0.3) SND.fx('heart'); }
+}, 80);
+// music and sounds, each on or off (remembered): two buttons on the title screen, one in the Hero panel
+function soundLabels() {
+  for (const [btn, on, name] of [[musicBtn, SND.prefs.music, 'Music'], [sfxBtn, SND.prefs.sfx, 'Sounds']]) {
+    btn.textContent = name; btn.classList.toggle('off', !on); btn.setAttribute('aria-pressed', String(on));
+  }
+}
+musicBtn.onclick = () => { SND.setMusic(!SND.prefs.music); soundLabels(); };
+sfxBtn.onclick = () => { SND.setSfx(!SND.prefs.sfx); soundLabels(); if (SND.prefs.sfx) SND.fx('coin'); };
+soundLabels();
+// the Hero panel's button steps through: both on, music off, both off
+function cycleSound() {
+  const m = SND.prefs.music, s = SND.prefs.sfx;
+  if (m && s) SND.setMusic(false); else if (s) SND.setSfx(false); else { SND.setMusic(true); SND.setSfx(true); }
+  soundLabels();
+  msg.textContent = `Music ${SND.prefs.music ? 'on' : 'off'}, sounds ${SND.prefs.sfx ? 'on' : 'off'}.`;
+}
 
 // ---- the title screen: the name in gold over the dark, firelight from below, embers rising and fog drifting low ----
 // Your runs are kept in this browser for the record under the name: a skull for every death and a crown for every
