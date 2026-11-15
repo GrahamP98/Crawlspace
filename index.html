@@ -3,7 +3,7 @@
 <!-- added to a phone's home screen, it opens full screen like an app -->
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#111111">
 <title>Crawlspace</title>
 <link rel="apple-touch-icon" sizes="180x180" href="crawlspace-icon.png">
@@ -113,12 +113,6 @@
   #setBtn svg { display: block; width: 100%; height: 100%; }
   #settings .lead { text-align: center; color: #aaa; margin: 0; font-style: italic; }
   #settings button.off { color: #6e665a; border-color: #3e3428; }
-  /* the gate before the title: a tap here wakes the sound (browsers allow none before a tap), then the reveal plays */
-  #gate { position: fixed; inset: 0; z-index: 3; display: flex; align-items: flex-end; justify-content: center; cursor: pointer;
-          padding-bottom: max(18vh, env(safe-area-inset-bottom, 0px)); font-family: var(--title-font); font-size: 30px; color: #e6d6b2;
-          letter-spacing: 0.06em; text-shadow: 0 0 12px rgba(255, 150, 60, 0.6), 0 2px 4px #000; animation: gatepulse 2.4s ease-in-out infinite; }
-  @keyframes gatepulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) { #gate { animation: none; } }
   #vault h2, #settings h2 { font-family: var(--title-font); font-weight: 400; font-size: 30px; color: #fc3; margin: 8px 0 0; text-align: center; }
   #vault .lead { text-align: center; color: #aaa; margin: 0; font-style: italic; line-height: 1.4; }
   #vault .vhead { display: grid; justify-items: center; gap: 2px; }
@@ -159,7 +153,6 @@
 </style>
 <div id="title">
   <canvas id="titleArt" aria-hidden="true"></canvas>
-  <div id="gate" role="button" tabindex="0" hidden>Tap to enter</div>
   <button id="setBtn" aria-label="Settings"><svg viewBox="-12 -12 24 24" aria-hidden="true"><path fill="#d9c49a" fill-rule="evenodd" d="M-1.6-11h3.2l.6 3.1 2.2.9 2.6-1.8 2.3 2.3-1.8 2.6.9 2.2 3.1.6v3.2l-3.1.6-.9 2.2 1.8 2.6-2.3 2.3-2.6-1.8-2.2.9-.6 3.1h-3.2l-.6-3.1-2.2-.9-2.6 1.8-2.3-2.3 1.8-2.6-.9-2.2-3.1-.6v-3.2l3.1-.6.9-2.2-1.8-2.6 2.3-2.3 2.6 1.8 2.2-.9zM0-3.6a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 1 0 0-7.2z"/></svg></button>
   <div class="inner" id="titleMain">
     <h1 class="sr-only">Crawlspace</h1>
@@ -211,7 +204,7 @@
       <p><b>Tap an enemy to target it.</b> A yellow ring under an enemy shows your target, and your attacks go to it. When your target falls, the next enemy is targeted for you.</p>
       <p>Damage rises over the one who took it as a <b style="color:#f44">red</b> number, healing as a <b style="color:#4e4">green</b> one. <b>MISS</b> appears over whoever an attack was aimed at, <b style="color:#6df">STUNNED</b> over a stunned enemy, and <b style="color:#fc3">SECOND WIND</b> over you when that perk saves your life.</p>
       <p>You first choose <b>Fight</b> or <b>Flee</b>. Fleeing works 25% of the time (up to 35% with Fleetfoot greaves) and puts you back one step. If it fails, the enemies get a free attack. You can never flee the Ogre King.</p>
-      <p><b>Every enemy shows what it will do next</b>: a small badge over its name. A sword is an attack, and the number beside it is about how much it will hurt you (before your Block or Heavy). A shield, a wing or an arrow is a <b>stance</b>: it is up during your turn (hard to hit, braced, guarding, out of reach), and the enemy doesn't attack on its turn. A heart is a heal, a horn a war cry, and so on (see <b>Enemies and their tricks</b>). A <b style="color:#f66">red badge</b> is a <b>big move</b>: it always lands, so Block it. A move you see always happens, unless you stun the enemy first: blue stars mean it will skip its turn. In a group, only one enemy at a time shows a big move, and only one a stance.</p>
+      <p><b>Every enemy shows what it will do next</b>: a small badge over its name. A sword is an attack, and the number beside it is about how much it will hurt you (before your Block or Heavy). A shield, a bat or an arrow is a <b>stance</b>: it is up during your turn (hard to hit, braced, guarding, out of reach), and the enemy doesn't attack on its turn. A heart is a heal, a horn a war cry, and so on (see <b>Enemies and their tricks</b>). A <b style="color:#f66">red badge</b> is a <b>big move</b>: it always lands, so Block it. A move you see always happens, unless you stun the enemy first: blue stars mean it will skip its turn. In a group, only one enemy at a time shows a big move, and only one a stance.</p>
       <p>A big move leaves the enemy <b>Off balance</b> (it says so after its name) until it acts again: your hits on it can't miss, its shield can't catch them and it can't strike back. That is the moment for a <b>Heavy</b>.</p>
       <p>Each turn of a fight, pick one move. The enemies then take their turn. If every enemy is out of reach, Normal and Heavy raise your guard instead.</p>
       <ul>
@@ -229,7 +222,7 @@
       <p><b>Sundered</b>: acid and a Sundering blow take 1 off your defense each (2 at most) until the fight ends. <b>Shaken</b>: after a Wail your next attack does 30% less. Both show under your health in a fight.</p>
       <h4>Floors <span class="num">1-2</span></h4>
       <ul>
-        <li><span class="sw" style="background:#98a"></span><b>Bat</b>: hard to hit. You miss it 30% of the time instead of 10%, so Heavy is a poor choice. Every third turn it <b>Flits</b> (wing): it darts about in the dark and you miss it 70% of the time. Hit something else, or Block.</li>
+        <li><span class="sw" style="background:#98a"></span><b>Bat</b>: hard to hit. You miss it 30% of the time instead of 10%, so Heavy is a poor choice. Every third turn it <b>Flits</b> (bat): it darts about in the dark and you miss it 70% of the time. Hit something else, or Block.</li>
         <li><span class="sw" style="background:#6c6"></span><b>Slime</b>: when killed it splits into two <b>Little Slimes</b> (weak, but they still hit you). Every third turn it spits <b>acid</b> (drop), which Sunders your armor.</li>
         <li><span class="sw" style="background:#ee4"></span><b>Goblin</b>: every other turn it tries to <b>Snatch</b> (hand) 3-6 of your coins (once). <b>Block and it gets nothing.</b> If it gets them, three turns later it runs off (arrow). Kill it first to get your coins back. A Goblin with a shield, in a group, sometimes <b>Cowers</b> behind the others, out of reach for that turn.</li>
         <li><span class="sw" style="background:#ddd"></span><b>Skeleton</b> (floor 2 on): the first time it dies it may pull itself back together (33%) with a quarter of its health, unless the killing blow was a critical hit. With a shield, every third turn it <b>Braces</b> (shield): your hits do half, so don't waste a Heavy on it.</li>
@@ -5741,49 +5734,13 @@ function drawFinale(t) {
 
 let fightIntro = 0;   // when the fight screen came up: the enemies step out of the dark
 const FIGHT_INTRO_MS = 480;
-// ---- intent icons: what each enemy will do next, over its name. 11 x 11 pixel pictures, 1 pixel = 1 unit ----
+// ---- intent icons: what each enemy will do next, over its name. 11 x 11 pixel pictures, 1 pixel = 1 unit (drawn in GLYPHS) ----
 // The shape tells the kind of move: a sword is an attack, a shield a stance, an arrow a movement, a heart a heal...
 // A big move sits on a red badge. Damage moves show the damage they should do (before your Block or Heavy)
-const ICON_PAL = {k: [22, 16, 20], w: [238, 232, 214], s: [150, 152, 164], a: [92, 94, 104], g: [222, 176, 64], n: [120, 78, 44],
-                  r: [210, 56, 44], G: [104, 206, 92], b: [116, 176, 236], y: [240, 206, 150], p: [176, 120, 228]};
-const ICON_ART = {
-  sword: ['........kkk', '.......kwwk', '......kwwk.', '.....kwwk..', '....kwwk...', '.k.kwwk....', '.kgkwk.....', '..kgk......', '.kgkgk.....', 'kgk..k.....', 'kk.........'],
-  drop: ['.....k.....', '....kGk....', '....kGk....', '...kGGGk...', '..kGGGGGk..', '..kGwGGGk..', '.kGwGGGGGk.', '.kGGGGGGGk.', '.kGGGGGGGk.', '..kGGGGGk..', '...kkkkk...'],
-  hand: ['..k.k.k....', '.kykykyk...', '.kykykyk...', '.kykykyk.k.', '.kyyyyyykyk', '.kyyyyyyyk.', '.kyyyyyyyk.', '..kyyyyyk..', '...kyyyk...', '...kyyyk...', '...kkkkk...'],
-  wing: ['...........', 'k..........', 'kk.........', 'kwk.....kk.', 'kwwk..kkwk.', '.kwwkkwwk..', '.kwwwwwk...', '..kswwk....', '...kssk....', '....kk.....', '...........'],
-  shield: ['.kkkkkkkkk.', '.kwwwwwwsk.', '.kwsssssak.', '.kwsssssak.', '.kwsssssak.', '.kwsssssak.', '..kwsssak..', '..kwsssak..', '...kwsak...', '....kak....', '.....k.....'],
-  guard: ['.kkkkkkkkk.', '.kwwwrwwsk.', '.kwssrssak.', '.krrrrrrrk.', '.kwssrssak.', '.kwssrssak.', '..kwsrsak..', '..kwsrsak..', '...kwrak...', '....kak....', '.....k.....'],
-  cracked: ['.kkkkkkkkk.', '.kwwwkwwsk.', '.kwsskssak.', '.kwssskask.', '.kwssskssk.', '.kwsskssak.', '..kwsksak..', '..kwksssk..', '...kwsak...', '....kak....', '.....k.....'],
-  up: ['.....k.....', '....kbk....', '...kbbbk...', '..kbbbbbk..', '.kbbbbbbbk.', '.kkkbbbkkk.', '...kbbbk...', '...kbbbk...', '...kbbbk...', '...kbbbk...', '...kkkkk...'],
-  back: ['...........', '....k......', '...kyk.....', '..kyyk.....', '.kyyykkkkk.', 'kyyyyyyyyk.', '.kyyykkkkk.', '..kyyk.....', '...kyk.....', '....k......', '...........'],
-  horn: ['...........', '.........kk', '........kgk', '......kkggk', '....kkgggk.', '..kkggggkk.', 'kkngggggk..', 'knnggggk...', 'kkngggk....', '..kkkk.....', '...........'],
-  rock: ['...........', '...kkkkk...', '..kswwssk..', '.kswwsssak.', '.kswssssak.', '.ksssssaak.', '.kssssaaak.', '.kasaaaaak.', '..kaaaaak..', '...kkkkk...', '...........'],
-  heart: ['...........', '.kkk...kkk.', 'kGGGk.kGGGk', 'kGwGGkGGGGk', 'kGGGGGGGGGk', '.kGGGGGGGk.', '..kGGGGGk..', '...kGGGk...', '....kGk....', '.....k.....', '...........'],
-  skull: ['..kkkkkkk..', '.kwwwwwwwk.', 'kwwwwwwwwwk', 'kwkkwwwkkwk', 'kwkkwwwkkwk', 'kwwwwkwwwwk', '.kwwwwwwwk.', '..kwkwkwk..', '..kkkkkkk..', '...........', '...........'],
-  horns: ['...........', 'k.........k', 'kk.......kk', 'kwk.....kwk', 'kwwk...kwwk', '.kwwkkkwwk.', '..kkwwwkk..', '..knnnnnk..', '...knnnk...', '....kkk....', '...........'],
-  hammer: ['.kkkkkkkkk.', '.kwwwwwwsk.', '.ksssssssk.', '.kaaaaaaak.', '.kkkkkkkkk.', '....kgk....', '....kgk....', '....kgk....', '....knk....', '....knk....', '....kkk....'],
-  star: ['.....k.....', '....kbk....', '....kbk....', 'kkkkbbbkkkk', '.kbbbwbbbk.', '..kbbbbbk..', '..kbbbbbk..', '.kbbkkkbbk.', '.kbk...kbk.', '.kk.....kk.', '...........'],
-  what: ['...kkkkk...', '..kwwwwwk..', '.kwwkkkwwk.', '.kkk..kwwk.', '.....kwwk..', '....kwwk...', '....kwwk...', '....kkkk...', '....kwwk...', '....kwwk...', '....kkkk...']
-};
-ICON_ART.down = ICON_ART.up.map(r => r.replace(/b/g, 'r')).reverse();
-ICON_ART.run = ICON_ART.back.map(r => [...r].reverse().join('').replace(/y/g, 'g'));
-// which picture each move shows
 const INTENT_ICON = {attack: 'sword', acid: 'drop', snatch: 'hand', flit: 'wing', brace: 'shield', guard: 'guard', cower: 'back', wing: 'up',
   dive: 'down', warcry: 'horn', roar: 'horn', boulder: 'rock', lick: 'heart', feast: 'heart', wail: 'skull', paw: 'horns', charge: 'horns',
   sunder: 'cracked', crush: 'hammer', run: 'run', stunned: 'star', hidden: 'what'};
-const intentSprites = new Map();
-function intentSprite(name) {
-  let cv = intentSprites.get(name);
-  if (!cv) {
-    const rows = ICON_ART[name] || ICON_ART.what;
-    cv = document.createElement('canvas'); cv.width = 11; cv.height = 11;
-    const g = cv.getContext('2d'), img = g.createImageData(11, 11);
-    rows.forEach((row, y) => [...row].forEach((ch, x) => { if (ICON_PAL[ch]) putPx(img.data, 11, x, y, ICON_PAL[ch]); }));
-    g.putImageData(img, 0, 0);
-    intentSprites.set(name, cv);
-  }
-  return cv;
-}
+const intentSprite = name => GLYPHS.intentSprite(name);   // 13 x 13: the 11 x 11 picture, its outline and its shadow
 // the badge over an enemy, centred on cx with its bottom at y: its move, and with Pathfinder the move after it, dimmed
 function drawIntent(f, cx, y) {
   const seer = perkN('pathfinder') > 0;
@@ -5797,12 +5754,12 @@ function drawIntent(f, cx, y) {
   chamfer(x, top, w, 15, 2.5);
   ctx.fillStyle = big ? 'rgba(84,12,8,0.88)' : 'rgba(14,10,16,0.78)'; ctx.fill();
   ctx.strokeStyle = big ? 'rgba(240,80,60,0.95)' : m === 'stunned' ? 'rgba(110,200,255,0.8)' : 'rgba(214,170,80,0.7)'; ctx.lineWidth = big ? 1.2 : 0.8; ctx.stroke();
-  drawSprite(intentSprite(INTENT_ICON[m] || 'sword'), x + 2, top + 2);
+  drawSprite(intentSprite(INTENT_ICON[m] || 'sword'), x + 1, top + 1);
   if (dmg !== null) { ctx.textAlign = 'left'; outlinedText(String(dmg), x + 15, top + 12, big ? '#ffb4a0' : '#fff'); }
   if (then) {
     const tx = x + 15 + numW;
     ctx.fillStyle = 'rgba(214,170,80,0.6)'; ctx.fillRect(tx, top + 7, 2, 1);
-    ctx.save(); ctx.globalAlpha = 0.55; drawSprite(intentSprite(INTENT_ICON[then] || 'sword'), tx + 3, top + 2); ctx.restore();
+    ctx.save(); ctx.globalAlpha = 0.55; drawSprite(intentSprite(INTENT_ICON[then] || 'sword'), tx + 2, top + 1); ctx.restore();
   }
   ctx.textAlign = 'center';
 }
@@ -5993,7 +5950,8 @@ function drawCombatHint() {
 
 // ---- the top bar: level and floor, health and XP, your gold and your potions ----
 // a gold coin, stamped with a star
-function drawCoin(x, y, r) {
+function drawCoin(x, y, r) { if (r < 4.5) return drawCoinSmooth(x, y, r); pixelIcon('ui:coin', r, g => GLYPHS.ui(g, 'coin'), x, y); }
+function drawCoinSmooth(x, y, r) {
   const g = ctx.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.1, x, y, r);
   g.addColorStop(0, '#fff4b8');
   g.addColorStop(0.45, '#f0c23a');
@@ -6120,6 +6078,9 @@ const refit = () => { if (fitPending) return; fitPending = true; requestAnimatio
 window.addEventListener('resize', refit);
 window.addEventListener('orientationchange', refit);
 if (window.visualViewport) visualViewport.addEventListener('resize', refit);
+window.addEventListener('pageshow', refit);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refit(); });
+setTimeout(refit, 300); setTimeout(refit, 1200);                         // (a phone can report the notch only once the app has settled)
 
 // where a tap landed, in screen units; and the same point in the play area's own units
 const tapPoint = e => {
@@ -6596,33 +6557,11 @@ function paintClose(b) {
 }
 // ---- the settings: music and sounds on or off, and back to the title (which ends the run) ----
 // a gear of iron: eight teeth round a hub
-function gearIcon(cx, cy, r, col) {
-  ctx.save(); ctx.translate(cx, cy); ctx.fillStyle = col;
-  ctx.beginPath();
-  for (let i = 0; i < 16; i++) { const a = i * Math.PI / 8 - Math.PI / 16, rr = i % 2 ? r * 0.74 : r; ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); ctx.lineTo(Math.cos(a + Math.PI / 8) * rr, Math.sin(a + Math.PI / 8) * rr); }
-  ctx.closePath(); ctx.fill();
-  ctx.globalCompositeOperation = 'destination-out'; ctx.beginPath(); ctx.arc(0, 0, r * 0.32, 0, Math.PI * 2); ctx.fill();
-  ctx.restore();
-}
+function gearIcon(cx, cy, r, col) { pixelIcon('ui:gear:' + col, r, g => GLYPHS.ui(g, 'gear', true, col), cx, cy); }
 // a speaker with its sound waves (or struck through), a note (or struck through), a door
-function speakerIcon(x, y, on) {
-  ctx.fillStyle = ctx.strokeStyle = on ? '#e8dcc0' : '#6e665a'; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
-  ctx.beginPath(); ctx.moveTo(x - 7, y - 3); ctx.lineTo(x - 3, y - 3); ctx.lineTo(x + 2, y - 8); ctx.lineTo(x + 2, y + 8); ctx.lineTo(x - 3, y + 3); ctx.lineTo(x - 7, y + 3); ctx.closePath(); ctx.fill();
-  if (on) for (const r of [5, 9]) { ctx.beginPath(); ctx.arc(x + 2, y, r, -0.7, 0.7); ctx.stroke(); }
-  else { ctx.strokeStyle = '#c84a3a'; ctx.beginPath(); ctx.moveTo(x - 8, y - 9); ctx.lineTo(x + 8, y + 9); ctx.stroke(); }
-}
-function noteIcon(x, y, on) {
-  ctx.fillStyle = ctx.strokeStyle = on ? '#e8dcc0' : '#6e665a'; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
-  ctx.beginPath(); ctx.ellipse(x - 3, y + 5, 3.4, 2.6, -0.4, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(x + 6, y + 3, 3.4, 2.6, -0.4, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.moveTo(x, y + 4.5); ctx.lineTo(x, y - 8); ctx.lineTo(x + 9, y - 10); ctx.lineTo(x + 9, y + 2.5); ctx.stroke();
-  if (!on) { ctx.strokeStyle = '#c84a3a'; ctx.beginPath(); ctx.moveTo(x - 8, y - 9); ctx.lineTo(x + 12, y + 10); ctx.stroke(); }
-}
-function doorIcon(x, y) {
-  ctx.fillStyle = '#5a3a22'; ctx.strokeStyle = '#c9b994'; ctx.lineWidth = 1.3;
-  ctx.beginPath(); ctx.moveTo(x - 6, y + 9); ctx.lineTo(x - 6, y - 4); ctx.arc(x, y - 4, 6, Math.PI, 0); ctx.lineTo(x + 6, y + 9); ctx.closePath(); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = '#e0b860'; ctx.fillRect(x + 2.5, y + 2, 1.6, 1.6);
-}
+function speakerIcon(x, y, on) { pixelIcon('ui:sounds:' + on, 10, g => GLYPHS.ui(g, 'sounds', on), x, y); }
+function noteIcon(x, y, on) { pixelIcon('ui:music:' + on, 10, g => GLYPHS.ui(g, 'music', on), x, y); }
+function doorIcon(x, y) { pixelIcon('ui:door', 10, g => GLYPHS.ui(g, 'door'), x, y); }
 const openSettings = () => { overlay = {kind: 'settings'}; saleArm = null; SND.fx('page'); };
 // back to the title: the run is saved first, so Continue on the title picks it up again
 const returnToTitle = () => { saveRun(); location.hash = ''; location.reload(); };
@@ -6730,21 +6669,7 @@ function lootSide(it, slot, ax, y, label, right) {
   }
 }
 function drawVerdict(v, x, y, r) { pixelIcon('verdict:' + v, r, g => verdictGlyph(g, v), x, y); }
-function verdictGlyph(ctx, v) {                                                // (ctx: the icon's own canvas)
-  const col = VERDICTS[v].col;
-  ctx.save();
-  ctx.beginPath(); ctx.arc(0, 0, 9.6, 0, Math.PI * 2);
-  ctx.fillStyle = shade(col, 0.24); ctx.fill();
-  ctx.strokeStyle = col; ctx.lineWidth = 1.4; ctx.stroke();
-  ctx.scale(10 / 14, 10 / 14);
-  ctx.beginPath();
-  if (v === 1) { ctx.moveTo(0, -7); ctx.lineTo(7.5, 4.5); ctx.lineTo(-7.5, 4.5); }                        // up
-  else if (v === -1) { ctx.moveTo(0, 7); ctx.lineTo(7.5, -4.5); ctx.lineTo(-7.5, -4.5); }                 // down
-  else if (v === 0) { ctx.rect(-6.5, -4.2, 13, 2.8); ctx.rect(-6.5, 1.4, 13, 2.8); }                     // equal
-  else { ctx.moveTo(-6.5, -1.5); ctx.lineTo(0, -9); ctx.lineTo(6.5, -1.5); ctx.closePath(); ctx.moveTo(-6.5, 1.5); ctx.lineTo(0, 9); ctx.lineTo(6.5, 1.5); ctx.closePath(); }   // up and down
-  ctx.fillStyle = col; ctx.fill();
-  ctx.restore();
-}
+function verdictGlyph(g, v) { GLYPHS.verdict(g, v); }
 function paintLootCard() {
   if (!pending || turnBusy()) return;                                      // (the last enemy falls first)
   const rise = Math.max(0, Math.min(1, (performance.now() - lootAt) / 260));   // it rises into place as it appears
@@ -6778,102 +6703,373 @@ function lootCardBody() {
 }
 // ---- symbols in the game's look: each one is painted on a small canvas of its own at twice the size it will have,
 // every 2 x 2 of that becomes one big square pixel (two units across, like the pictures of you and the creatures),
-// lit in three steps from the top left with its near edges catching the light and its far edges in shadow, and
-// ringed by a one-pixel dark outline. paint(g) draws the symbol in a square 20 units across, centered on 0, 0 ----
+// lit in four steps from the top left with its near edges catching the light and its far edges in shadow, the corner
+// nearest the light glinting, ringed by a one-pixel dark outline and lifted off the panel by a soft drop shadow.
+// Lines painted in near-black (ink) stay whole as dark pixels instead of blurring into what's around them.
+// paint(g) draws the symbol in a square 20 units across, centered on 0, 0 ----
 const ICON_PX = 2, iconCache = new Map();
 function pixelIcon(key, r, paint, x, y) {
-  const n = Math.max(5, Math.round(2 * r / ICON_PX)) + 2, ck = key + '|' + n;   // its pixels, plus a border for the outline
+  const n = Math.max(5, Math.round(2 * r / ICON_PX)) + 3, ck = key + '|' + n;   // its pixels, plus a border for the outline and the shadow
   let cv = iconCache.get(ck);
   if (!cv) {
     const H = n * 2, hi = document.createElement('canvas');
     hi.width = hi.height = H;
     const hg = hi.getContext('2d');
-    hg.translate(H / 2, H / 2); hg.scale((H - 4) / 20, (H - 4) / 20);
+    hg.translate(H / 2 - 1, H / 2 - 1); hg.scale((H - 6) / 20, (H - 6) / 20);
     hg.lineCap = hg.lineJoin = 'round';
     paint(hg);
-    const src = hg.getImageData(0, 0, H, H).data, solid = new Uint8Array(n * n), col = new Float32Array(n * n * 3);
+    const src = hg.getImageData(0, 0, H, H).data, solid = new Uint8Array(n * n), ink = new Uint8Array(n * n), col = new Float32Array(n * n * 3);
     for (let py = 0; py < n; py++) for (let px = 0; px < n; px++) {
-      let w = 0, R = 0, G = 0, B = 0, hit = false;
+      let w = 0, R = 0, G = 0, B = 0, hit = false, inks = 0;
       for (let k = 0; k < 4; k++) {
         const o = ((py * 2 + (k >> 1)) * H + px * 2 + (k & 1)) * 4, a = src[o + 3];
-        if (a >= 140) hit = true;
+        if (a >= 140) { hit = true; if (src[o] < 34 && src[o + 1] < 30 && src[o + 2] < 36) inks++; }
         R += src[o] * a; G += src[o + 1] * a; B += src[o + 2] * a; w += a;
       }
       const i = py * n + px;
-      if (hit) { solid[i] = 1; col[i * 3] = R / w; col[i * 3 + 1] = G / w; col[i * 3 + 2] = B / w; }
+      if (hit) { solid[i] = 1; col[i * 3] = R / w; col[i * 3 + 1] = G / w; col[i * 3 + 2] = B / w; if (inks >= 2) ink[i] = 1; }
     }
     cv = document.createElement('canvas');
     cv.width = cv.height = n;
     const g = cv.getContext('2d'), img = g.createImageData(n, n), d = img.data;
-    const S = (px, py) => px >= 0 && py >= 0 && px < n && py < n && solid[py * n + px] === 1;
+    const S = (a, b) => a >= 0 && b >= 0 && a < n && b < n && solid[b * n + a] === 1;
+    const lum = i => col[i * 3] * 0.3 + col[i * 3 + 1] * 0.55 + col[i * 3 + 2] * 0.15;
     for (let py = 0; py < n; py++) for (let px = 0; px < n; px++) {
       const i = py * n + px, o = i * 4;
       if (solid[i]) {
+        if (ink[i]) { d[o] = 26; d[o + 1] = 20; d[o + 2] = 28; d[o + 3] = 255; continue; }
         const diag = px + py - (n - 1);
-        let k = diag < -n * 0.25 ? 1.14 : diag > n * 0.25 ? 0.8 : 1;       // three facets
-        if (!S(px - 1, py) || !S(px, py - 1)) k *= 1.16;                   // the edges toward the light
-        else if (!S(px + 1, py) || !S(px, py + 1)) k *= 0.8;              // the edges away from it
-        for (let c = 0; c < 3; c++) d[o + c] = Math.min(255, col[i * 3 + c] * k);
+        let k = diag < -n * 0.3 ? 1.12 : diag > n * 0.3 ? 0.8 : diag > 0 ? 0.92 : 1;   // four facets
+        const litEdge = !S(px - 1, py) || !S(px, py - 1) || ink[(py - 1) * n + px] || ink[py * n + px - 1];
+        const darkEdge = !S(px + 1, py) || !S(px, py + 1);
+        if (litEdge && !darkEdge) k *= 1.2;                                // the edges toward the light
+        else if (darkEdge && !litEdge) k *= 0.72;                          // the edges away from it
+        let c = [0, 1, 2].map(j => col[i * 3 + j] * k);
+        if (!S(px - 1, py) && !S(px, py - 1) && lum(i) > 120 && diag < 0) c = c.map(v => v + (255 - v) * 0.55);   // a glint
+        for (let j = 0; j < 3; j++) d[o + j] = Math.max(0, Math.min(255, c[j]));
         d[o + 3] = 255;
       } else if (S(px - 1, py) || S(px + 1, py) || S(px, py - 1) || S(px, py + 1)) {
         d[o] = 13; d[o + 1] = 11; d[o + 2] = 16; d[o + 3] = 255;           // the outline
+      } else if (S(px - 2, py - 1) || S(px - 1, py - 2) || S(px - 2, py - 2)) {
+        d[o + 3] = 110;                                                    // the drop shadow, down and to the right
       }
     }
     g.putImageData(img, 0, 0);
     if (iconCache.size > 400) iconCache.clear();
     iconCache.set(ck, cv);
   }
-  const s = n * 2 * r / (n - 2);                                           // the inner pixels span 2r units
+  const s = n * ICON_PX;                                                   // one pixel = two units
   ctx.save();
   ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(cv, x - s / 2, y - s / 2, s, s);
+  ctx.drawImage(cv, Math.round(x - s / 2 + ICON_PX / 2), Math.round(y - s / 2 + ICON_PX / 2), s, s);
   ctx.restore();
 }
 
+// ---- the symbols themselves: perks, enchantments, stats, the merchant's goods, the found-gear badges, Settings, the coin
+// and the fight intents. Each paints into a symbol's own canvas (see pixelIcon), in the 20-unit square centred on 0, 0 ----
+const GLYPHS = (() => {
+  const cache = new Map();
+  // ---- drawing helpers, in the 20-unit square centred on 0, 0 ----
+  const H = g => ({
+    poly(c, pts) { g.fillStyle = c; g.beginPath(); pts.forEach(([a, b], i) => i ? g.lineTo(a, b) : g.moveTo(a, b)); g.closePath(); g.fill(); },
+    line(c, w, pts, cap = 'round') { g.strokeStyle = c; g.lineWidth = w; g.lineCap = cap; g.beginPath(); pts.forEach(([a, b], i) => i ? g.lineTo(a, b) : g.moveTo(a, b)); g.stroke(); },
+    disc(c, x, y, r) { g.fillStyle = c; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); },
+    ell(c, x, y, rx, ry, rot = 0) { g.fillStyle = c; g.beginPath(); g.ellipse(x, y, rx, ry, rot, 0, Math.PI * 2); g.fill(); },
+    box(c, x, y, w, h) { g.fillStyle = c; g.fillRect(x, y, w, h); },
+    ring(c, w, x, y, r, a0 = 0, a1 = Math.PI * 2) { g.strokeStyle = c; g.lineWidth = w; g.beginPath(); g.arc(x, y, r, a0, a1); g.stroke(); },
+    path(c, f) { g.fillStyle = c; g.beginPath(); f(); g.fill(); },
+    star(c, x, y, r) { g.fillStyle = c; g.beginPath(); for (let k = 0; k < 10; k++) { const a = -Math.PI / 2 + k * Math.PI / 5, rr = k % 2 ? r * 0.45 : r; g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } g.closePath(); g.fill(); },
+    burst(c, x, y, r, core) { g.fillStyle = c; g.beginPath(); for (let k = 0; k < 16; k++) { const a = k * Math.PI / 8 + 0.2, rr = k % 2 ? r * 0.38 : (k % 4 ? r * 0.75 : r); g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } g.closePath(); g.fill();
+      if (core) { g.fillStyle = core; g.beginPath(); g.arc(x, y, r * 0.32, 0, Math.PI * 2); g.fill(); } }
+  });
+  const K = '#0e0b10';                                                      // ink
+  const STEEL = '#cfd6e2', STEEL_HI = '#f6f8ff', IRON = '#7e8794', GOLD = '#e8b44a', GOLD_HI = '#ffe08a', WOOD = '#8a5a2e', LEATHER = '#6a4224',
+        BLOOD = '#c4182a', BONE = '#ece2c8';
+  // a heart, used by Vitality, Max HP and the heal intents
+  const heart = (h, c, hi, s = 1) => {
+    h.disc(c, -4.2 * s, -2.4 * s, 4.8 * s); h.disc(c, 4.2 * s, -2.4 * s, 4.8 * s);
+    h.poly(c, [[-8.9 * s, -0.8 * s], [0, 9 * s], [8.9 * s, -0.8 * s], [0, -2 * s]]);
+    if (hi) h.ell(hi, -4.6 * s, -3.6 * s, 1.8 * s, 1.3 * s, -0.6);
+  };
+
+  // ---- perks: on a roundel rimmed in the perk's rarity (iron, silver, gold) ----
+  const FIELD = {common: '#2a2522', uncommon: '#262a36', rare: '#3a2a10'};   // the roundel's field, under its rim (RARITY_EDGE)
+  function perk(g, id) {
+    const h = H(g), rarity = PERKS[id].rarity, rim = RARITY_EDGE[rarity], field = FIELD[rarity];
+    h.disc(rim, 0, 0, 9.6); h.disc(field, 0, 0, 7.8);
+    g.save();
+    if (id === 'attack') {                                                  // a longsword: bright blade, gold guard, leather grip
+      h.poly(STEEL, [[-2.9, 0.5], [5.4, -7.8], [8.7, -8.7], [7.8, -5.4], [-0.5, 2.9]]);
+      h.line(STEEL_HI, 1.1, [[-1.6, 0.6], [6.6, -7.6]]);
+      h.line(GOLD, 2.4, [[-5.4, -1.2], [1.2, 5.4]]);
+      h.line(LEATHER, 2.4, [[-2.6, 2.6], [-5.8, 5.8]]);
+      h.disc(GOLD, -6.8, 6.8, 2);
+    } else if (id === 'vitality') {                                         // a beating heart
+      heart(h, '#d8283c', '#ff9aa0', 0.92);
+    } else if (id === 'focus') {                                            // an arrow struck in a target's heart
+      h.disc('#e8dcc0', -1, 1, 7.2); h.disc(BLOOD, -1, 1, 5.4); h.disc('#e8dcc0', -1, 1, 3.4); h.disc(BLOOD, -1, 1, 1.7);
+      h.line(WOOD, 1.7, [[-1, 1], [7.6, -7.6]]);
+      h.poly('#f2efe6', [[5.2, -8.8], [7.2, -9.6], [9.6, -7.2], [8.8, -5.2], [7.2, -7.2]]);
+      h.line(K, 0.9, [[6.2, -8.4], [8.4, -6.2]]);
+    } else if (id === 'pathfinder') {                                       // a lantern, its glass full of light
+      h.ring(IRON, 1.6, 0, -8, 2.2, Math.PI, 0);                            // the ring to carry it by
+      h.poly(IRON, [[-3, -7.4], [3, -7.4], [5.8, -4.8], [-5.8, -4.8]]);       // the cap
+      h.box('#ffc232', -4.6, -4.8, 9.2, 10.4);                              // the glass, full of light
+      h.path('#fff6c8', () => { g.moveTo(0, -3.4); g.quadraticCurveTo(3, 1, 0, 3.6); g.quadraticCurveTo(-3, 1, 0, -3.4); });   // the flame
+      h.box(IRON, -5.8, -4.8, 1.4, 10.4); h.box(IRON, 4.4, -4.8, 1.4, 10.4);
+      h.poly(IRON, [[-6.4, 5.4], [6.4, 5.4], [5, 8], [-5, 8]]);             // the base
+    } else if (id === 'ambusher') {                                         // a misericorde held point down, a drop of blood at its tip
+      h.disc(IRON, 0, -8, 2.2); h.disc(K, 0, -8, 0.8);                      // the rondel pommel
+      h.box('#3a2a2e', -1.3, -6.2, 2.6, 3.8);                               // the wrapped grip
+      h.line('#6a4c50', 0.8, [[-1.3, -5.2], [1.3, -4.4]]);
+      h.line(GOLD, 2.2, [[-5.2, -1.8], [5.2, -1.8]]);                       // the guard, its ends turned down
+      h.disc(GOLD, -5.4, -1, 1.2); h.disc(GOLD, 5.4, -1, 1.2);
+      h.poly(STEEL, [[-2.4, -0.8], [2.4, -0.8], [0, 8.6]]);                 // the blade
+      h.line(STEEL_HI, 0.9, [[-1.2, 0], [-0.2, 6.2]]);
+      h.poly(BLOOD, [[-0.9, 5.2], [0.9, 5.2], [0, 8.6]]);
+      h.path(BLOOD, () => { g.moveTo(3.4, 6.2); g.quadraticCurveTo(5.2, 8.8, 3.4, 9.6); g.quadraticCurveTo(1.6, 8.8, 3.4, 6.2); });
+    } else if (id === 'executioner') {                                      // a skull split by a falling cleaver
+      h.disc(BONE, 0, 1, 6.4); h.box(BONE, -3.6, 4, 7.2, 4);
+      h.disc(K, -2.6, 1.2, 1.6); h.disc(K, 2.6, 1.2, 1.6); h.poly(K, [[0, 3.2], [-0.9, 5], [0.9, 5]]);
+      h.line(K, 0.7, [[-1.6, 6.6], [-1.6, 8]]); h.line(K, 0.7, [[1.6, 6.6], [1.6, 8]]);
+      h.poly(STEEL, [[-1.2, -9.6], [6.8, -9.6], [5.6, -3.8], [0.6, -3.8]]);  // the cleaver's edge, biting into the crown
+      h.line(STEEL_HI, 1, [[0.4, -4.4], [5.4, -4.4]]);
+      h.line(BLOOD, 1, [[0.8, -3.6], [0.2, -1.4]]);
+    } else if (id === 'antidote') {                                         // a green draught with a sprig of herb
+      h.box('#a4743c', -1.8, -9, 3.6, 2.6);
+      h.box('#c8dce4', -2.4, -6.6, 4.8, 3.4);
+      h.disc('#c8dce4', 0, 2.4, 6.4);
+      h.disc('#3cc464', 0, 3.2, 5.2);
+      h.ell('#c8ffd0', -2.2, 1.2, 1.4, 1, -0.5);
+      h.line('#2e8a3a', 1.2, [[4.6, -1.4], [8.2, -6.4]]);
+      h.ell('#58d070', 7.6, -4.2, 1.8, 1, -0.9); h.ell('#58d070', 5.8, -6.2, 1.8, 1, 0.6);
+    } else if (id === 'shieldbash') {                                       // a shield slammed forward: speed lines, a burst in the Stun blue, stars knocked loose
+      for (const [y, len] of [[-4.6, 3.4], [-0.6, 4.4], [3.4, 3.4]]) h.line('#f0e6d0', 1.3, [[-9.6, y], [-9.6 + len, y]]);
+      g.save(); g.translate(-1.6, 0.8); g.rotate(0.22); g.scale(0.92, 0.92);
+      h.path('#9aa2ae', () => { g.moveTo(-6, -7); g.lineTo(6, -7); g.lineTo(6, -0.6); g.quadraticCurveTo(5.2, 5.6, 0, 8.6); g.quadraticCurveTo(-5.2, 5.6, -6, -0.6); g.closePath(); });
+      g.strokeStyle = GOLD; g.lineWidth = 1.6; g.stroke();
+      g.restore();
+      h.disc(GOLD, -1.4, 0.6, 1.7);
+      h.burst('#66ddff', 5.4, -1.6, 4.6, '#ffffff');
+      h.star('#ffe070', 6.4, -7.6, 2.3); h.star('#ffe070', 8.8, 4.4, 1.9);
+    } else if (id === 'secondwind') {                                       // an angel's wing, feathered in white and gold
+      h.path('#f4f0e6', () => { g.moveTo(-8, 4); g.quadraticCurveTo(-7, -7, 8.6, -8); g.quadraticCurveTo(6, -4, 6.6, -1.6);
+        g.lineTo(3.4, -0.6); g.lineTo(4.4, 2.2); g.lineTo(0.8, 2.6); g.lineTo(1.4, 5.4); g.lineTo(-2.6, 5.2); g.lineTo(-2.2, 7.8); g.closePath(); });
+      h.line('#d8b860', 1, [[-6.4, 2.4], [7.6, -7.2]]);
+      h.line(K, 0.8, [[0, -2.6], [3.4, -0.6]]); h.line(K, 0.8, [[-2.6, -0.4], [0.8, 2.6]]); h.line(K, 0.8, [[-5, 1.6], [-2.6, 5.2]]);
+    } else if (id === 'purse') {                                            // a leather purse, tied with gold cord, coins spilling
+      h.disc('#9a6232', -0.6, 3, 6.2);
+      h.poly('#9a6232', [[-3.4, -3.4], [2.2, -3.4], [3.8, -7.4], [-5, -7.4]]);
+      h.line(GOLD, 1.5, [[-4.2, -2.8], [3, -2.8]]); h.line(GOLD, 1.1, [[2.4, -2.6], [4.2, 0.6]]);
+      h.disc(GOLD, 6.2, 5.4, 2.8); h.disc(GOLD_HI, 5.6, 4.8, 0.9);
+      h.disc(GOLD, 3.6, 8.2, 2.2);
+      h.ell('#c89058', -3, 1, 1.8, 1.2, -0.5);
+    }
+    g.restore();
+  }
+
+  // ---- enchantments: drawn in the enchantment's own glow color, with ink details and a lighter core ----
+  const lighten = (hex, t) => { const n = parseInt(hex.slice(1), 16), c = [n >> 16, (n >> 8) & 255, n & 255].map(v => Math.round(v + (255 - v) * t)); return `rgb(${c})`; };
+  const darken = (hex, t) => { const n = parseInt(hex.slice(1), 16), c = [n >> 16, (n >> 8) & 255, n & 255].map(v => Math.round(v * (1 - t))); return `rgb(${c})`; };
+  function ench(g, id, col) {
+    const h = H(g), lite = lighten(col, 0.55), dark = darken(col, 0.5);
+    if (id === 'flaming') {                                                 // a flame with a white-hot heart
+      const flame = s => h.path(s === 1 ? col : lite, () => { g.moveTo(0, -9.6 * s); g.quadraticCurveTo(8 * s, -1, 5.6 * s, 5 * s + (1 - s) * 3); g.quadraticCurveTo(3.4 * s, 9.6, 0, 9.6); g.quadraticCurveTo(-3.4 * s, 9.6, -5.6 * s, 5 * s + (1 - s) * 3); g.quadraticCurveTo(-7 * s, -0.4, -1.6 * s, -3.6 * s); g.quadraticCurveTo(-1 * s, -6.6 * s, 0, -9.6 * s); });
+      flame(1); flame(0.55); h.ell('#fff8e0', 0, 6, 1.8, 2.4);
+    } else if (id === 'vampiric') {                                         // fangs, one dripping
+      h.path(dark, () => { g.moveTo(-9, -6); g.quadraticCurveTo(0, -1, 9, -6); g.lineTo(9, -8.6); g.lineTo(-9, -8.6); });
+      h.poly('#f6f0e2', [[-6.2, -5.6], [-2, -4.2], [-4.6, 4.4]]); h.poly('#f6f0e2', [[2, -4.2], [6.2, -5.6], [4.6, 4.4]]);
+      h.path(col, () => { g.moveTo(4.6, 4.8); g.quadraticCurveTo(6.6, 8, 4.6, 9.4); g.quadraticCurveTo(2.6, 8, 4.6, 4.8); });
+    } else if (id === 'balanced') {                                         // the scales, level
+      h.line(col, 2, [[0, -8.4], [0, 7]]); h.line(col, 2.6, [[-4.8, 8.2], [4.8, 8.2]]); h.line(col, 2, [[-8.6, -5.4], [8.6, -5.4]]);
+      h.disc(lite, 0, -8.6, 1.6);
+      for (const s of [-1, 1]) { h.line(col, 0.9, [[s * 6.8, -5.4], [s * 9.6, 0.6]]); h.line(col, 0.9, [[s * 6.8, -5.4], [s * 4, 0.6]]);
+        h.path(col, () => { g.moveTo(s * 10, 0.4); g.quadraticCurveTo(s * 6.8, 5.6, s * 3.6, 0.4); }); }
+    } else if (id === 'giantslayer') {                                      // a war hammer
+      h.line(darken(col, 0.45), 2.4, [[-7.6, 8.2], [2.6, -2]]);
+      h.poly(col, [[-2, -8.6], [8.6, 2], [5, 5.6], [-5.6, -5]]);
+      h.line(lite, 1.1, [[-1.6, -7], [7, 1.6]]);
+      h.line(K, 0.8, [[0.6, -2.2], [2.2, -0.6]]);
+    } else if (id === 'swift') {                                            // two blades, striking twice
+      for (const o of [-3.4, 3.4]) {                                       // two blades side by side, each with its own point
+        h.poly(col, [[-8.4 + o, 6.2 + o], [-6.2 + o, 8.4 + o], [5.8 + o, -3.6 + o], [6.8 + o, -6.8 + o], [3.6 + o, -5.8 + o]]);
+        h.line(lite, 0.9, [[-6.8 + o, 6.2 + o], [4.6 + o, -5.2 + o]]);
+      }
+    } else if (id === 'thorns') {                                           // a briar: a thorned stem and a rosebud
+      h.line(col, 3, [[-6.8, 9], [-1, 2], [1.6, -3], [3.6, -6]]);
+      for (const [a, b, c, d] of [[-4.6, 6.4, -8, 5], [-2, 3.4, 1.6, 4.8], [0.4, -0.6, -3.4, -1.6], [2.4, -4.2, 6, -3.2]]) h.poly(col, [[a - 1, b], [a + 1, b - 0.6], [c, d]]);
+      h.disc('#d8203a', 4.4, -7.2, 2.8); h.line('#ff7080', 0.8, [[3.6, -8.4], [5.4, -7.2]]);
+    } else if (id === 'mending') {                                          // a cross patty, flared at its ends
+      h.poly(col, [[-2, -2], [-4.4, -9.2], [4.4, -9.2], [2, -2], [9.2, -4.4], [9.2, 4.4], [2, 2], [4.4, 9.2], [-4.4, 9.2], [-2, 2], [-9.2, 4.4], [-9.2, -4.4]]);
+      h.disc(lite, 0, 0, 2.2);
+    } else if (id === 'fortitude') {                                        // a keep: crenellated, its gate shut
+      h.poly(col, [[-7.4, 9], [-7.4, -5.6], [-7.4, -9], [-4.6, -9], [-4.6, -6.6], [-1.4, -6.6], [-1.4, -9], [1.4, -9], [1.4, -6.6], [4.6, -6.6], [4.6, -9], [7.4, -9], [7.4, 9]]);
+      h.path(K, () => { g.moveTo(-2.6, 9); g.lineTo(-2.6, 4); g.arc(0, 4, 2.6, Math.PI, 0); g.lineTo(2.6, 9); });
+      h.box(K, -4.4, -2.6, 1.6, 2.8); h.box(K, 2.8, -2.6, 1.6, 2.8);
+      h.line(lite, 1, [[-6.4, -5], [-6.4, 7.6]]);
+    } else if (id === 'purity') {                                           // a fleur-de-lis
+      h.path(col, () => { g.moveTo(0, -9.6); g.quadraticCurveTo(4, -4, 0, 2); g.quadraticCurveTo(-4, -4, 0, -9.6); });
+      for (const s of [-1, 1]) h.path(col, () => { g.moveTo(s * 1, 1); g.quadraticCurveTo(s * 9.6, -2.4, s * 7.6, -7); g.quadraticCurveTo(s * 9.8, -1, s * 3.4, 3.6); });
+      h.box(col, -6, 1.6, 12, 2.6);
+      h.path(col, () => { g.moveTo(-1.6, 4); g.lineTo(1.6, 4); g.lineTo(3.8, 9.4); g.lineTo(0, 7.2); g.lineTo(-3.8, 9.4); });
+      h.line(K, 0.7, [[-6, 2.9], [6, 2.9]]);
+    } else if (id === 'fleetfoot') {                                        // a winged boot
+      h.poly(col, [[-2.6, -7.6], [3.6, -7.6], [3.6, 3], [9, 4.6], [9.4, 8.6], [-2.6, 8.6]]);
+      h.box(dark, -3, -8.2, 7, 2.4);
+      h.path('#f8f6f0', () => { g.moveTo(-2.4, -2.6); g.quadraticCurveTo(-9.6, -3, -9.6, -9); g.lineTo(-7.2, -6); g.lineTo(-7, -9.4); g.lineTo(-5, -5.8); g.lineTo(-4, -8.6); g.lineTo(-2.4, -5.6); g.closePath(); });
+      h.line(K, 0.7, [[-2.6, 5.6], [9, 5.6]]);
+    } else if (id === 'fortune') {                                          // a gold coin stamped with a crown
+      h.disc(col, 0, 0, 8.6); h.ring(dark, 1, 0, 0, 6.6);
+      h.poly(dark, [[-4.2, 3], [-4.6, -3], [-2.2, -0.6], [0, -4.2], [2.2, -0.6], [4.6, -3], [4.2, 3]]);
+      h.disc(lite, -3.6, -4.6, 1.4);
+    }
+  }
+
+  // ---- stats ----
+  function stat(g, id) {
+    const h = H(g), col = STAT_COL[id];
+    if (id === 'maxhp') heart(h, col, lighten(col, 0.6));
+    else if (id === 'stun') {                                               // a star, and sparks around it
+      h.disc(lighten(col, 0.7), -7, -6.6, 1.3); h.disc(lighten(col, 0.7), 7.2, -5.4, 1); h.disc(lighten(col, 0.7), 6.4, 7, 1.2);
+      const star = (cx, cy, r) => { g.fillStyle = col; g.beginPath(); for (let k = 0; k < 10; k++) { const a = -Math.PI / 2 + k * Math.PI / 5, rr = k % 2 ? r * 0.45 : r; g.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr); } g.closePath(); g.fill(); };
+      star(0, 0.6, 8.6); h.disc(lighten(col, 0.6), -1.6, -1.4, 1.6);
+    } else if (id === 'crit') {                                             // a blow bursting through
+      g.fillStyle = col; g.beginPath();
+      for (let k = 0; k < 16; k++) { const a = -Math.PI / 2 + k * Math.PI / 8, rr = k % 2 ? 4 : (k % 4 ? 7.4 : 9.8); g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); }
+      g.closePath(); g.fill(); h.disc('#fff2c8', 0, 0, 2.8);
+    } else if (id === 'miss') {                                             // a blade passing through smoke: nothing was there
+      h.ell('#6e6876', -2.4, 2, 6.6, 4.6); h.ell('#857e8c', 1.6, 0.4, 4.8, 3.6); h.ell('#9a94a2', -3.6, -1.4, 3.2, 2.4);
+      h.poly('#c8ccd6', [[-9.4, 8.6], [-8, 9.6], [9.2, -8.4], [6.4, -7.6]]);
+      h.line('#f4f6fa', 0.8, [[-8, 7.6], [6.8, -6.6]]);
+      h.ell('#a8a2b0', 4.6, 4.6, 3, 2.2);
+    } else if (id === 'flee') {                                             // out through an arched door
+      h.path(darken(col, 0.25), () => { g.moveTo(-8.6, 9); g.lineTo(-8.6, -3); g.arc(-3.4, -3, 5.2, Math.PI, 0); g.lineTo(1.8, 9); });
+      h.path('#2a3a30', () => { g.moveTo(-6.8, 9); g.lineTo(-6.8, -3); g.arc(-3.4, -3, 3.4, Math.PI, 0); g.lineTo(0, 9); });
+      h.line(col, 2.4, [[-3.6, 2.4], [7, 2.4]]); h.poly(col, [[5, -1.6], [9.6, 2.4], [5, 6.4]]);
+    }
+  }
+
+  // ---- shop goods ----
+  function shop(g, type, tier) {
+    const h = H(g);
+    const vial = (x, y, s) => { h.box('#a4743c', x - 1.2 * s, y - 5.4 * s, 2.4 * s, 1.6 * s); h.box('#c8dce4', x - 1.6 * s, y - 3.8 * s, 3.2 * s, 2 * s); h.disc('#c8dce4', x, y + 1.2 * s, 3 * s); h.disc('#d0202c', x, y + 1.6 * s, 2.4 * s); };
+    if (type === 'potion') {
+      h.box('#a4743c', -2.2, -10, 4.4, 3); h.box(K, -3, -7.2, 6, 1);
+      h.box('#c8dce4', -2.4, -6.6, 4.8, 3.6);
+      h.disc('#c8dce4', 0, 3, 7.4); h.disc('#d0202c', 0, 3.6, 6.4);
+      h.box('#ff5a50', -6, 1.2, 12, 1.2);
+      h.ell('#ffd0c8', -3, 0.6, 1.8, 1.2, -0.5);
+    } else if (type === 'bag') {
+      g.save(); if (tier > 1) g.rotate(-0.5);
+      h.box(LEATHER, -11, 0.4, 22, 5.6); h.line('#4a2c14', 1, [[-11, 4.4], [11, 4.4]]);
+      for (const vx of tier > 1 ? [-6.4, 0, 6.4] : [-4.6, 4.6]) vial(vx, -3.4, 1.1);
+      h.box(GOLD, tier > 1 ? -1.6 : 7.6, -0.4, 3.2, 7.4); h.box(K, tier > 1 ? -0.6 : 8.6, 1.6, 1.2, 3);
+      g.restore();
+    } else if (type === 'satchel') {
+      h.box('#efe4c8', 1, -10, 4.2, 8.6); h.box('#c8b48a', 1, -10, 4.2, 1.4); h.box(BLOOD, 2.4, -5.4, 1.4, 1.4);
+      h.ring(LEATHER, 1.6, 0, -1.6, 7.6, Math.PI, Math.PI * 2);
+      h.box('#8a5a32', -8.6, -2.4, 17.2, 11.6);
+      h.poly('#6a4222', [[-8.6, -2.4], [8.6, -2.4], [6.6, 3.6], [-6.6, 3.6]]);
+      h.box(GOLD, -1.6, 2, 3.2, 3.2); h.box(K, -0.5, 3, 1, 1.2);
+    }
+  }
+
+  // ---- the gear badges: Better, Worse, Same, Trade-off, on a little heater shield ----
+
+  function verdict(g, v) {
+    const h = H(g), col = VERDICTS[v].col;
+    h.path(darken(col, 0.72), () => { g.moveTo(-8.6, -8.6); g.lineTo(8.6, -8.6); g.lineTo(8.6, -1); g.quadraticCurveTo(7.6, 6.4, 0, 9.8); g.quadraticCurveTo(-7.6, 6.4, -8.6, -1); g.closePath(); });
+    g.strokeStyle = col; g.lineWidth = 1.5; g.stroke();
+    if (v == 1) h.poly(col, [[0, -6.6], [6.2, 1.6], [2.4, 1.6], [2.4, 6], [-2.4, 6], [-2.4, 1.6], [-6.2, 1.6]]);
+    else if (v == -1) h.poly(col, [[0, 7.4], [6.2, -0.6], [2.4, -0.6], [2.4, -5.6], [-2.4, -5.6], [-2.4, -0.6], [-6.2, -0.6]]);
+    else if (v == 0) { h.box(col, -5.6, -3.6, 11.2, 2.8); h.box(col, -5.6, 1.6, 11.2, 2.8); }
+    else { h.poly(col, [[-5.6, -1.2], [0, -7], [5.6, -1.2]]); h.poly(col, [[-5.6, 1.4], [0, 7.4], [5.6, 1.4]]); }
+  }
+
+  // ---- settings and the top bar: a lute (music), a bell (sounds), an arched door, the gear, the coin ----
+  function ui(g, id, on = true, tint = '#b8b0a0') {
+    const h = H(g), dim = c => on ? c : '#5e5864';
+    if (id === 'music') {
+      h.ell(dim('#b07a3c'), -2.4, 3, 6.4, 5.6, -0.7);
+      h.disc(K, -2, 2.6, 1.6);
+      h.line(dim('#5a3818'), 2.2, [[1.6, -0.8], [7.6, -7.8]]);
+      h.poly(dim('#5a3818'), [[6.4, -8.6], [9, -9.8], [9.8, -7.2], [8.4, -6.4]]);
+      h.line(dim('#f0e6d0'), 0.6, [[-5.6, 6.4], [8, -8]]);
+    } else if (id === 'sounds') {
+      h.path(dim(GOLD), () => { g.moveTo(-7.4, 5); g.quadraticCurveTo(-6, 4, -5.6, -2); g.quadraticCurveTo(-5, -7.6, 0, -7.6); g.quadraticCurveTo(5, -7.6, 5.6, -2); g.quadraticCurveTo(6, 4, 7.4, 5); g.closePath(); });
+      h.box(dim(GOLD), -8, 4.6, 16, 2); h.disc(dim('#9a6a1a'), 0, 8, 2); h.ring(dim(IRON), 1.4, 0, -8.6, 1.6);
+      if (on) { h.ring('#f0e6d0', 1, 0, 0, 10, -0.5, 0.5); h.ring('#f0e6d0', 1, 0, 0, 10, Math.PI - 0.5, Math.PI + 0.5); }
+    } else if (id === 'door') {
+      h.path('#8a7e84', () => { g.moveTo(-8, 9.4); g.lineTo(-8, -2); g.arc(0, -2, 8, Math.PI, 0); g.lineTo(8, 9.4); });
+      h.path('#9a6232', () => { g.moveTo(-6, 9.4); g.lineTo(-6, -2); g.arc(0, -2, 6, Math.PI, 0); g.lineTo(6, 9.4); });
+      h.line(K, 0.8, [[-2, -7.6], [-2, 9.4]]); h.line(K, 0.8, [[2, -7.6], [2, 9.4]]);
+      h.box(IRON, -6, -1, 12, 1.4); h.box(IRON, -6, 5, 12, 1.4); h.disc(GOLD, 3.8, 2.4, 1.1);
+    } else if (id === 'gear') {
+      g.fillStyle = tint; g.beginPath();
+      for (let i = 0; i < 16; i++) { const a = i * Math.PI / 8 - Math.PI / 16, rr = i % 2 ? 6.6 : 9.4; g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); g.lineTo(Math.cos(a + Math.PI / 8) * rr, Math.sin(a + Math.PI / 8) * rr); }
+      g.closePath(); g.fill(); h.disc(K, 0, 0, 3.2); h.ring('#e8e0d0', 1, 0, 0, 5, Math.PI, Math.PI * 1.5);
+    } else if (id === 'coin') {
+      h.disc('#c88a1a', 0, 0, 9.4); h.disc(GOLD, 0, 0, 8); h.ring('#9a6a1a', 1, 0, 0, 6);
+      h.poly('#9a6a1a', [[-3.8, 2.8], [-4.2, -2.6], [-2, -0.6], [0, -3.8], [2, -0.6], [4.2, -2.6], [3.8, 2.8]]);
+      h.disc(GOLD_HI, -4, -4.6, 1.6);
+    }
+    if (!on) h.line('#c84a3a', 2, [[-8.6, -8.6], [8.6, 8.6]]);
+  }
+
+  // ---- intents: hand-placed 11 x 11 sprites (1 pixel = 1 unit), lit like the other symbols and given a drop shadow (13 x 13 in all) ----
+  const IPAL = {k: [22, 16, 20], w: [238, 232, 214], s: [150, 152, 164], a: [92, 94, 104], g: [222, 176, 64], n: [120, 78, 44],
+                r: [210, 56, 44], G: [104, 206, 92], b: [116, 176, 236], y: [240, 206, 150], p: [176, 120, 228], R: [140, 24, 30]};
+  const IART = {
+    sword: ['.........kk', '........kwk', '.......kwk.', '......kwk..', '.....kwk...', '.k..kwk....', '.kgkwk.....', '..kgk......', '.kngkg.....', 'knk..k.....', 'kk.........'],
+    drop: ['.....k.....', '....kGk....', '....kGk....', '...kGGGk...', '..kGGGGGk..', '..kGwGGGk..', '.kGwGGGGGk.', '.kGGGGGGGk.', '.kGGGGGGGk.', '..kGGGGGk..', '...kkkkk...'],
+    hand: ['...........', '..k.k.k....', '.kykykyk...', '.kykykyk.k.', '.kykykykkyk', '.kyyyyyyyyk', '.kyyyyyyyk.', '..kyyyyyk..', '...kyyyk...', '...kgggk...', '...kkkkk...'],
+    wing: ['...........', '...........', '....k.k....', 'k...kak...k', 'kk.karak.kk', 'ksskaaakssk', 'kssssassssk', '.ksskakssk.', '..kk.k.kk..', '...........', '...........'],
+    shield: ['.kkkkkkkkk.', '.kwwwwwwsk.', '.kwsssssak.', '.kwsssssak.', '.kwsssssak.', '.kwsssssak.', '..kwsssak..', '..kwsssak..', '...kwsak...', '....kak....', '.....k.....'],
+    guard: ['.kkkkkkkkk.', '.kwwwrwwsk.', '.kwssrssak.', '.krrrrrrrk.', '.kwssrssak.', '.kwssrssak.', '..kwsrsak..', '..kwsrsak..', '...kwrak...', '....kak....', '.....k.....'],
+    cracked: ['.kkkkkkkkk.', '.kwwwkwwsk.', '.kwsskssak.', '.kwssskask.', '.kwssskssk.', '.kwsskssak.', '..kwsksak..', '..kwksssk..', '...kwsak...', '....kak....', '.....k.....'],
+    up: ['.....k.....', '....kbk....', '...kbbbk...', '..kbbbbbk..', '.kbbbbbbbk.', '.kkkbbbkkk.', '...kbbbk...', '...kbbbk...', '...kbbbk...', '...kbbbk...', '...kkkkk...'],
+    back: ['...........', '....k......', '...kyk.....', '..kyyk.....', '.kyyykkkkk.', 'kyyyyyyyyk.', '.kyyykkkkk.', '..kyyk.....', '...kyk.....', '....k......', '...........'],
+    horn: ['...........', '.........kk', '.......kkgk', '.....kkggk.', '...kkgggk..', '.kkggggkk..', 'kngggggk...', 'knnggggk...', 'kkngggk....', '..kkkk.....', '...........'],
+    rock: ['...........', '...kkkkk...', '..kswwssk..', '.kswwsssak.', '.kswssssak.', '.ksssssaak.', '.kssssaaak.', '.kasaaaaak.', '..kaaaaak..', '...kkkkk...', '...........'],
+    heart: ['...........', '.kkk...kkk.', 'kGGGk.kGGGk', 'kGwGGkGGGGk', 'kGGGGGGGGGk', '.kGGGGGGGk.', '..kGGGGGk..', '...kGGGk...', '....kGk....', '.....k.....', '...........'],
+    skull: ['..kkkkkkk..', '.kwwwwwwwk.', 'kwwwwwwwwwk', 'kwkkwwwkkwk', 'kwkRwwwkRwk', 'kwwwwkwwwwk', '.kwwwwwwwk.', '..kwkwkwk..', '..kkkkkkk..', '...........', '...........'],
+    horns: ['...........', 'k.........k', 'kk.......kk', 'kwk.....kwk', 'kwwk...kwwk', '.kwwkkkwwk.', '..kknnnkk..', '..knnnnnk..', '...knRnk...', '....kkk....', '...........'],
+    hammer: ['.kkkkkkkkk.', '.kwwwwwwsk.', '.ksssssssk.', '.kaaaaaaak.', '.kkkkkkkkk.', '....kgk....', '....kgk....', '....kgk....', '....knk....', '....knk....', '....kkk....'],
+    star: ['.....k.....', '....kbk....', '....kbk....', 'kkkkbbbkkkk', '.kbbbwbbbk.', '..kbbbbbk..', '..kbbbbbk..', '.kbbkkkbbk.', '.kbk...kbk.', '.kk.....kk.', '...........'],
+    what: ['...kkkkk...', '..kwwwwwk..', '.kwwkkkwwk.', '.kkk..kwwk.', '.....kwwk..', '....kwwk...', '....kwwk...', '....kkkk...', '....kwwk...', '....kwwk...', '....kkkk...']
+  };
+  IART.down = IART.up.map(r => r.replace(/b/g, 'r')).reverse();
+  IART.run = IART.back.map(r => [...r].reverse().join('').replace(/y/g, 'g'));
+  function intentSprite(name) {
+    const ck = name; let cv = cache.get(ck);
+    if (cv) return cv;
+    const rows = IART[name], N = 13;
+    cv = document.createElement('canvas'); cv.width = cv.height = N;
+    const g = cv.getContext('2d'), img = g.createImageData(N, N), d = img.data;
+    const at = (x, y) => x >= 0 && y >= 0 && x < 11 && y < 11 ? rows[y][x] : '.';
+    const fill = (x, y) => at(x, y) !== '.' && at(x, y) !== 'k';
+    for (let y = 0; y < 11; y++) for (let x = 0; x < 11; x++) {
+      const ch = at(x, y); if (ch === '.') continue;
+      const o = ((y + 1) * N + x + 1) * 4; let c = IPAL[ch];
+      if (ch !== 'k') {
+        const diag = x + y - 10; let k = diag < -3 ? 1.12 : diag > 3 ? 0.82 : 1;
+        if (!fill(x - 1, y) || !fill(x, y - 1)) k *= 1.18; else if (!fill(x + 1, y) || !fill(x, y + 1)) k *= 0.78;
+        c = c.map(v => Math.min(255, v * k));
+      }
+      d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255;
+    }
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {              // the drop shadow
+      const o = (y * N + x) * 4; if (d[o + 3]) continue;
+      if (at(x - 2, y - 2) !== '.' || at(x - 1, y - 2) !== '.') { d[o + 3] = 100; }
+    }
+    g.putImageData(img, 0, 0); cache.set(ck, cv); return cv;
+  }
+  return {perk, ench, stat, shop, verdict, ui, intentSprite};
+})();
+
 // ---- perk symbols, on a disc in the perk's rarity color ----
 function drawPerkIcon(id, x, y, r) { pixelIcon('perk:' + id, r, g => perkGlyph(g, id), x, y); }
-function perkGlyph(ctx, id) {                                                  // (ctx: the icon's own canvas)
-  const edge = RARITY_EDGE[PERKS[id].rarity];
-  ctx.beginPath(); ctx.arc(0, 0, 8.9, 0, Math.PI * 2);
-  ctx.fillStyle = shade(edge, 0.2); ctx.fill();
-  ctx.strokeStyle = edge; ctx.lineWidth = 1.8; ctx.stroke();
-  ctx.scale(0.8, 0.8);
-  ctx.strokeStyle = ctx.fillStyle = '#f4ead4';
-  ctx.lineWidth = 2.6;                                                      // bold enough to stay whole as pixels
-  ctx.lineCap = ctx.lineJoin = 'round';
-  const line = (...pts) => { ctx.beginPath(); pts.forEach(([a, b], i) => i ? ctx.lineTo(a, b) : ctx.moveTo(a, b)); ctx.stroke(); };
-  ctx.beginPath();
-  if (id === 'attack') { line([-4, 4], [6, -6]); line([-6, 1], [-1, 6]); line([-7, 7], [-5, 5]); }        // a sword
-  else if (id === 'vitality') {                                                                        // a heart
-    for (const s of [-1, 1]) { ctx.beginPath(); ctx.arc(s * 3.6, -2, 4, 0, Math.PI * 2); ctx.fill(); } ctx.beginPath(); ctx.moveTo(-7.4, -0.6); ctx.lineTo(0, 7.2); ctx.lineTo(7.4, -0.6); ctx.closePath(); ctx.fill();
-  } else if (id === 'focus') {                                                                         // an eye
-    ctx.ellipse(0, 0, 7, 4, 0, 0, Math.PI * 2); ctx.stroke();
-    ctx.beginPath(); ctx.arc(0, 0, 2, 0, Math.PI * 2); ctx.fill();
-  } else if (id === 'pathfinder') {                                                                    // a compass
-    ctx.arc(0, 0, 6.5, 0, Math.PI * 2); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0, -6); ctx.lineTo(2.4, 0); ctx.lineTo(-2.4, 0); ctx.closePath(); ctx.fill();
-    line([0, 0], [0, 5]);
-  } else if (id === 'ambusher') {                                                                      // a dagger
-    ctx.moveTo(0, -7.5); ctx.lineTo(1.9, 0.5); ctx.lineTo(-1.9, 0.5); ctx.closePath(); ctx.fill();   // the blade
-    line([-4.5, 1.5], [4.5, 1.5]);                                                                    // the guard
-    line([0, 1.5], [0, 5.5]);                                                                         // the grip
-    ctx.beginPath(); ctx.arc(0, 6.6, 1.2, 0, Math.PI * 2); ctx.fill();                                // the pommel
-  } else if (id === 'executioner') {                                                                   // an axe
-    line([-5, 7], [3, -4]);
-    ctx.beginPath(); ctx.moveTo(0, -7); ctx.quadraticCurveTo(8, -7, 7, 1); ctx.lineTo(2, -3); ctx.closePath(); ctx.fill();
-  } else if (id === 'antidote') {                                                                      // a drop
-    ctx.moveTo(0, -7); ctx.quadraticCurveTo(7, 1, 0, 6.5); ctx.quadraticCurveTo(-7, 1, 0, -7); ctx.fill();
-  } else if (id === 'shieldbash') {                                                                    // a shield
-    ctx.moveTo(-6, -6); ctx.lineTo(6, -6); ctx.lineTo(6, 0); ctx.quadraticCurveTo(5, 5, 0, 7);
-    ctx.quadraticCurveTo(-5, 5, -6, 0); ctx.closePath(); ctx.stroke();
-  } else if (id === 'secondwind') {                                                                    // a wing
-    ctx.moveTo(-6, 5); ctx.quadraticCurveTo(-4, -7, 7, -6); ctx.quadraticCurveTo(2, -2, 4, 1); ctx.quadraticCurveTo(-1, 1, -6, 5); ctx.fill();
-  } else if (id === 'purse') {                                                                         // a coin purse
-    ctx.arc(0, 2, 5, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(-2, -3); ctx.lineTo(-3.5, -6.5); ctx.lineTo(3.5, -6.5); ctx.lineTo(2, -3); ctx.fill();
-  }
-  ctx.restore();
-}
+function perkGlyph(g, id) { GLYPHS.perk(g, id); }
 
 // ---- gear, enchantment and stat symbols: small drawings like the perk symbols, on a square 20 units across ----
 const ICON_DARK = 'rgba(10,8,14,0.6)';
@@ -6969,46 +7165,7 @@ function slotGlyph(ctx, slot, t, tint) {                                       /
   }
   ctx.restore();
 }function drawEnchIcon(id, x, y, r, col) { pixelIcon(`ench:${id}:${col}`, r, g => enchGlyph(g, id, col), x, y); }
-function enchGlyph(ctx, id, col) {                                             // (ctx: the icon's own canvas)
-  ctx.save();
-  ctx.fillStyle = ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.lineCap = ctx.lineJoin = 'round';
-  const path = pts => { ctx.beginPath(); pts.forEach(([a, b], i) => i ? ctx.lineTo(a, b) : ctx.moveTo(a, b)); };
-  ctx.beginPath();
-  if (id === 'flaming') {                                                  // a flame
-    ctx.moveTo(0, -9.5); ctx.quadraticCurveTo(8, -1, 5.5, 5); ctx.quadraticCurveTo(3.5, 9.5, 0, 9.5); ctx.quadraticCurveTo(-3.5, 9.5, -5.5, 5);
-    ctx.quadraticCurveTo(-7, -0.5, -1.5, -3.5); ctx.quadraticCurveTo(-1, -6.5, 0, -9.5); ctx.fill();
-  } else if (id === 'vampiric') {                                          // fangs
-    path([[-8, -6], [8, -6]]); ctx.stroke(); path([[-6, -6], [-1.5, -6], [-3.8, 6.5]]); ctx.fill(); path([[1.5, -6], [6, -6], [3.8, 6.5]]); ctx.fill();
-  } else if (id === 'balanced') {                                          // scales
-    path([[0, -8], [0, 7]]); ctx.stroke(); path([[-4.5, 8], [4.5, 8]]); ctx.stroke(); path([[-8, -5], [8, -5]]); ctx.stroke();
-    for (const s of [-1, 1]) {
-      ctx.beginPath(); ctx.moveTo(s * 9.5, 0.5); ctx.quadraticCurveTo(s * 6.5, 5, s * 3.5, 0.5); ctx.closePath(); ctx.fill();
-      ctx.lineWidth = 1; path([[s * 6.5, -5], [s * 9.5, 0.5]]); ctx.stroke(); path([[s * 6.5, -5], [s * 3.5, 0.5]]); ctx.stroke(); ctx.lineWidth = 2;
-    }
-  } else if (id === 'giantslayer') {                                       // a war hammer
-    ctx.lineWidth = 2.4; path([[-7, 8], [2.5, -1.5]]); ctx.stroke(); path([[-1, -8], [8.5, 1.5], [5, 5], [-4.5, -4.5]]); ctx.closePath(); ctx.fill();
-  } else if (id === 'swift') {                                             // a double chevron
-    ctx.lineWidth = 2.6; path([[-8, -6.5], [-2, 0], [-8, 6.5]]); ctx.stroke(); path([[0, -6.5], [6, 0], [0, 6.5]]); ctx.stroke();
-  } else if (id === 'thorns') {                                            // a thorny ring
-    ctx.arc(0, 0, 4.6, 0, Math.PI * 2); ctx.lineWidth = 2.2; ctx.stroke();
-    for (let k = 0; k < 6; k++) { const a = k * Math.PI / 3; path([[Math.cos(a - 0.32) * 4.6, Math.sin(a - 0.32) * 4.6], [Math.cos(a) * 9.6, Math.sin(a) * 9.6], [Math.cos(a + 0.32) * 4.6, Math.sin(a + 0.32) * 4.6]]); ctx.fill(); }
-  } else if (id === 'mending') {                                           // a cross
-    ctx.fillRect(-2.8, -8.5, 5.6, 17); ctx.fillRect(-8.5, -2.8, 17, 5.6);
-  } else if (id === 'fortitude') {                                         // a heart with a plus
-    for (const s of [-1, 1]) { ctx.beginPath(); ctx.arc(s * 4.3, -2.6, 4.7, 0, Math.PI * 2); ctx.fill(); } ctx.beginPath(); ctx.moveTo(-8.8, -1); ctx.lineTo(0, 8.8); ctx.lineTo(8.8, -1); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = 'rgba(10,8,14,0.7)'; ctx.fillRect(-0.9, -3.2, 1.8, 6.4); ctx.fillRect(-3.2, -0.9, 6.4, 1.8);
-  } else if (id === 'purity') {                                            // a sparkle
-    ctx.moveTo(0, -9.5); ctx.quadraticCurveTo(1.2, -1.2, 9.5, 0); ctx.quadraticCurveTo(1.2, 1.2, 0, 9.5); ctx.quadraticCurveTo(-1.2, 1.2, -9.5, 0); ctx.quadraticCurveTo(-1.2, -1.2, 0, -9.5); ctx.fill();
-  } else if (id === 'fleetfoot') {                                         // an arrow with speed lines
-    path([[1, -6.5], [9, 0], [1, 6.5]]); ctx.closePath(); ctx.fill();
-    ctx.lineWidth = 2.2; path([[-3, 0], [3, 0]]); ctx.stroke();
-    ctx.lineWidth = 1.6; path([[-9, -4], [-3.5, -4]]); ctx.stroke(); path([[-9.5, 0], [-5.5, 0]]); ctx.stroke(); path([[-9, 4], [-3.5, 4]]); ctx.stroke();
-  } else if (id === 'fortune') {                                           // a coin
-    ctx.arc(0, 0, 8, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(10,8,14,0.5)'; ctx.lineWidth = 1.5; ctx.stroke();
-  }
-  ctx.restore();
-}
+function enchGlyph(g, id, col) { GLYPHS.ench(g, id, col); }
 // an enchantment's tier as three dots: one lit for Minor, two for Good, three for Major
 function drawTierPips(x, y, t, col) {
   for (let k = 0; k < 3; k++) {
@@ -7025,27 +7182,7 @@ function drawStatIcon(id, x, y, r) {
   if (id === 'block') return drawSlotIcon('shield', x, y, r, 1, col);
   pixelIcon('stat:' + id, r, g => statGlyph(g, id, col), x, y);
 }
-function statGlyph(ctx, id, col) {                                             // (ctx: the icon's own canvas)
-  ctx.save();
-  ctx.fillStyle = ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.lineCap = ctx.lineJoin = 'round';
-  ctx.beginPath();
-  if (id === 'maxhp') { for (const s of [-1, 1]) { ctx.beginPath(); ctx.arc(s * 4.3, -2.6, 4.7, 0, Math.PI * 2); ctx.fill(); } ctx.beginPath(); ctx.moveTo(-8.8, -1); ctx.lineTo(0, 8.8); ctx.lineTo(8.8, -1); ctx.closePath(); ctx.fill(); }   // a heart
-  else if (id === 'stun') {                                                // a star
-    for (let k = 0; k < 10; k++) { const a = -Math.PI / 2 + k * Math.PI / 5, rr = k % 2 ? 4 : 9.5; ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); }
-    ctx.closePath(); ctx.fill();
-  } else if (id === 'crit') {                                              // a target
-    ctx.arc(0, 0, 6.5, 0, Math.PI * 2); ctx.stroke();
-    for (const [a, b, c, d] of [[0, -9.5, 0, -4], [0, 4, 0, 9.5], [-9.5, 0, -4, 0], [4, 0, 9.5, 0]]) { ctx.beginPath(); ctx.moveTo(a, b); ctx.lineTo(c, d); ctx.stroke(); }
-    ctx.beginPath(); ctx.arc(0, 0, 1.8, 0, Math.PI * 2); ctx.fill();
-  } else if (id === 'miss') {                                              // a broken ring
-    ctx.lineWidth = 2.2; ctx.arc(0, 0, 7.5, 0.5, 2.7); ctx.stroke(); ctx.beginPath(); ctx.arc(0, 0, 7.5, 3.6, 5.8); ctx.stroke();
-  } else if (id === 'flee') {                                              // out through a door
-    ctx.lineWidth = 1.8; ctx.strokeRect(-8.5, -8.5, 9, 17);
-    ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(-2.5, 0); ctx.lineTo(8, 0); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(4.5, -4); ctx.lineTo(9, 0); ctx.lineTo(4.5, 4); ctx.stroke();
-  }
-  ctx.restore();
-}
+function statGlyph(g, id) { GLYPHS.stat(g, id); }
 
 // ---- the Hero panel: a gear slot box, and a perk badge ----
 function paintSlot(b) {
@@ -7429,33 +7566,7 @@ function paintShopHeader(P) {
   drawCoin(sx - 11, sy + 11.4, 2.2);
 }
 // the symbols on the merchant's rows (gear uses its slot symbol)
-function shopGlyph(g, type, tier) {
-  if (type === 'potion') {
-    g.fillStyle = '#8a5a32'; g.fillRect(-2.8, -10, 5.6, 3);
-    g.fillStyle = '#b8ccd4'; g.fillRect(-2.2, -7, 4.4, 4.4);
-    g.fillStyle = '#c8202a'; g.beginPath(); g.arc(0, 3, 6.8, 0, Math.PI * 2); g.fill();
-    g.fillStyle = '#ff9a90'; g.beginPath(); g.arc(-2.6, 0.8, 1.7, 0, Math.PI * 2); g.fill();
-  } else if (type === 'bag') {
-    g.save();
-    if (tier > 1) g.rotate(-0.55);                                         // the Bandolier crosses the chest
-    g.fillStyle = '#7a4e28'; g.fillRect(-11, -1, 22, 6);
-    g.fillStyle = '#5a3418'; g.fillRect(-11, 3.4, 22, 1.6);
-    const vials = tier > 1 ? [-6.5, 0, 6.5] : [-5, 5];
-    for (const vx of vials) {
-      g.fillStyle = '#c8202a'; g.fillRect(vx - 1.8, -7, 3.6, 7);
-      g.fillStyle = '#8a5a32'; g.fillRect(vx - 1.3, -9.4, 2.6, 2.4);
-    }
-    g.fillStyle = '#d4a446'; g.fillRect(tier > 1 ? -1.6 : 8, -2, 3.2, 8);
-    g.restore();
-  } else if (type === 'satchel') {
-    g.fillStyle = '#e8dcc0'; g.fillRect(2, -10, 3.6, 9);
-    g.fillStyle = '#c0b08a'; g.fillRect(2, -10, 3.6, 1.4);
-    g.strokeStyle = '#5a3a1c'; g.lineWidth = 1.8; g.beginPath(); g.arc(0, -2, 7.5, Math.PI, Math.PI * 2); g.stroke();
-    g.fillStyle = '#8a5a32'; g.fillRect(-8.5, -3, 17, 12);
-    g.fillStyle = '#6a4222'; g.beginPath(); g.moveTo(-8.5, -3); g.lineTo(8.5, -3); g.lineTo(6.5, 3.5); g.lineTo(-6.5, 3.5); g.closePath(); g.fill();
-    g.fillStyle = '#d4a446'; g.fillRect(-1.4, 1.6, 2.8, 2.8);
-  }
-}
+function shopGlyph(g, type, tier) { GLYPHS.shop(g, type, tier); }
 const shopIcon = it => it.type === 'gear' ? (ix, iy) => drawSlotIcon(it.slot, ix, iy, 11, it.tier)
   : (ix, iy) => pixelIcon(`shop:${it.type}:${it.tier || 0}`, 11, g => shopGlyph(g, it.type, it.tier || 0), ix, iy);
 
@@ -8771,13 +8882,10 @@ let introAt = null, introSkipped = stillTitle;
 const showMenu = () => title.classList.add('shown');
 const skipIntro = () => { introSkipped = true; showMenu(); };
 if (introSkipped) showMenu();
-// the first time the title opens, a gate waits for a tap: browsers allow no sound before one, so the reveal and its
-// music begin with it (not after Play again, or coming to the Vault from the end of a run)
-let gated = false;
-function closeGate() { if (!gated) return; gated = false; gate.hidden = true; introAt = null; SND.fx('gate'); }
-gate.addEventListener('click', closeGate);
-title.addEventListener('pointerdown', () => { if (!introSkipped && !gated) skipIntro(); });
-window.addEventListener('keydown', e => { if (title.hidden) return; if (gated) { if (e.key !== 'Tab') closeGate(); } else if (!introSkipped) skipIntro(); });
+// the title opens straight onto the reveal. Browsers allow no sound before a tap, so the music starts with your first
+// tap anywhere (SND wakes on every kind of tap); a tap or a key during the reveal also skips it
+title.addEventListener('pointerdown', () => { if (!introSkipped) skipIntro(); });
+window.addEventListener('keydown', e => { if (title.hidden) return; if (!introSkipped) skipIntro(); });
 // the name on the arch is carved from the Cinzel font: wait for it (a moment at most) before the gate is first drawn
 let titleFontReady = !document.fonts;
 if (document.fonts) Promise.race([document.fonts.load('900 64px Cinzel'), new Promise(ok => setTimeout(ok, 1500))])
@@ -8827,9 +8935,8 @@ function paintTitle(now) {
     const bottom = (record.hidden ? titleMain.querySelector('.actions') : record).getBoundingClientRect().top - 4;
     // as wide as the game's column, or a little wider when the screen is tall (losing a sliver of wall at each side)
     const k = Math.min(Math.min(vw, vh * 0.6) / CANVAS_W * 1.12, (bottom - top) / (PLAY_H - 2)), sw = CANVAS_W * k, sh = PLAY_H * k, x0 = (vw - sw) / 2, y0 = top - 2 * k;
-    if (gated) introAt = null;                                             // (dark, at the gate, until a tap)
-    else if (introAt === null) introAt = t;                                // the reveal starts with the first picture
-    const e = gated ? 0 : introSkipped ? 99 : t - introAt;
+    if (introAt === null) introAt = t;                                     // the reveal starts with the first picture
+    const e = introSkipped ? 99 : t - introAt;
     if (e > T_MENU_AT) showMenu();
     g.save(); g.translate(x0, y0); g.scale(k, k);
     ART.drawTitle(g, t, e);
@@ -9050,7 +9157,7 @@ if (location.hash === '#play') title.hidden = true;
 else if (location.hash === '#vault') {                                     // from the end of a run: straight into the Vault
   history.replaceState(null, '', location.pathname + location.search);    // (a later reload opens the title as usual)
   skipIntro(); showVault(true);
-} else { gated = true; gate.hidden = false; startTitle(); }
+} else startTitle();
 window.addEventListener('resize', () => { if (stillTitle) startTitle(); });
 
 // everything on screen is drawn on the canvas, so redraw once the two fonts have downloaded
