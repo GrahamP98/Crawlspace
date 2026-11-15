@@ -5095,6 +5095,18 @@ const ribbonOrn = (w, h) => ornament(`ribbon:${w}:${h}`, w, h, g => {
   g.closePath(); g.fillStyle = '#dcc79c'; g.fill();
   g.fillStyle = 'rgba(150,120,70,0.5)'; for (const x of [w * 0.25, w * 0.5, w * 0.75]) g.fillRect(x, top + 2, 1, bot - top - 4);   // its folds
 });
+// an unrolled scroll: a parchment sheet between its rolled ends, written over in lines of script
+const scrollOrn = (w, h) => ornament(`scrollart:${w}:${h}`, w, h, g => {
+  g.fillStyle = '#dcc79c'; g.fillRect(7, 8, w - 14, h - 16);
+  g.fillStyle = 'rgba(150,120,70,0.35)'; g.fillRect(7, 8, 3, h - 16); g.fillRect(w - 10, 8, 3, h - 16);   // the edges, curling
+  for (const yy of [2, h - 11]) {                                          // the rolled ends
+    g.fillStyle = '#b89c6a'; g.fillRect(3, yy, w - 6, 9);
+    g.fillStyle = '#8a7048'; g.beginPath(); g.ellipse(3, yy + 4.5, 3, 4.5, 0, 0, Math.PI * 2); g.fill(); g.beginPath(); g.ellipse(w - 3, yy + 4.5, 3, 4.5, 0, 0, Math.PI * 2); g.fill();
+  }
+  g.fillStyle = '#7a2a1c'; g.fillRect(14, 17, 9, 9);                      // a red initial
+  g.fillStyle = 'rgba(80,46,28,0.6)';
+  for (let y = 18, i = 0; y < h - 46; y += 6, i++) { const x0 = y < 28 ? 26 : 14, lw = (w - 14 - x0) * (0.55 + 0.45 * (((i * 37) % 11) / 11)); g.fillRect(x0, y, lw, 1.4); }
+});
 // the tooled ground of an old tarot card: a lozenge lattice punched into burnished metal, a little sun in every lozenge
 const groundCache = new Map();
 function tooledGround(m) {
@@ -6290,6 +6302,18 @@ function scrollScreen(L, add, menu) {
       icon: (ix, iy) => drawSlotIcon(k, ix, iy, 10, it ? it.tier : 1, it ? null : '#4a4452'),
       edge: it ? TIER_EDGE[it.tier] : null, act: () => scrollChoice(k)};
   }));
+  const rowsEnd = top + enchSlots(s.id).length * 50, room = end - rowsEnd - 16;   // under the choices: the scroll itself, sealed
+  if (room >= 110) add({draw: () => {
+    const h = Math.round(Math.min(room, 190)), w = Math.round(h * 0.68), cx = P.x + P.w / 2, y = rowsEnd + 8 + (room - h) / 2, glow = ENCH_GLOW[s.id];
+    const gl = ctx.createRadialGradient(cx, y + h * 0.55, 4, cx, y + h * 0.55, h * 0.7);
+    gl.addColorStop(0, glow + '30'); gl.addColorStop(1, glow + '00'); ctx.fillStyle = gl; ctx.fillRect(cx - h, y - 10, h * 2, h + 20);
+    drawOrn(scrollOrn(w, h), cx - w / 2, y);
+    const sy = y + h - 30;
+    ctx.beginPath(); ctx.arc(cx, sy, 15, 0, Math.PI * 2); ctx.fillStyle = '#6a1218'; ctx.fill();          // the wax seal
+    ctx.beginPath(); ctx.arc(cx - 1, sy - 1, 13, 0, Math.PI * 2); ctx.fillStyle = '#9a2028'; ctx.fill();
+    for (let k = 0; k < 7; k++) { const a = k / 7 * Math.PI * 2; ctx.beginPath(); ctx.arc(cx + Math.cos(a) * 14, sy + Math.sin(a) * 14, 3, 0, Math.PI * 2); ctx.fillStyle = '#7a161c'; ctx.fill(); }
+    drawEnchIcon(s.id, cx, sy, 9, glow);
+  }});
 }
 
 // ---- the Hero panel: your gear on a paper doll, your stats and perks; and the Bag tab ----
