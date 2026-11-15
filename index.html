@@ -4802,7 +4802,8 @@ const RARITY_EDGE = {common: '#8c857c', uncommon: '#cdd4e0', rare: '#f0c048'};  
 const openLog = () => { overlay = {kind: 'log', back: 0}; };
 const uiAnimating = () => !!(pressed && performance.now() - pressed.t < PRESS_MS) || logStepping() ||
   (hoverId !== null && performance.now() - hoverAt < HOVER_GROW_MS + 40) ||
-  (phase === 'camp' && !overlay && !over);                                // the campfire burns
+  (phase === 'camp' && !overlay && !over) ||                              // the campfire burns
+  !!(over && runSummary && runSummary.won);                                 // and the torches in the King's hall
 
 // ---- text ----
 const textFont = (size, weight = 600) => `${weight} ${size}px ${GAME_FONT}`;
@@ -5887,6 +5888,9 @@ function headstoneSprite(W, H) {
       else if (y === H - ph + 1) k *= 1.25;
       if (cross(x, y)) k *= 0.5;
       else if (cross(x - 1, y - 1)) k *= 1.22;
+      const vx = 6 + 2.5 * Math.sin(y * 0.21), ivyOn = y > H * 0.4 && !plinth, leaf = ivyOn && (y % 7 < 3) && Math.abs(x - (vx + ((y / 7 | 0) % 2 ? 3.5 : -2.5))) < 2.2;
+      if (ivyOn && Math.abs(x - vx) < 0.8) { c = [40, 58, 32]; k = 1; }          // ivy climbing the left side
+      else if (leaf) { c = [58, 106, 48]; k = (y % 7 === 0 || x < vx) ? 1.3 : 0.9; }
       if (crack.has(i)) k *= 0.42;
       else if (crack.has(i - 1)) k *= 1.2;
       putPx(d, W, x, y, c, k);
@@ -5925,6 +5929,23 @@ function paintHeadstone(cx, top, H, S) {
   carvedText('slain by', cx, top + ah + H * 0.17, 13, inner);
   carvedText(S.slayer, cx, top + ah + H * 0.32, Math.round(Math.min(24, H * 0.15)), inner + 8, '#140f0f');
   carvedText(`Floor ${S.floor} - Level ${S.level}`, cx, top + H * 0.85, 13, inner);
+}
+
+// ---- the win: the Ogre King's hall, drawn like a fight, the King fallen and you standing over him ----
+const VICTORY_KING = {name: 'Ogre King', boss: true, items: [], fellAt: 0, animPhase: 0};
+function paintVictory(x, y, w, h) {
+  // framed on the floor where the two of you are (the hall from about y 140 down to 344), as wide as the panel allows
+  const t = performance.now() / 1000, s = Math.max(w / 288, h / 204), half = w / (2 * s), fx = Math.max(half, Math.min(288 - half, 146));
+  const [kx, ky] = FOE_LAYOUT[1][0], top = Math.max(0, Math.min(352 - h / s, 112));   // the picture starts just over your head
+  ctx.save();
+  chamfer(x, y, w, h, 6); ctx.fillStyle = '#0a080b'; ctx.fill(); ctx.clip();
+  ctx.translate(x + w / 2 - fx * s, y - top * s);
+  ctx.scale(s, s);
+  ART.drawFight(ctx, {room: ['throne', 3], hero: heroLook(), foes: [{f: VICTORY_KING, x: kx, y: ky, s: FOE_SCALE[1], fall: 1, gone: false}], ring: null, t});
+  ctx.restore();
+  chamfer(x, y, w, h, 6); ctx.strokeStyle = '#060508'; ctx.lineWidth = 3; ctx.stroke();
+  ctx.strokeStyle = '#c89a4a'; ctx.lineWidth = 1.2; ctx.stroke();
+  const co = cornerOrn(16); drawOrn(co, x + 2, y + 2); drawOrn(co, x + w - 18, y + 2, true);
 }
 
 // ---- the campfire: the floor's own room, drawn like a fight, with you standing by a fire on its floor ----
@@ -6318,11 +6339,17 @@ function summaryScreen(L, add, menu) {
   const P = L.panel, S = runSummary, half = Math.ceil(S.rows.length / 2), cw = (P.w - 28) / 2;
   menu('');
   // a death gets its headstone, as big as the room left over by the stats allows
-  const stoneH = S.won ? 0 : Math.round(Math.min(176, P.h - 10 - 48 - 8 - half * 18 - 120 - 30));
+  const stoneH = Math.round(Math.min(S.won ? 200 : 176, P.h - 10 - 48 - 8 - half * 18 - (S.won ? 74 : 150)));
   const carved = stoneH >= 96;
   add({draw: () => {
     let y0 = P.y + 82;
-    if (carved) {
+    if (carved && S.won) {                                                 // a win: you, standing over the fallen King in his own hall
+      paintVictory(P.x + 10, P.y + 12, P.w - 20, stoneH);
+      const ty = P.y + 12 + stoneH + 26, tw = Math.min(P.w - 70, titleWidth('You escaped!', 24));
+      titleText('You escaped!', P.x + P.w / 2, ty, 24, '#fc3', 'center', P.w - 70);
+      const sp = sprayOrn(30, 14); drawOrn(sp, P.x + P.w / 2 + tw / 2 + 6, ty - 15); drawOrn(sp, P.x + P.w / 2 - tw / 2 - 36, ty - 15, true);
+      y0 = ty + 24;
+    } else if (carved) {
       paintHeadstone(P.x + P.w / 2, P.y + 14, stoneH, S);
       y0 = P.y + 14 + stoneH + 30;
     } else {
