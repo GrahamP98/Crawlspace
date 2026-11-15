@@ -152,12 +152,12 @@
         <li><span class="sw" style="background:#c80"></span><b>Chest</b>: coins, a potion or a piece of gear. Its lid stands open once looted.</li>
         <li><span class="sw" style="background:#a64"></span><b>Capsa</b>, a leather scroll case standing on end: one on every floor, always with a scroll in it. Its lid lies beside it once opened.</li>
         <li><span class="sw" style="background:#3cf"></span><b>Stairs down</b>, glowing faintly blue. Step on them to go to the next floor.</li>
-        <li><span class="sw" style="background:#a6f"></span><b>Merchant</b>, hooded, at a market stall under a striped awning: floor 2 (Iron gear) and floor 4 (Steel gear)</li>
+        <li><span class="sw" style="background:#a6f"></span><b>Merchant</b>, hooded, in a covered wagon with its side rolled up as a shopfront: floor 2 (Iron gear) and floor 4 (Steel gear). Once you leave, he rolls on and only his wheel ruts are left</li>
         <li><span class="sw" style="background:#f83"></span><b>Campfire</b>, a ring of stones round a fire: floor 3, and the last camp halfway through floor 5</li>
         <li><span class="sw" style="background:#fc3"></span><b>The exit</b>, a doorway full of daylight: floor 5</li>
       </ul>
       <p>On floors 2 and 4 the Merchant stands about halfway to the stairs, at a spot you can't get around, and on floors 3 and 5 a campfire does the same (on floor 5, on the way to the Ogre King). Everything in front of it is the easier half of the floor; the harder enemies, and the stairs, all lie beyond it, so you always reach it before them.</p>
-      <p>The <b>campfire</b> lasts for one thing before it burns out. <b>Rest</b> to recover 40% of your max HP, or <b>Train</b> for XP (80 on floor 3, 150 on floor 5: often enough for a level-up, with its perk). Leave it and it keeps burning, so you can clear the far half first and come back to it before you take the stairs, or face the King.</p>
+      <p>The <b>campfire</b> lasts for one thing before it burns out. <b>Rest</b> to recover 60% of your max HP, or <b>Train</b> for XP (110 on floor 3, 200 on floor 5: often enough for a level-up, with its perk). Choose before you walk on: once you leave it, the fire goes out and you can't come back to it.</p>
       <p>An enemy you have met stays on the map, standing on a ring in its color, with a number if it is a group. A white ring marks the Ogre King.</p>
     </details>
 
@@ -224,7 +224,7 @@
     <details>
       <summary>Levels and perk cards</summary>
       <p>Kills give XP (bigger enemies give more), shown by the thin gold bar under your health. The first level needs 25 XP, and each level after needs 20 more than the last.</p>
-      <p>Each level-up gives you +10 max HP (already filled in), heals 16% of your max HP and deals you <b>three perk cards</b>. Pick one. A card shows the total you would have after taking it, and its edge shows how rare it is: <b>grey</b> is common, <b>blue</b> uncommon, <b>gold</b> rare. One card is always a basic. Don't like the hand? <b>Redraw</b> costs 10 coins, then 20, then 30 in the same level-up.</p>
+      <p>Each level-up gives you +10 max HP (already filled in), heals 16% of your max HP and deals you <b>three perk cards</b>. Pick one. The cards are dealt like tarot cards. Each shows its rank (a numeral: how many times you will have it), the total you would have after taking it, and its frame shows how rare it is: plain <b>iron</b> is common, <b>silver</b> with studs uncommon, <b>gilt</b> with gold corners rare. One card is always a basic. Don't like the hand? <b>Redraw</b> costs 10 coins, then 20, then 30 in the same level-up.</p>
       <p>Every perk except Pathfinder, Second Wind and Tight Purse can be taken again and again. The specials grow a little less with each repeat, and specials you already own turn up more often. Pathfinder, Second Wind and Tight Purse can only be taken once, and once you have one it is never dealt again.</p>
       <h4>Basics</h4>
       <ul>
@@ -288,7 +288,7 @@
 
     <details>
       <summary>Gold and shops</summary>
-      <p>Gold comes from kills and chests, and there is never enough of it. Spend it at the merchants on floors 2 and 4 (potions, potion bags, the Scroll Satchel and gear) and on Redraws. The floor 4 merchant is the last shop: there is nothing to buy on floor 5. Whatever you still carry when you escape goes to the Vault.</p>
+      <p>Gold comes from kills and chests, and there is never enough of it. A merchant trades with you only once: when you tap <b>Leave</b> (twice, to be sure) he rolls down his canvas and his wagon creaks away. Spend it at the merchants on floors 2 and 4 (potions, potion bags, the Scroll Satchel and gear) and on Redraws. The floor 4 merchant is the last shop: there is nothing to buy on floor 5. Whatever you still carry when you escape goes to the Vault.</p>
       <p>You can also sell. Tap <b>Sell</b> at a merchant to sell potions, any piece of gear you wear, or scrolls from your bag. You get 25% of what the thing is worth: gear is worth 5 coins a point, and an enchantment is worth 15 (Minor), 30 (Good) or 50 (Major), on gear or as a scroll. Buying and selling take two taps: tap a row, then tap it again (it turns gold while it waits), so you never buy or sell by accident. Right after you buy something, that row stays ready for a few seconds, so a second potion is one tap. Gear you sell leaves its slot empty.</p>
       <p>Buying gear for a slot you already fill trades in your old piece: the merchant buys it for the same 25%, and that counts toward the price. The shop list shows what your piece is worth as "trade-in". If your old piece is enchanted, the enchantment goes with it.</p>
     </details>
@@ -686,8 +686,8 @@ const worn = {};
 const power = k => worn[k] ? worn[k].power : 0;
 let level = 1, xp = 0, levelUps = 0, bonusDmg = 0;
 // the campfire at the last camp, halfway through floor 5: it lasts for one thing, either a rest (heal a share of
-// your max HP) or a night of drills (a flat lump of XP). It stays lit until you use it, so you can come back to it
-const CAMP_HEAL_SHARE = 0.4, CAMP_XP_BY_FLOOR = {2: 80, 4: 150};   // (floor index: 2 = floor 3, 4 = floor 5)
+// your max HP) or a night of drills (a flat lump of XP). Walk away from it and it goes out: one visit only
+const CAMP_HEAL_SHARE = 0.6, CAMP_XP_BY_FLOOR = {2: 110, 4: 200};   // (floor index: 2 = floor 3, 4 = floor 5)
 const campXp = () => CAMP_XP_BY_FLOOR[floor] || 150;
 const campHeal = () => Math.round(p.max * CAMP_HEAL_SHARE);
 const perks = {};          // perk id -> times taken
@@ -785,9 +785,9 @@ const pick = z => {
 const STRETCH = [
   [[1, 1, 0], [1, 1.1, 0], [1.2, 1.1, 0]],                         // floor 1: a sting in its far half and its guard
   [[1.05, 1.05, 0], [1.02, 1.03, 0], [1.15, 1.05, 0]],             // floor 2: no longer a stroll
-  [[1, 1, 0], [0.92, 0.92, -0.08], [1.1, 1, 0]],                  // floor 3: its far half was a sudden spike
-  [[0.98, 0.99, 0], [1.01, 1.01, -0.02], [1.1, 1.05, 0]],         // floor 4: eased in front of the merchant (no shop on floor 3)
-  [[1.03, 1.03, 0], [1.03, 1.02, 0.04], [1, 1, 0]]                // floor 5: a breather, then the gauntlet past the campfire (the King has his own numbers)
+  [[0.9, 0.9, -0.05], [0.92, 0.92, -0.08], [1.1, 1, 0]],         // floor 3: eased in front of the campfire (you only get one visit), and its far half was a sudden spike
+  [[0.92, 0.93, -0.03], [1.01, 1.01, -0.02], [1.1, 1.05, 0]],    // floor 4: eased in front of the merchant (no shop on floor 3, and one visit only)
+  [[0.95, 0.95, 0], [1.03, 1.02, 0.04], [1, 1, 0]]                // floor 5: a breather, then the gauntlet past the campfire (the King has his own numbers)
 ];
 const stretchOf = e => STRETCH[Math.min(floor, FLOORS - 1)][e && (e.boss || e.guard) ? 2 : e && e.hard ? 1 : 0];
 function groupSize(zone, bias = 0) {
@@ -901,10 +901,10 @@ function endRun(won, killer) {
     ['Steps taken', run.steps],
     ['Time', time]
   ];
+  const slayer = won ? '' : `${killer === BOSS.name ? 'the' : /^[AEIOU]/.test(killer) ? 'an' : 'a'} ${killer}`;
   runSummary = {
-    won, rows,
-    cause: won ? `The ${BOSS.name} has fallen.`
-      : `Killed by ${killer === BOSS.name ? 'the' : /^[AEIOU]/.test(killer) ? 'an' : 'a'} ${killer}.`,
+    won, rows, slayer, floor: floor + 1, level,
+    cause: won ? `The ${BOSS.name} has fallen.` : `Killed by ${slayer}.`,
     notes: [killList && `Defeated: ${killList}`, perkList() && `Perks: ${perkList()}`,
             enchantedList() && `Enchanted gear: ${enchantedList()}`].filter(Boolean)
   };
@@ -1188,13 +1188,35 @@ function takePerk(id) {
   refresh();
 }
 
-function bar(x, y, w, h, hp, max, color) {
-  ctx.fillStyle = '#400';
-  ctx.fillRect(x, y, w, h);
-  ctx.fillStyle = color;
-  ctx.fillRect(x, y, w * hp / max, h);
+// a health (or XP) bar in an iron frame: a dark trough, blood-red fill with a glint along its top (purple while
+// poisoned, gold for XP). Big ones (the top bar's) get iron end caps with a rivet each, and notches every quarter
+const BAR_FILL = {hp: ['#e0343c', '#7c0c14', 'rgba(255,170,150,0.55)'], poison: ['#b062e8', '#4a1670', 'rgba(236,200,255,0.5)'],
+                  xp: ['#f6c844', '#8e5e0c', 'rgba(255,246,190,0.6)']};
+function bar(x, y, w, h, hp, max, kind = 'hp') {
+  const [hi, lo, glint] = BAR_FILL[kind] || BAR_FILL.hp, f = Math.max(0, Math.min(1, hp / max)), big = h >= 10;
+  ctx.fillStyle = '#070508'; ctx.fillRect(x - 2, y - 2, w + 4, h + 4);                 // the dark outline
+  ctx.fillStyle = '#58525a'; ctx.fillRect(x - 1, y - 1, w + 2, h + 2);                 // the iron frame
+  ctx.fillStyle = '#948c96'; ctx.fillRect(x - 1, y - 1, w + 2, 0.8);                   // its lit top edge
+  ctx.fillStyle = '#26080c'; ctx.fillRect(x, y, w, h);                                 // the empty trough
+  ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(x, y, w, Math.max(0.8, h * 0.18));
+  if (f > 0) {
+    const g = ctx.createLinearGradient(0, y, 0, y + h);
+    g.addColorStop(0, hi); g.addColorStop(1, lo);
+    ctx.fillStyle = g; ctx.fillRect(x, y, w * f, h);
+    ctx.fillStyle = glint; ctx.fillRect(x, y + Math.max(0.6, h * 0.14), w * f, Math.max(0.7, h * 0.16));
+    ctx.fillStyle = 'rgba(255,230,210,0.5)'; ctx.fillRect(x + w * f - 0.8, y, 0.8, h);   // the bright leading edge
+  }
+  if (big) {
+    ctx.fillStyle = 'rgba(0,0,0,0.45)';
+    for (let k = 1; k < 4; k++) ctx.fillRect(Math.round(x + w * k / 4) - 0.5, y, 1, h);
+    for (const ex of [x - 4, x + w + 1]) {                                             // the end caps
+      ctx.fillStyle = '#070508'; ctx.fillRect(ex - 1, y - 3, 5, h + 6);
+      ctx.fillStyle = '#6a646c'; ctx.fillRect(ex, y - 2, 3, h + 4);
+      ctx.fillStyle = '#a8a0aa'; ctx.fillRect(ex, y - 2, 3, 0.8);
+      rivet(ex + 1.5, y + h / 2);
+    }
+  }
 }
-
 // ---- combat screen: you on the left, the enemies on the right, floating numbers over everyone ----
 const POP_MS = 1000;                 // how long a floating number stays up
 const POP_COLORS = {dmg: '#f44', heal: '#4e4', miss: '#ddd', stun: '#6df', gold: '#fc3'}; // stun = lightning blue
@@ -1633,25 +1655,23 @@ const MARK = ['......G......',
               '...BBBBBBB...',
               '...BBxBxBB...',
               '...BBxBxBB...'];
-function markSprite(g, cx, top, k) {
-  const at = (i, j) => (MARK[j] || '')[i] || '.', solid = (i, j) => 'GgB'.includes(at(i, j));
-  const C = {G: [226, 182, 78], g: [168, 124, 46], B: [214, 198, 160]}, x0 = Math.round(cx) - 6;
-  for (let j = -1; j <= MARK.length; j++) for (let i = -1; i <= 13; i++) {
-    const c = at(i, j);
-    if (solid(i, j)) g.fillStyle = rgb(C[c], k * (!solid(i - 1, j) || !solid(i, j - 1) ? 1.25 : !solid(i + 1, j) || !solid(i, j + 1) ? 0.78 : 1));
-    else if (c === 'x' || solid(i - 1, j) || solid(i + 1, j) || solid(i, j - 1) || solid(i, j + 1)) g.fillStyle = '#1a0a0c';
-    else continue;
-    g.fillRect(x0 + i, top + j, 1, 1);
-  }
-}
 // one of his banners on the gate's pillars: long red cloth hung from an iron rod, stirring in a draught from the
 // dark. Made once with the room (its tatters, its light), then drawn with each frame: its sides ripple, folds drift
 // down it catching the light, the breeze comes and goes, and it ends in a swallowtail. His mark rides the cloth
 let T_BANNERS = [];
 const titleBannerMake = (x0, x1, y0, y1, r, ph) => ({x0, x1, y0, y1, ph, k: litK((x0 + x1) / 2, y0 + 20, 1, 0.3),
   tat: Array.from({length: x1 - x0 + 1}, () => r() < 0.22 ? 2 + r() * 5 : r() * 1.5)});
+// one pixel of his mark, sewn into the cloth (i, j: its column and row): its color with its own light and shade, the
+// dark stitching round it, or null where there is only cloth
+const MARK_C = {G: [226, 182, 78], g: [168, 124, 46], B: [214, 198, 160]};
+function markTexel(i, j) {
+  const at = (a, b) => (MARK[b] || '')[a] || '.', solid = (a, b) => 'GgB'.includes(at(a, b)), c = at(i, j);
+  if (solid(i, j)) return [MARK_C[c], !solid(i - 1, j) || !solid(i, j - 1) ? 1.25 : !solid(i + 1, j) || !solid(i, j + 1) ? 0.78 : 1];
+  if (c === 'x' || solid(i - 1, j) || solid(i + 1, j) || solid(i, j - 1) || solid(i, j + 1)) return [[26, 10, 12], 1];
+  return null;
+}
 function titleBanner(g, b, t) {
-  const {x0, x1, y0, y1, ph, k, tat} = b, w = x1 - x0;
+  const {x0, x1, y0, y1, ph, k, tat} = b, w = x1 - x0, my = y0 + 10, mx = Math.round(w / 2) - 6;
   const gust = 0.65 + 0.35 * Math.sin(t * 0.37 + ph) * Math.sin(t * 0.23 + 1.3 * ph);   // the draught rises and falls
   const sway = y => Math.sin((y - y0) * 0.07 - t * 1.7 + ph) * 2.6 * gust * Math.min(1, (y - y0) / 22);   // still at the rod, freer below
   for (let y = y0; y <= y1; y++) {
@@ -1663,14 +1683,13 @@ function titleBanner(g, b, t) {
       if (y > bot) continue;
       const fold = (0.68 + 0.4 * Math.max(0, Math.sin(u * Math.PI * 4.4 + (y - y0) * 0.05 - t * 1.1 + ph)) ** 0.8) * (1 - lean * 0.12);
       const edge = u < 0.06 || u > 0.94 ? 0.78 : 1, lip = y > bot - 1.5 ? 0.7 : 1;
-      g.fillStyle = y - y0 < 4 ? rgb([200, 156, 60], k * fold) : rgb([138, 28, 34], k * fold * edge * lip);
+      const mk = y >= my - 1 && y <= my + MARK.length ? markTexel(Math.floor(x - x0 - sx + 0.5) - mx, y - my) : null;   // his mark moves with the cloth
+      g.fillStyle = y - y0 < 4 ? rgb([200, 156, 60], k * fold) : mk ? rgb(mk[0], k * fold * mk[1]) : rgb([138, 28, 34], k * fold * edge * lip);
       g.fillRect(x, y, 1, 1);
     }
   }
   path(g, [[x0 - 4, y0 - 2], [x1 + 4, y0 - 2], [x1 + 4, y0 + 1], [x0 - 4, y0 + 1]]); g.fillStyle = rgb([70, 66, 76], k); g.fill();   // the rod
   for (const fx of [x0 - 5, x1 + 5]) { g.beginPath(); g.arc(fx, y0 - 0.5, 2.2, 0, Math.PI * 2); g.fillStyle = rgb([96, 92, 104], k); g.fill(); }
-  const my = y0 + 10;
-  markSprite(g, (x0 + x1) / 2 + Math.round(sway(my + 8)), my, k);
 }
 function hangChain(g, x, y0, y1, r) {
   for (let y = y0; y < y1; y += 3.2) {
@@ -3307,7 +3326,7 @@ let rooms = new Map();
 // title screen uses finer pixels than the fights); a scene's post(img, pix) works on the finished pixels, and its
 // after(b, low, pix) lays more over them
 function buildRoom(key, seed, pix = PIX) {
-  const sc = SCENES.find(s => s.key === key), s0 = seed * 7919 + 13;
+  const sc = SCENES.find(s => s.key === key) || campScene(key), s0 = seed * 7919 + 13;
   ACTIVE_LIGHTS = sc.lights.map(L => [L.x, L.y, L.reach * 0.95, L.s]);
   const low = lowCanvas(pix), b = low.getContext('2d');
   b.scale(1 / pix, 1 / pix);
@@ -3351,6 +3370,227 @@ function buildRoom(key, seed, pix = PIX) {
   ACTIVE_LIGHTS = null;
   return {sc, low, lm, ov, bl, flames, motes, fiery: sc.lights.some(L => L.fire && L.bloom)};
 }
+// ---- the campfire menu's picture: the floor's own fight room, with a campfire burning on the floor in front of you.
+// Built like any room (low poly stones and logs lit by the fire, snapped to the palette); its flames are live and its
+// sparks drift up as motes. The room's own lights are turned down so the fire is the light that matters
+const CAMP_AT = [156, 316];
+function campScene(key) {
+  const B = SCENES.find(s => s.key === key.slice(5)), [fx, fy] = CAMP_AT;
+  return {...B, key,
+    lights: [...B.lights.map(L => ({...L, s: L.s * 0.55, bloom: (L.bloom || 0) * 0.6, motes: 0})),
+             {x: fx, y: fy - 16, c: '255,150,60', reach: 220, s: 1.3, bloom: 26, fire: 1, motes: 14}],
+    smoke: [[fx, fy - 40]],
+    fg(g, r) { if (B.fg) B.fg(g, r); campfireLow(g, fx, fy, r); }};
+}
+function campfireLow(g, x, y, r) {
+  lump(g, ellipsePts(x, y, 32, 10, 14), [58, 48, 42], 701);                                          // the ash bed
+  const stones = Array.from({length: 11}, (_, i) => { const a = i / 11 * Math.PI * 2 + 0.2; return [x + Math.cos(a) * 33, y + Math.sin(a) * 10.5, a]; });
+  const stone = ([sx, sy], i) => lump(g, rockPts(sx, sy, 4.8 + r() * 1.6, r), [116, 108, 100], 720 + i);
+  stones.filter(s => Math.sin(s[2]) < 0).forEach(stone);                                            // the stones behind
+  g.fillStyle = '#e0702a'; g.beginPath(); g.ellipse(x, y - 0.5, 19, 5, 0, 0, Math.PI * 2); g.fill();   // the embers
+  g.fillStyle = '#ffb048'; g.beginPath(); g.ellipse(x, y - 1, 10, 3, 0, 0, Math.PI * 2); g.fill();
+  for (const [a, b, k] of [[[x - 24, y + 4], [x + 12, y - 9], 0], [[x + 24, y + 4], [x - 12, y - 9], 1], [[x - 5, y + 7], [x + 4, y - 12], 2]]) {
+    lump(g, tube(a, b, 3.8, 3.2), [92, 60, 34], 740 + k);                                           // the logs, crossed
+    lump(g, ellipsePts(a[0], a[1], 3.6, 3, 8), [168, 120, 76], 750 + k);                          // a cut end
+  }
+  flame(g, x, y - 3, 1.6); flame(g, x - 10, y - 1, 0.95); flame(g, x + 10.5, y - 1, 0.9);
+  stones.filter(s => Math.sin(s[2]) >= 0).forEach((s, i) => stone(s, i + 20));                     // and in front
+}
+// ---- the strip under the play area on a tall screen: a short scene of each floor, the full width of the screen and
+// as tall as the room there is. Built like a room (low poly props lit by their own lights, snapped to the palette),
+// once for each floor and height; each frame lays its live flames, its light and its drifting motes over it.
+// Coordinates: 288 wide, h tall; the floor runs along the bottom
+const STRIPS = {
+  // the Broken Gate: a breach torn through the wall with the dark beyond, a snapped column, a fallen one, rubble,
+  // bars bent out of the portcullis, a brazier burning, a torn banner
+  gate: {ambient: [126, 130, 162], lights: h => [{x: 118, y: h - 28, c: '255,170,90', reach: 140, s: 1.15, bloom: 14, fire: 1, motes: 5},
+                                                {x: 232, y: h - 40, c: '255,160,80', reach: 100, s: 0.8, bloom: 8, fire: 1, motes: 2},
+                                                {x: 52, y: h * 0.4, c: '110,150,200', reach: 70, s: 0.7}],
+    draw(g, r, h) {
+      const fy = h - 3, C = [96, 92, 106];
+      g.fillStyle = '#0e0c13'; g.fillRect(0, 0, W, h);
+      const breach = (x, y) => Math.abs(x - 52) < 18 + 8 * Math.sin(y * 0.4 + x * 0.05) + (fy - y) * 0.25 && y < fy - 8;
+      for (let row = 0, y = fy - 13; y > -13; y -= 13, row++) for (let x = -(row % 2) * 15; x < W;) {
+        const bw = 22 + Math.floor(r() * 12);
+        if (!breach(x + bw / 2, y + 6)) stoneBlock(g, x, y, bw, 13, stoneShade(C, r, 0.8, 0.35), litK(x + bw / 2, y + 6, 1, 0.22), r);
+        x += bw;
+      }
+      const mg = g.createRadialGradient(52, h * 0.4, 2, 52, h * 0.4, 40); mg.addColorStop(0, 'rgba(70,90,130,0.9)'); mg.addColorStop(1, 'rgba(20,22,34,0)');   // cold light through the breach
+      g.fillStyle = mg; g.fillRect(0, 0, 110, h);
+      if (h > 40) column(g, 52, fy - 8, Math.min(h * 0.6, 44), 7, false, r, [70, 72, 92]);   // a far column, seen through it
+      g.fillStyle = rgb([44, 40, 50], litK(144, fy, 1, 0.3)); g.fillRect(0, fy, W, h - fy);
+      debris(g, 52, fy, 11, 12, r, C); debris(g, 196, fy, 6, 6, r, C);
+      column(g, 14, fy, Math.min(h - 8, 50), 12, true, r, [106, 100, 112]);
+      wallTorch(g, 232, Math.max(12, fy - 46));
+      fallenColumn(g, 140, fy - 3, 222, fy - 9, 11, r, [106, 100, 112]);
+      for (const [x, lean, len] of [[248, -7, 42], [256, -3, 48], [265, -10, 36]]) {             // bars from the portcullis
+        const L = Math.min(len, h - 6);
+        path(g, [[x - 1.1, fy], [x + 1.1, fy], [x + lean + 1.1, fy - L], [x + lean - 1.1, fy - L]]); g.fillStyle = rgb([74, 70, 82], litK(x, fy - L / 2, 1.1, 0.3)); g.fill();
+      }
+      brazier(g, 118, fy, 1, r);
+      skullAt(g, 92, fy - 1, 0.9);
+      if (h > 54) banner(g, 168, 190, 0, Math.min(h - 30, 56), r, [140, 24, 28], 'skull', true);
+    }},
+  // the Drowned Crypt: a wall of burial niches, some sealed, some broken open on their dead; a sarcophagus standing in
+  // black water with candles on its lid, more candles on a step, a shackle on a chain
+  crypt: {ambient: [92, 124, 138], lights: h => [{x: 42, y: h - 18, c: '255,190,110', reach: 90, s: 0.95, bloom: 7, fire: 1, motes: 2},
+                                                 {x: 214, y: h - 40, c: '255,190,110', reach: 100, s: 1, bloom: 8, fire: 1, motes: 2},
+                                                 {x: 130, y: h, c: '80,190,180', reach: 130, s: 0.45}],
+    draw(g, r, h) {
+      const fy = h - 6, C = [74, 94, 102];
+      g.fillStyle = '#0a1014'; g.fillRect(0, 0, W, h);
+      for (let row = 0, y = fy - 15; y > -15; y -= 15, row++) for (let x = -(row % 2) * 19; x < W; x += 38) {
+        const k = litK(x + 19, y + 7, 1, 0.24), open = r() < 0.45;
+        stoneBlock(g, x, y, 38, 15, stoneShade(C, r, 0.85, 0.3), k, r);
+        path(g, [[x + 6, y + 3.5], [x + 32, y + 3.5], [x + 32, y + 12], [x + 6, y + 12]]);
+        g.fillStyle = open ? '#080b0d' : rgb(C, k * 1.12); g.fill();
+        if (open && r() < 0.65) skullAt(g, x + 13 + r() * 12, y + 11.2, 0.62);
+        else if (!open) { g.fillStyle = rgb(C, k * 0.55); g.fillRect(x + 11, y + 7.4, 16, 0.9); }   // a name cut into the seal
+      }
+      path(g, [[0, fy - 1], [W, fy - 1], [W, h], [0, h]]); g.fillStyle = '#0d2026'; g.fill();          // the water
+      for (let i = 0; i < 22; i++) { g.fillStyle = `rgba(150,210,210,${0.25 + r() * 0.3})`; g.fillRect(r() * W, fy + r() * (h - fy), 3 + r() * 7, 0.7); }
+      sarcophagus(g, 214, fy + 1, 50, r, false);
+      candles(g, 214, fy + 1 - 50 * 0.52, 4, r);
+      lump(g, [[20, fy], [66, fy], [62, fy - 5], [24, fy - 5]], C.map(v => v * 1.05), 1500, 1, 0.3);   // a step out of the water
+      candles(g, 42, fy - 5, 5, r);
+      skullAt(g, 62, fy - 5, 0.8);
+      if (h > 50) hangingChain(g, 128, Math.min(h * 0.45, 40), 'shackle', r);
+    }},
+  // the Glowing Caverns: a jumble of rock, stalactites, stalagmites, a glowing pool, crystals, mushrooms and a vine
+  cave: {ambient: [104, 108, 168], lights: h => [{x: 30, y: h - 14, c: '90,216,208', reach: 95, s: 0.95, bloom: 9, spores: '90,216,208', motes: 3},
+                                              {x: 254, y: h - 16, c: '200,144,255', reach: 105, s: 1, bloom: 10, spores: '200,144,255', motes: 3},
+                                              {x: 128, y: h - 4, c: '90,216,208', reach: 130, s: 0.9, bloom: 6},
+                                              {x: 196, y: h * 0.32 - 6, c: '200,144,255', reach: 80, s: 0.8, bloom: 7, spores: '200,144,255', motes: 2},
+                                              {x: 70, y: h * 0.45, c: '90,216,208', reach: 70, s: 0.6, bloom: 5}],
+    draw(g, r, h) {
+      const fy = h - 4, C = [82, 76, 104];
+      g.fillStyle = '#0a0913'; g.fillRect(0, 0, W, h);
+      for (let i = 0; i < Math.round(30 + h * 0.3); i++) { const x = r() * W, y = r() * h; lump(g, rockPts(x, y, 9 + r() * 10, r), C.map(v => v * (0.7 + r() * 0.4)), 1300 + i, 1, 0.18); }
+      stalactites(g, r, -1, [104, 96, 128], 1.1);
+      for (const [x, y, s, C] of [[196, h * 0.32, 8, [200, 144, 255]], [70, h * 0.48, 7, [90, 216, 208]], [126, h * 0.3, 5, [200, 144, 255]], [236, h * 0.58, 6, [90, 216, 208]]]) crystal(g, x, y, s, C, r);   // shards on the ledges
+      for (const [x, hh, w] of [[88, 26, 10], [188, 36, 13], [208, 20, 8]]) spike(g, x, fy, Math.min(hh, h - 12), w, [86, 80, 104], (r() - 0.5) * 4);
+      glowPool(g, 128, fy - 2, 34, 4, [40, 150, 150], r);
+      crystal(g, 30, fy, 12, [90, 216, 208], r); crystal(g, 254, fy, 14, [200, 144, 255], r); crystal(g, 164, fy, 7, [200, 144, 255], r);
+      mushroom(g, 58, fy, 1, [90, 216, 208]); mushroom(g, 68, fy, 0.7, [200, 144, 255]); mushroom(g, 230, fy, 0.8, [90, 216, 208]);
+      if (h > 50) vine(g, 108, Math.min(h * 0.5, 38), '90,216,208', r);
+    }},
+  // the Burning Deep: six-sided basalt columns snapped off at different heights, lava pouring through a gap between
+  // them into a crusted river along the bottom, jagged spires, chains
+  deep: {ambient: [116, 70, 62], lights: h => [{x: 60, y: h - 4, c: '255,110,40', reach: 110, s: 1, bloom: 10, fire: 1, motes: 4},
+                                              {x: 172, y: h - 4, c: '255,110,40', reach: 110, s: 1, bloom: 10, fire: 1, motes: 4},
+                                              {x: 246, y: h * 0.45, c: '255,150,60', reach: 95, s: 0.85, bloom: 8}],
+    draw(g, r, h) {
+      const fy = h - 9, C = [60, 44, 44];
+      g.fillStyle = '#100707'; g.fillRect(0, 0, W, h);
+      for (let x = -6; x < W; x += 15) {
+        if (x > 230 && x < 256) continue;                                  // the gap the lava falls through
+        const top = 2 + r() * Math.min(40, h * 0.42), k = litK(x + 7, (top + fy) / 2, 1, 0.2), cut = 3;
+        path(g, [[x, fy], [x, top + cut], [x + 4, top + cut], [x + 4, fy]]); g.fillStyle = rgb(C, k * 1.18); g.fill();
+        path(g, [[x + 4, fy], [x + 4, top + cut], [x + 11, top + cut], [x + 11, fy]]); g.fillStyle = rgb(C, k * 0.86); g.fill();
+        path(g, [[x + 11, fy], [x + 11, top + cut], [x + 15, top + cut], [x + 15, fy]]); g.fillStyle = rgb(C, k * 0.56); g.fill();
+        path(g, [[x, top + cut], [x + 4, top], [x + 11, top], [x + 15, top + cut]]); g.fillStyle = rgb(C, k * 1.4); g.fill();   // its snapped top
+        for (let y = top + 12; y < fy - 4; y += 9 + r() * 14) { g.fillStyle = 'rgba(10,6,6,0.9)'; g.fillRect(x, y, 15, 0.9); }   // the joints
+        if (r() < 0.35) { const y = fy - 6 - r() * Math.min(20, h * 0.3); g.fillStyle = '#ff7a2a'; g.fillRect(x + 4 + r() * 6, y, 0.9, 5 + r() * 6); }   // a glowing crack
+      }
+      path(g, [[238, 0], [252, 0], [251, fy], [239, fy]]); g.fillStyle = '#ff6a20'; g.fill();          // the lava fall
+      path(g, [[242, 0], [248, 0], [247.5, fy], [242.5, fy]]); g.fillStyle = '#ffc060'; g.fill();
+      path(g, [[0, fy - 1], [W, fy - 2], [W, h], [0, h]]); g.fillStyle = '#ff5a18'; g.fill();          // the river
+      g.fillStyle = '#ffc060'; g.fillRect(0, fy - 1.5, W, 1);
+      for (let i = 0; i < 12; i++) lump(g, rockPts(r() * W, fy + 3 + r() * (h - fy - 4), 2.5 + r() * 3, r), [44, 28, 26], 1600 + i, 1, 0.2);   // crust on it
+      jaggedSpire(g, 16, fy, Math.min(h - 6, 46), 16, r, [76, 54, 52]); jaggedSpire(g, 214, fy, Math.min(h - 6, 38), 14, r, [76, 54, 52]);
+      if (h > 50) { hangingChain(g, 118, Math.min(h * 0.45, 34), 'shackle', r); hangingChain(g, 134, Math.min(h * 0.3, 22), null, r); }
+    }},
+  // the Feast Hall: crown banners and a trophy over wood panelling with a gilt rail, a sideboard laid for the court
+  // with two candelabra, barrels stacked by the wall
+  feast: {ambient: [150, 116, 108], lights: h => [{x: 92, y: h - 44, c: '255,190,110', reach: 115, s: 1, bloom: 9, fire: 1, motes: 1},
+                                                 {x: 178, y: h - 44, c: '255,190,110', reach: 115, s: 1, bloom: 9, fire: 1, motes: 1},
+                                                 {x: 250, y: h - 50, c: '255,170,90', reach: 90, s: 0.75, bloom: 7, fire: 1}],
+    draw(g, r, h) {
+      const fy = h - 3, wood = [100, 62, 36], rail = Math.max(4, fy - 44);
+      g.fillStyle = '#130909'; g.fillRect(0, 0, W, h);
+      for (let x = 0; x < W; x += 24) { g.fillStyle = rgb([84, 58, 52], litK(x + 12, rail / 2, 1, 0.2)); g.fillRect(x, 0, 24, rail); }   // plaster
+      for (let x = 0; x < W; x += 24) {                                    // the panelling, each panel a pointed arch
+        const k = litK(x + 12, (rail + fy) / 2, 1, 0.24);
+        stoneBlock(g, x, rail, 24, fy - rail, wood, k, r);
+        if (fy - rail > 22) { path(g, [[x + 6, fy - 4], [x + 6, rail + 12], [x + 12, rail + 5], [x + 18, rail + 12], [x + 18, fy - 4]]); g.fillStyle = rgb(wood, k * 0.55); g.fill(); }
+        g.fillStyle = rgb([220, 176, 84], k * 1.2); g.fillRect(x, rail - 2, 24, 2.2);   // the gilt rail
+      }
+      if (rail > 34) { banner(g, 18, 42, 0, rail - 4, r, [140, 24, 28], 'crown'); banner(g, 246, 270, 0, rail - 4, r, [140, 24, 28], 'crown'); trophySkull(g, 134, Math.max(6, rail - 22), 0.75); }
+      const top = fy - 18;
+      lump(g, [[64, top], [210, top], [208, fy], [66, fy]], wood, 1400, 0.95);                          // the sideboard
+      lump(g, [[60, top - 2], [214, top - 2], [212, top + 1], [62, top + 1]], wood.map(v => v * 1.25), 1401, 1.1);
+      path(g, [[66, top + 1], [208, top + 1], [208, top + 9], [66, top + 9]]); g.fillStyle = rgb([140, 24, 28], litK(137, top + 5, 1, 0.3)); g.fill();   // its drape
+      g.fillStyle = rgb([220, 176, 84], litK(137, top + 9, 1.1, 0.3)); g.fillRect(66, top + 9, 142, 1.2);
+      candelabra(g, 92, top - 2); candelabra(g, 178, top - 2);
+      goblet(g, 108, top - 2); jug(g, 122, top - 2); roastBird(g, 146, top - 1, 1); loaf(g, 162, top - 2); goblet(g, 196, top - 2, true);
+      wallTorch(g, 250, Math.max(10, fy - 52));
+      barrel(g, 236, fy, 1.15); barrel(g, 262, fy, 1.15); barrel(g, 249, fy - 22, 1.05);
+    }}
+};
+const strips = new Map();
+function buildStrip(key, h) {
+  const S = STRIPS[key] || STRIPS.gate, lights = S.lights(h), hp = Math.ceil(h / PIX);
+  ACTIVE_LIGHTS = lights.map(L => [L.x, L.y, L.reach * 0.95, L.s]);
+  const low = document.createElement('canvas'); low.width = W / PIX; low.height = hp;
+  const b = low.getContext('2d');
+  b.scale(1 / PIX, 1 / PIX);
+  FLAMES = [];
+  S.draw(b, rngSeed(4242 + h * 7), h);
+  const flames = FLAMES;
+  FLAMES = null;
+  const img = b.getImageData(0, 0, low.width, hp);
+  quantize(img, PALETTE2, 20);
+  b.putImageData(img, 0, 0);
+  const big = () => { const cv = document.createElement('canvas'); cv.width = W * 2; cv.height = hp * PIX * 2; const g = cv.getContext('2d'); g.scale(2, 2); return [cv, g]; };
+  const [lm, lg] = big();
+  lg.fillStyle = rgb(S.ambient); lg.fillRect(0, 0, W, h);
+  lg.globalCompositeOperation = 'lighter';
+  for (const L of lights) {
+    const tg = lg.createRadialGradient(L.x, L.y, 2, L.x, L.y + L.reach * 0.2, L.reach);
+    tg.addColorStop(0, `rgba(${L.c},${0.95 * L.s})`); tg.addColorStop(0.45, `rgba(${L.c},${0.38 * L.s})`); tg.addColorStop(1, 'rgba(0,0,0,0)');
+    lg.fillStyle = tg; lg.fillRect(0, 0, W, h);
+  }
+  const [bl, bg] = big();
+  bg.globalCompositeOperation = 'lighter';
+  for (const L of lights) if (L.bloom) for (const [k, a] of [[2.6, 0.2], [1, 0.42], [0.4, 0.65]]) {
+    const rr = L.bloom * k, gr = bg.createRadialGradient(L.x, L.y - 6, 0, L.x, L.y - 6, rr);
+    gr.addColorStop(0, `rgba(${L.c},${a * L.s})`); gr.addColorStop(1, `rgba(${L.c},0)`); bg.fillStyle = gr; bg.fillRect(L.x - rr, L.y - 6 - rr, rr * 2, rr * 2);
+  }
+  const r = rngSeed(h * 13 + 5), motes = [];
+  for (const L of lights) for (let k = 0; k < (L.motes || 0); k++) motes.push({L, dx: (r() - 0.5) * (L.fire ? 26 : 70), dy: r(), speed: 0.12 + r() * 0.2, ph: r()});
+  ACTIVE_LIGHTS = null;
+  const frame = document.createElement('canvas'); frame.width = low.width; frame.height = hp;
+  return {low, lm, bl, flames, motes, frame, hh: hp * PIX, fiery: lights.some(L => L.fire && L.bloom)};
+}
+// one frame of the strip for floor room key, h tall, at (0, 0) in g
+function drawStrip(g, key, h, t) {
+  h = Math.round(h);
+  const id = key + ':' + h;
+  if (!strips.has(id)) { if (strips.size > 6) strips.clear(); strips.set(id, buildStrip(key, h)); }
+  const R = strips.get(id), ts = Math.floor(t / STEP) * STEP, fg = R.frame.getContext('2d');
+  fg.setTransform(1, 0, 0, 1, 0, 0); fg.drawImage(R.low, 0, 0);
+  R.flames.forEach((fl, i) => { fg.setTransform(fl.m); liveFlame(fg, fl.x, fl.y, fl.s, ts, i); });
+  g.save();
+  g.imageSmoothingEnabled = false;
+  g.drawImage(R.frame, 0, 0, W, R.hh);
+  g.imageSmoothingEnabled = true;
+  g.globalCompositeOperation = 'multiply';
+  g.drawImage(R.lm, 0, 0, W, R.hh);
+  g.globalCompositeOperation = 'lighter';
+  g.globalAlpha = R.fiery ? 0.93 + 0.05 * Math.sin(t * 9.3) + 0.03 * Math.sin(t * 23.7) : 1;
+  g.drawImage(R.bl, 0, 0, W, R.hh);
+  g.globalAlpha = 1;
+  driftMotes(g, R, ts);
+  g.globalCompositeOperation = 'source-over';
+  const sh = g.createLinearGradient(0, 0, 0, Math.min(14, h / 3));         // the shadow of the ledge above
+  sh.addColorStop(0, 'rgba(0,0,0,0.75)'); sh.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = sh; g.fillRect(0, 0, W, Math.min(14, h / 3));
+  const v = g.createLinearGradient(0, 0, W, 0);                            // the edges fading into the dark
+  v.addColorStop(0, 'rgba(0,0,0,0.45)'); v.addColorStop(0.12, 'rgba(0,0,0,0)'); v.addColorStop(0.88, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,0.45)');
+  g.fillStyle = v; g.fillRect(0, 0, W, h);
+  g.restore();
+}
+const drawCamp = (g, f, hero, t) => drawFight(g, {room: ['camp-' + ROOM_OF_FLOOR[Math.min(f, 4)], 7], hero, foes: [], ring: null, t});
 function roomFor(key, seed) {
   const k = key + ':' + seed;
   if (!rooms.has(k)) { rooms = new Map(); rooms.set(k, buildRoom(key, seed)); }
@@ -3808,44 +4048,62 @@ function robed(g, cx, by, C, wizard) {
 }
 // a merchant's stall: a striped awning on two posts, the hooded merchant behind a plank counter with wares on it,
 // and the lantern hanging from the awning's corner (its light is a glow, laid on each frame)
-function merchantStall(g, X, Y, C) {
-  const wood = [104, 70, 42], stripes = [C, [196, 178, 142]], cx = X + 16, by = Y + 23;
-  ell(g, cx, Y + 28.5, 14, 3, 'rgba(0,0,0,0.5)');                                               // the shadow
-  for (const px of [X + 3, X + 27]) {                                                           // the posts
-    g.fillStyle = rgb(wood, 0.62); g.fillRect(px, Y + 2, 2.2, 26.5);
-    g.fillStyle = rgb(wood, 1.05); g.fillRect(px, Y + 2, 0.9, 26.5);
+// the merchant's covered wagon: its near side rolled up and the counter let down to make a shopfront, so he can
+// pack up and roll on once you have done your trading (his tile then shows the wheel ruts he leaves: wagonRuts)
+function merchantWagon(g, X, Y, C) {
+  const wood = [104, 70, 42], cloth = [196, 178, 142], iron = [58, 54, 60], cx = X + 16;
+  ell(g, cx, Y + 29, 15.5, 2.8, 'rgba(0,0,0,0.5)');                                             // the shadow
+  path(g, [[X - 3, Y + 28], [X + 4, Y + 20], [X + 5.4, Y + 21], [X - 1.4, Y + 28.6]]); g.fillStyle = rgb(wood, 0.62); g.fill();   // the shaft, at rest
+  // the bonnet: canvas over hoops, the far end in shadow
+  path(g, [[X + 3, Y + 14], [X + 3, Y + 6], [X + 6.5, Y + 1.2], [X + 25.5, Y + 1.2], [X + 29, Y + 6], [X + 29, Y + 14]]); g.fillStyle = rgb(cloth, 0.92); g.fill();
+  path(g, [[X + 22, Y + 1.2], [X + 25.5, Y + 1.2], [X + 29, Y + 6], [X + 29, Y + 14], [X + 22, Y + 14]]); g.fillStyle = rgb(cloth, 0.66); g.fill();
+  g.fillStyle = rgb(cloth, 1.18); g.fillRect(X + 6.5, Y + 1.2, 15.5, 0.9);                       // the lit crown of the canvas
+  for (const hx of [X + 8.5, X + 16, X + 23.5]) { g.fillStyle = rgb(C, 0.78); g.fillRect(hx - 0.7, Y + 1.2, 1.4, 12.8); }   // the hoops, in his color
+  // the shopfront: dark inside, the canvas rolled up above it
+  g.fillStyle = '#130e13'; g.fillRect(X + 5.5, Y + 6, 21, 8.4);
+  g.fillStyle = rgb(cloth, 1.08); g.fillRect(X + 5, Y + 4.4, 22, 2.2);
+  g.fillStyle = rgb(cloth, 0.55); g.fillRect(X + 5, Y + 6.4, 22, 0.6);
+  g.fillStyle = rgb([150, 110, 60]); for (const tx of [X + 8, X + 24]) g.fillRect(tx, Y + 3.6, 0.8, 3.6);   // the ties
+  // the merchant inside, hooded, his eyes catching the lantern
+  path(g, [[cx - 5.2, Y + 14.4], [cx - 3, Y + 9.6], [cx + 3, Y + 9.6], [cx + 5.2, Y + 14.4]]); g.fillStyle = rgb(C, 0.78); g.fill();
+  ell(g, cx, Y + 9.2, 3.7, 3.3, rgb(C, 0.95));
+  path(g, [[cx, Y + 5.9], [cx + 3.7, Y + 9.2], [cx + 2, Y + 12]]); g.fillStyle = rgb(C, 0.66); g.fill();
+  ell(g, cx + 0.5, Y + 9.9, 2.1, 1.7, '#0c080c');
+  g.fillStyle = '#ffd890'; g.fillRect(cx - 0.7, Y + 9.5, 0.9, 0.9); g.fillRect(cx + 1.2, Y + 9.5, 0.9, 0.9);
+  // wares hung inside: a health potion and a fat coin purse
+  g.fillStyle = '#2a1a14'; g.fillRect(X + 8.4, Y + 9.4, 1.2, 1.2);
+  g.fillStyle = rgb([190, 36, 44]); g.fillRect(X + 7.6, Y + 10.6, 2.8, 3.4);
+  g.fillStyle = 'rgba(255,190,190,0.7)'; g.fillRect(X + 8, Y + 11, 0.7, 1.4);
+  ell(g, X + 23.6, Y + 12.4, 2.3, 1.9, rgb([120, 84, 48]));
+  g.fillStyle = rgb([214, 170, 70]); g.fillRect(X + 22.7, Y + 10.2, 1.8, 0.8);
+  // the counter, let down over the side of the bed, then the bed's planks
+  g.fillStyle = rgb(wood, 1.32); g.fillRect(X + 3.6, Y + 14, 24.8, 1.7);
+  g.fillStyle = rgb(wood, 0.86); g.fillRect(X + 3, Y + 15.7, 26, 6.3);
+  g.fillStyle = rgb(wood, 0.56); g.fillRect(X + 3, Y + 18.6, 26, 0.6); for (const px of [X + 10, X + 22]) g.fillRect(px, Y + 15.7, 0.7, 6.3);
+  g.fillStyle = rgb(wood, 0.42); g.fillRect(X + 3, Y + 21.3, 26, 0.9);
+  // two big spoked wheels, iron-rimmed
+  for (const wx of [X + 8, X + 24]) {
+    const wy = Y + 24;
+    ell(g, wx, wy, 4.8, 4.8, rgb(iron, 0.9)); ell(g, wx, wy, 3.8, 3.8, rgb(wood, 0.78)); ell(g, wx, wy, 3.05, 3.05, '#1d1512');
+    g.strokeStyle = rgb(wood, 1.02); g.lineWidth = 0.9; g.beginPath();
+    for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI; g.moveTo(wx - Math.cos(a) * 3.2, wy - Math.sin(a) * 3.2); g.lineTo(wx + Math.cos(a) * 3.2, wy + Math.sin(a) * 3.2); }
+    g.stroke();
+    ell(g, wx, wy, 1.3, 1.3, rgb(iron, 1.6));
+    g.fillStyle = 'rgba(255,235,200,0.25)'; g.fillRect(wx - 3.6, wy - 4.6, 3, 0.8);                // light on the rim
   }
-  g.fillStyle = rgb(wood, 0.5); g.fillRect(X + 5, Y + 9, 22, 1);                                // a rail across the back
-  // the merchant, standing behind the counter
-  path(g, [[cx - 7, by], [cx - 4, by - 12], [cx + 4, by - 12], [cx + 7, by]]); g.fillStyle = rgb(C, 0.85); g.fill();
-  path(g, [[cx + 0.5, by], [cx + 0.5, by - 12], [cx + 4, by - 12], [cx + 7, by]]); g.fillStyle = rgb(C, 0.6); g.fill();
-  ell(g, cx, by - 14, 5.2, 4.8, rgb(C, 0.95));                                                  // the hood
-  path(g, [[cx, by - 19], [cx + 5.2, by - 14], [cx + 3, by - 10]]); g.fillStyle = rgb(C, 0.68); g.fill();
-  ell(g, cx + 0.8, by - 13.2, 2.8, 2.2, '#100c12');                                             // the face in shadow
-  g.fillStyle = '#ffd890'; g.fillRect(cx - 0.6, by - 13.7, 1, 1); g.fillRect(cx + 1.6, by - 13.7, 1, 1);
-  // the counter: planks under a lit top board
-  g.fillStyle = rgb(wood, 0.88); g.fillRect(X + 4, Y + 18, 24, 10);
-  g.fillStyle = rgb(wood, 0.6); for (const px of [X + 10, X + 16, X + 22]) g.fillRect(px, Y + 19, 0.8, 8);
-  g.fillStyle = rgb(wood, 0.5); g.fillRect(X + 4, Y + 26.6, 24, 1.4);
-  g.fillStyle = rgb(wood, 1.32); g.fillRect(X + 3.4, Y + 16.8, 25.2, 1.8);
-  g.fillStyle = rgb(C, 0.7); g.fillRect(cx - 6.4, by - 6.6, 2.6, 1.8); g.fillRect(cx + 3.8, by - 6.6, 2.6, 1.8);   // his sleeves on the counter
-  // wares: a health potion and a fat coin purse
-  g.fillStyle = '#2a1a14'; g.fillRect(X + 6.2, Y + 11.6, 1.2, 1.4);                             // the cork
-  g.fillStyle = rgb([190, 36, 44]); g.fillRect(X + 5.2, Y + 13, 3.2, 3.8);
-  g.fillStyle = 'rgba(255,190,190,0.7)'; g.fillRect(X + 5.6, Y + 13.4, 0.8, 1.6);
-  ell(g, X + 24.6, Y + 15, 2.6, 2.1, rgb([120, 84, 48]));
-  g.fillStyle = rgb([214, 170, 70]); g.fillRect(X + 23.6, Y + 12.4, 2, 0.9);                    // its drawstring
-  // the awning: cloth in stripes, the merchant's color and bone, with a scalloped edge
-  for (let k = 0; k < 6; k++) {
-    const x0 = X + 1 + k * 5, c = stripes[k % 2];
-    g.fillStyle = rgb(c, 0.92); g.fillRect(x0, Y - 2, 5, 5);
-    ell(g, x0 + 2.5, Y + 3, 2.5, 1.7, rgb(c, 0.74));
+  // the lantern, on a hook off the front hoop
+  g.fillStyle = '#2a2426'; g.fillRect(X + 29.6, Y + 5, 0.8, 2.4); g.fillRect(X + 28.4, Y + 7.2, 3.2, 1);
+  g.fillStyle = '#ffd070'; g.fillRect(X + 28.6, Y + 8.2, 2.8, 3.2);
+  g.fillStyle = '#2a2426'; g.fillRect(X + 28.4, Y + 11.4, 3.2, 0.9);
+}
+// where the wagon stood: two pairs of wheel ruts in the dirt, and a coin it dropped
+function wagonRuts(g, X, Y) {
+  for (const dy of [21.5, 26.5]) {
+    g.fillStyle = 'rgba(14,9,6,0.6)'; g.fillRect(X, Y + dy, 32, 1.8);
+    g.fillStyle = 'rgba(255,228,190,0.07)'; g.fillRect(X, Y + dy + 1.5, 32, 0.6);
   }
-  g.fillStyle = rgb(stripes[0], 0.45); g.fillRect(X + 1, Y - 3, 30, 1.2);
-  // the lantern, on a short chain from the awning's corner
-  g.fillStyle = '#2a2426'; g.fillRect(X + 27.6, Y + 4, 0.8, 2.6); g.fillRect(X + 26.4, Y + 6.4, 3.2, 1);
-  g.fillStyle = '#ffd070'; g.fillRect(X + 26.6, Y + 7.4, 2.8, 3.4);
-  g.fillStyle = '#2a2426'; g.fillRect(X + 26.4, Y + 10.8, 3.2, 0.9);
+  ell(g, X + 12, Y + 24.4, 1.3, 0.85, '#d6a63a');
+  g.fillStyle = '#fff0b0'; g.fillRect(X + 11.4, Y + 23.9, 0.6, 0.4);
 }
 function torchBracket(g, x, y) {
   g.fillStyle = '#1e1a1c'; g.fillRect(x - 0.8, y, 1.6, 6);
@@ -3915,7 +4173,8 @@ function mapFor(key, rows) {
       if (ch === 'F') glows.push({tx: x, ty: y, x: X + 16, y: Y + 23, col: '255,150,60', reach: 60, a: 0.95, flicker: true, fire: true});
       continue;
     }
-    if (ch === 'M' || ch === 'N') { merchantStall(g, X, Y, [120, 80, 172]); glows.push({tx: x, ty: y, x: X + 28, y: Y + 9, col: '255,196,110', reach: 46, a: 0.8, flicker: true}); continue; }
+    if (ch === 'm') { wagonRuts(g, X, Y); continue; }
+    if (ch === 'M' || ch === 'N') { merchantWagon(g, X, Y, [120, 80, 172]); glows.push({tx: x, ty: y, x: X + 30, y: Y + 9.8, col: '255,196,110', reach: 46, a: 0.8, flicker: true}); continue; }
     if (ch === 'X') {
       g.strokeStyle = 'rgba(90,216,208,0.75)'; g.lineWidth = 1; g.beginPath(); g.ellipse(X + 16, Y + 27, 13, 3.6, 0, 0, Math.PI * 2); g.stroke();   // a circle of runes
       for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2; g.fillStyle = '#5ad8d0'; g.fillRect(X + 16 + Math.cos(a) * 13 - 0.8, Y + 27 + Math.sin(a) * 3.6 - 0.8, 1.6, 1.6); }
@@ -4129,7 +4388,9 @@ function setLook(look) {
 }
 // a torch flame in a look (the Vault's preview)
 const drawFlame = (g, x, y, s, t, look) => liveFlame(g, x, y, s, t, 3, flameOf({...LOOK, ...look}).c);
-return {drawFight, drawDoll, drawMap: drawMapScene, drawTitle, roomTitle, roomFor, ROOM_OF_FLOOR, KINDS, LOOKS, setLook, drawFlame};
+// the merchant's wagon, big, for the shop menu (x, y: the middle of the ground under it)
+const drawWagon = (g, x, y, s) => { g.save(); g.translate(x, y); g.scale(s, s); merchantWagon(g, -16, -29, [120, 80, 172]); g.restore(); };
+return {drawFight, drawDoll, drawMap: drawMapScene, drawTitle, roomTitle, roomFor, ROOM_OF_FLOOR, KINDS, LOOKS, setLook, drawFlame, drawCamp, drawWagon, drawStrip};
 })();
 
 
@@ -4225,7 +4486,7 @@ function drawCombat() {
 
   // your health: a bar over your head, the numbers at your feet
   const hb = fightBoxes.hero;
-  bar(hb.x - 26, hb.y0 - 12, 52, 6, p.hp, p.max, poison ? '#a5d' : '#4c4');
+  bar(hb.x - 26, hb.y0 - 12, 52, 6, p.hp, p.max, poison ? 'poison' : 'hp');
   ctx.font = `600 13px ${GAME_FONT}`;
   ctx.textAlign = 'center';
   outlinedText(`${p.hp}/${p.max}`, hb.x, hb.y + 16, '#fff');
@@ -4236,7 +4497,7 @@ function drawCombat() {
     if (!b) continue;
     const dead = f.hp <= 0, label = f.name + (f.items.length ? '*' : '') + (f.burn > 0 && !dead ? ' (burning)' : '');
     const half = ctx.measureText(label).width / 2, cx = Math.max(half + 4, Math.min(284 - half, (b.x0 + b.x1) / 2)), top = Math.max(b.y0, 26);
-    if (!dead) bar(Math.max(4, Math.min(236, cx - 24)), top - 9, 48, 5, f.hp, f.max, '#4c4');
+    if (!dead) bar(Math.max(4, Math.min(236, cx - 24)), top - 9, 48, 5, f.hp, f.max, 'hp');
     outlinedText(label, cx, top - 12, dead ? '#777' : '#fff');
   }
   ctx.textAlign = 'left';
@@ -4414,16 +4675,19 @@ function drawFlask(x, y, full, glow) {
 }
 
 function drawTopBar() {
-  ctx.fillStyle = '#111';
+  const tg = ctx.createLinearGradient(0, -view.top, 0, TOP_H);
+  tg.addColorStop(0, '#0e0c10'); tg.addColorStop(1, '#1c181f');
+  ctx.fillStyle = tg;
   ctx.fillRect(0, -view.top, CANVAS_W, view.top + TOP_H);                  // reaches up behind the notch
-  ctx.fillStyle = '#2c2832';
-  ctx.fillRect(0, TOP_H - 1, CANVAS_W, 1);
+  ctx.fillStyle = '#060508'; ctx.fillRect(0, TOP_H - 3, CANVAS_W, 1);
+  ctx.fillStyle = '#6a5636'; ctx.fillRect(0, TOP_H - 2, CANVAS_W, 1);      // a gilt edge along the bottom
+  ctx.fillStyle = '#2a2218'; ctx.fillRect(0, TOP_H - 1, CANVAS_W, 1);
   ctx.textAlign = 'left';
   ctx.fillStyle = '#fff';
   ctx.font = `600 13px ${GAME_FONT}`;
   // the last argument squeezes the text to fit if a wider backup font is showing
   ctx.fillText(`Lv ${level} - Floor ${floor + 1}/${FLOORS}`, 8, 14, 140);
-  bar(8, 19, 140, 13, p.hp, p.max, poison ? '#a5d' : '#4c4');            // purple while poisoned
+  bar(12, 19, 132, 13, p.hp, p.max, poison ? 'poison' : 'hp');           // purple while poisoned
   ctx.font = `600 11px ${GAME_FONT}`;
   ctx.textAlign = 'center';
   ctx.lineWidth = 2.5;
@@ -4431,7 +4695,7 @@ function drawTopBar() {
   ctx.strokeText(`${p.hp}/${p.max}`, 78, 29.5);
   ctx.fillStyle = '#fff';
   ctx.fillText(`${p.hp}/${p.max}`, 78, 29.5);
-  bar(8, 36, 140, 4, xp, xpToNext(level + levelUps), '#fc3');
+  bar(12, 37, 132, 3, xp, xpToNext(level + levelUps), 'xp');
   // gold
   drawCoin(168, 23, 8.5);
   ctx.textAlign = 'left';
@@ -4503,9 +4767,10 @@ let overlay = null;   // a panel opened over the game: {kind: 'hero', tab: 'gear
 let pressed = null;   // the button just tapped, lit up for a moment: {id, t}
 const PRESS_MS = 160;
 const TIER_EDGE = ['#a8743c', '#aab0ba', '#f2f6fc'];   // leather (and cloth), iron, steel
-const RARITY_EDGE = {common: '#8a8a8a', uncommon: '#4aa8ff', rare: '#ffcc33'};
+const RARITY_EDGE = {common: '#8c857c', uncommon: '#cdd4e0', rare: '#f0c048'};   // iron, silver, gold (and the frames differ: studs, then gilt corners)
 const openLog = () => { overlay = {kind: 'log', back: 0}; };
-const uiAnimating = () => !!(pressed && performance.now() - pressed.t < PRESS_MS) || logStepping();
+const uiAnimating = () => !!(pressed && performance.now() - pressed.t < PRESS_MS) || logStepping() ||
+  (phase === 'camp' && !overlay && !over);                                // the campfire burns
 
 // ---- text ----
 const textFont = (size, weight = 600) => `${weight} ${size}px ${GAME_FONT}`;
@@ -4559,6 +4824,57 @@ function roundBox(x, y, w, h, r) {
 }
 const isLit = b => !!(pressed && pressed.id === b.id && performance.now() - pressed.t < PRESS_MS);
 
+// ---- the gothic look of the controls: iron frames with their corners cut off, faces of carved, grainy stone ----
+function chamfer(x, y, w, h, c) {
+  ctx.beginPath();
+  ctx.moveTo(x + c, y); ctx.lineTo(x + w - c, y); ctx.lineTo(x + w, y + c); ctx.lineTo(x + w, y + h - c);
+  ctx.lineTo(x + w - c, y + h); ctx.lineTo(x + c, y + h); ctx.lineTo(x, y + h - c); ctx.lineTo(x, y + c);
+  ctx.closePath();
+}
+const hash2 = (x, y, s = 0) => {
+  let h = (x * 374761393 + y * 668265263 + s * 982451653) | 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+};
+const idSeed = s => [...String(s)].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) | 0, 7);
+// pale and dark flecks, the grain of the stone (the same every time for the same seed); per: units of area a fleck
+function stoneGrain(x, y, w, h, seed, per = 55) {
+  const n = Math.min(700, Math.round(w * h / per));
+  for (let i = 0; i < n; i++) {
+    const u = hash2(i, seed, 1), v = hash2(i, seed, 2), lit = hash2(i, seed, 3) < 0.45;
+    ctx.fillStyle = lit ? 'rgba(255,240,215,0.06)' : 'rgba(0,0,0,0.18)';
+    ctx.fillRect(Math.floor(x + u * (w - 1)), Math.floor(y + v * (h - 1)), 1, 1);
+  }
+}
+function rivet(x, y) {
+  ctx.fillStyle = '#121016'; ctx.fillRect(x - 1.6, y - 1.6, 3.2, 3.2);
+  ctx.fillStyle = '#8e868e'; ctx.fillRect(x - 1, y - 1, 2, 2);
+  ctx.fillStyle = '#e4dcd2'; ctx.fillRect(x - 1, y - 1, 1, 1);
+}
+// a small gold diamond with a stud each way along the edges: the corner of a panel or a rare card (sx, sy: which way is inward)
+function cornerMark(x, y, sx, sy, col = '#b8893a') {
+  ctx.fillStyle = col;
+  ctx.beginPath(); ctx.moveTo(x, y - 2.6); ctx.lineTo(x + 2.6, y); ctx.lineTo(x, y + 2.6); ctx.lineTo(x - 2.6, y); ctx.closePath(); ctx.fill();
+  ctx.fillRect(x + sx * 5 - 0.8, y - 0.8, 1.6, 1.6);
+  ctx.fillRect(x - 0.8, y + sy * 5 - 0.8, 1.6, 1.6);
+}
+// a pointed (gothic) arch, its point at y, straight sides below
+function gothicArch(x, y, w, h) {
+  const a = w / 2, rr = 1.3 * a, ah = a * Math.sqrt(1.6), th = Math.atan2(ah, rr - a), cx = x + a;
+  ctx.beginPath();
+  ctx.moveTo(x, y + h);
+  ctx.lineTo(x, y + ah);
+  ctx.arc(cx + (rr - a), y + ah, rr, Math.PI, Math.PI + th);
+  ctx.arc(cx - (rr - a), y + ah, rr, -th, 0);
+  ctx.lineTo(x + w, y + h);
+  ctx.closePath();
+}
+// text cut into stone: dark in the cut, a pale lip of light under it
+function carvedText(text, x, y, size, maxW, col = '#1a1615') {
+  titleText(text, x, y + 1, size, 'rgba(255,236,210,0.24)', 'center', maxW);
+  titleText(text, x, y, size, col, 'center', maxW);
+}
+
 // ---- how the kinds of items look ----
 const TONES = {   // top, bottom, edge
   plain: ['#3b3343', '#221d28', '#8a7048'],
@@ -4567,33 +4883,57 @@ const TONES = {   // top, bottom, edge
   gold:  ['#4e3d18', '#2a200c', '#d4a446'],
   quiet: ['#2b2731', '#1b1920', '#5a5262']
 };
-// a big button: a label in the title font, maybe a line of small print under it
+// a big button: a carved stone face in an iron frame (bronze for the gold ones), riveted at the sides; a label in the
+// title font, maybe a line of small print under it. Pressed, the face sinks: its bevel turns over and the label drops
 function paintButton(b) {
   // fade: 0..1, a button fading in (it looks lit, faintly, and takes no tap until it is whole)
   if (b.fade !== undefined && b.fade < 1) { ctx.save(); ctx.globalAlpha *= 0.2 + 0.5 * b.fade; paintButton({...b, fade: undefined, enabled: true}); ctx.restore(); return; }
-  const off = b.enabled === false, [top, bottom, edge] = TONES[b.tone || 'plain'];
-  const g = ctx.createLinearGradient(0, b.y, 0, b.y + b.h);
-  g.addColorStop(0, off ? '#201d24' : isLit(b) ? shade(top, 1.7) : top);
-  g.addColorStop(1, off ? '#16141a' : bottom);
-  ctx.fillStyle = g;
-  roundBox(b.x, b.y, b.w, b.h, 7);
-  ctx.fill();
-  ctx.strokeStyle = off ? '#34303a' : edge;
-  ctx.lineWidth = 1.2;
-  ctx.stroke();
-  const size = b.size || 21, cx = b.x + b.w / 2;
-  titleText(b.label, cx, b.sub ? b.y + b.h / 2 + 1 : b.y + b.h / 2 + size * 0.32, size, off ? '#6a6470' : '#f4ead4', 'center', b.w - 10);
+  const off = b.enabled === false, lit = isLit(b), tone = b.tone || 'plain', [top, bottom, edge] = TONES[tone];
+  const {x, y, w, h} = b, gilt = tone === 'gold' && !off;
+  chamfer(x - 1, y - 1, w + 2, h + 2, 7); ctx.fillStyle = '#060508'; ctx.fill();          // the dark outline
+  const ig = ctx.createLinearGradient(0, y, 0, y + h);                                        // the frame
+  ig.addColorStop(0, off ? '#38343b' : gilt ? '#c89a4a' : '#7a737e');
+  ig.addColorStop(0.5, off ? '#29262c' : gilt ? '#7a5620' : '#48434c');
+  ig.addColorStop(1, off ? '#1b191e' : gilt ? '#4a3210' : '#29262d');
+  chamfer(x, y, w, h, 6); ctx.fillStyle = ig; ctx.fill();
+  const fx = x + 3, fy = y + 3, fw = w - 6, fh = h - 6;                                     // the carved face
+  const g = ctx.createLinearGradient(0, fy, 0, fy + fh);
+  g.addColorStop(0, off ? '#1f1c23' : lit ? shade(top, 1.7) : top);
+  g.addColorStop(1, off ? '#151318' : lit ? shade(bottom, 1.4) : bottom);
+  chamfer(fx, fy, fw, fh, 4); ctx.fillStyle = g; ctx.fill();
+  ctx.save();
+  ctx.clip();
+  stoneGrain(fx, fy, fw, fh, idSeed(b.id || b.label));
+  ctx.fillStyle = lit ? 'rgba(0,0,0,0.38)' : 'rgba(255,236,200,0.13)'; ctx.fillRect(fx, fy, fw, 1.2);
+  ctx.fillStyle = lit ? 'rgba(255,236,200,0.1)' : 'rgba(0,0,0,0.42)'; ctx.fillRect(fx, fy + fh - 1.4, fw, 1.4);
+  ctx.restore();
+  ctx.save();
+  ctx.globalAlpha *= off ? 0.6 : 0.7;
+  chamfer(fx + 0.5, fy + 0.5, fw - 1, fh - 1, 3.6); ctx.strokeStyle = off ? '#34303a' : edge; ctx.lineWidth = 1; ctx.stroke();
+  ctx.restore();
+  if (!off) { rivet(x + 1.6, y + h / 2); rivet(x + w - 1.6, y + h / 2); }
+  const size = b.size || 21, cx = x + w / 2, dy = lit ? 1 : 0;
+  const ly = (b.sub ? y + h / 2 + 1 : y + h / 2 + size * 0.32) + dy;
+  titleText(b.label, cx, ly + 1.2, size, 'rgba(0,0,0,0.65)', 'center', w - 16);             // cut into the stone
+  titleText(b.label, cx, ly, size, off ? '#6a6470' : '#f4ead4', 'center', w - 16);
   if (b.sub) {
     ctx.font = textFont(11);
-    centerText(fitText(b.sub, b.w - 8), cx, b.y + b.h / 2 + 14, textFont(11), off ? '#5a5460' : '#c9b994');
+    centerText(fitText(b.sub, w - 14), cx, y + h / 2 + 14 + dy, textFont(11), off ? '#5a5460' : '#c9b994');
   }
 }
 // a row in a menu list: a line of text, small print under it, and a price or a tag on the right
 function paintRow(b) {
   const off = b.enabled === false;                                         // armed: waiting for its second tap
   ctx.fillStyle = off ? '#18161c' : b.armed ? '#3a301e' : isLit(b) ? '#3a3242' : '#241f2a';
-  roundBox(b.x, b.y, b.w, b.h, 6);
+  chamfer(b.x, b.y, b.w, b.h, 5);
   ctx.fill();
+  ctx.save();
+  ctx.clip();
+  stoneGrain(b.x, b.y, b.w, b.h, idSeed(b.id || b.text), 90);
+  ctx.fillStyle = 'rgba(255,236,200,0.07)'; ctx.fillRect(b.x, b.y, b.w, 1);
+  ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(b.x, b.y + b.h - 1.2, b.w, 1.2);
+  ctx.restore();
+  chamfer(b.x, b.y, b.w, b.h, 5);
   ctx.strokeStyle = off ? '#2c2832' : b.armed ? '#fc3' : b.edge || '#5a4a34';
   ctx.lineWidth = b.armed ? 1.8 : 1;
   ctx.stroke();
@@ -4616,22 +4956,27 @@ function paintRow(b) {
   }
   if (b.tag) titleText(b.tag, b.x + b.w - 25, b.y + b.h / 2 + 6, 18, off ? '#5e5864' : '#fc3');
 }
-// a menu panel, below the top bar
+// a menu panel, below the top bar: dark stone in an iron frame, a gilt line inside it and gold marks in the corners
 function paintPanel(r, title) {
   const g = ctx.createLinearGradient(0, r.y, 0, r.y + r.h);
   g.addColorStop(0, '#221d27');
   g.addColorStop(1, '#141117');
   ctx.fillStyle = g;
-  roundBox(r.x, r.y, r.w, r.h, 10);
+  chamfer(r.x, r.y, r.w, r.h, 12);
   ctx.fill();
-  ctx.strokeStyle = '#6a5636';
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-  ctx.strokeStyle = 'rgba(255,214,140,0.07)';
+  ctx.save();
+  ctx.clip();
+  stoneGrain(r.x, r.y, r.w, r.h, 4242, 160);
+  ctx.restore();
+  chamfer(r.x, r.y, r.w, r.h, 12);
+  ctx.strokeStyle = '#060508'; ctx.lineWidth = 3; ctx.stroke();
+  ctx.strokeStyle = '#6a5636'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.strokeStyle = 'rgba(212,164,70,0.22)';
   ctx.lineWidth = 1;
-  roundBox(r.x + 4, r.y + 4, r.w - 8, r.h - 8, 7);
+  chamfer(r.x + 5, r.y + 5, r.w - 10, r.h - 10, 8);
   ctx.stroke();
-  if (title) titleText(title, r.x + r.w / 2, r.y + 32, 25, '#fc3', 'center', r.w - 90);
+  for (const [cx, sx] of [[r.x + 11, 1], [r.x + r.w - 11, -1]]) for (const [cy, sy] of [[r.y + 11, 1], [r.y + r.h - 11, -1]]) cornerMark(cx, cy, sx, sy);
+  if (title) titleText(title, r.x + r.w / 2, r.y + 32, 25, '#fc3', 'center', r.w - 104);
 }
 function paintClose(b) {
   const cx = b.x + b.w / 2, cy = b.y + b.h / 2;
@@ -4663,7 +5008,7 @@ function shownLogEntry() {
 }
 function paintLogLine(b) {
   ctx.fillStyle = isLit(b) ? '#262130' : '#17141b';
-  roundBox(b.x, b.y, b.w, b.h, 6);
+  chamfer(b.x, b.y, b.w, b.h, 5);
   ctx.fill();
   ctx.strokeStyle = '#2e2934';
   ctx.lineWidth = 1;
@@ -4753,7 +5098,7 @@ function paintLootCard() {
   if (!pending) return;
   const x = 8, w = 272, h = 100, y = view.controls - h - 6, cur = worn[pending.slot], v = lootVerdict(pending, cur), V = VERDICTS[v];
   ctx.fillStyle = 'rgba(16,13,20,0.95)';
-  roundBox(x, y, w, h, 8);
+  chamfer(x, y, w, h, 7);
   ctx.fill();
   ctx.strokeStyle = V.col;
   ctx.lineWidth = 1.4;
@@ -5042,12 +5387,12 @@ function paintSlot(b) {
   ctx.save();
   if (glow) { ctx.shadowColor = glow; ctx.shadowBlur = 9; }
   ctx.fillStyle = picked || isLit(b) ? '#372f3e' : '#211c27';
-  roundBox(b.x, b.y, b.w, b.h, 6);
+  chamfer(b.x, b.y, b.w, b.h, 5);
   ctx.fill();
   ctx.restore();
   ctx.strokeStyle = it ? TIER_EDGE[it.tier] : '#3a3440';
   ctx.lineWidth = picked ? 2.2 : 1.2;
-  roundBox(b.x, b.y, b.w, b.h, 6);
+  chamfer(b.x, b.y, b.w, b.h, 5);
   ctx.stroke();
   drawSlotIcon(b.slot, b.x + 16, b.y + b.h / 2, 11, it ? it.tier : 1, it ? null : '#4a4452');
   ctx.textAlign = 'left';
@@ -5093,7 +5438,7 @@ function layout() {
   const util = {y: bottom - 46, h: 40}, act = {y: bottom - 102, h: 50};
   return {
     bottom, util, act,
-    logY: Math.min(view.controls + 4, act.y - 30),
+    logY: Math.max(view.controls + 4, act.y - 30),
     panel: {x: 6, y: view.top + TOP_H + 6, w: CANVAS_W - 12, h: bottom - (view.top + TOP_H) - 12}
   };
 }
@@ -5181,6 +5526,7 @@ function rowStack(add, x, top, bottom, w, rows, maxH = 46) {
 
 // ---- exploring and fighting: the log line, the action buttons, Hero and Bag ----
 function playControls(L, add) {
+  add({draw: () => paintLedge(view.controls, L.logY - 4 - view.controls)});
   add({id: 'log', x: 6, y: L.logY, w: 276, h: 26, act: openLog, draw: paintLogLine});
   if (phase === 'finale') return;                                          // nothing to press while the Ogre King falls
   if (phase === 'choice') buttonRow(add, 6, L.act.y, 276, L.act.h, [
@@ -5208,39 +5554,254 @@ function playControls(L, add) {
     {id: 'bag', label: `Bag ${scrolls.length}/${bagSlots}`, tone: 'quiet', size: 19, act: () => { overlay = {kind: 'hero', tab: 'bag', pick: null}; }}]);
 }
 
-// ---- level-up: three perk cards and Redraw ----
-function paintCard(b) {
-  const P = PERKS[b.perk], n = perkN(b.perk) + 1, edge = RARITY_EDGE[P.rarity];
-  const g = ctx.createLinearGradient(0, b.y, 0, b.y + b.h);
-  g.addColorStop(0, isLit(b) ? '#40384a' : '#2b2532');
-  g.addColorStop(1, '#19151d');
-  ctx.fillStyle = g;
-  roundBox(b.x, b.y, b.w, b.h, 8);
-  ctx.fill();
-  ctx.strokeStyle = edge;
-  ctx.lineWidth = 1.4;
-  ctx.stroke();
-  ctx.fillStyle = edge;
-  ctx.fillRect(b.x + 1.5, b.y + 6, 4, b.h - 12);                            // the rarity edge
-  drawPerkIcon(b.perk, b.x + 25, b.y + 22, 12);
-  titleText(P.name, b.x + 44, b.y + 29, 21, '#f4ead4', 'left', b.w - 150);
-  ctx.font = textFont(13);
-  ctx.fillStyle = edge;
-  ctx.textAlign = 'right';
-  ctx.fillText(fitText(P.card(n), 120), b.x + b.w - 10, b.y + 27);
+// ---- pixel pictures for the menus, each drawn once into its own small canvas (1 pixel = 1 unit) and kept ----
+const spriteCache = new Map();
+function pixelSprite(key, W, H, paint) {
+  let cv = spriteCache.get(key);
+  if (!cv) {
+    cv = document.createElement('canvas');
+    cv.width = W; cv.height = H;
+    const g = cv.getContext('2d'), img = g.createImageData(W, H);
+    paint(img.data, W, H);
+    g.putImageData(img, 0, 0);
+    if (spriteCache.size > 24) spriteCache.clear();
+    spriteCache.set(key, cv);
+  }
+  return cv;
+}
+function drawSprite(cv, x, y) {
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(cv, x, y, cv.width, cv.height);
+  ctx.restore();
+}
+const putPx = (d, W, x, y, c, k = 1) => { const o = (y * W + x) * 4; d[o] = Math.min(255, c[0] * k); d[o + 1] = Math.min(255, c[1] * k); d[o + 2] = Math.min(255, c[2] * k); d[o + 3] = 255; };
+
+// ---- the death screen: a headstone with your killer carved on it ----
+// A pointed gothic slab on a plinth: lit from the upper left, a carved border, a cross cut in its head, a crack, moss
+// creeping up from the ground. It stands on a mound of earth between two candles
+function headstoneSprite(W, H) {
+  return pixelSprite(`stone:${W}x${H}`, W, H, (d, W, H) => {
+    const ph = Math.round(H * 0.1), bx0 = 4, bw = W - 8, a = bw / 2, rr = 1.3 * a, ah = a * Math.sqrt(1.6), mid = W / 2;
+    const inside = (x, y) => {
+      if (x < 0 || y < 0 || x >= W || y >= H) return false;
+      if (y >= H - ph) return true;
+      const dx = Math.abs(x + 0.5 - mid);
+      if (y + 0.5 >= ah) return dx <= a;
+      const v = ah - (y + 0.5);
+      return dx <= Math.sqrt(rr * rr - v * v) - (rr - a);
+    };
+    const m = new Uint8Array(W * H), dist = new Uint8Array(W * H);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (inside(x, y)) m[y * W + x] = 1;
+    // how far each pixel is from the edge (two passes)
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const i = y * W + x;
+      if (!m[i]) continue;
+      const l = x ? dist[i - 1] : 0, u = y ? dist[i - W] : 0;
+      dist[i] = Math.min(x && m[i - 1] ? l : 0, y && m[i - W] ? u : 0, 30) + 1;
+    }
+    for (let y = H - 1; y >= 0; y--) for (let x = W - 1; x >= 0; x--) {
+      const i = y * W + x;
+      if (!m[i]) continue;
+      const r = x < W - 1 && m[i + 1] ? dist[i + 1] : 0, dn = y < H - 1 && m[i + W] ? dist[i + W] : 0;
+      dist[i] = Math.min(dist[i], r + 1, dn + 1);
+    }
+    // the crack: a jagged line down from the right shoulder
+    const crack = new Set();
+    let cx = Math.round(W * 0.7), cy = Math.round(ah * 0.7);
+    for (let s = 0; s < H * 0.32; s++) { crack.add(cy * W + cx); cy++; const r = hash2(s, 77, 5); cx += r < 0.3 ? -1 : r > 0.72 ? 1 : 0; }
+    // the cross, cut into the head of the stone
+    const crX = Math.round(mid), crT = Math.round(ah * 0.34), crB = Math.round(ah * 0.34 + H * 0.16), crY = Math.round(crT + H * 0.045), arm = Math.round(W * 0.09);
+    const cross = (x, y) => (Math.abs(x - crX) <= 1 && y >= crT && y <= crB) || (Math.abs(y - crY) <= 1 && Math.abs(x - crX) <= arm) ||
+      (y === crT - 1 && Math.abs(x - crX) <= 2) || (y === crB + 1 && Math.abs(x - crX) <= 2) || (Math.abs(x - crX) === arm + 1 && Math.abs(y - crY) <= 2);
+    const stone = [118, 113, 106], moss = [64, 96, 46];
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const i = y * W + x;
+      if (!m[i]) continue;
+      const D = dist[i], plinth = y >= H - ph;
+      let k = 1.12 - 0.34 * (x / W) - 0.05 * (y / H) + (hash2(x, y, 9) - 0.5) * 0.12;
+      let c = stone;
+      const mossy = (y / H - 0.66) * 1.9 * (x < mid ? 1 : 0.4) + (hash2(x >> 1, y >> 1, 4) - 0.5) * 0.8;
+      if (mossy > 0.45 || (y < ah * 0.55 && x < mid - a * 0.35 && D <= 3 && hash2(x, y, 6) < 0.5)) c = moss;
+      if (D === 1) k *= 0.4;                                                     // the outline
+      else if (D <= 3) k *= !inside(x - 3, y) || !inside(x, y - 3) ? 1.3 : 0.7;   // the rounded edge, lit or in shadow
+      if (!plinth && y < H - ph - 3) {
+        if (D === 6) k *= 0.6;                                                   // the carved border: its cut,
+        else if (D === 7) k *= 1.18;                                             // and the light in it
+      }
+      if (y === H - ph) k *= 0.5;                                                // where the slab meets the plinth
+      else if (y === H - ph + 1) k *= 1.25;
+      if (cross(x, y)) k *= 0.5;
+      else if (cross(x - 1, y - 1)) k *= 1.22;
+      if (crack.has(i)) k *= 0.42;
+      else if (crack.has(i - 1)) k *= 1.2;
+      putPx(d, W, x, y, c, k);
+    }
+  });
+}
+function paintHeadstone(cx, top, H, S) {
+  const W = Math.round(H * 0.72) & ~1, x0 = Math.round(cx - W / 2), base = top + H;
+  // the mound, and grass along it
+  ctx.fillStyle = '#1a120d';
+  ctx.beginPath(); ctx.ellipse(cx, base + 1, W * 0.78, 9, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#2a1d14';
+  ctx.beginPath(); ctx.ellipse(cx - 4, base - 1, W * 0.6, 5, 0, Math.PI, Math.PI * 2); ctx.fill();
+  drawSprite(headstoneSprite(W, H), x0, top);
+  for (let i = 0; i < 26; i++) {
+    const gx = cx + (hash2(i, 5, 1) - 0.5) * W * 1.45, gh = 2 + hash2(i, 5, 2) * 4;
+    ctx.fillStyle = hash2(i, 5, 3) < 0.5 ? '#3c5a2a' : '#2a4220';
+    ctx.fillRect(Math.round(gx), Math.round(base + 1 - gh), 1, Math.round(gh));
+  }
+  // a candle at each side of the plinth, and their light on the stone
+  for (const sx of [-1, 1]) {
+    const kx = cx + sx * (W / 2 + 9), ky = base - 1;
+    const gl = ctx.createRadialGradient(kx, ky - 10, 1, kx, ky - 10, 46);
+    gl.addColorStop(0, 'rgba(255,190,100,0.28)'); gl.addColorStop(1, 'rgba(255,150,60,0)');
+    ctx.fillStyle = gl; ctx.fillRect(kx - 46, ky - 56, 92, 92);
+    ctx.fillStyle = '#2a2024'; ctx.fillRect(kx - 3, ky - 1, 6, 2);
+    ctx.fillStyle = '#d8ccb0'; ctx.fillRect(kx - 2, ky - 10, 4, 9);
+    ctx.fillStyle = '#f2e8d0'; ctx.fillRect(kx - 2, ky - 10, 1, 9);
+    ctx.fillStyle = '#d8ccb0'; ctx.fillRect(kx + 1, ky - 9, 1, 3);                         // a drip of wax
+    ctx.fillStyle = '#ff9a3a'; ctx.fillRect(kx - 1, ky - 15, 2, 4);
+    ctx.fillStyle = '#ffe6a0'; ctx.fillRect(kx - 0.5, ky - 13.5, 1, 2);
+  }
+  // the words, cut into the stone
+  const inner = W - 26, ah = (W / 2 - 4) * Math.sqrt(1.6);
+  carvedText('Here lies a hero', cx, top + ah + H * 0.06, 13, inner);
+  carvedText('slain by', cx, top + ah + H * 0.17, 13, inner);
+  carvedText(S.slayer, cx, top + ah + H * 0.32, Math.round(Math.min(24, H * 0.15)), inner + 8, '#140f0f');
+  carvedText(`Floor ${S.floor} - Level ${S.level}`, cx, top + H * 0.85, 13, inner);
+}
+
+// ---- the campfire: the floor's own room, drawn like a fight, with you standing by a fire on its floor ----
+function paintCampScene(x, y, w, h) {
+  const t = performance.now() / 1000, s = Math.max(w / 288, h / 352), half = w / (2 * s);
+  const fx = Math.max(half, Math.min(288 - half, 118));                    // keep you and the fire both in the picture
+  ctx.save();
+  chamfer(x, y, w, h, 6);
+  ctx.fillStyle = '#0a080b'; ctx.fill();
+  ctx.clip();
+  ctx.translate(x + w / 2 - fx * s, y + h - 352 * s);
+  ctx.scale(s, s);
+  ART.drawCamp(ctx, floor, heroLook(), t);
+  ctx.restore();
+  chamfer(x, y, w, h, 6); ctx.strokeStyle = '#3a3238'; ctx.lineWidth = 1.2; ctx.stroke();
+}
+
+// ---- the merchant's panel: his wagon on the left of the title, a pair of scales on the right ----
+function paintShopHeader(P) {
+  ART.drawWagon(ctx, P.x + 27, P.y + 44, 1.05);
+  const sx = P.x + P.w - 27, sy = P.y + 14;                                // the scales, in gold
+  ctx.fillStyle = '#6a4a1a'; ctx.fillRect(sx - 1, sy, 2, 26); ctx.fillRect(sx - 6, sy + 26, 12, 2);
+  ctx.fillStyle = '#d4a446'; ctx.fillRect(sx - 0.5, sy, 1, 26); ctx.fillRect(sx - 12, sy + 3, 24, 1.6);
+  ctx.fillStyle = '#f2d080'; ctx.fillRect(sx - 1.5, sy - 2, 3, 3);
+  for (const k of [-1, 1]) {
+    const px = sx + k * 11;
+    ctx.strokeStyle = 'rgba(212,164,70,0.8)'; ctx.lineWidth = 0.6;
+    ctx.beginPath(); ctx.moveTo(px, sy + 4); ctx.lineTo(px - 4, sy + 14); ctx.moveTo(px, sy + 4); ctx.lineTo(px + 4, sy + 14); ctx.stroke();
+    ctx.fillStyle = '#d4a446'; ctx.beginPath(); ctx.ellipse(px, sy + 14, 5, 1.8, 0, 0, Math.PI); ctx.fill();
+  }
+  drawCoin(sx - 11, sy + 11.4, 2.2);
+}
+// the symbols on the merchant's rows (gear uses its slot symbol)
+function shopGlyph(g, type, tier) {
+  if (type === 'potion') {
+    g.fillStyle = '#8a5a32'; g.fillRect(-2.8, -10, 5.6, 3);
+    g.fillStyle = '#b8ccd4'; g.fillRect(-2.2, -7, 4.4, 4.4);
+    g.fillStyle = '#c8202a'; g.beginPath(); g.arc(0, 3, 6.8, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#ff9a90'; g.beginPath(); g.arc(-2.6, 0.8, 1.7, 0, Math.PI * 2); g.fill();
+  } else if (type === 'bag') {
+    g.save();
+    if (tier > 1) g.rotate(-0.55);                                         // the Bandolier crosses the chest
+    g.fillStyle = '#7a4e28'; g.fillRect(-11, -1, 22, 6);
+    g.fillStyle = '#5a3418'; g.fillRect(-11, 3.4, 22, 1.6);
+    const vials = tier > 1 ? [-6.5, 0, 6.5] : [-5, 5];
+    for (const vx of vials) {
+      g.fillStyle = '#c8202a'; g.fillRect(vx - 1.8, -7, 3.6, 7);
+      g.fillStyle = '#8a5a32'; g.fillRect(vx - 1.3, -9.4, 2.6, 2.4);
+    }
+    g.fillStyle = '#d4a446'; g.fillRect(tier > 1 ? -1.6 : 8, -2, 3.2, 8);
+    g.restore();
+  } else if (type === 'satchel') {
+    g.fillStyle = '#e8dcc0'; g.fillRect(2, -10, 3.6, 9);
+    g.fillStyle = '#c0b08a'; g.fillRect(2, -10, 3.6, 1.4);
+    g.strokeStyle = '#5a3a1c'; g.lineWidth = 1.8; g.beginPath(); g.arc(0, -2, 7.5, Math.PI, Math.PI * 2); g.stroke();
+    g.fillStyle = '#8a5a32'; g.fillRect(-8.5, -3, 17, 12);
+    g.fillStyle = '#6a4222'; g.beginPath(); g.moveTo(-8.5, -3); g.lineTo(8.5, -3); g.lineTo(6.5, 3.5); g.lineTo(-6.5, 3.5); g.closePath(); g.fill();
+    g.fillStyle = '#d4a446'; g.fillRect(-1.4, 1.6, 2.8, 2.8);
+  }
+}
+const shopIcon = it => it.type === 'gear' ? (ix, iy) => drawSlotIcon(it.slot, ix, iy, 11, it.tier)
+  : (ix, iy) => pixelIcon(`shop:${it.type}:${it.tier || 0}`, 11, g => shopGlyph(g, it.type, it.tier || 0), ix, iy);
+
+// ---- under the play area, on a tall screen: a strip of the floor you are on, drawn like its rooms (see ART.drawStrip) ----
+function paintLedge(y, h) {
+  if (h < 12) return;
+  ctx.save();
+  ctx.translate(0, Math.round(y));
+  ctx.beginPath(); ctx.rect(0, 0, CANVAS_W, h); ctx.clip();
+  ART.drawStrip(ctx, ART.ROOM_OF_FLOOR[Math.min(floor, 4)], h, performance.now() / 1000);
+  ctx.restore();
+}
+
+// ---- level-up: three perk cards, dealt like tarot cards, and Redraw ----
+// Each card: the perk's rank as a numeral at the top, its symbol in a pointed arch lit from behind, its name, what it
+// gives, and what it does. Rarity is in the frame: iron (common), silver with studs (uncommon), gilt with a double line
+// and corner marks (rare)
+const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+function centeredLines(text, cx, y, maxW, lineH, maxLines) {
+  let lines = wrapText(text, maxW);
+  if (lines.length > maxLines) { lines = lines.slice(0, Math.max(0, maxLines)); if (lines.length) lines[lines.length - 1] = fitText(lines[lines.length - 1] + '…', maxW); }
+  ctx.textAlign = 'center';
+  lines.forEach((l, i) => ctx.fillText(l, cx, y + i * lineH));
   ctx.textAlign = 'left';
-  ctx.font = textFont(13, 400);
+  return lines.length;
+}
+function paintCard(b) {
+  const P = PERKS[b.perk], n = perkN(b.perk) + 1, rar = P.rarity, edge = RARITY_EDGE[rar], lit = isLit(b);
+  const {x, y, w, h} = b, cx = x + w / 2;
+  chamfer(x - 1, y - 1, w + 2, h + 2, 6); ctx.fillStyle = '#060508'; ctx.fill();
+  const g = ctx.createLinearGradient(0, y, 0, y + h);
+  g.addColorStop(0, lit ? '#3e3548' : '#2a2331');
+  g.addColorStop(1, '#130f16');
+  chamfer(x, y, w, h, 5); ctx.fillStyle = g; ctx.fill();
+  ctx.save(); ctx.clip(); stoneGrain(x, y, w, h, idSeed(b.perk), 70); ctx.restore();
+  ctx.strokeStyle = edge; ctx.lineWidth = 1.6; chamfer(x + 1.5, y + 1.5, w - 3, h - 3, 4); ctx.stroke();
+  ctx.save(); ctx.globalAlpha = 0.45; ctx.lineWidth = 0.8; chamfer(x + 4.5, y + 4.5, w - 9, h - 9, 2.6); ctx.stroke(); ctx.restore();
+  if (rar === 'rare') { ctx.lineWidth = 0.8; chamfer(x + 6.5, y + 6.5, w - 13, h - 13, 2); ctx.stroke(); }
+  if (rar !== 'common') for (const [px, sx] of [[x + 9, 1], [x + w - 9, -1]]) for (const [py, sy] of [[y + 9, 1], [y + h - 9, -1]]) {
+    if (rar === 'rare') cornerMark(px, py, sx, sy, edge);
+    else { ctx.fillStyle = edge; ctx.fillRect(px - 1.2, py - 1.2, 2.4, 2.4); }
+  }
+  titleText(ROMAN[n] || String(n), cx, y + 22, 16, edge, 'center', w - 24);           // its rank
+  const aw = w - 22, ax = cx - aw / 2, ay = y + 29, ah = Math.max(30, Math.min(h * 0.4, aw * 1.55));
+  const rg = ctx.createRadialGradient(cx, ay + ah * 0.6, 2, cx, ay + ah * 0.6, aw * 0.8);
+  rg.addColorStop(0, shade(edge, 0.55)); rg.addColorStop(1, '#0c0a0e');
+  gothicArch(ax, ay, aw, ah); ctx.fillStyle = rg; ctx.fill();
+  ctx.strokeStyle = edge; ctx.lineWidth = 1.2; ctx.stroke();
+  ctx.strokeStyle = 'rgba(0,0,0,0.6)'; ctx.lineWidth = 1; gothicArch(ax + 2, ay + 2.5, aw - 4, ah - 2.5); ctx.stroke();
+  drawPerkIcon(b.perk, cx, ay + ah * 0.6, Math.min(19, aw * 0.33));
+  const ny = ay + ah + 20;
+  titleText(P.name, cx, ny, 18, '#f4ead4', 'center', w - 10);
+  ctx.fillStyle = edge;
+  ctx.save(); ctx.globalAlpha = 0.6; ctx.fillRect(cx - w * 0.3, ny + 6, w * 0.6, 1); ctx.restore();
+  ctx.beginPath(); ctx.moveTo(cx, ny + 3.6); ctx.lineTo(cx + 2.6, ny + 6.5); ctx.lineTo(cx, ny + 9.4); ctx.lineTo(cx - 2.6, ny + 6.5); ctx.closePath(); ctx.fill();
+  ctx.font = textFont(12);
+  ctx.fillStyle = edge;
+  const eff = centeredLines(P.card(n), cx, ny + 23, w - 14, 14, 2);
+  ctx.font = textFont(12, 400);
   ctx.fillStyle = '#cfc6b4';
-  paragraph(P.info(n), b.x + 14, b.y + 50, b.w - 26, 15, Math.max(1, Math.floor((b.h - 40) / 15)));
+  const iy = ny + 23 + eff * 14 + 5;
+  centeredLines(P.info(n), cx, iy, w - 12, 14, Math.floor((y + h - 10 - iy) / 14) + 1);
 }
 function levelScreen(L, add, menu) {
   const P = L.panel;
   menu('Level up!');
   add({draw: () => centerText(`Pick a perk for level ${level + 1}` + (levelUps > 1 ? ` (${levelUps} level-ups waiting)` : ''),
     P.x + P.w / 2, P.y + 52, textFont(13, 400), '#b8ae9a')});
-  const top = P.y + 64, redrawH = 46, gap = 8;
-  const cardH = Math.min(104, (P.y + P.h - 14 - redrawH - gap - top - gap * (hand.length - 1)) / hand.length);
-  hand.forEach((id, i) => add({id: 'up:' + id, perk: id, x: P.x + 10, y: top + i * (cardH + gap), w: P.w - 20, h: cardH,
+  const top = P.y + 64, redrawH = 46, gap = 6, bottom = P.y + P.h - 10 - redrawH - 10, nC = Math.max(1, hand.length);
+  const cw = (P.w - 20 - gap * (nC - 1)) / nC, ch = Math.min(290, bottom - top), cy = top + Math.max(0, (bottom - top - ch) / 2);
+  hand.forEach((id, i) => add({id: 'up:' + id, perk: id, x: P.x + 10 + i * (cw + gap), y: cy, w: cw, h: ch,
     act: () => { if (!freshDeal()) takePerk(id); }, draw: paintCard}));
   add({id: 'up:redraw', x: P.x + 10, y: P.y + P.h - 10 - redrawH, w: P.w - 20, h: redrawH, label: 'Redraw',
     sub: `${redrawCost()} coins for three new cards`, enabled: coins >= redrawCost(), tone: 'gold',
@@ -5258,28 +5819,30 @@ function menuFooter(L, add, defs) {
 function shopScreen(L, add, menu) {
   const P = L.panel, selling = shopMode === 'sell';
   menu(selling ? `${shopTitle}: Sell` : shopTitle);
+  add({draw: () => paintShopHeader(P)});
   const end = menuFooter(L, add, [
     {id: 'shop:mode', label: selling ? 'Buy' : 'Sell', tone: 'gold', act: () => { shopMode = selling ? 'buy' : 'sell'; saleArm = null; }},
-    {id: 'shop:leave', label: 'Leave', act: leaveShop}]);
+    {id: 'shop:leave', label: saleArmed('shop:leave') ? 'Leave?' : 'Leave', sub: saleArmed('shop:leave') ? 'for good' : undefined, act: () => confirmSale('shop:leave', 'Tap Leave again: the merchant will not come back.', leaveShop)}]);
   if (selling) {
     const top = menuPrompt(add, P, `The merchant pays ${pct(SELL_SHARE)} of what things cost. Gear you sell leaves its slot empty.`);
-    const rows = [{id: 'sell:potion', text: `Health Potion (${potions}/${maxPotions})`, armed: saleArmed('sell:potion'), note: !potions ? 'none to sell' : saleArmed('sell:potion') ? 'Tap again to sell it' : 'sell one',
+    const rows = [{id: 'sell:potion', icon: shopIcon({type: 'potion'}), text: `Health Potion (${potions}/${maxPotions})`, armed: saleArmed('sell:potion'), note: !potions ? 'none to sell' : saleArmed('sell:potion') ? 'Tap again to sell it' : 'sell one',
       price: sellValue(POTION_PRICE), enabled: potions > 0, act: sellPotion}];
     for (const k of Object.keys(slots)) {
       const it = worn[k], id = 'sell:' + k;
-      rows.push({id, text: `${slots[k].label}: ${it ? itemName(it) : 'empty'}`, enabled: !!it, armed: saleArmed(id),
+      rows.push({id, icon: (ix, iy) => drawSlotIcon(k, ix, iy, 11, it ? it.tier : 1, it ? null : '#4a4452'),
+        text: `${slots[k].label}: ${it ? itemName(it) : 'empty'}`, enabled: !!it, armed: saleArmed(id),
         note: !it ? 'nothing worn' : saleArmed(id) ? 'Tap again to sell it' : `+${it.power}` + (it.ench ? `, ${enchText(it.ench)}` : ''),
         price: it ? sellValue(gearRetail(it)) : undefined, edge: it ? TIER_EDGE[it.tier] : null, act: () => sellGear(k)});
     }
     scrolls.forEach((s, i) => {
       const id = 'sell:scroll:' + i;
-      rows.push({id, text: `Scroll of ${enchLabel(s)}`, armed: saleArmed(id), note: saleArmed(id) ? 'Tap again to sell it' : enchText(s),
+      rows.push({id, icon: (ix, iy) => drawEnchIcon(s.id, ix, iy, 10, ENCH_GLOW[s.id]), text: `Scroll of ${enchLabel(s)}`, armed: saleArmed(id), note: saleArmed(id) ? 'Tap again to sell it' : enchText(s),
         price: sellValue(TIER_PRICE[s.t]), edge: ENCH_GLOW[s.id], act: () => sellScroll(i)});
     });
     return rowStack(add, P.x + 8, top, end, P.w - 16, rows);
   }
   rowStack(add, P.x + 8, P.y + 46, end, P.w - 16, shopStock.map((it, i) => ({
-    id: 'buy:' + i, text: it.name, armed: saleArmed('buy:' + i) && canBuy(it), note: saleArmed('buy:' + i) && canBuy(it) ? 'Tap again to buy' : shopNote(it), price: it.price, enabled: canBuy(it),
+    id: 'buy:' + i, icon: shopIcon(it), text: it.name, armed: saleArmed('buy:' + i) && canBuy(it), note: saleArmed('buy:' + i) && canBuy(it) ? 'Tap again to buy' : shopNote(it), price: it.price, enabled: canBuy(it),
     edge: it.type === 'gear' ? TIER_EDGE[it.tier] : null, act: () => buyItem(i)})));
 }
 // a line or two of small print at the top of a menu; returns where the rows can start
@@ -5292,9 +5855,12 @@ function menuPrompt(add, P, text, y = P.y + 50) {
 function campScreen(L, add, menu) {
   const P = L.panel, toNext = xpToNext(level + levelUps) - xp, heal = Math.min(campHeal(), p.max - p.hp);
   menu('Campfire');
-  const end = menuFooter(L, add, [{id: 'camp:leave', label: 'Leave', act: () => campChoice('leave')}]);
-  const top = menuPrompt(add, P, 'The fire will last for one thing before it burns out. Leave it, and it waits for you.');
-  rowStack(add, P.x + 8, top, end, P.w - 16, [
+  const end = menuFooter(L, add, [{id: 'camp:leave', label: saleArmed('camp:leave') ? 'Leave?' : 'Leave', sub: saleArmed('camp:leave') ? 'the fire goes out' : undefined,
+    act: () => confirmSale('camp:leave', 'Tap Leave again: the fire will go out behind you.', () => campChoice('leave'))}]);
+  const top = menuPrompt(add, P, 'The fire will last for one thing before it burns out. Walk away, and it goes out behind you.');
+  const rowsEnd = Math.min(end, top + 100);
+  if (end - rowsEnd - 10 > 70) add({draw: () => paintCampScene(P.x + 10, rowsEnd + 6, P.w - 20, end - rowsEnd - 10)});
+  rowStack(add, P.x + 8, top, rowsEnd, P.w - 16, [
     {id: 'camp:rest', text: 'Rest', note: heal ? `recover ${heal} HP (${pct(CAMP_HEAL_SHARE)} of your max)` : 'you are already at full health',
       act: () => campChoice('rest')},
     {id: 'camp:train', text: 'Train', note: `+${campXp()} XP` + (campXp() >= toNext ? ', enough for a level-up' : `, ${toNext} to your next level`),
@@ -5379,7 +5945,7 @@ function heroScreen(L, add, menu) {
   const dy = y0 + dollH + 4;
   add({draw: () => {                                     // what you tapped
     ctx.fillStyle = '#18151c';
-    roundBox(P.x + 8, dy, P.w - 16, 36, 6);
+    chamfer(P.x + 8, dy, P.w - 16, 36, 5);
     ctx.fill();
     ctx.font = textFont(12, 400);
     ctx.fillStyle = '#d8d0c0';
@@ -5461,14 +6027,22 @@ function logScreen(L, add, menu) {
 
 // ---- the end of the run ----
 function summaryScreen(L, add, menu) {
-  const P = L.panel, S = runSummary;
+  const P = L.panel, S = runSummary, half = Math.ceil(S.rows.length / 2), cw = (P.w - 28) / 2;
   menu('');
+  // a death gets its headstone, as big as the room left over by the stats allows
+  const stoneH = S.won ? 0 : Math.round(Math.min(176, P.h - 10 - 48 - 8 - half * 18 - 120 - 30));
+  const carved = stoneH >= 96;
   add({draw: () => {
-    titleText(S.won ? 'You escaped the dungeon!' : `Slain on floor ${floor + 1}`, P.x + P.w / 2, P.y + 34, 25, S.won ? '#fc3' : '#e8604a', 'center', P.w - 20);
-    centerText(S.cause, P.x + P.w / 2, P.y + 56, `italic 400 14px ${GAME_FONT}`, '#aaa298');
-    const half = Math.ceil(S.rows.length / 2), cw = (P.w - 28) / 2;
+    let y0 = P.y + 82;
+    if (carved) {
+      paintHeadstone(P.x + P.w / 2, P.y + 14, stoneH, S);
+      y0 = P.y + 14 + stoneH + 30;
+    } else {
+      titleText(S.won ? 'You escaped the dungeon!' : `Slain on floor ${floor + 1}`, P.x + P.w / 2, P.y + 34, 25, S.won ? '#fc3' : '#e8604a', 'center', P.w - 20);
+      centerText(S.cause, P.x + P.w / 2, P.y + 56, `italic 400 14px ${GAME_FONT}`, '#aaa298');
+    }
     S.rows.forEach(([label, value], i) => {
-      const x = P.x + 14 + (i < half ? 0 : cw + 8), y = P.y + 82 + (i % half) * 18;
+      const x = P.x + 14 + (i < half ? 0 : cw + 8), y = y0 + (i % half) * 18;
       ctx.font = textFont(12, 400); ctx.fillStyle = '#9a9080'; ctx.textAlign = 'left';
       ctx.fillText(label, x, y);
       ctx.font = textFont(13); ctx.fillStyle = '#f4ead4'; ctx.textAlign = 'right';
@@ -5477,7 +6051,7 @@ function summaryScreen(L, add, menu) {
     ctx.textAlign = 'left';
     ctx.font = textFont(12, 400);
     ctx.fillStyle = '#a8a094';
-    let y = P.y + 82 + half * 18 + 10;
+    let y = y0 + half * 18 + 10;
     const room = P.y + P.h - 10 - 48 - 8;
     for (const note of S.notes) {
       const lines = Math.max(0, Math.min(3, Math.floor((room - y) / 15)));
@@ -5803,12 +6377,12 @@ function drinkPotion() {
   draw();
 }
 
-// the campfire: 'rest', 'train' or 'leave' (it waits for you). Using it burns it down to ashes (the tile turns 'f')
+// the campfire: 'rest', 'train' or 'leave'. Any choice, leaving too, burns it down to ashes (the tile turns 'f'): there is no coming back
 function campChoice(kind) {
   if (phase !== 'camp') return;
   phase = 'explore';
-  if (kind === 'leave') { msg.textContent = 'You leave the fire burning. It will wait for you.'; refresh(); return; }
   map[p.y] = map[p.y].slice(0, p.x) + 'f' + map[p.y].slice(p.x + 1);
+  if (kind === 'leave') { msg.textContent = 'You walk on. Behind you the fire gutters out.'; refresh(); return; }
   if (kind === 'rest') {
     const healed = Math.min(campHeal(), p.max - p.hp);
     p.hp += healed;
@@ -5822,11 +6396,13 @@ function campChoice(kind) {
   refresh();
 }
 
+// leaving is for good: the merchant shuts up shop and his wagon rolls on (the tile turns to wheel ruts, 'm')
 function leaveShop() {
   if (phase !== 'shop') return;
   phase = 'explore';
   saleArm = null;
-  msg.textContent = '';
+  map[p.y] = map[p.y].slice(0, p.x) + 'm' + map[p.y].slice(p.x + 1);
+  msg.textContent = 'The merchant rolls down his canvas, and his wagon creaks away into the dark.';
 }
 
 // sell one potion to the merchant (one tap: it's only a potion)

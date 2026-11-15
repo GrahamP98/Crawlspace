@@ -330,8 +330,7 @@
   }
   // the campfire: rest on the way past if badly hurt; otherwise clear the far half and come back to it before the King
   function camping() {
-    const k = p.hp / p.max, pick = K.campBack ? (P.camp || (k < P.campRestEnd ? 'rest' : 'train'))
-      : P.camp !== 'train' && k < P.campRestNow ? 'rest' : 'leave';
+    const k = p.hp / p.max, pick = P.camp || (k < P.campRestEnd ? 'rest' : 'train');   // one visit only: leaving puts it out
     if (pick !== 'leave') ST.camp = pick;
     K.headFor = null;
     campChoice(pick);
