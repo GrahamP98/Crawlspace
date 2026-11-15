@@ -2519,36 +2519,63 @@ const SCENES = [
   },
   {
     key: 'deep', title: 'The Burning Deep', floor: 4,
-    desc: 'The floor ends at a cliff. Far below, a river of lava lights the cavern red, with jagged spires rising out of it. Chains hang from the dark and lie where they fell, shackles and all, and the rock underfoot is split by glowing cracks.',
-    ambient: [186, 124, 112], fog: '200,90,50', vignette: 0.5,
-    lights: [{x: 144, y: 172, c: '255,110,40', reach: 260, s: 0.9, bloom: 0, fire: 1},
-             {x: 190, y: 300, c: '255,110,40', reach: 90, s: 0.6, bloom: 6}, {x: 70, y: 338, c: '255,110,40', reach: 80, s: 0.5, bloom: 6}],
+    desc: 'The floor ends at a cliff. Below it a wide river of lava, crusted over in plates, lights the cavern red; a lava fall pours into it from the left wall, and jagged spires rise out of it between walls of black basalt columns. A cage hangs out over the drop, and the rock underfoot is split by glowing cracks that run to a pool of lava at your feet.',
+    ambient: [176, 118, 108], fog: '200,90,50', vignette: 0.5,
+    lights: [{x: 144, y: 148, c: '255,110,40', reach: 260, s: 0.85, bloom: 0, fire: 1},                       // the river below the cliff
+             {x: 62, y: 124, c: '255,160,70', reach: 120, s: 0.85, bloom: 12, fire: 1, motes: 6},             // the lava fall
+             {x: 150, y: 346, c: '255,110,40', reach: 175, s: 0.9, bloom: 10, fire: 1, motes: 3},             // a lava pool at your feet: it lights everyone from below
+             {x: 26, y: 290, c: '255,110,40', reach: 80, s: 0.45, bloom: 5}],
+    smoke: [[104, 146], [196, 144], [62, 128]],
     draw(g, r) {
-      const sky = g.createLinearGradient(0, 0, 0, HORIZON); sky.addColorStop(0, '#0e0606'); sky.addColorStop(0.62, '#3a120a'); sky.addColorStop(1, '#a8360e');
+      const sky = g.createLinearGradient(0, 0, 0, HORIZON); sky.addColorStop(0, '#0c0505'); sky.addColorStop(0.55, '#34100a'); sky.addColorStop(1, '#a8360e');
       g.fillStyle = sky; g.fillRect(0, 0, W, HORIZON + 4);
-      g.beginPath(); g.moveTo(-10, 148);                                    // the lava river, far below, its currents glowing
-      for (let x = -10; x <= W + 10; x += 12) g.lineTo(x, 143 + Math.sin(x * 0.08) * 3 + r() * 2);
+      stalactites(g, r, -2, [56, 32, 30], 1.3);
+      // basalt columns along both walls of the cavern, six-sided, snapped off at different heights, lit from below by the river
+      for (const [x0, x1] of [[-8, 84], [206, 296]]) for (let x = x0; x < x1; x += 11) {
+        const top = 24 + r() * 60 + Math.abs(x - 144) * -0.1, C = [74, 48, 44], k = litK(x + 5, 120, 1, 0.2);
+        path(g, [[x, 150], [x, top + 3], [x + 3, top + 3], [x + 3, 150]]); g.fillStyle = rgb(C, k * 1.2); g.fill();
+        path(g, [[x + 3, 150], [x + 3, top + 3], [x + 8, top + 3], [x + 8, 150]]); g.fillStyle = rgb(C, k * 0.85); g.fill();
+        path(g, [[x + 8, 150], [x + 8, top + 3], [x + 11, top + 3], [x + 11, 150]]); g.fillStyle = rgb(C, k * 0.55); g.fill();
+        path(g, [[x, top + 3], [x + 3, top], [x + 8, top], [x + 11, top + 3]]); g.fillStyle = rgb(C, k * 1.45); g.fill();
+        for (let y = top + 10; y < 146; y += 8 + r() * 12) { g.fillStyle = 'rgba(12,6,6,0.85)'; g.fillRect(x, y, 11, 0.8); }
+        const glow = g.createLinearGradient(0, 110, 0, 150); glow.addColorStop(0, 'rgba(255,110,40,0)'); glow.addColorStop(1, 'rgba(255,110,40,0.5)');
+        g.fillStyle = glow; g.fillRect(x, Math.max(top, 110), 11, 150 - Math.max(top, 110));   // the river's light on their feet
+      }
+      // the lava fall, pouring out of the left wall
+      path(g, [[52, 30], [70, 30], [72, 146], [50, 146]]); const lf = g.createLinearGradient(0, 30, 0, 146); lf.addColorStop(0, '#c84a14'); lf.addColorStop(0.4, '#ff8a2a'); lf.addColorStop(1, '#ffd060'); g.fillStyle = lf; g.fill();
+      path(g, [[58, 30], [63, 30], [64, 146], [57, 146]]); g.fillStyle = '#ffe8a0'; g.fill();
+      lump(g, rockPts(61, 32, 10, r), [70, 46, 42], 1501);                                                    // the lip it spills over
+      // the river, wide and slow, crusted over in plates
+      g.beginPath(); g.moveTo(-10, 132);
+      for (let x = -10; x <= W + 10; x += 12) g.lineTo(x, 128 + Math.sin(x * 0.07) * 3 + r() * 2);
       g.lineTo(W + 10, HORIZON + 2); g.lineTo(-10, HORIZON + 2); g.closePath();
-      const lv = g.createLinearGradient(0, 141, 0, HORIZON); lv.addColorStop(0, '#ffd060'); lv.addColorStop(0.45, '#ff7a20'); lv.addColorStop(1, '#b8380e'); g.fillStyle = lv; g.fill();
-      for (let k = 0; k < 18; k++) { g.fillStyle = 'rgba(255,240,170,0.85)'; g.fillRect(r() * W, 146 + r() * 11, 3 + r() * 9, 1); }
-      for (let i = 0; i < 12; i++) { const x = -6 + i * 26 + (r() - 0.5) * 18, h = 30 + r() * 108; jaggedSpire(g, x, 151 + r() * 8, h, 12 + r() * 30, r, [56, 30, 28]); }   // jagged spires rising out of it
+      const lv = g.createLinearGradient(0, 126, 0, HORIZON); lv.addColorStop(0, '#ffd060'); lv.addColorStop(0.4, '#ff7a20'); lv.addColorStop(1, '#b8380e'); g.fillStyle = lv; g.fill();
+      for (let k = 0; k < 16; k++) lump(g, rockPts(r() * W, 134 + r() * 24, 2.5 + r() * 4, r), [56, 32, 28], 1520 + k, 1, 0.15);   // crust
+      for (let k = 0; k < 22; k++) { g.fillStyle = 'rgba(255,240,170,0.85)'; g.fillRect(r() * W, 132 + r() * 26, 3 + r() * 10, 1); }
+      ell(g, 61, 146, 16, 4, 'rgba(255,240,180,0.9)');                                                       // where the fall hits it
+      for (const [x, h, w] of [[96, 70, 20], [130, 44, 14], [176, 88, 24], [204, 52, 16]]) jaggedSpire(g, x, 154 + r() * 4, h, w, r, [80, 48, 42]);   // spires rising out of it
+      cage(g, 196, 38, 16, 24, r);                                                                            // a cage hung out over the drop
       rockFloor(g, r, [86, 70, 68]);
       path(g, [[-10, HORIZON], [W + 10, HORIZON], [W + 10, HORIZON + 3], [-10, HORIZON + 3]]); g.fillStyle = '#ff8a3a'; g.fill();   // the cliff edge glows from below
-      for (const crack of [[[150, 352], [168, 320], [192, 300], [214, 272], [232, 262]], [[40, 352], [62, 334], [76, 338], [96, 320]], [[250, 210], [268, 226], [290, 230]]]) {
+      // cracks running across the rock to the pool at your feet
+      for (const crack of [[[150, 352], [146, 330], [160, 312], [188, 296], [214, 272], [232, 262]], [[150, 340], [120, 324], [96, 320], [76, 338], [40, 352]],
+                           [[160, 312], [150, 286], [128, 262], [134, 236], [118, 210]], [[250, 210], [268, 226], [290, 230]], [[188, 296], [230, 300], [262, 286], [290, 292]]]) {
         g.strokeStyle = '#7a1a08'; g.lineWidth = 3.2; g.lineJoin = 'round'; g.beginPath(); crack.forEach((p, i) => i ? g.lineTo(...p) : g.moveTo(...p)); g.stroke();
         g.strokeStyle = '#ff9a3a'; g.lineWidth = 1.4; g.stroke();
       }
-      for (const [x, y, s] of [[22, 190, 6], [36, 198, 4], [258, 196, 5], [120, 178, 3.5]]) lump(g, rockPts(x, y, s, r), [80, 64, 62], 1510 + x);   // loose rocks near the edge
-      for (const [x, len, end] of [[224, 66, 'shackle'], [238, 100, 'hook'], [252, 52, ''], [266, 116, 'shackle'], [280, 74, 'hook'], [88, 40, 'shackle'], [108, 74, 'hook'], [60, 28, '']]) hangingChain(g, x, len + r() * 14, end, r);
-      // chains and shackles dropped on the rock
+      scorch(g, 70, 250, 26); scorch(g, 210, 330, 30);
+      for (const [x, y, s] of [[22, 190, 6], [36, 198, 4], [120, 178, 3.5]]) lump(g, rockPts(x, y, s, r), [80, 64, 62], 1510 + x);   // loose rocks near the edge
+      for (const [x, len, end] of [[108, 74, 'hook'], [88, 40, 'shackle'], [264, 100, 'shackle'], [280, 70, 'hook']]) hangingChain(g, x, len + r() * 14, end, r);
       groundChain(g, [[58, 204], [72, 208], [88, 205], [102, 211]]); shackle(g, 104, 211);
       groundChain(g, [[178, 318], [192, 330], [208, 325]]); shackle(g, 210, 325, 1.1);
-      groundChain(g, [[234, 214], [248, 222], [262, 219], [274, 226]]); shackle(g, 276, 226);
-      groundChain(g, [[14, 214], [28, 221], [42, 218]]); shackle(g, 40, 330, 1.2); shackle(g, 130, 222, 0.9);
+      lump(g, [[70, 230], [74, 222], [82, 220], [88, 224], [88, 230]], [92, 90, 98], 1530, 1, 0.3);         // a helmet someone lost
+      g.fillStyle = '#100a0a'; g.fillRect(76, 225, 8, 1.4);
     },
     fg(g, r) {
+      glowPool(g, 150, 345, 30, 6, [255, 120, 40], r);                                                        // the lava pool at your feet
+      ell(g, 150, 345, 14, 2.4, 'rgba(255,230,150,0.9)');
       lump(g, rockPts(278, 344, 12, r), [70, 56, 54], 1600, 1, 0.3); jaggedSpire(g, 6, 352, 50, 22, r, [60, 46, 44]);
-      groundChain(g, [[96, 350], [114, 343], [136, 347], [158, 340]]); shackle(g, 160, 340, 1.5);
+      groundChain(g, [[96, 350], [114, 343], [124, 346]]);
     },
     props: r => ({bones: randomBones(r, 4, [20, 220, 270, 345]), skulls: [[100, 214]]})
   },
