@@ -211,7 +211,9 @@
       <p><b>Tap an enemy to target it.</b> A yellow ring under an enemy shows your target, and your attacks go to it. When your target falls, the next enemy is targeted for you.</p>
       <p>Damage rises over the one who took it as a <b style="color:#f44">red</b> number, healing as a <b style="color:#4e4">green</b> one. <b>MISS</b> appears over whoever an attack was aimed at, <b style="color:#6df">STUNNED</b> over a stunned enemy, and <b style="color:#fc3">SECOND WIND</b> over you when that perk saves your life.</p>
       <p>You first choose <b>Fight</b> or <b>Flee</b>. Fleeing works 25% of the time (up to 35% with Fleetfoot greaves) and puts you back one step. If it fails, the enemies get a free attack. You can never flee the Ogre King.</p>
-      <p>Each turn of a fight, pick one move. The enemies then take their turn.</p>
+      <p><b>Every enemy shows what it will do next</b>: a small badge over its name. A sword is an attack, and the number beside it is about how much it will hurt you (before your Block or Heavy). A shield, a wing or an arrow is a <b>stance</b>: it is up during your turn (hard to hit, braced, guarding, out of reach), and the enemy doesn't attack on its turn. A heart is a heal, a horn a war cry, and so on (see <b>Enemies and their tricks</b>). A <b style="color:#f66">red badge</b> is a <b>big move</b>: it always lands, so Block it. A move you see always happens, unless you stun the enemy first: blue stars mean it will skip its turn. In a group, only one enemy at a time shows a big move, and only one a stance.</p>
+      <p>A big move leaves the enemy <b>Off balance</b> (it says so after its name) until it acts again: your hits on it can't miss, its shield can't catch them and it can't strike back. That is the moment for a <b>Heavy</b>.</p>
+      <p>Each turn of a fight, pick one move. The enemies then take their turn. If every enemy is out of reach, Normal and Heavy raise your guard instead.</p>
       <ul>
         <li><b>Normal</b>: your reliable hit, 8-14 damage plus your weapon and bonuses, minus the enemy's armor. It misses 10% of the time, and 10% of hits are critical hits for double damage.</li>
         <li><b>Heavy</b>: 1.75 times the damage, but it misses 45% of the time, and enemies hit you 20% harder that turn. Use it to finish a fight faster when you can afford the risk.</li>
@@ -223,34 +225,35 @@
 
     <details>
       <summary>Enemies and their tricks</summary>
-      <p>Every enemy has a special ability. The message log tells you when it happens.</p>
+      <p>Every enemy has a special ability, and most have a move or two besides their attack. Their moves follow a pattern, so you can learn them; the badge over each enemy shows the next one. Some moves need gear: only an enemy with a shield can Brace, Guard or Cower, and only a Dark Knight with a steel sword can Sunder. The message log tells you when anything happens.</p>
+      <p><b>Sundered</b>: acid and a Sundering blow take 1 off your defense each (2 at most) until the fight ends. <b>Shaken</b>: after a Wail your next attack does 30% less. Both show under your health in a fight.</p>
       <h4>Floors <span class="num">1-2</span></h4>
       <ul>
-        <li><span class="sw" style="background:#98a"></span><b>Bat</b>: hard to hit. You miss it 30% of the time instead of 10%, so Heavy is a poor choice.</li>
-        <li><span class="sw" style="background:#6c6"></span><b>Slime</b>: when killed it splits into two <b>Little Slimes</b> (weak, but they still hit you).</li>
-        <li><span class="sw" style="background:#ee4"></span><b>Goblin</b>: each hit has a 33% chance to steal 3-6 of your coins (once). Three turns later it runs off with them. Kill it first to get your coins back.</li>
-        <li><span class="sw" style="background:#ddd"></span><b>Skeleton</b> (floor 2 on): the first time it dies it may pull itself back together (33%) with a quarter of its health, unless the killing blow was a critical hit.</li>
+        <li><span class="sw" style="background:#98a"></span><b>Bat</b>: hard to hit. You miss it 30% of the time instead of 10%, so Heavy is a poor choice. Every third turn it <b>Flits</b> (wing): it darts about in the dark and you miss it 70% of the time. Hit something else, or Block.</li>
+        <li><span class="sw" style="background:#6c6"></span><b>Slime</b>: when killed it splits into two <b>Little Slimes</b> (weak, but they still hit you). Every third turn it spits <b>acid</b> (drop), which Sunders your armor.</li>
+        <li><span class="sw" style="background:#ee4"></span><b>Goblin</b>: every other turn it tries to <b>Snatch</b> (hand) 3-6 of your coins (once). <b>Block and it gets nothing.</b> If it gets them, three turns later it runs off (arrow). Kill it first to get your coins back. A Goblin with a shield, in a group, sometimes <b>Cowers</b> behind the others, out of reach for that turn.</li>
+        <li><span class="sw" style="background:#ddd"></span><b>Skeleton</b> (floor 2 on): the first time it dies it may pull itself back together (33%) with a quarter of its health, unless the killing blow was a critical hit. With a shield, every third turn it <b>Braces</b> (shield): your hits do half, so don't waste a Heavy on it.</li>
       </ul>
       <h4>Floors <span class="num">2-4</span></h4>
       <ul>
-        <li><span class="sw" style="background:#c33"></span><b>Orc</b> (deep in floor 2 on): bloodlust. Hits 4 harder while you are below half health, so heal before it gets going.</li>
-        <li><span class="sw" style="background:#a52"></span><b>Troll</b> (floor 3 on): regenerates 6 health every turn. A critical hit stops it for one turn, and fire stops it while the Troll burns. Finish Trolls fast.</li>
+        <li><span class="sw" style="background:#c33"></span><b>Orc</b> (deep in floor 2 on): bloodlust. Hits 4 harder while you are below half health, so heal before it gets going. In a group its first move is a <b>War cry</b> (horn): the whole group hits 3 harder while the Orc lives. Kill it first.</li>
+        <li><span class="sw" style="background:#a52"></span><b>Troll</b> (floor 3 on): regenerates 6 health every turn. A critical hit stops it for one turn, and fire stops it while the Troll burns. Finish Trolls fast. Every third turn it hurls a <b>Boulder</b> (a big move: Block it). Once, below half health, it <b>Licks its wounds</b> (heart) for 18 and doesn't attack: a free Heavy for you (fire stops the healing).</li>
       </ul>
       <h4>Floors <span class="num">3-5</span></h4>
       <ul>
-        <li><span class="sw" style="background:#bbf"></span><b>Wraith</b>: heals itself for a quarter of the damage it deals to you.</li>
+        <li><span class="sw" style="background:#bbf"></span><b>Wraith</b>: heals itself for a quarter of the damage it deals to you. <b>Its badge shows only a ?</b>: you never know if it will strike or <b>Wail</b> (skull), which Shakes you. Pathfinder sees through it.</li>
       </ul>
       <h4>Floors <span class="num">4-5</span></h4>
       <ul>
-        <li><span class="sw" style="background:#668"></span><b>Dark Knight</b>: often well armored. Whenever you miss it, it counterattacks for free, so a Heavy miss is costly.</li>
-        <li><span class="sw" style="background:#d4a"></span><b>Wyvern</b>: each hit has a 35% chance to poison you: 3 damage every turn and every step for 4 turns. A potion cures poison. Your health bar turns purple while you are poisoned.</li>
+        <li><span class="sw" style="background:#668"></span><b>Dark Knight</b>: often well armored. Whenever you miss it, it counterattacks for free, so a Heavy miss is costly. With a shield, every third turn it holds its <b>Guard</b> (shield with a red cross): it strikes back at every attack, hit or miss, so Block, drink, or hit another enemy. With a steel sword it brings down a <b>Sundering</b> blow (a big move) that dents your armor.</li>
+        <li><span class="sw" style="background:#d4a"></span><b>Wyvern</b>: each hit has a 35% chance to poison you: 3 damage every turn and every step for 4 turns. A potion cures poison. Your health bar turns purple while you are poisoned. After two bites it <b>Takes wing</b> (up arrow), out of reach, then <b>Dives</b> (down arrow) for double damage. Block the dive, then Heavy it while it is Off balance.</li>
       </ul>
       <h4>Floor <span class="num">5</span></h4>
       <ul>
-        <li><span class="sw" style="background:#35b"></span><b>Minotaur</b>: its first attack in a fight is a charge that never misses and deals double damage. Block it.</li>
+        <li><span class="sw" style="background:#35b"></span><b>Minotaur</b>: its first move in a fight is a <b>Charge</b> (horns on red) that never misses and deals double damage. Block it. Every fourth turn it <b>paws the ground</b> (horns) and charges again the turn after.</li>
       </ul>
       <h4>The Ogre King</h4>
-      <p><span class="sw" style="background:#900"></span>475 health and armor of his own, and he hits for 22-29. Every third attack is a <b>Crushing Blow</b> that ignores your armor. The turn before, the log warns you: "The Ogre King winds up a huge swing..." That is your cue to <b>Block</b> or drink a potion. Below half health he flies into a rage and hits 3 harder.</p>
+      <p><span class="sw" style="background:#900"></span>475 health and armor of his own, and he hits for 22-29. Every third attack is a <b>Crushing Blow</b> (hammer) that ignores your armor. The turn before, his badge turns red and the log warns you: "The Ogre King winds up a huge swing..." That is your cue to <b>Block</b> or drink a potion. Below half health he flies into a rage and hits 3 harder. At two thirds of his health he <b>Roars</b> (horn) for a Goblin servant, and once below half he <b>Feasts</b> (heart), healing 40 without attacking. When he falls, his servant flees.</p>
     </details>
 
     <details>
@@ -277,7 +280,7 @@
       </ul>
       <h4>Specials</h4>
       <ul>
-        <li><b>Pathfinder</b> (rare, once): see 1 more tile around you, and enemies within sight show on the map, with their gear and group size, before you meet them.</li>
+        <li><b>Pathfinder</b> (rare, once): see 1 more tile around you, and enemies within sight show on the map, with their gear and group size, before you meet them. In a fight you also see each enemy's move after next (dimmed, beside its badge), and what a Wraith is about to do.</li>
         <li><b>Ambusher</b>: your first hit in every fight is an <b>Ambush</b> for +35% damage (a miss doesn't use it up). More picks raise it to +47%, +52% and so on. Running away and coming back doesn't give you a second ambush on the same group.</li>
         <li><b>Executioner</b>: +50% damage to enemies below half health.</li>
         <li><b>Antidote</b>: potions heal 10 more, and poison is weaker and shorter.</li>
@@ -1182,9 +1185,9 @@ const PERKS = {
     card: k => `Crit ${pct(critChance(k))}`,
     info: k => `Crit chance ${pct(critChance(k))}, and you miss ${pct(1 - missKeep(k))} less often.`},
   pathfinder: {name: 'Pathfinder', rarity: 'rare', once: true,
-    brief: k => 'See farther. Enemies show on the map. Once only.',
-    card: k => `See ${sight(k)}, spot enemies`,
-    info: k => `See ${sight(k)} tiles around you, and enemies in sight show on the map before you meet them. You can only take it once.`},
+    brief: k => "See farther. Read foes' next moves. Once only.",
+    card: k => `See ${sight(k)}, read foes`,
+    info: k => `See ${sight(k)} tiles around you, and enemies in sight show on the map before you meet them. In a fight you see each enemy's move after next too, and what a Wraith is about to do. You can only take it once.`},
   ambusher: {name: 'Ambusher', rarity: 'uncommon',
     brief: k => 'Your first hit in each fight hits harder.',
     card: k => `Ambush +${pct(ambushBonus(k))}`,
@@ -1496,16 +1499,17 @@ const types = [
 // special abilities (set on each enemy type above):
 //   evasion    - your chance to miss it (instead of PLAYER_MISS)
 //   split      - turns into two Little Slimes when killed
-//   thief      - may steal coins once, fights THIEF_TURNS more turns, then runs off with them
+//   thief      - its Snatch (see MOVES) steals coins once; it fights THIEF_TURNS more turns, then runs off with them
 //   reassemble - may rise again once after dying, unless the killing blow was a crit
 //   bloodlust  - extra damage while you're below half HP
 //   regen      - heals this much each turn, except the turn after you crit it
 //   riposte    - hits back for free when you miss it
 //   drain      - heals itself for this share of the damage it deals
-//   charge     - its first attack of each fight deals double damage
+//   charge     - charges (see MOVES): its first move in a fight, and again after it paws the ground
 //   poison     - hits may poison you (POISON_DMG per turn or step, cured by a potion)
+// Each enemy's moves (its intents) are in MOVES and planMove, below
 const LITTLE_SLIME = {name: 'Little Slime', hp: 14, dmg: [1, 4], gold: [1, 2], color: '#9e9'};
-const THIEF_CHANCE = 0.33, THIEF_STEAL = [3, 6], THIEF_TURNS = 3;
+const THIEF_STEAL = [3, 6], THIEF_TURNS = 3;   // a Goblin's Snatch takes 3-6 coins; it runs off with them 3 turns later
 const REASSEMBLE_CHANCE = 0.33, REASSEMBLE_HP = 0.25;
 const POISON_CHANCE = 0.35, POISON_DMG = 3, POISON_TURNS = 4;
 // your combat moves: Heavy hits harder but misses more often and leaves you open
@@ -1514,6 +1518,119 @@ const HEAVY_MULT = 1.75, HEAVY_MISS = 0.35, HEAVY_EXPOSED = 1.20;   // (how much
 const STUN_CHANCE = 0.10; // chance a blocked hit stuns that enemy for its next turn
 // every crushEvery-th Ogre King attack ignores your defense (he warns you the turn before)
 const BOSS = {name: 'Ogre King', hp: 475, dmg: [22, 29], gold: [40, 60], color: '#900', def: 4, crushEvery: 3, boss: true};
+
+// ---- enemy moves: every enemy shows what it will do on its next turn (its intent) as an icon over its head ----
+// Most moves are a plain attack. The rest follow a short pattern or a plain condition, so an enemy can be learned:
+//   a stance (stance: true) is up during YOUR turn, and the enemy doesn't attack on its own turn (hide: it can't be
+//     targeted while the stance is up);
+//   a big move (big = its damage multiplier) always lands and never crits, and leaves the enemy Off balance: until it
+//     acts again your hits on it can't miss, its shield can't catch them and it can't strike back.
+// In a group, at most one enemy shows a big move at a time. Once shown, a move happens: only a stun cancels it.
+// hit: the move strikes you (and shows the damage it should do, before your Block or Heavy)
+const MOVES = {
+  attack:  {name: 'Attack', hit: true},
+  acid:    {name: 'Acid spit', hit: true},          // Slime: and your armor is Sundered
+  snatch:  {name: 'Snatch', hit: true},             // Goblin: steals coins, unless you Block
+  sunder:  {name: 'Sunder', hit: true, big: 1.4},   // Dark Knight with a steel sword: and your armor is Sundered
+  charge:  {name: 'Charge', hit: true, big: 2},     // Minotaur
+  boulder: {name: 'Boulder', hit: true, big: 1.6},  // Troll
+  dive:    {name: 'Dive', hit: true, big: 2},       // Wyvern, after taking wing
+  crush:   {name: 'Crushing Blow', hit: true, big: 1},   // Ogre King: ignores your armor instead
+  flit:    {name: 'Flit', stance: true},            // Bat: very hard to hit
+  brace:   {name: 'Brace', stance: true},           // Skeleton with a shield: takes half damage
+  guard:   {name: 'Guard', stance: true},           // Dark Knight with a shield: strikes back at every attack
+  cower:   {name: 'Cower', stance: true, hide: true},   // Goblin with a shield, in a group: hides behind the others
+  wing:    {name: 'Take wing', stance: true, hide: true},   // Wyvern: out of reach, then dives
+  warcry:  {name: 'War cry'},                       // Orc in a group: the whole group hits harder while it lives
+  lick:    {name: 'Lick wounds'},                   // Troll under half health, once: a big heal (not while burning)
+  wail:    {name: 'Wail'},                          // Wraith: your next attack is weaker
+  paw:     {name: 'Paw the ground'},                // Minotaur: charges next turn
+  run:     {name: 'Run off'},                       // Goblin with your coins: gone next turn
+  feast:   {name: 'Feast'},                         // Ogre King under half health, once: eats and heals
+  roar:    {name: 'Roar'}                           // Ogre King at two thirds health, once: a Goblin servant runs in
+};
+const FLIT_EVADE = 0.70;      // your miss chance against a flitting Bat
+const BRACE_KEEP = 0.5;       // the share of your hit a bracing Skeleton takes
+const WARCRY_BONUS = 3;       // every enemy in the group hits this much harder while the Orc that cried lives
+const LICK_REGENS = 3;        // Lick wounds heals this many turns of the Troll's regeneration at once
+const FEAST_HEAL = 40;        // the Ogre King's feast
+const ROAR_AT = 2 / 3;        // the Ogre King roars for a servant at this share of his health
+const WAIL_KEEP = 0.7;        // after a Wail your next attack does this share of its damage
+const SUNDER_MAX = 2;         // Sundered: your armor counts this much less at most, until the fight ends
+let sunder = 0, weak = false; // you, in this fight: armor lost to Sunder and acid, and shaken by a Wail
+const armorNow = () => Math.max(0, defense() - sunder);
+const isHidden = f => !!(f.next && MOVES[f.next] && MOVES[f.next].hide);
+const reachable = f => f.hp > 0 && !isHidden(f);
+const warcry = () => foes.some(o => o.cry && o.hp > 0) ? WARCRY_BONUS : 0;
+// the move f makes on its action number n (0 = its first in this fight); prev = the move it makes (or made) just before;
+// ahead: prev is still to come (a forecast), so a swing in it counts toward the Crushing Blow
+function planMove(f, n, prev, ahead = false) {
+  const others = foes.filter(o => o !== f && o.hp > 0), shield = !!f.gear && f.gear.shield !== undefined;
+  switch (f.name) {
+    case 'Bat': return n % 3 === 2 ? 'flit' : 'attack';
+    case 'Slime': return n % 3 === 2 ? 'acid' : 'attack';
+    case 'Goblin':
+      if (f.fleeIn === 0) return 'run';
+      if (!f.stolen && n % 2 === 1 && coins > 0 && !perkN('purse')) return 'snatch';
+      return shield && others.length && n % 3 === 2 ? 'cower' : 'attack';
+    case 'Skeleton': return shield && n % 3 === 2 ? 'brace' : 'attack';
+    case 'Orc': return n === 0 && others.length ? 'warcry' : 'attack';
+    case 'Troll': return f.hp < f.max / 2 && !f.licked && prev !== 'lick' ? 'lick' : n % 3 === 2 ? 'boulder' : 'attack';
+    case 'Wraith': return n > 0 && prev !== 'wail' && Math.random() < 1 / 3 ? 'wail' : 'attack';
+    case 'Dark Knight': return shield && n % 3 === 2 ? 'guard' : f.gear && f.gear.weapon === 2 && n % 3 === 0 && n > 0 ? 'sunder' : 'attack';
+    case 'Wyvern': return n % 4 === 2 ? 'wing' : n % 4 === 3 && prev === 'wing' ? 'dive' : 'attack';
+    case 'Minotaur': return n % 4 === 0 ? 'charge' : n % 4 === 3 ? 'paw' : 'attack';
+    case 'Ogre King':
+      if (!f.roared && prev !== 'roar' && f.hp <= f.max * ROAR_AT) return 'roar';
+      if (!f.feasted && prev !== 'feast' && f.hp < f.max / 2) return 'feast';
+      return ((f.swings || 0) + 1 + (ahead && prev && MOVES[prev].hit ? 1 : 0)) % f.crushEvery === 0 ? 'crush' : 'attack';
+  }
+  return 'attack';
+}
+// can f still make move m (things may have changed since it was forecast)?
+function moveFits(f, m) {
+  const others = foes.some(o => o !== f && o.hp > 0);
+  if (m === 'snatch') return !f.stolen && coins > 0 && !perkN('purse');
+  if (m === 'cower' || m === 'warcry') return others;
+  if (m === 'run') return f.fleeIn === 0;
+  if (m === 'dive') return f.next === 'wing';       // (it only dives from the air)
+  if (m === 'lick') return !f.licked;
+  if (m === 'roar') return !f.roared;
+  if (m === 'feast') return !f.feasted;
+  return !!MOVES[m];
+}
+// f's next move becomes its intent: the forecast made last time (Pathfinder shows it), if it still fits; then a new
+// forecast. A big move waits while another enemy in the group shows one (it attacks instead)
+function setIntent(f) {
+  let m = f.then && moveFits(f, f.then) ? f.then : planMove(f, f.acts || 0, f.next);
+  if (f.fleeIn === 0) m = 'run';
+  if (MOVES[m].big && foes.some(o => o !== f && o.hp > 0 && o.next && MOVES[o.next].big)) m = 'attack';
+  // a stance waits while the enemy is Off balance, or while another enemy in the group holds one (they never all hang back at once)
+  if (MOVES[m].stance && (f.off || foes.some(o => o !== f && o.hp > 0 && o.next && MOVES[o.next].stance))) m = 'attack';
+  f.next = m;
+  f.then = planMove(f, (f.acts || 0) + 1, m, true);
+  cue('intent', {who: f, move: m, len: 0});
+  if (m === 'crush') msg.textContent += ` The ${f.name} winds up a huge swing...`;
+  if (m === 'paw') msg.textContent += ` The ${f.name} paws the ground...`;
+  if (m === 'wing') msg.textContent += ` The ${f.name} beats its wings...`;
+}
+// a new fight (or the same group met again after you fled): every enemy starts its pattern over
+function startIntents() {
+  sunder = 0; weak = false;
+  const live = foes.filter(f => f.hp > 0);
+  for (const f of live) { f.acts = 0; f.next = f.then = null; f.off = false; f.cry = false; }
+  for (const f of live) setIntent(f);
+}
+// roughly what move m by f would hurt you for, before your Block or Heavy (null: it doesn't strike)
+function intentDmg(f, m) {
+  const M = MOVES[m];
+  if (!M || !M.hit) return null;
+  const lust = f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0;
+  let d = (f.dmg[0] + f.dmg[1]) / 2 + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + lust + warcry() - (m === 'crush' ? 0 : armorNow());
+  d = Math.max(1, d);
+  if (M.big && m !== 'crush') d *= M.big;
+  return Math.max(1, Math.round(d));
+}
 // minFloor keeps an enemy off the floors above it (floor numbers start at 1)
 const pick = z => {
   const pool = types.filter(t => t.zone === z && floor + 1 >= (t.minFloor || 1));
@@ -2000,8 +2117,9 @@ let target = null;                   // the enemy your attacks go to (tap one to
 let pops = [];                       // floating numbers: {who, text, color, t0}
 
 const inCombatScene = () => combatView && ['choice', 'fight', 'loot', 'finale'].includes(phase);
+// your target: the enemy you picked while it is alive and in reach (not cowering or on the wing), else the next one
 const liveTarget = () => {
-  if (!(target && target.hp > 0 && foes.includes(target))) target = foes.find(f => f.hp > 0) || null;
+  if (!(target && reachable(target) && foes.includes(target))) target = foes.find(reachable) || null;
   return target;
 };
 // where each enemy stands (the point under its feet) and how big it is drawn: one stands front and center;
@@ -2057,7 +2175,8 @@ const turnBusy = () => !!turn && performance.now() < turn.t0 + turn.end * 1000;
 const turnTime = () => turn ? (performance.now() - turn.t0) / 1000 : Infinity;
 function beginTurn() {
   if (turnBusy()) finishTurnNow();
-  turn = {t0: performance.now(), at: 0, beats: [], hp: new Map([['player', p.hp], ...sceneFoes.map(f => [f, f.hp])]), end: 0, open: true, id: ++turnSeq};
+  turn = {t0: performance.now(), at: 0, beats: [], hp: new Map([['player', p.hp], ...sceneFoes.map(f => [f, f.hp])]),
+          intents: new Map(sceneFoes.map(f => [f, f.next])), end: 0, open: true, id: ++turnSeq};
   SND.tag('turn' + turn.id);
 }
 function closeTurn() {
@@ -2072,6 +2191,7 @@ function finishTurnNow() {
   const now = performance.now(), shift = turn.t0 + turn.end * 1000 - now;
   for (const q of pops) if (q.t0 > now) q.t0 = now;
   for (const e of fx) if (e.t0 > now) e.t0 = now;
+  for (const f of sceneFoes) if (f.bornAt > now) f.bornAt = now;          // (a Little Slime or a servant arriving later in the turn: here now)
   SND.hush('turn' + turn.id);
   turn.t0 -= Math.max(0, shift);
   if (finale && finale.t0 * 1000 > now) { finale.t0 = now / 1000; }
@@ -2085,6 +2205,14 @@ function cue(kind, o = {}) {
   turn.end = Math.max(turn.end, turn.at + (o.len ?? TURN.tail));
   beatSound(b, turn.at);
   return b;
+}
+// the intent over an enemy's head: during a turn, the one it showed as of this moment (a new one comes up as it acts)
+function shownIntent(f) {
+  if (!turn || !turnBusy()) return f.next;
+  const e = turnTime();
+  let m = turn.intents && turn.intents.has(f) ? turn.intents.get(f) : f.next;
+  for (const b of turn.beats) if (b.kind === 'intent' && b.who === f && b.at <= e) m = b.move;
+  return m;
 }
 // what the health bars show: during a turn, the health as of the last blow that has landed so far
 function shownHp(who) {
@@ -2131,6 +2259,9 @@ function beatSound(b, at) {
     case 'drink': SND.fx('potion', {pan: -0.45}, at); break;
     case 'heal': SND.fx('heal', o, at); break;
     case 'rage': SND.fx('roar', o, at); break;
+    case 'cry': foe.boss ? SND.fx('roar', o, at) : SND.fx('voice', {name: foe.name, pan: o.pan, gain: 1.2}, at); break;
+    case 'wail': SND.fx('voice', {name: foe.name, pan: o.pan}, at); SND.fx('drain', o, at + 0.15); break;
+    case 'stance': b.move === 'brace' || b.move === 'guard' ? SND.fx('guard', {pan: o.pan}, at) : b.move === 'paw' ? SND.fx('stumble', {pan: o.pan}, at) : SND.fx('flee', {pan: o.pan}, at); break;
     case 'youDie': SND.fx('youDie', {armor: heroArmor()}, at + 0.15); break;
     case 'secondWind': SND.fx('levelUp', {gain: 0.7}, at); break;
     case 'stumble': SND.fx('stumble', {pan: -0.45}, at); break;
@@ -2212,6 +2343,10 @@ function fireBeats() {
     if (b.kind === 'drink' && hb) burst(t0 + 300, hb.x, hb.y0 + 40, 'life', 14);
     if (b.kind === 'secondWind' && hb) { burst(t0, hb.x, hb.y0 + 50, 'gold', 20); fx.push({kind: 'flash', t0, col: '255,220,120', a: 0.4, ms: 300}); }
     if (b.kind === 'rage' && at) { shakeAt(t0, 4); fx.push({kind: 'flash', t0, col: '200,30,20', a: 0.25, ms: 260}); }
+    if (b.kind === 'cry' && at) { shakeAt(t0, 3); fx.push({kind: 'flash', t0, col: '200,90,20', a: 0.18, ms: 260}); }
+    if (b.kind === 'wail' && at) { shakeAt(t0, 2); fx.push({kind: 'flash', t0, col: '120,90,200', a: 0.22, ms: 420}); }
+    if (b.kind === 'stance' && at && (b.move === 'brace' || b.move === 'guard')) burst(t0, at.x - 10, at.y, 'spark', 6);
+    if (b.kind === 'stance' && at && b.move === 'paw' && box) burst(t0, at.x, box.y1 - 4, 'bone', 8, foe, true);
     if (b.kind === 'youDie') { fx.push({kind: 'flash', t0, col: '120,0,0', a: 0.45, ms: 900}); shakeAt(t0, 6); }
   }
 }
@@ -5606,6 +5741,71 @@ function drawFinale(t) {
 
 let fightIntro = 0;   // when the fight screen came up: the enemies step out of the dark
 const FIGHT_INTRO_MS = 480;
+// ---- intent icons: what each enemy will do next, over its name. 11 x 11 pixel pictures, 1 pixel = 1 unit ----
+// The shape tells the kind of move: a sword is an attack, a shield a stance, an arrow a movement, a heart a heal...
+// A big move sits on a red badge. Damage moves show the damage they should do (before your Block or Heavy)
+const ICON_PAL = {k: [22, 16, 20], w: [238, 232, 214], s: [150, 152, 164], a: [92, 94, 104], g: [222, 176, 64], n: [120, 78, 44],
+                  r: [210, 56, 44], G: [104, 206, 92], b: [116, 176, 236], y: [240, 206, 150], p: [176, 120, 228]};
+const ICON_ART = {
+  sword: ['........kkk', '.......kwwk', '......kwwk.', '.....kwwk..', '....kwwk...', '.k.kwwk....', '.kgkwk.....', '..kgk......', '.kgkgk.....', 'kgk..k.....', 'kk.........'],
+  drop: ['.....k.....', '....kGk....', '....kGk....', '...kGGGk...', '..kGGGGGk..', '..kGwGGGk..', '.kGwGGGGGk.', '.kGGGGGGGk.', '.kGGGGGGGk.', '..kGGGGGk..', '...kkkkk...'],
+  hand: ['..k.k.k....', '.kykykyk...', '.kykykyk...', '.kykykyk.k.', '.kyyyyyykyk', '.kyyyyyyyk.', '.kyyyyyyyk.', '..kyyyyyk..', '...kyyyk...', '...kyyyk...', '...kkkkk...'],
+  wing: ['...........', 'k..........', 'kk.........', 'kwk.....kk.', 'kwwk..kkwk.', '.kwwkkwwk..', '.kwwwwwk...', '..kswwk....', '...kssk....', '....kk.....', '...........'],
+  shield: ['.kkkkkkkkk.', '.kwwwwwwsk.', '.kwsssssak.', '.kwsssssak.', '.kwsssssak.', '.kwsssssak.', '..kwsssak..', '..kwsssak..', '...kwsak...', '....kak....', '.....k.....'],
+  guard: ['.kkkkkkkkk.', '.kwwwrwwsk.', '.kwssrssak.', '.krrrrrrrk.', '.kwssrssak.', '.kwssrssak.', '..kwsrsak..', '..kwsrsak..', '...kwrak...', '....kak....', '.....k.....'],
+  cracked: ['.kkkkkkkkk.', '.kwwwkwwsk.', '.kwsskssak.', '.kwssskask.', '.kwssskssk.', '.kwsskssak.', '..kwsksak..', '..kwksssk..', '...kwsak...', '....kak....', '.....k.....'],
+  up: ['.....k.....', '....kbk....', '...kbbbk...', '..kbbbbbk..', '.kbbbbbbbk.', '.kkkbbbkkk.', '...kbbbk...', '...kbbbk...', '...kbbbk...', '...kbbbk...', '...kkkkk...'],
+  back: ['...........', '....k......', '...kyk.....', '..kyyk.....', '.kyyykkkkk.', 'kyyyyyyyyk.', '.kyyykkkkk.', '..kyyk.....', '...kyk.....', '....k......', '...........'],
+  horn: ['...........', '.........kk', '........kgk', '......kkggk', '....kkgggk.', '..kkggggkk.', 'kkngggggk..', 'knnggggk...', 'kkngggk....', '..kkkk.....', '...........'],
+  rock: ['...........', '...kkkkk...', '..kswwssk..', '.kswwsssak.', '.kswssssak.', '.ksssssaak.', '.kssssaaak.', '.kasaaaaak.', '..kaaaaak..', '...kkkkk...', '...........'],
+  heart: ['...........', '.kkk...kkk.', 'kGGGk.kGGGk', 'kGwGGkGGGGk', 'kGGGGGGGGGk', '.kGGGGGGGk.', '..kGGGGGk..', '...kGGGk...', '....kGk....', '.....k.....', '...........'],
+  skull: ['..kkkkkkk..', '.kwwwwwwwk.', 'kwwwwwwwwwk', 'kwkkwwwkkwk', 'kwkkwwwkkwk', 'kwwwwkwwwwk', '.kwwwwwwwk.', '..kwkwkwk..', '..kkkkkkk..', '...........', '...........'],
+  horns: ['...........', 'k.........k', 'kk.......kk', 'kwk.....kwk', 'kwwk...kwwk', '.kwwkkkwwk.', '..kkwwwkk..', '..knnnnnk..', '...knnnk...', '....kkk....', '...........'],
+  hammer: ['.kkkkkkkkk.', '.kwwwwwwsk.', '.ksssssssk.', '.kaaaaaaak.', '.kkkkkkkkk.', '....kgk....', '....kgk....', '....kgk....', '....knk....', '....knk....', '....kkk....'],
+  star: ['.....k.....', '....kbk....', '....kbk....', 'kkkkbbbkkkk', '.kbbbwbbbk.', '..kbbbbbk..', '..kbbbbbk..', '.kbbkkkbbk.', '.kbk...kbk.', '.kk.....kk.', '...........'],
+  what: ['...kkkkk...', '..kwwwwwk..', '.kwwkkkwwk.', '.kkk..kwwk.', '.....kwwk..', '....kwwk...', '....kwwk...', '....kkkk...', '....kwwk...', '....kwwk...', '....kkkk...']
+};
+ICON_ART.down = ICON_ART.up.map(r => r.replace(/b/g, 'r')).reverse();
+ICON_ART.run = ICON_ART.back.map(r => [...r].reverse().join('').replace(/y/g, 'g'));
+// which picture each move shows
+const INTENT_ICON = {attack: 'sword', acid: 'drop', snatch: 'hand', flit: 'wing', brace: 'shield', guard: 'guard', cower: 'back', wing: 'up',
+  dive: 'down', warcry: 'horn', roar: 'horn', boulder: 'rock', lick: 'heart', feast: 'heart', wail: 'skull', paw: 'horns', charge: 'horns',
+  sunder: 'cracked', crush: 'hammer', run: 'run', stunned: 'star', hidden: 'what'};
+const intentSprites = new Map();
+function intentSprite(name) {
+  let cv = intentSprites.get(name);
+  if (!cv) {
+    const rows = ICON_ART[name] || ICON_ART.what;
+    cv = document.createElement('canvas'); cv.width = 11; cv.height = 11;
+    const g = cv.getContext('2d'), img = g.createImageData(11, 11);
+    rows.forEach((row, y) => [...row].forEach((ch, x) => { if (ICON_PAL[ch]) putPx(img.data, 11, x, y, ICON_PAL[ch]); }));
+    g.putImageData(img, 0, 0);
+    intentSprites.set(name, cv);
+  }
+  return cv;
+}
+// the badge over an enemy, centred on cx with its bottom at y: its move, and with Pathfinder the move after it, dimmed
+function drawIntent(f, cx, y) {
+  const seer = perkN('pathfinder') > 0;
+  let m = f.stunned ? 'stunned' : shownIntent(f);
+  if (!m) return;
+  if (f.name === 'Wraith' && !seer && !f.stunned) m = 'hidden';          // a Wraith keeps its intent to itself
+  const dmg = m === 'hidden' || m === 'stunned' ? null : intentDmg(f, m), big = MOVES[m] && MOVES[m].big;
+  const then = seer && !f.stunned && f.then && !(turn && turnBusy()) ? f.then : null;
+  ctx.font = `700 11px ${GAME_FONT}`;
+  const numW = dmg !== null ? ctx.measureText(String(dmg)).width + 3 : 0, w = 15 + numW + (then ? 16 : 0), x = Math.round(cx - w / 2), top = y - 15;
+  chamfer(x, top, w, 15, 2.5);
+  ctx.fillStyle = big ? 'rgba(84,12,8,0.88)' : 'rgba(14,10,16,0.78)'; ctx.fill();
+  ctx.strokeStyle = big ? 'rgba(240,80,60,0.95)' : m === 'stunned' ? 'rgba(110,200,255,0.8)' : 'rgba(214,170,80,0.7)'; ctx.lineWidth = big ? 1.2 : 0.8; ctx.stroke();
+  drawSprite(intentSprite(INTENT_ICON[m] || 'sword'), x + 2, top + 2);
+  if (dmg !== null) { ctx.textAlign = 'left'; outlinedText(String(dmg), x + 15, top + 12, big ? '#ffb4a0' : '#fff'); }
+  if (then) {
+    const tx = x + 15 + numW;
+    ctx.fillStyle = 'rgba(214,170,80,0.6)'; ctx.fillRect(tx, top + 7, 2, 1);
+    ctx.save(); ctx.globalAlpha = 0.55; drawSprite(intentSprite(INTENT_ICON[then] || 'sword'), tx + 3, top + 2); ctx.restore();
+  }
+  ctx.textAlign = 'center';
+}
 function drawCombat() {
   const now = performance.now(), t = now / 1000, F = finale ? finaleAt(t) : null;
   fireBeats();
@@ -5628,7 +5828,10 @@ function drawCombat() {
     if (!dead) f.fellAt = undefined;                                      // (a Skeleton can rise again)
     else if (f.fellAt === undefined) f.fellAt = t;
     if (F && f === finale.f) return {f, x: s.x + F.shake, y: s.y, s: s.s, fall: F.fall, gone: false, flash: m.flash};   // the Ogre King's long fall
-    const x = Math.round((s.x + m.dx + slide) / 2) * 2, y = Math.round((s.y + m.dy) / 2) * 2;
+    // a stance shows: on the wing it hangs high above, a flitting Bat bobs up in the dark, a cowering Goblin shrinks back
+    const st = dead ? null : shownIntent(f);
+    const lift = st === 'wing' ? 58 * s.s : st === 'flit' ? 16 * s.s + Math.sin(t * 7 + (f.animPhase || 0)) * 3 : 0, back = st === 'cower' ? 16 : 0;
+    const x = Math.round((s.x + m.dx + slide + back) / 2) * 2, y = Math.round((s.y + m.dy - lift) / 2) * 2;
     return {f, x, y, s: s.s, fall: dead ? Math.min(1, (t - f.fellAt) / FALL_S) : 0, gone: !!f.fled && dead, flash: dead ? null : m.flash};
   });
   fightBoxes = ART.drawFight(ctx, {room: [boss ? 'throne' : ART.ROOM_OF_FLOOR[Math.min(floor, 4)], fightSeed],
@@ -5644,14 +5847,19 @@ function drawCombat() {
     ctx.font = `600 13px ${GAME_FONT}`;
     ctx.textAlign = 'center';
     outlinedText(`${hp}/${p.max}`, hb.x, hb.y + 16, '#fff');
+    // what the enemies have done to you this fight: armor eaten away, your nerve shaken by a Wail
+    const marks = [sunder ? `Armor −${sunder}` : '', weak ? 'Shaken' : ''].filter(Boolean).join(' · ');
+    if (marks && !over) { ctx.font = `600 11px ${GAME_FONT}`; outlinedText(marks, hb.x, hb.y + 30, '#e8a070'); }
   }
   // each enemy's name over its head, with its green health bar under the name (kept on screen at the edges)
   ctx.font = `600 11px ${GAME_FONT}`;
   for (const f of (F && F.T >= 0) || intro < 1 ? [] : sceneFoes) {         // (no labels while the Ogre King falls, or as they step in)
     const b = fightBoxes.boxes.get(f);
     if (!b || f.bornAt > now) continue;
-    const fh = shownHp(f), dead = fh <= 0, label = f.name + (f.items.length ? '*' : '') + (f.burn > 0 && !dead ? ' (burning)' : '');
-    const half = ctx.measureText(label).width / 2, cx = Math.max(half + 4, Math.min(284 - half, (b.x0 + b.x1) / 2)), top = Math.max(b.y0, 26);
+    const fh = shownHp(f), dead = fh <= 0, label = f.name + (f.items.length ? '*' : '') + (f.burn > 0 && !dead ? ' (burning)' : '') +
+      (f.off && !dead ? ' (off balance)' : '');
+    const half = ctx.measureText(label).width / 2, cx = Math.max(half + 4, Math.min(284 - half, (b.x0 + b.x1) / 2)), top = Math.max(b.y0, dead ? 26 : 44);
+    if (!dead && phase !== 'loot') { drawIntent(f, Math.max(30, Math.min(258, cx)), top - 26); ctx.font = `600 11px ${GAME_FONT}`; }
     if (!dead) {                                                           // a dark plaque with a gilt edge behind the name and its bar
       const pw = Math.max(54, ctx.measureText(label).width + 12), px = Math.max(2, Math.min(286 - pw, cx - pw / 2));
       chamfer(px, top - 24, pw, 22, 3); ctx.fillStyle = 'rgba(14,10,16,0.62)'; ctx.fill(); ctx.strokeStyle = 'rgba(214,170,80,0.55)'; ctx.lineWidth = 0.8; ctx.stroke();
@@ -5681,6 +5889,7 @@ function tapTarget(cx, cy) {
     }
   }
   if (!best) return;
+  if (!reachable(best)) { msg.textContent = `The ${best.name} is out of reach.`; draw(); return; }
   target = best;
   msg.textContent = `You turn to face the ${best.name}.`;
   draw();
@@ -7705,14 +7914,13 @@ function tickPoison() {
 
 // one enemy swing; mult comes from your stance (Block lowers it, Heavy raises it)
 // blocking: you have your guard up this turn (Thorns doesn't cut an enemy whose blow you Block)
-function foeStrike(f, mult, blocking = false) {
-  const rage = f.raged ? RAGE_BONUS : 0;
+// move: what it is doing (see MOVES; a riposte is a plain 'attack')
+function foeStrike(f, mult, blocking = false, move = 'attack') {
+  const rage = f.raged ? RAGE_BONUS : 0, M = MOVES[move] || MOVES.attack;
   f.swings = (f.swings || 0) + 1;
-  const crush = f.crushEvery && f.swings % f.crushEvery === 0;
-  const charge = f.charge && f.fresh;
-  f.fresh = false;
-  // the Crushing Blow and the Charge always land, and never crit
-  const result = crush || charge ? 'hit' : swingResult(FOE_MISS, FOE_CRIT);
+  const crush = move === 'crush', big = !!M.big;
+  // a big move (the Crushing Blow, the Charge, a Dive...) always lands, and never crits
+  const result = big ? 'hit' : swingResult(FOE_MISS, FOE_CRIT);
   f.landed = result !== 'miss';
   after(turnOpen() && turn.beats.length ? TURN.gap - TURN.foeSwing : 0);  // each enemy steps in after the last
   cue('foeSwing', {who: f});
@@ -7723,21 +7931,27 @@ function foeStrike(f, mult, blocking = false) {
     msg.textContent += ` ${f.name} misses you.`;
   } else {
     const lust = f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0;
-    let hurt = Math.max(1, roll(f.dmg[0], f.dmg[1]) + f.bonus + rage + lust - (crush ? 0 : defense()));
+    let hurt = Math.max(1, roll(f.dmg[0], f.dmg[1]) + f.bonus + rage + lust + warcry() - (crush ? 0 : armorNow()));
     if (result === 'crit') hurt = Math.round(hurt * FOE_CRIT_MULT);
-    if (charge) hurt *= 2;
+    if (big && !crush) hurt *= M.big;
     hurt = Math.max(1, Math.round(hurt * mult));
     run.taken += Math.min(hurt, p.hp);
     p.hp = Math.max(0, p.hp - hurt);
-    cue('struck', {by: f, blocking, big: crush || charge || result === 'crit' || hurt >= p.max * 0.2});
-    popup('player', hurt, 'dmg', crush || charge || result === 'crit');
-    msg.textContent += crush
-      ? ` ${f.name} lands a CRUSHING BLOW through your armor for ${hurt}!`
-      : charge
-        ? ` The ${f.name} CHARGES into you for ${hurt}!`
-        : result === 'crit'
-          ? ` ${f.name} lands a CRITICAL HIT for ${hurt}!`
-          : ` ${f.name} ${lust ? 'hits you in a bloodlust' : 'hits you'} for ${hurt}.`;
+    cue('struck', {by: f, blocking, big: big || result === 'crit' || hurt >= p.max * 0.2});
+    popup('player', hurt, 'dmg', big || result === 'crit');
+    const BIG_SAY = {crush: 'lands a CRUSHING BLOW through your armor', charge: 'CHARGES into you', boulder: 'hurls a BOULDER at you',
+                     sunder: 'brings down a SUNDERING blow on you', dive: 'DIVES on you from above'};
+    msg.textContent += big
+      ? ` The ${f.name} ${BIG_SAY[move]} for ${hurt}!`
+      : result === 'crit'
+        ? ` ${f.name} lands a CRITICAL HIT for ${hurt}!`
+        : ` ${f.name} ${move === 'acid' ? 'spits acid at you' : lust ? 'hits you in a bloodlust' : 'hits you'} for ${hurt}.`;
+    // acid and a Sundering blow eat into your armor until the fight ends
+    if ((move === 'acid' || move === 'sunder') && p.hp > 0 && sunder < SUNDER_MAX) {
+      sunder++;
+      popup('player', 'ARMOR −1', 'miss');
+      msg.textContent += ` Your armor is ${move === 'acid' ? 'eaten away' : 'dented'}: −${sunder} defense for this fight.`;
+    }
     if (f.drain && p.hp > 0) {
       const heal = Math.min(Math.round(hurt * f.drain * purityKeep()), f.max - f.hp);
       if (heal > 0) {
@@ -7752,7 +7966,9 @@ function foeStrike(f, mult, blocking = false) {
       cue('poisoned');
       msg.textContent += ' You are poisoned!';
     }
-    if (f.thief && !f.stolen && !perkN('purse') && p.hp > 0 && coins > 0 && Math.random() < THIEF_CHANCE) {
+    // a Snatch takes your coins, unless your guard is up
+    if (move === 'snatch' && blocking && p.hp > 0) msg.textContent += ` Its hand closes on air: you keep your purse behind your shield.`;
+    else if (move === 'snatch' && !f.stolen && !perkN('purse') && p.hp > 0 && coins > 0) {
       f.stolen = Math.min(coins, roll(THIEF_STEAL[0], THIEF_STEAL[1]));
       f.fleeIn = THIEF_TURNS;
       coins -= f.stolen;
@@ -7767,9 +7983,75 @@ function foeStrike(f, mult, blocking = false) {
     }
     refresh();
   }
-  if (f.crushEvery && (f.swings + 1) % f.crushEvery === 0 && p.hp > 0)
-    msg.textContent += ` The ${f.name} winds up a huge swing...`;
+  // a big move leaves it Off balance until it acts again
+  if (big && f.hp > 0 && p.hp > 0) {
+    f.off = true;
+    popup(f, 'OFF BALANCE', 'gold');
+    msg.textContent += ` The ${f.name} is off balance!`;
+  }
   return checkDeath(f.name, `You were slain by the ${f.name}.`);
+}
+
+// f makes the move it showed (see MOVES), then shows its next one; returns false if you died
+function foeAct(f, mult, blocking) {
+  const m = f.next && MOVES[f.next] ? f.next : 'attack', M = MOVES[m];
+  f.off = false;                     // it acts again: back on balance
+  f.landed = false;
+  f.acts = (f.acts || 0) + 1;
+  if (M.hit) {
+    if (!foeStrike(f, mult, blocking, m)) return false;
+  } else {
+    after(turnOpen() && turn.beats.length ? TURN.gap - TURN.foeSwing : 0);
+    const say = {
+      flit: `The ${f.name} flits about in the dark.`,
+      brace: `The ${f.name} stays braced behind its shield.`,
+      guard: `The ${f.name} holds its guard.`,
+      cower: `The ${f.name} peeks out from behind the others.`,
+      wing: `The ${f.name} climbs high above you...`,
+      paw: `The ${f.name} lowers its horns. It's going to charge!`
+    };
+    if (say[m]) { cue('stance', {who: f, move: m}); msg.textContent += ' ' + say[m]; }
+    if (m === 'warcry') {
+      f.cry = true;
+      cue('cry', {who: f, len: 0.8});
+      msg.textContent += ` The ${f.name} bellows a war cry! The group hits ${WARCRY_BONUS} harder while it lives.`;
+    }
+    if (m === 'wail') {
+      weak = true;
+      cue('wail', {who: f, len: 0.8});
+      msg.textContent += ` The ${f.name} lets out a dreadful wail. Your next attack will be weaker.`;
+    }
+    if (m === 'lick' || m === 'feast') {
+      if (m === 'lick') f.licked = true; else f.feasted = true;
+      if (m === 'lick' && f.burn > 0) msg.textContent += ` The ${f.name} licks its wounds, but the flames keep them open.`;
+      else {
+        const heal = Math.min(m === 'lick' ? f.regen * LICK_REGENS : FEAST_HEAL, f.max - f.hp);
+        f.hp += heal;
+        after(0.1); cue('regen', {who: f, len: 0.7});
+        popup(f, `+${heal}`, 'heal');
+        msg.textContent += m === 'lick' ? ` The ${f.name} licks its wounds and heals ${heal}.` : ` The ${f.name} tears into a joint of meat and heals ${heal}!`;
+      }
+    }
+    if (m === 'roar') {
+      f.roared = true;
+      cue('cry', {who: f, len: 0.9});
+      msg.textContent += ` The ${f.name} roars for his servants!`;
+      summonServant();
+    }
+  }
+  if (f.hp > 0 && p.hp > 0) setIntent(f);
+  return true;
+}
+// the Ogre King's Roar: a Goblin servant runs in, as strong as the far half of floor 5
+function summonServant() {
+  const t = types.find(t => t.name === 'Goblin'), [hpX, dmgX] = STRETCH[FLOORS - 1][1], hp = Math.round(t.hp * hpX);
+  const g = {...t, hp, max: hp, dmg: t.dmg.map(v => Math.round(v * dmgX)), bonus: 0, def: 0, items: [], gear: {}, servant: true,
+             bornAt: turnOpen() ? turn.t0 + (turn.at + 0.3) * 1000 : 0, acts: 0};
+  equipFoe(g, t);
+  foes.push(g);                       // (foes is the fight's group, so it stays on screen with the rest)
+  if (turnOpen()) turn.hp.set(g, g.hp);
+  setIntent(g);
+  msg.textContent += ` A Goblin scurries out to fight for him.`;
 }
 
 function foesAttack(mult = 1, blocking = false) {
@@ -7809,11 +8091,14 @@ function foesAttack(mult = 1, blocking = false) {
     if (f.stunned) {
       f.stunned = false;
       f.stunProof = true;            // stuns don't chain: its next attack can't stun it again (others in the group still can be)
+      f.off = false;
       after(0.2); cue('stunned', {who: f});
-      msg.textContent += ` The ${f.name} is stunned and can't attack.`;
+      msg.textContent += ` The ${f.name} is stunned and can't ${f.next && f.next !== 'attack' ? MOVES[f.next].name.toLowerCase() : 'attack'}.`;
+      f.acts = (f.acts || 0) + 1;    // the stun cost it the move it showed
+      setIntent(f);
       continue;
     }
-    if (!foeStrike(f, mult, blocking)) return;
+    if (!foeAct(f, mult, blocking)) return;
     // a hit that lands on your raised shield may stun the attacker for its next turn (unless it was stunned just before)
     if (blocking && f.landed && f.hp > 0 && !f.stunProof && Math.random() < stunChance()) {
       f.stunned = true;
@@ -7842,9 +8127,18 @@ function killFoe(t) {
     // foes is the encounter's group, so the halves stay if you flee and come back
     // piece: which half of the big slime's half-skull each little one carries off
     const born = turnOpen() ? turn.t0 + (turn.at + 0.2) * 1000 : 0;       // (they appear as it bursts)
-    foes.push(...[0, 1].map(piece => ({...LITTLE_SLIME, max: LITTLE_SLIME.hp, bonus: 0, def: 0, items: [], piece, bornAt: born})));
+    const halves = [0, 1].map(piece => ({...LITTLE_SLIME, max: LITTLE_SLIME.hp, bonus: 0, def: 0, items: [], piece, bornAt: born, acts: 0}));
+    foes.push(...halves);
     cue('split', {who: t});
     msg.textContent += ` The ${t.name} splits in two!`;
+    halves.forEach(setIntent);
+  }
+  // the Ogre King falls: his servant flees (and drops whatever it stole)
+  if (t.boss) for (const o of foes.filter(o => o.servant && o.hp > 0)) {
+    o.hp = 0; o.fled = true;
+    if (o.stolen) coins += o.stolen;
+    cue('hp', {who: o, hp: 0}); cue('flee', {who: o});
+    msg.textContent += ` His ${o.name} flees.`;
   }
   refresh();
 }
@@ -7853,6 +8147,7 @@ function killFoe(t) {
 function endFight() {
   const killedAny = foes.some(f => !f.fled);
   current.dead = true;
+  sunder = 0; weak = false;          // your armor is whole again, your nerve back
   const mend = Math.min(enchSum('mending') + VITALITY_MEND * perkN('vitality'), p.max - p.hp);
   if (killedAny && mend > 0) {
     p.hp += mend;
@@ -7906,10 +8201,13 @@ function damageFoe(t, amount, crit) {
 
 // one of your swings at t; label goes in front of the log text; returns 'miss', 'hit' or 'crit'
 function strike(t, heavy, label) {
-  // Focus shrinks every miss chance (normal, Heavy and Bat evasion alike); Balanced shrinks Heavy's
-  const base = (t.evasion ?? PLAYER_MISS) + (heavy ? HEAVY_MISS : 0);
-  const missChance = base * missKeep() * (heavy ? 1 - enchSum('balanced') : 1);
+  // Focus shrinks every miss chance (normal, Heavy and Bat evasion alike); Balanced shrinks Heavy's.
+  // A flitting Bat is much harder to hit; an enemy Off balance can't dodge at all
+  const base = (t.next === 'flit' ? FLIT_EVADE : t.evasion ?? PLAYER_MISS) + (heavy ? HEAVY_MISS : 0);
+  const missChance = t.off ? 0 : Math.min(0.95, base * missKeep() * (heavy ? 1 - enchSum('balanced') : 1));
   const result = swingResult(missChance, critChance());
+  const shaken = weak;               // a Wail weakens your next attack, hit or miss
+  weak = false;
   cue('swing', {who: t, heavy});                                           // you draw back and swing; it lands a moment later
   after(heavy ? TURN.heavy : TURN.swing);
   if (result === 'miss') {
@@ -7932,13 +8230,18 @@ function strike(t, heavy, label) {
   const giant = t.max >= GIANT_HP && enchSum('giantslayer') > 0;
   if (giant) dmg = Math.round(dmg * (1 + enchSum('giantslayer')));
   if (result === 'crit') { dmg *= PLAYER_CRIT_MULT; run.crits++; }
-  // an enemy's shield may catch the blow
-  const caught = t.shield !== undefined && Math.random() < FOE_SHIELD_BLOCK[t.shield];
+  if (shaken) dmg = Math.max(1, Math.round(dmg * WAIL_KEEP));
+  const braced = t.next === 'brace';
+  if (braced) dmg = Math.max(1, Math.round(dmg * BRACE_KEEP));
+  // an enemy's shield may catch the blow (not while it is Off balance)
+  const caught = !t.off && t.shield !== undefined && Math.random() < FOE_SHIELD_BLOCK[t.shield];
   if (caught) dmg = Math.max(1, Math.round(dmg * FOE_SHIELD_KEEP));
   run.biggest = Math.max(run.biggest, dmg);
   msg.textContent += label + (result === 'crit' ? 'CRITICAL HIT! ' : '') +
     (heavy ? `You smash ${t.name} for ${dmg}.` : `You hit ${t.name} for ${dmg}.`) +
     (ambush ? ' (Ambush)' : '') + (finisher ? ' (Executioner)' : '') + (giant ? ' (Giantslayer)' : '') +
+    (t.off ? ' (Off balance)' : '') + (shaken ? ' (Shaken)' : '') +
+    (braced ? ` The ${t.name} takes it on its braced shield.` : '') +
     (caught ? ` The ${t.name} catches it on its shield.` : '');
   if (result === 'crit' && t.regen && dmg < t.hp) {
     t.noRegen = true;
@@ -7969,8 +8272,9 @@ function act(kind) {
   draw();
 }
 function takeTurn(kind) {
-  if (kind === 'block') {
-    msg.textContent = 'You raise your guard.';
+  const reach = kind === 'block' || liveTarget();    // every enemy out of reach (a Wyvern on the wing...): you guard instead
+  if (kind === 'block' || !reach) {
+    msg.textContent = reach ? 'You raise your guard.' : 'Nothing is in reach, so you raise your guard.';
     cue('guard', {len: 0.3});
     const front = liveTarget();
     if (perkN('shieldbash') && front) {
@@ -7993,8 +8297,9 @@ function takeTurn(kind) {
     const next = liveTarget();
     if (next) { after(0.18); strike(next, heavy, ' Swift strike! '); }
   }
-  if (result === 'miss' && t.riposte && !t.stunned && t.hp > 0) {
-    msg.textContent += ` The ${t.name} ripostes!`;
+  // a Dark Knight strikes back when you miss it, and at every attack while it holds its Guard (never while Off balance)
+  if ((result === 'miss' && t.riposte || t.next === 'guard') && !t.off && !t.stunned && t.hp > 0) {
+    msg.textContent += t.next === 'guard' ? ` The ${t.name} turns your blow aside and strikes back!` : ` The ${t.name} ripostes!`;
     if (!foeStrike(t, exposed)) return;
   }
   if (foes.some(f => f.hp > 0)) {
@@ -8144,9 +8449,10 @@ function tryFlee() {
     for (const f of foes) if (f.hp > 0) {
       f.hp = f.max;
       f.burn = 0;
-      f.stunned = f.noRegen = f.raged = false;
+      f.stunned = f.noRegen = f.raged = f.off = f.cry = f.licked = false;
       f.swings = 0;
     }
+    sunder = 0; weak = false;
     foes = [];
     current = null;
     phase = 'explore';
@@ -8276,7 +8582,7 @@ function handleTap(pt) {
     hit.seen = true;
     current = hit;
     foes = hit.group;
-    foes.forEach(f => f.fresh = true); // a new fight: the Minotaur gets to charge again
+    startIntents();                    // a new fight: every enemy starts its pattern over (the Minotaur charges again)
     // Ambusher: your first hit in the fight is an ambush (a miss doesn't use it up). Each group can only be
     // ambushed once, so running away and coming back doesn't give you another
     hit.ambushReady = !!(perkN('ambusher') && !hit.ambushed);
@@ -8434,7 +8740,10 @@ function showRecord(rec) {
 }
 const WHISPERS = [
   'Block the third blow.',
-  'Kill the goblins first. They steal.',
+  'A goblin reaching for your purse? Raise your shield.',
+  'Read their badges. Red means block.',
+  'A wyvern that takes wing will dive.',
+  'Off balance: now swing heavy.',
   'Fire stops a troll from healing.',
   "Don't swing heavy at bats.",
   'The bull charges first. Raise your shield.',
@@ -8639,10 +8948,10 @@ const showVault = on => {
 // It is written after every tap and whenever the game goes out of sight, and thrown away the moment the run ends, so
 // there is only ever one, and it always holds what has already happened: reopening the game never undoes a bad turn.
 // Continue on the title screen picks it up. Bump SAVE_V whenever what is saved changes shape: older saves are then dropped
-const SAVE_KEY = 'crawlspace:run', SAVE_V = 1;
+const SAVE_KEY = 'crawlspace:run', SAVE_V = 2;   // 2: enemy moves (each enemy's next, then, acts...), sunder and weak
 function runSnapshot() {
   return {v: SAVE_V, floor, map, opened: [...opened], visited: [...visited], enemies, p, prev, worn, perks,
-    level, xp, levelUps, bonusDmg, hand, redraws, secondWinds, coins, potions, maxPotions, shopPotionsLeft, poison,
+    level, xp, levelUps, bonusDmg, hand, redraws, secondWinds, coins, potions, maxPotions, shopPotionsLeft, poison, sunder, weak,
     scrolls, bagSlots, scrollNow, pending, shopStock, shopTitle, shopMode, combatView, fightSeed,
     phase: finale ? 'won' : phase,                                        // (the Ogre King is falling: the win is already yours)
     current: enemies.indexOf(current), scene: enemies.findIndex(e => e.group === sceneFoes), target: sceneFoes.indexOf(target),
@@ -8671,7 +8980,7 @@ function restoreRun(s) {
   Object.assign(worn, s.worn);
   for (const k of Object.keys(perks)) delete perks[k];
   Object.assign(perks, s.perks);
-  ({level, xp, levelUps, bonusDmg, hand, redraws, secondWinds, coins, potions, maxPotions, shopPotionsLeft, poison,
+  ({level, xp, levelUps, bonusDmg, hand, redraws, secondWinds, coins, potions, maxPotions, shopPotionsLeft, poison, sunder, weak,
     scrolls, bagSlots, scrollNow, pending, shopStock, shopTitle, shopMode, combatView, fightSeed, phase} = s);
   // the fight on screen: the enemy you walked into, its group, and your target (saved by position, so they are the same objects)
   current = enemies[s.current] || null;

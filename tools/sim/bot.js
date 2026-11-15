@@ -136,23 +136,26 @@
   }
 
   // ---------------------------------------------------------------- combat math
+  // the bot reads each enemy's intent (f.next, see MOVES in the game) just as a player reads its badge
+  const moveOf = f => (typeof MOVES !== 'undefined' && f.next && MOVES[f.next]) || null;
+  const bigMult = f => { const M = moveOf(f); return M && M.big && f.next !== 'crush' ? M.big : 1; };
+  const strikes = f => { const M = moveOf(f); return !M || !!M.hit; };   // (a stance, a heal or a cry hurts no one this turn)
+  const armorVs = f => f.next === 'crush' ? 0 : (typeof armorNow === 'function' ? armorNow() : defense());
+  const cryBonus = () => typeof warcry === 'function' ? warcry() : 0;
   function foeHit(f) {
-    const crush = f.crushEvery && ((f.swings || 0) + 1) % f.crushEvery === 0;
-    const charge = f.charge && f.fresh;
-    const raw = f.dmg[1] + f.bonus + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0);
-    let h = Math.max(1, raw - (crush ? 0 : defense()));
-    if (charge) h *= 2;
-    return h;
+    if (!strikes(f)) return 0;
+    const raw = f.dmg[1] + f.bonus + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0) + cryBonus();
+    return Math.max(1, raw - armorVs(f)) * bigMult(f);
   }
-  const incoming = (mult = 1) => foes.filter(f => f.hp > 0 && !f.stunned)
+  const incoming = (mult = 1) => foes.filter(f => f.hp > 0 && !f.stunned && strikes(f))
     .reduce((s, f) => s + Math.max(1, Math.round(foeHit(f) * mult)), 0) + (poison ? poisonDmg() : 0);
+  // spike: this turn's move as shown; otherwise its plain attack, averaged
   function foeAvg(f, spike) {
-    const crush = spike && f.crushEvery && ((f.swings || 0) + 1) % f.crushEvery === 0;
-    const charge = spike && f.charge && f.fresh;
-    const raw = (f.dmg[0] + f.dmg[1]) / 2 + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0);
-    let h = Math.max(1, raw - (crush ? 0 : defense()));
-    if (charge) h *= 2;
-    return crush || charge ? h : h * (1 - FOE_MISS) * (1 + FOE_CRIT * (FOE_CRIT_MULT - 1));
+    if (spike && !strikes(f)) return 0;
+    const big = spike && moveOf(f) && moveOf(f).big;
+    const raw = (f.dmg[0] + f.dmg[1]) / 2 + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0) + cryBonus();
+    const h = Math.max(1, raw - (big ? armorVs(f) : defense())) * (big ? bigMult(f) : 1);
+    return big ? h : h * (1 - FOE_MISS) * (1 + FOE_CRIT * (FOE_CRIT_MULT - 1));
   }
   const shieldKeep = t => t.shield !== undefined ? 1 - FOE_SHIELD_BLOCK[t.shield] * (1 - FOE_SHIELD_KEEP) : 1;
   function myAvg(t, heavy) {
@@ -199,9 +202,18 @@
     return now * (1 - bm) + stunSaved + bash > extra * 1.15;
   }
 
-  function pickTarget(live) {
+  // stances that make an enemy a poor target this turn: a flitting Bat, a braced Skeleton, a guarding Dark Knight
+  const poorTarget = f => f.next === 'flit' || f.next === 'brace' || f.next === 'guard';
+  function pickTarget(all) {
+    const inReach = all.filter(f => typeof reachable !== 'function' || reachable(f));
+    if (!inReach.length) return null;
+    const good = inReach.filter(f => !poorTarget(f)), live = good.length ? good : inReach;
+    const off = live.find(f => f.off);               // Off balance: can't miss
+    if (off) return off;
     const thief = live.find(f => f.stolen);
     if (thief) return thief;
+    const crier = live.find(f => f.cry);             // the Orc whose war cry drives the group
+    if (crier) return crier;
     if (P.target === 'weakest') return live.slice().sort((a, b) => a.hp - b.hp)[0];
     // threat per turn of work: kill whoever removes the most damage per hit spent
     return live.slice().sort((a, b) => (foeAvg(b) / Math.max(1, b.hp / myAvg(b))) - (foeAvg(a) / Math.max(1, a.hp / myAvg(a))))[0];
@@ -219,7 +231,12 @@
     ST.turns++;
     let kind = 'normal';
     const finishing = target && target.hp <= myAvg(target) * 0.6;
-    if (P.block === 'main' && power('shield') && !finishing) kind = 'block';
+    const bigComing = live.some(f => !f.stunned && moveOf(f) && moveOf(f).big);
+    const snatch = live.some(f => f.next === 'snatch' && !f.stunned) && coins >= 10;
+    if (!target || (target.next === 'guard' && !finishing)) kind = 'block';        // nothing worth swinging at
+    else if (target.off) kind = 'heavy';                                             // Off balance: a Heavy can't miss (or be riposted)
+    else if ((bigComing || snatch) && P.block !== 'never' && !finishing) kind = 'block';
+    else if (P.block === 'main' && power('shield') && !finishing) kind = 'block';
     else if (P.block === 'ev' && blockPays(live)) kind = 'block';
     else if (P.heavy === 'always' && !target.riposte) kind = 'heavy';
     else if (P.heavy === 'ev') {
