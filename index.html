@@ -1159,36 +1159,47 @@ const potionHeal = () => POTION_HEAL + potionBonus() + fortPotion();
 const purseBonus = (k = perkN('purse')) => curve(PURSE_TOP, 1, k);
 const purseDmg = () => perkN('purse') ? Math.min(PURSE_DMG_MAX, Math.floor(coins / PURSE_DMG_COINS)) : 0;
 
-// card = short text on the button, info = the full sentence under the cards (k = count after taking it)
+// card = the short line on the card, brief = what it does in a few words (under it), info = the full sentence (in the
+// Hero panel); k = how many you hold after taking it
 const PERKS = {
   attack: {name: 'Attack', rarity: 'common',
+    brief: k => 'More damage on every hit.',
     card: k => `+${attackBonus(k)} damage`,
     info: k => `+${attackBonus(k)} damage on every hit (each pick adds a little less).`},
   vitality: {name: 'Vitality', rarity: 'common',
+    brief: k => `Heal ${VITALITY_MEND * k} after each fight won.`,
     card: k => `+${VITALITY_HP} max HP`,
     info: k => `+${VITALITY_HP} max HP and heal ${VITALITY_HP} (total +${VITALITY_HP * k}). Heal ${VITALITY_MEND * k} after every fight you win.`},
   focus: {name: 'Focus', rarity: 'common',
+    brief: k => 'Crit more often, miss less.',
     card: k => `Crit ${pct(critChance(k))}`,
     info: k => `Crit chance ${pct(critChance(k))}, and you miss ${pct(1 - missKeep(k))} less often.`},
   pathfinder: {name: 'Pathfinder', rarity: 'rare', once: true,
+    brief: k => 'See farther. Enemies show on the map. Once only.',
     card: k => `See ${sight(k)}, spot enemies`,
     info: k => `See ${sight(k)} tiles around you, and enemies in sight show on the map before you meet them. You can only take it once.`},
   ambusher: {name: 'Ambusher', rarity: 'uncommon',
+    brief: k => 'Your first hit in each fight hits harder.',
     card: k => `Ambush +${pct(ambushBonus(k))}`,
     info: k => `Your first hit in every fight is an Ambush for ${pct(ambushBonus(k))} more damage (a miss doesn't use it up).`},
   executioner: {name: 'Executioner', rarity: 'uncommon',
+    brief: k => `More damage to enemies under ${pct(EXEC_THRESHOLD)} HP.`,
     card: k => `+${pct(execBonus(k))} finishers`,
     info: k => `Deal ${pct(execBonus(k))} more damage to enemies under ${pct(EXEC_THRESHOLD)} HP.`},
   antidote: {name: 'Antidote', rarity: 'uncommon',
+    brief: k => 'Potions heal more. Poison is weaker.',
     card: k => `Potions +${potionBonus(k)}, poison less`,
     info: k => `Potions heal ${potionBonus(k)} more. Poison deals ${poisonDmg(k)} damage for ${poisonTurns(k)} turns (normally ${POISON_DMG} for ${POISON_TURNS}).`},
   shieldbash: {name: 'Shield Bash', rarity: 'uncommon',
+    brief: k => 'Blocking bashes and may stun.',
     card: k => `Bash ${bashDmg(k)}, stun ${pct(stunChance(k))}`,
     info: k => `When you Block, you bash your target for ${bashDmg(k)}, and each hit on your shield has a ${pct(stunChance(k))} chance to stun.`},
   secondwind: {name: 'Second Wind', rarity: 'rare', once: true,
+    brief: k => `Survive one deadly blow with ${pct(SECOND_WIND_SHARE)} HP. Once only.`,
     card: k => 'Cheat death once',
     info: k => `The first blow that would kill you leaves you at ${pct(SECOND_WIND_SHARE)} of your max HP instead. You can only take it once.`},
   purse: {name: 'Tight Purse', rarity: 'uncommon', once: true,
+    brief: k => 'No theft. More gold. Coins add damage. Once only.',
     card: k => `Gold +${pct(purseBonus(k))}, coins hit`,
     info: k => `Goblins can't steal from you, you find ${pct(purseBonus(k))} more gold, and you deal +1 damage for every ${PURSE_DMG_COINS} coins you carry (up to +${PURSE_DMG_MAX}). You can only take it once.`}
 };
@@ -7337,7 +7348,7 @@ function paintCard(b) {
   ctx.font = textFont(12, 400);
   ctx.fillStyle = '#cfc6b4';
   const iy = ny + 24 + eff * 14 + 4;
-  centeredLines(P.info(n), cx, iy, w - 12, 14, Math.floor((y + h - 14 - iy) / 14) + 1);
+  centeredLines(P.brief(n), cx, iy, w - 12, 14, Math.floor((y + h - 14 - iy) / 14) + 1);
 }
 function levelScreen(L, add, menu) {
   const P = L.panel;
