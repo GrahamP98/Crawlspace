@@ -229,7 +229,7 @@
       </ul>
       <h4>Floors <span class="num">2-4</span></h4>
       <ul>
-        <li><span class="sw" style="background:#c33"></span><b>Orc</b> (deep in floor 2 on): bloodlust. Hits 4 harder while you are below half health, so heal before it gets going. In a group its first move is a <b>War cry</b> (horn): the whole group hits 3 harder while the Orc lives. Kill it first.</li>
+        <li><span class="sw" style="background:#c33"></span><b>Orc</b> (deep in floor 2 on): bloodlust. Hits 4 harder while you are below half health, so heal before it gets going. In a group its first move is a <b>War cry</b> (horn): the rest of the group hits 2 harder while the Orc lives. Kill it first.</li>
         <li><span class="sw" style="background:#a52"></span><b>Troll</b> (floor 3 on): regenerates 6 health every turn. A critical hit stops it for one turn, and fire stops it while the Troll burns. Finish Trolls fast. Every third turn it hurls a <b>Boulder</b> (a big move: Block it). Once, below half health, it <b>Licks its wounds</b> (heart) for 18 and doesn't attack: a free Heavy for you (fire stops the healing).</li>
       </ul>
       <h4>Floors <span class="num">3-5</span></h4>
@@ -1534,7 +1534,7 @@ const MOVES = {
   guard:   {name: 'Guard', stance: true},           // Dark Knight with a shield: strikes back at every attack
   cower:   {name: 'Cower', stance: true, hide: true},   // Goblin with a shield, in a group: hides behind the others
   wing:    {name: 'Take wing', stance: true, hide: true},   // Wyvern: out of reach, then dives
-  warcry:  {name: 'War cry'},                       // Orc in a group: the whole group hits harder while it lives
+  warcry:  {name: 'War cry'},                       // Orc in a group: the rest of the group hits harder while it lives
   lick:    {name: 'Lick wounds'},                   // Troll under half health, once: a big heal (not while burning)
   wail:    {name: 'Wail'},                          // Wraith: your next attack is weaker
   paw:     {name: 'Paw the ground'},                // Minotaur: charges next turn
@@ -1544,7 +1544,7 @@ const MOVES = {
 };
 const FLIT_EVADE = 0.70;      // your miss chance against a flitting Bat
 const BRACE_KEEP = 0.5;       // the share of your hit a bracing Skeleton takes
-const WARCRY_BONUS = 3;       // every enemy in the group hits this much harder while the Orc that cried lives
+const WARCRY_BONUS = 2;       // the rest of the group (not the Orc itself) hits this much harder while the Orc that cried lives
 const LICK_REGENS = 3;        // Lick wounds heals this many turns of the Troll's regeneration at once
 const FEAST_HEAL = 40;        // the Ogre King's feast
 const ROAR_AT = 2 / 3;        // the Ogre King roars for a servant at this share of his health
@@ -1554,7 +1554,7 @@ let sunder = 0, weak = false; // you, in this fight: armor lost to Sunder and ac
 const armorNow = () => Math.max(0, defense() - sunder);
 const isHidden = f => !!(f.next && MOVES[f.next] && MOVES[f.next].hide);
 const reachable = f => f.hp > 0 && !isHidden(f);
-const warcry = () => foes.some(o => o.cry && o.hp > 0) ? WARCRY_BONUS : 0;
+const warcry = f => foes.some(o => o !== f && o.cry && o.hp > 0) ? WARCRY_BONUS : 0;   // the bonus f hits with
 // the move f makes on its action number n (0 = its first in this fight); prev = the move it makes (or made) just before;
 // ahead: prev is still to come (a forecast), so a swing in it counts toward the Crushing Blow
 function planMove(f, n, prev, ahead = false) {
@@ -1619,7 +1619,7 @@ function intentDmg(f, m) {
   const M = MOVES[m];
   if (!M || !M.hit) return null;
   const lust = f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0;
-  let d = (f.dmg[0] + f.dmg[1]) / 2 + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + lust + warcry() - (m === 'crush' ? 0 : armorNow());
+  let d = (f.dmg[0] + f.dmg[1]) / 2 + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + lust + warcry(f) - (m === 'crush' ? 0 : armorNow());
   d = Math.max(1, d);
   if (M.big && m !== 'crush') d *= M.big;
   return Math.max(1, Math.round(d));
@@ -8042,7 +8042,7 @@ function foeStrike(f, mult, blocking = false, move = 'attack') {
     msg.textContent += ` ${f.name} misses you.`;
   } else {
     const lust = f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0;
-    let hurt = Math.max(1, roll(f.dmg[0], f.dmg[1]) + f.bonus + rage + lust + warcry() - (crush ? 0 : armorNow()));
+    let hurt = Math.max(1, roll(f.dmg[0], f.dmg[1]) + f.bonus + rage + lust + warcry(f) - (crush ? 0 : armorNow()));
     if (result === 'crit') hurt = Math.round(hurt * FOE_CRIT_MULT);
     if (big && !crush) hurt *= M.big;
     hurt = Math.max(1, Math.round(hurt * mult));
@@ -8125,7 +8125,7 @@ function foeAct(f, mult, blocking) {
     if (m === 'warcry') {
       f.cry = true;
       cue('cry', {who: f, len: 0.8});
-      msg.textContent += ` The ${f.name} bellows a war cry! The group hits ${WARCRY_BONUS} harder while it lives.`;
+      msg.textContent += ` The ${f.name} bellows a war cry! The rest of the group hits ${WARCRY_BONUS} harder while it lives.`;
     }
     if (m === 'wail') {
       weak = true;

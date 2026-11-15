@@ -141,10 +141,10 @@
   const bigMult = f => { const M = moveOf(f); return M && M.big && f.next !== 'crush' ? M.big : 1; };
   const strikes = f => { const M = moveOf(f); return !M || !!M.hit; };   // (a stance, a heal or a cry hurts no one this turn)
   const armorVs = f => f.next === 'crush' ? 0 : (typeof armorNow === 'function' ? armorNow() : defense());
-  const cryBonus = () => typeof warcry === 'function' ? warcry() : 0;
+  const cryBonus = f => typeof warcry === 'function' ? warcry(f) : 0;
   function foeHit(f) {
     if (!strikes(f)) return 0;
-    const raw = f.dmg[1] + f.bonus + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0) + cryBonus();
+    const raw = f.dmg[1] + f.bonus + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0) + cryBonus(f);
     return Math.max(1, raw - armorVs(f)) * bigMult(f);
   }
   const incoming = (mult = 1) => foes.filter(f => f.hp > 0 && !f.stunned && strikes(f))
@@ -153,7 +153,7 @@
   function foeAvg(f, spike) {
     if (spike && !strikes(f)) return 0;
     const big = spike && moveOf(f) && moveOf(f).big;
-    const raw = (f.dmg[0] + f.dmg[1]) / 2 + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0) + cryBonus();
+    const raw = (f.dmg[0] + f.dmg[1]) / 2 + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0) + cryBonus(f);
     const h = Math.max(1, raw - (big ? armorVs(f) : defense())) * (big ? bigMult(f) : 1);
     return big ? h : h * (1 - FOE_MISS) * (1 + FOE_CRIT * (FOE_CRIT_MULT - 1));
   }
@@ -232,10 +232,9 @@
     let kind = 'normal';
     const finishing = target && target.hp <= myAvg(target) * 0.6;
     const bigComing = live.some(f => !f.stunned && moveOf(f) && moveOf(f).big);
-    const snatch = live.some(f => f.next === 'snatch' && !f.stunned) && coins >= 10;
     if (!target || (target.next === 'guard' && !finishing)) kind = 'block';        // nothing worth swinging at
     else if (target.off) kind = 'heavy';                                             // Off balance: a Heavy can't miss (or be riposted)
-    else if ((bigComing || snatch) && P.block !== 'never' && !finishing) kind = 'block';
+    else if (bigComing && P.block !== 'never' && !finishing) kind = 'block';             // (a Snatch risks only 3-6 coins: Block weighs it like any hit)
     else if (P.block === 'main' && power('shield') && !finishing) kind = 'block';
     else if (P.block === 'ev' && blockPays(live)) kind = 'block';
     else if (P.heavy === 'always' && !target.riposte) kind = 'heavy';
