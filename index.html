@@ -5095,6 +5095,21 @@ const ribbonOrn = (w, h) => ornament(`ribbon:${w}:${h}`, w, h, g => {
   g.closePath(); g.fillStyle = '#dcc79c'; g.fill();
   g.fillStyle = 'rgba(150,120,70,0.5)'; for (const x of [w * 0.25, w * 0.5, w * 0.75]) g.fillRect(x, top + 2, 1, bot - top - 4);   // its folds
 });
+// a rose window: a ring of eight cusped lobes round a quatrefoil, the tracery of a cathedral's round window
+const roseOrn = (s, m = 'gold') => ornament(`rose:${s}:${m}`, s, s, g => {
+  const c = s / 2, R = s / 2 - 2;
+  g.strokeStyle = mcol(m); g.lineWidth = 1.6;
+  g.beginPath(); g.arc(c, c, R, 0, Math.PI * 2); g.stroke();
+  g.beginPath(); g.arc(c, c, R * 0.42, 0, Math.PI * 2); g.stroke();
+  g.lineWidth = 1.2;
+  for (let k = 0; k < 8; k++) {
+    const a = k / 8 * Math.PI * 2, x = c + Math.cos(a) * R * 0.7, y = c + Math.sin(a) * R * 0.7;
+    g.beginPath(); g.arc(x, y, R * 0.24, 0, Math.PI * 2); g.stroke();
+    g.beginPath(); g.moveTo(c + Math.cos(a + Math.PI / 8) * R * 0.42, c + Math.sin(a + Math.PI / 8) * R * 0.42); g.lineTo(c + Math.cos(a + Math.PI / 8) * R, c + Math.sin(a + Math.PI / 8) * R); g.stroke();
+  }
+  quatrefoilPath(g, c, c, R * 0.36); g.stroke();
+  berry(g, c, c, R * 0.08, mcol(m));
+});
 // an unrolled scroll: a parchment sheet between its rolled ends, written over in lines of script
 const scrollOrn = (w, h) => ornament(`scrollart:${w}:${h}`, w, h, g => {
   g.fillStyle = '#dcc79c'; g.fillRect(7, 8, w - 14, h - 16);
@@ -6409,6 +6424,8 @@ function logScreen(L, add, menu) {
   add({draw: () => {
     ctx.font = textFont(13, 400);
     ctx.textAlign = 'left';
+    const free = bottom - top - used;                                      // room above the entries: a rose window, faint, like tracery in the dark
+    if (free > 120) { const rs = Math.round(Math.min(150, free - 30, P.w - 60)); drawOrn(roseOrn(rs), P.x + P.w / 2 - rs / 2, top + (free - rs) / 2 - 4, false, 1, 0.16); }
     if (!logEntries.length) { ctx.fillStyle = '#8a8478'; ctx.fillText('Nothing has happened yet.', P.x + 14, top + 14); return; }
     let y = bottom;
     blocks.forEach((b, k) => {
