@@ -99,10 +99,22 @@
     opacity: 1; transform: translateY(-50%) scaleX(1); }
   @media (prefers-reduced-motion: reduce) { #titleMain .actions button::before, #titleMain .actions button::after, #backBtn::before, #backBtn::after, #vaultBack::before, #vaultBack::after { transition: opacity 0.2s; } }  #titleMain .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   #titleMain .pair button { font-size: 20px; }
-  #titleMain .pair.sound { margin-top: 10px; }
-  #titleMain .pair.sound button { font-size: 15px; padding: 6px; color: #b8a884; }
-  #titleMain .pair.sound button.off { color: #6e665a; text-decoration: line-through; text-decoration-color: rgba(200, 80, 60, 0.7); }
-  #vault h2 { font-family: var(--title-font); font-weight: 400; font-size: 30px; color: #fc3; margin: 8px 0 0; text-align: center; }
+  /* the gear in the title's corner (Settings), and the Settings page: Music and Sounds, each on or off */
+  #title #setBtn { position: fixed; z-index: 2; top: max(8px, env(safe-area-inset-top, 0px)); right: 8px; width: 30px; height: 30px; padding: 6px; border-color: rgba(110, 90, 58, 0.45);
+                   opacity: 0; pointer-events: none; transition: opacity 0.9s ease-out; background: rgba(14, 11, 16, 0.6); }
+  #title.shown #setBtn { opacity: 0.6; pointer-events: auto; }
+  #title.shown #setBtn:hover, #title.shown #setBtn:focus-visible { opacity: 1; }
+  #title:has(#titleMain[hidden]) #setBtn { display: none; }
+  #setBtn svg { display: block; width: 100%; height: 100%; }
+  #settings .lead { text-align: center; color: #aaa; margin: 0; font-style: italic; }
+  #settings button.off { color: #6e665a; border-color: #3e3428; }
+  /* the gate before the title: a tap here wakes the sound (browsers allow none before a tap), then the reveal plays */
+  #gate { position: fixed; inset: 0; z-index: 3; display: flex; align-items: flex-end; justify-content: center; cursor: pointer;
+          padding-bottom: max(18vh, env(safe-area-inset-bottom, 0px)); font-family: var(--title-font); font-size: 30px; color: #e6d6b2;
+          letter-spacing: 0.06em; text-shadow: 0 0 12px rgba(255, 150, 60, 0.6), 0 2px 4px #000; animation: gatepulse 2.4s ease-in-out infinite; }
+  @keyframes gatepulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { #gate { animation: none; } }
+  #vault h2, #settings h2 { font-family: var(--title-font); font-weight: 400; font-size: 30px; color: #fc3; margin: 8px 0 0; text-align: center; }
   #vault .lead { text-align: center; color: #aaa; margin: 0; font-style: italic; line-height: 1.4; }
   #vault .vhead { display: grid; justify-items: center; gap: 2px; }
   #vaultArt { width: 220px; height: 200px; display: block; }
@@ -124,11 +136,11 @@
   /* How to Play and the Vault, dressed like the rest: a faint gold lattice behind (the stamped grounds of the old
      painted cards), gold vines either side of each heading (the same vines as the title buttons), flowered dividers,
      fleurs-de-lis for the topics, gilt studs on the Vault's buttons and an arched niche for you to stand in */
-  #title:has(#howto:not([hidden])), #title:has(#vault:not([hidden])) { background: radial-gradient(ellipse at 50% 20%, rgba(70, 40, 30, 0.35), transparent 70%), url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'><path d='M14 0L28 14L14 28L0 14Z' fill='none' stroke='rgba(217,164,65,0.07)' stroke-width='1'/><circle cx='14' cy='14' r='1.6' fill='rgba(217,164,65,0.12)'/><path d='M14 9.5v2M14 16.5v2M9.5 14h2M16.5 14h2' stroke='rgba(217,164,65,0.09)' stroke-width='0.8'/></svg>"), #07060a; }
-  #howto h2, #vault h2 { display: flex; align-items: center; justify-content: center; gap: 8px; }
-  #howto h2::before, #vault h2::before, #howto h2::after, #vault h2::after { content: ''; width: 58px; height: 22px; flex: none; background: center / contain no-repeat; }
-  #howto h2::before, #vault h2::before { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 24'><g fill='none' stroke='%23d9a441' stroke-width='1.7' stroke-linecap='round'><path d='M3 12c0-4 5-5 6.5-2.2S8 15.5 5.5 13.5'/><path d='M9 12c7-6.5 15-6.5 21 0s13 6.5 20 0'/><path d='M19 7.4c-.6-3 1.4-5 4.4-4.8'/><path d='M40 16.6c.6 3-1.4 5-4.4 4.8'/></g><g fill='%23d9a441'><path d='M23.4 2.6c3 0 5 1.8 4.4 4-3 .2-5-1.6-4.4-4z'/><path d='M35.6 21.4c-3 0-5-1.8-4.4-4 3-.2 5 1.6 4.4 4z'/><path d='M28 11c2-2.2 5-2.2 6.4 0-1.6 2.2-4.6 2.2-6.4 0z'/><path d='M51 12c2.6-2.4 6.6-3 10.6 0-4 3-8 2.4-10.6 0z'/><path d='M52.6 11.4c.6-3.4 3-5.6 5.6-5.6-1 2-1.6 3.6-2.6 5.6z'/><path d='M52.6 12.6c.6 3.4 3 5.6 5.6 5.6-1-2-1.6-3.6-2.6-5.6z'/><rect x='50' y='10.4' width='2' height='3.2' rx='.6'/></g><g fill='%23e0b050'><circle cx='14' cy='15.4' r='1.4'/><circle cx='15.8' cy='17.2' r='1.4'/><circle cx='14' cy='19' r='1.4'/><circle cx='12.2' cy='17.2' r='1.4'/></g><circle cx='14' cy='17.2' r='.9' fill='%23fff0c0'/></svg>"); }
-  #howto h2::after, #vault h2::after { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 24'><g transform='translate(64 0) scale(-1 1)'><g fill='none' stroke='%23d9a441' stroke-width='1.7' stroke-linecap='round'><path d='M3 12c0-4 5-5 6.5-2.2S8 15.5 5.5 13.5'/><path d='M9 12c7-6.5 15-6.5 21 0s13 6.5 20 0'/><path d='M19 7.4c-.6-3 1.4-5 4.4-4.8'/><path d='M40 16.6c.6 3-1.4 5-4.4 4.8'/></g><g fill='%23d9a441'><path d='M23.4 2.6c3 0 5 1.8 4.4 4-3 .2-5-1.6-4.4-4z'/><path d='M35.6 21.4c-3 0-5-1.8-4.4-4 3-.2 5 1.6 4.4 4z'/><path d='M28 11c2-2.2 5-2.2 6.4 0-1.6 2.2-4.6 2.2-6.4 0z'/><path d='M51 12c2.6-2.4 6.6-3 10.6 0-4 3-8 2.4-10.6 0z'/><path d='M52.6 11.4c.6-3.4 3-5.6 5.6-5.6-1 2-1.6 3.6-2.6 5.6z'/><path d='M52.6 12.6c.6 3.4 3 5.6 5.6 5.6-1-2-1.6-3.6-2.6-5.6z'/><rect x='50' y='10.4' width='2' height='3.2' rx='.6'/></g><g fill='%23e0b050'><circle cx='14' cy='15.4' r='1.4'/><circle cx='15.8' cy='17.2' r='1.4'/><circle cx='14' cy='19' r='1.4'/><circle cx='12.2' cy='17.2' r='1.4'/></g><circle cx='14' cy='17.2' r='.9' fill='%23fff0c0'/></g></svg>"); }
+  #title:has(#howto:not([hidden])), #title:has(#vault:not([hidden])), #title:has(#settings:not([hidden])) { background: radial-gradient(ellipse at 50% 20%, rgba(70, 40, 30, 0.35), transparent 70%), url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'><path d='M14 0L28 14L14 28L0 14Z' fill='none' stroke='rgba(217,164,65,0.07)' stroke-width='1'/><circle cx='14' cy='14' r='1.6' fill='rgba(217,164,65,0.12)'/><path d='M14 9.5v2M14 16.5v2M9.5 14h2M16.5 14h2' stroke='rgba(217,164,65,0.09)' stroke-width='0.8'/></svg>"), #07060a; }
+  #howto h2, #vault h2, #settings h2 { display: flex; align-items: center; justify-content: center; gap: 8px; }
+  #howto h2::before, #vault h2::before, #howto h2::after, #vault h2::after, #settings h2::before, #settings h2::after { content: ''; width: 58px; height: 22px; flex: none; background: center / contain no-repeat; }
+  #howto h2::before, #vault h2::before, #settings h2::before { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 24'><g fill='none' stroke='%23d9a441' stroke-width='1.7' stroke-linecap='round'><path d='M3 12c0-4 5-5 6.5-2.2S8 15.5 5.5 13.5'/><path d='M9 12c7-6.5 15-6.5 21 0s13 6.5 20 0'/><path d='M19 7.4c-.6-3 1.4-5 4.4-4.8'/><path d='M40 16.6c.6 3-1.4 5-4.4 4.8'/></g><g fill='%23d9a441'><path d='M23.4 2.6c3 0 5 1.8 4.4 4-3 .2-5-1.6-4.4-4z'/><path d='M35.6 21.4c-3 0-5-1.8-4.4-4 3-.2 5 1.6 4.4 4z'/><path d='M28 11c2-2.2 5-2.2 6.4 0-1.6 2.2-4.6 2.2-6.4 0z'/><path d='M51 12c2.6-2.4 6.6-3 10.6 0-4 3-8 2.4-10.6 0z'/><path d='M52.6 11.4c.6-3.4 3-5.6 5.6-5.6-1 2-1.6 3.6-2.6 5.6z'/><path d='M52.6 12.6c.6 3.4 3 5.6 5.6 5.6-1-2-1.6-3.6-2.6-5.6z'/><rect x='50' y='10.4' width='2' height='3.2' rx='.6'/></g><g fill='%23e0b050'><circle cx='14' cy='15.4' r='1.4'/><circle cx='15.8' cy='17.2' r='1.4'/><circle cx='14' cy='19' r='1.4'/><circle cx='12.2' cy='17.2' r='1.4'/></g><circle cx='14' cy='17.2' r='.9' fill='%23fff0c0'/></svg>"); }
+  #howto h2::after, #vault h2::after, #settings h2::after { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 24'><g transform='translate(64 0) scale(-1 1)'><g fill='none' stroke='%23d9a441' stroke-width='1.7' stroke-linecap='round'><path d='M3 12c0-4 5-5 6.5-2.2S8 15.5 5.5 13.5'/><path d='M9 12c7-6.5 15-6.5 21 0s13 6.5 20 0'/><path d='M19 7.4c-.6-3 1.4-5 4.4-4.8'/><path d='M40 16.6c.6 3-1.4 5-4.4 4.8'/></g><g fill='%23d9a441'><path d='M23.4 2.6c3 0 5 1.8 4.4 4-3 .2-5-1.6-4.4-4z'/><path d='M35.6 21.4c-3 0-5-1.8-4.4-4 3-.2 5 1.6 4.4 4z'/><path d='M28 11c2-2.2 5-2.2 6.4 0-1.6 2.2-4.6 2.2-6.4 0z'/><path d='M51 12c2.6-2.4 6.6-3 10.6 0-4 3-8 2.4-10.6 0z'/><path d='M52.6 11.4c.6-3.4 3-5.6 5.6-5.6-1 2-1.6 3.6-2.6 5.6z'/><path d='M52.6 12.6c.6 3.4 3 5.6 5.6 5.6-1-2-1.6-3.6-2.6-5.6z'/><rect x='50' y='10.4' width='2' height='3.2' rx='.6'/></g><g fill='%23e0b050'><circle cx='14' cy='15.4' r='1.4'/><circle cx='15.8' cy='17.2' r='1.4'/><circle cx='14' cy='19' r='1.4'/><circle cx='12.2' cy='17.2' r='1.4'/></g><circle cx='14' cy='17.2' r='.9' fill='%23fff0c0'/></g></svg>"); }
   #howto details, #howto details:last-of-type { border: 0; padding: 14px 0 6px; background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 12'><g fill='none' stroke='%23d9a441' stroke-width='1' stroke-linecap='round'><path d='M10 6H98M122 6H210' opacity='0.55'/><path d='M10 6c-3 0-4-3-2-4.4' /><path d='M210 6c3 0 4-3 2-4.4'/></g><g fill='%23d9a441'><circle cx='104' cy='6' r='2.6'/><circle cx='116' cy='6' r='2.6'/><circle cx='110' cy='2.6' r='2.6'/><circle cx='110' cy='9.4' r='2.6'/><circle cx='92' cy='6' r='1.2'/><circle cx='128' cy='6' r='1.2'/></g><circle cx='110' cy='6' r='1.7' fill='%23c8303a'/></svg>") top center / min(240px, 80%) 12px no-repeat; }
   #howto details:last-of-type { box-shadow: none; }
   #howto summary { list-style: none; display: flex; align-items: center; gap: 9px; }
@@ -142,6 +154,8 @@
 </style>
 <div id="title">
   <canvas id="titleArt" aria-hidden="true"></canvas>
+  <div id="gate" role="button" tabindex="0" hidden>Tap to enter</div>
+  <button id="setBtn" aria-label="Settings"><svg viewBox="-12 -12 24 24" aria-hidden="true"><path fill="#d9c49a" fill-rule="evenodd" d="M-1.6-11h3.2l.6 3.1 2.2.9 2.6-1.8 2.3 2.3-1.8 2.6.9 2.2 3.1.6v3.2l-3.1.6-.9 2.2 1.8 2.6-2.3 2.3-2.6-1.8-2.2.9-.6 3.1h-3.2l-.6-3.1-2.2-.9-2.6 1.8-2.3-2.3 1.8-2.6-.9-2.2-3.1-.6v-3.2l3.1-.6.9-2.2-1.8-2.6 2.3-2.3 2.6 1.8 2.2-.9zM0-3.6a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 1 0 0-7.2z"/></svg></button>
   <div class="inner" id="titleMain">
     <h1 class="sr-only">Crawlspace</h1>
     <div class="stage" aria-hidden="true"></div>
@@ -149,7 +163,6 @@
     <div class="actions">
       <button id="playBtn">Play</button>
       <div class="pair"><button id="howBtn">How to Play</button><button id="vaultBtn">Vault</button></div>
-      <div class="pair sound"><button id="musicBtn" aria-pressed="true">Music</button><button id="sfxBtn" aria-pressed="true">Sounds</button></div>
       <p class="whisper" id="whisper"></p>
     </div>
   </div>
@@ -337,7 +350,7 @@
     <details>
       <summary>Sound and music</summary>
       <p>Every floor has its own music, and so do fights, the Ogre King, the campfire and the merchant. A blow sounds like what it hits: a slime squelches, bones crack and rattle, flesh thuds, armor rings, and a wraith only sighs. When your health runs low in a fight, you hear your heart.</p>
-      <p>Switch the <b>Music</b> and the <b>Sounds</b> on or off on the title screen, or with the speaker button at the top of the Hero panel (it steps through: both on, music off, both off).</p>
+      <p>The gear opens the <b>Settings</b>: in the corner of the title screen, and in the top-right corner of the game. There you switch the <b>Music</b> and the <b>Sounds</b> on or off. In the game it also holds <b>Return to the title</b>, which ends the run you are on (tap it twice).</p>
     </details>
     <button id="backBtn">Back</button>
   </div>
@@ -350,6 +363,13 @@
     </div>
     <div id="vaultList"></div>
     <button id="vaultBack">Back</button>
+  </div>
+  <div class="inner" id="settings" hidden>
+    <h2>Settings</h2>
+    <p class="lead">Each is kept for next time.</p>
+    <button id="musicBtn" aria-pressed="true">Music: On</button>
+    <button id="sfxBtn" aria-pressed="true">Sounds: On</button>
+    <button id="setBack">Back</button>
   </div>
 </div>
 <canvas id="c" width="288" height="400"></canvas>
@@ -731,6 +751,13 @@ const SND = (() => {
     S.metal(gr, t + 0.05, {f: 260, gain: 0.4, ring: 1.6});
   };
   S.roar = (gr, t, o) => S.voice(gr, t, {...o, name: 'Ogre King'});
+  S.gate = (gr, t, o) => {                                                  // entering: your torch catches, a deep drum, the gate's bell
+    const v = V(gr, o, 0.6, 1.2);
+    hiss(v, t, {dur: 0.6, a: 0.12, peak: 0.45, type: 'lowpass', f: 180, to: 3200, q: 1.1});
+    S.burn(gr, t + 0.3, {gain: 0.7});
+    tone(v, t + 0.15, {f: 70, to: 36, dur: 1.2, peak: 0.8});
+    bell(v, t + 0.5, 98, {dur: 4, peak: 0.25}); bell(v, t + 0.5, 147, {dur: 3, peak: 0.08});
+  };
 
   // ---- out of the fight ----
   S.tap = (gr, t, o) => { const v = V(gr, o, 0.04, 0.8); hiss(v, t, {dur: 0.018, peak: 0.35, type: 'bandpass', f: 2300, q: 4, a: 0.001}); tone(v, t, {type: 'triangle', f: 1250, to: 880, dur: 0.035, peak: 0.12, a: 0.001}); };
@@ -953,8 +980,13 @@ const SND = (() => {
     boot();
     if (!A || A.state === 'running') return;
     try { const s = A.createBufferSource(); s.buffer = A.createBuffer(1, 1, A.sampleRate); s.connect(A.destination); s.start(0); } catch (e) {}
-    A.resume().then(() => { if (want) setMood(want); }).catch(() => {});
+    A.resume().then(() => {
+      if (want) setMood(want);
+      const now = performance.now();                                       // what was asked for in the moment before sound started
+      for (const e of early.splice(0)) if (now - e.at < 800) { try { S[e.name](G, A.currentTime + 0.01 + Math.max(0, e.delay - (now - e.at) / 1000), e.opts); } catch (er) {} }
+    }).catch(() => {});
   };
+  const early = [];
   for (const ev of ['pointerdown', 'pointerup', 'mousedown', 'touchstart', 'touchend', 'click', 'keydown']) window.addEventListener(ev, wake, {capture: true, passive: true});
   document.addEventListener('visibilitychange', () => { if (!A) return; if (document.hidden) A.suspend().catch(() => {}); else A.resume().catch(() => {}); });
 
@@ -963,6 +995,7 @@ const SND = (() => {
     state: () => A ? A.state : 'not started',
     // play sound name in delay seconds, with opts (pan, mat, size, ...); under the current tag
     fx(name, opts = {}, delay = 0) {
+      if (A && A.state !== 'running' && prefs.sfx && S[name] && early.length < 6) early.push({name, opts, delay, at: performance.now()});   // (played once sound has started)
       if (!A || !prefs.sfx || A.state !== 'running' || !S[name]) return;
       try { S[name](G, A.currentTime + 0.01 + Math.max(0, delay), opts); } catch (e) {}
     },
@@ -5812,17 +5845,20 @@ function drawTopBar() {
   if (coinShow === null || coins < coinShow) coinShow = coins;
   else if (coins > coinShow && !turnBusy() && now - coinStep > 40) { coinShow += Math.max(1, Math.ceil((coins - coinShow) * 0.18)); coinStep = coinGlint = now; }
   const gl = Math.max(0, 1 - (now - coinGlint) / 300);
-  drawCoin(168, 23, 8.5 * (1 + 0.18 * gl));
-  if (gl > 0) { ctx.fillStyle = `rgba(255,250,210,${0.8 * gl})`; ctx.fillRect(163, 22.5, 10, 1); ctx.fillRect(167.5, 18, 1, 10); }
+  drawCoin(162, 23, 8.5 * (1 + 0.18 * gl));
+  if (gl > 0) { ctx.fillStyle = `rgba(255,250,210,${0.8 * gl})`; ctx.fillRect(157, 22.5, 10, 1); ctx.fillRect(161.5, 18, 1, 10); }
   ctx.textAlign = 'left';
   ctx.font = `600 17px ${GAME_FONT}`;
   ctx.fillStyle = gl > 0 ? '#ffe680' : '#fc3';
-  ctx.fillText(String(coinShow), 181, 29, 40);
-  // potions: tap the flask to drink one
+  ctx.fillText(String(coinShow), 174, 29, 34);
+  // potions, right after the gold: tap the flask to drink one
   const glow = poison && potions ? '#c060ff' : potions && p.hp <= p.max - potionHeal() ? '#4e4' : null;
-  drawFlask(238, 22, potions / maxPotions, glow);
+  drawFlask(220, 22, potions / maxPotions, glow);
   ctx.fillStyle = potions ? '#fff' : '#888';
-  ctx.fillText(`${potions}/${maxPotions}`, 251, 29, 36);
+  ctx.fillText(`${potions}/${maxPotions}`, 232, 29, 28);
+  // the gear in the corner: Settings (sound, and back to the title)
+  const lit = isLit({id: 'settings'}) || (overlay && overlay.kind === 'settings');
+  ctx.save(); ctx.globalAlpha = lit ? 1 : 0.7; gearIcon(276, 22, 7.5, lit ? '#ffe3a8' : '#c9b994'); ctx.restore();
 }
 
 // fit the canvas to the screen (on load, and whenever the screen or browser bars change size)
@@ -6330,19 +6366,50 @@ function paintClose(b) {
   ctx.moveTo(cx + 7, cy - 7); ctx.lineTo(cx - 7, cy + 7);
   ctx.stroke();
 }
-// music and sounds: a speaker (struck through when sounds are off) and a note (struck through when the music is off)
-function paintSoundBtn(b) {
-  const x = b.x + b.w / 2 - 8, y = b.y + b.h / 2, col = isLit(b) ? '#ffffff' : '#c9b994', s = SND.prefs.sfx, m = SND.prefs.music;
-  ctx.fillStyle = s ? col : '#6e665a';
-  ctx.beginPath(); ctx.moveTo(x - 6, y - 3); ctx.lineTo(x - 2, y - 3); ctx.lineTo(x + 3, y - 8); ctx.lineTo(x + 3, y + 8); ctx.lineTo(x - 2, y + 3); ctx.lineTo(x - 6, y + 3); ctx.closePath(); ctx.fill();
-  ctx.strokeStyle = s ? col : '#6e665a'; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
-  if (s) for (const r of [5, 9]) { ctx.beginPath(); ctx.arc(x + 3, y, r, -0.7, 0.7); ctx.stroke(); }
-  else { ctx.strokeStyle = '#c84a3a'; ctx.beginPath(); ctx.moveTo(x - 7, y - 9); ctx.lineTo(x + 7, y + 9); ctx.stroke(); }
-  const nx = x + 17, ny = y - 1;                                           // the note
-  ctx.fillStyle = ctx.strokeStyle = m ? col : '#6e665a'; ctx.lineWidth = 1.4;
-  ctx.beginPath(); ctx.ellipse(nx, ny + 6, 2.6, 2, -0.4, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.moveTo(nx + 2.2, ny + 5.5); ctx.lineTo(nx + 2.2, ny - 7); ctx.lineTo(nx + 6, ny - 5); ctx.stroke();
-  if (!m) { ctx.strokeStyle = '#c84a3a'; ctx.beginPath(); ctx.moveTo(nx - 4, ny - 7); ctx.lineTo(nx + 7, ny + 9); ctx.stroke(); }
+// ---- the settings: music and sounds on or off, and back to the title (which ends the run) ----
+// a gear of iron: eight teeth round a hub
+function gearIcon(cx, cy, r, col) {
+  ctx.save(); ctx.translate(cx, cy); ctx.fillStyle = col;
+  ctx.beginPath();
+  for (let i = 0; i < 16; i++) { const a = i * Math.PI / 8 - Math.PI / 16, rr = i % 2 ? r * 0.74 : r; ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); ctx.lineTo(Math.cos(a + Math.PI / 8) * rr, Math.sin(a + Math.PI / 8) * rr); }
+  ctx.closePath(); ctx.fill();
+  ctx.globalCompositeOperation = 'destination-out'; ctx.beginPath(); ctx.arc(0, 0, r * 0.32, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+// a speaker with its sound waves (or struck through), a note (or struck through), a door
+function speakerIcon(x, y, on) {
+  ctx.fillStyle = ctx.strokeStyle = on ? '#e8dcc0' : '#6e665a'; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(x - 7, y - 3); ctx.lineTo(x - 3, y - 3); ctx.lineTo(x + 2, y - 8); ctx.lineTo(x + 2, y + 8); ctx.lineTo(x - 3, y + 3); ctx.lineTo(x - 7, y + 3); ctx.closePath(); ctx.fill();
+  if (on) for (const r of [5, 9]) { ctx.beginPath(); ctx.arc(x + 2, y, r, -0.7, 0.7); ctx.stroke(); }
+  else { ctx.strokeStyle = '#c84a3a'; ctx.beginPath(); ctx.moveTo(x - 8, y - 9); ctx.lineTo(x + 8, y + 9); ctx.stroke(); }
+}
+function noteIcon(x, y, on) {
+  ctx.fillStyle = ctx.strokeStyle = on ? '#e8dcc0' : '#6e665a'; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.ellipse(x - 3, y + 5, 3.4, 2.6, -0.4, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(x + 6, y + 3, 3.4, 2.6, -0.4, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(x, y + 4.5); ctx.lineTo(x, y - 8); ctx.lineTo(x + 9, y - 10); ctx.lineTo(x + 9, y + 2.5); ctx.stroke();
+  if (!on) { ctx.strokeStyle = '#c84a3a'; ctx.beginPath(); ctx.moveTo(x - 8, y - 9); ctx.lineTo(x + 12, y + 10); ctx.stroke(); }
+}
+function doorIcon(x, y) {
+  ctx.fillStyle = '#5a3a22'; ctx.strokeStyle = '#c9b994'; ctx.lineWidth = 1.3;
+  ctx.beginPath(); ctx.moveTo(x - 6, y + 9); ctx.lineTo(x - 6, y - 4); ctx.arc(x, y - 4, 6, Math.PI, 0); ctx.lineTo(x + 6, y + 9); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#e0b860'; ctx.fillRect(x + 2.5, y + 2, 1.6, 1.6);
+}
+const openSettings = () => { overlay = {kind: 'settings'}; saleArm = null; SND.fx('page'); };
+// back to the title: the run is lost (no record is kept of it), so it takes a second tap
+const returnToTitle = () => { location.hash = ''; location.reload(); };
+function settingsScreen(L, add, menu) {
+  const P = L.panel;
+  menu('Settings');
+  add({id: 'close', x: P.x + P.w - 44, y: P.y + 6, w: 38, h: 36, act: () => { overlay = null; saleArm = null; }, draw: paintClose});
+  const m = SND.prefs.music, s = SND.prefs.sfx, armed = saleArmed('set:title');
+  const top = P.y + 56, rowH = 52;
+  rowStack(add, P.x + 8, top, top + 3 * (rowH + 4), P.w - 16, [
+    {id: 'set:music', text: 'Music', note: m ? 'On. Tap to turn it off' : 'Off. Tap to turn it on', icon: (x, y) => noteIcon(x, y, m), act: () => { SND.setMusic(!m); soundLabels(); }},
+    {id: 'set:sfx', text: 'Sounds', note: s ? 'On. Tap to turn them off' : 'Off. Tap to turn them on', icon: (x, y) => speakerIcon(x, y, s), act: () => { SND.setSfx(!s); soundLabels(); if (!s) SND.fx('coin'); }},
+    {id: 'set:title', text: armed ? 'Return to the title?' : 'Return to the title', note: armed ? 'Tap again: this run will be lost' : over ? 'Back to the gate' : 'Ends this run',
+     armed, icon: (x, y) => doorIcon(x, y), act: () => over ? returnToTitle() : confirmSale('set:title', 'Tap again to leave: this run will be lost.', returnToTitle)}
+  ], rowH);
 }
 function paintTab(b) {
   const on = overlay && overlay.tab === b.tab;
@@ -6859,8 +6926,10 @@ function screenItems() {
     items.covered = true;
     add({x: 0, y: view.top + TOP_H, w: CANVAS_W, h: view.h, draw: () => paintPanel(L.panel, title, !plain)});
   };
-  add({id: 'potion', x: 222, y: view.top, w: 66, h: TOP_H, act: drinkPotion});   // the flask (the top bar draws it)
-  if (over && runSummary && !turnBusy()) summaryScreen(L, add, menu);    // (after your fall has played out)
+  add({id: 'potion', x: 208, y: view.top, w: 54, h: TOP_H, act: drinkPotion});   // the flask (the top bar draws it)
+  add({id: 'settings', x: 262, y: view.top, w: 26, h: TOP_H, act: () => { if (overlay && overlay.kind === 'settings') overlay = null; else openSettings(); }});   // the gear, in the corner
+  if (overlay && overlay.kind === 'settings') settingsScreen(L, add, menu);
+  else if (over && runSummary && !turnBusy()) summaryScreen(L, add, menu);    // (after your fall has played out)
   else if (overlay && overlay.kind === 'log') logScreen(L, add, menu);
   else if (overlay && overlay.kind === 'hero') heroScreen(L, add, menu);
   else if (phase === 'level') levelScreen(L, add, menu);
@@ -7432,7 +7501,6 @@ function heroScreen(L, add, menu) {
     add({id: 'tab:' + tab, tab, x: P.x + 10 + i * 92, y: P.y + 6, w: 88, h: 36, label: tab === 'gear' ? 'Gear' : 'Bag',
          act: () => { o.tab = tab; o.pick = null; }, draw: paintTab});
   add({id: 'close', x: P.x + P.w - 44, y: P.y + 6, w: 38, h: 36, act: () => { overlay = null; }, draw: paintClose});
-  add({id: 'sound', x: P.x + P.w - 84, y: P.y + 6, w: 38, h: 36, act: cycleSound, draw: paintSoundBtn});
   if (o.tab === 'bag') return bagTab(L, add);
   const y0 = P.y + 48, rest = 40 + 70 + 88;              // detail, stats (three rows), perks below the doll
   const dollH = Math.max(96, Math.min(240, P.y + P.h - 8 - rest - y0));
@@ -8261,22 +8329,17 @@ setInterval(() => {
   const k = Math.floor(performance.now() / 950), hp = shownHp('player');
   if (k !== heartBeat) { heartBeat = k; if (inCombatScene() && !over && phase !== 'loot' && hp > 0 && hp <= p.max * 0.3) SND.fx('heart'); }
 }, 80);
-// music and sounds, each on or off (remembered): two buttons on the title screen, one in the Hero panel
+// music and sounds, each on or off (remembered): in Settings, on the title screen (the gear in its corner) and in the game
 function soundLabels() {
   for (const [btn, on, name] of [[musicBtn, SND.prefs.music, 'Music'], [sfxBtn, SND.prefs.sfx, 'Sounds']]) {
-    btn.textContent = name; btn.classList.toggle('off', !on); btn.setAttribute('aria-pressed', String(on));
+    btn.textContent = `${name}: ${on ? 'On' : 'Off'}`; btn.classList.toggle('off', !on); btn.setAttribute('aria-pressed', String(on));
   }
 }
 musicBtn.onclick = () => { SND.setMusic(!SND.prefs.music); soundLabels(); };
 sfxBtn.onclick = () => { SND.setSfx(!SND.prefs.sfx); soundLabels(); if (SND.prefs.sfx) SND.fx('coin'); };
 soundLabels();
-// the Hero panel's button steps through: both on, music off, both off
-function cycleSound() {
-  const m = SND.prefs.music, s = SND.prefs.sfx;
-  if (m && s) SND.setMusic(false); else if (s) SND.setSfx(false); else { SND.setMusic(true); SND.setSfx(true); }
-  soundLabels();
-  msg.textContent = `Music ${SND.prefs.music ? 'on' : 'off'}, sounds ${SND.prefs.sfx ? 'on' : 'off'}.`;
-}
+// the title's buttons click like the game's, and its pages turn like paper
+title.addEventListener('click', e => { const b = e.target.closest('button'); if (b) SND.fx(['howBtn', 'vaultBtn', 'setBtn'].includes(b.id) ? 'page' : 'tap'); });
 
 // ---- the title screen: the name in gold over the dark, firelight from below, embers rising and fog drifting low ----
 // Your runs are kept in this browser for the record under the name: a skull for every death and a crown for every
@@ -8379,8 +8442,13 @@ let introAt = null, introSkipped = stillTitle;
 const showMenu = () => title.classList.add('shown');
 const skipIntro = () => { introSkipped = true; showMenu(); };
 if (introSkipped) showMenu();
-title.addEventListener('pointerdown', () => { if (!introSkipped) skipIntro(); });
-window.addEventListener('keydown', () => { if (!introSkipped && !title.hidden) skipIntro(); });
+// the first time the title opens, a gate waits for a tap: browsers allow no sound before one, so the reveal and its
+// music begin with it (not after Play again, or coming to the Vault from the end of a run)
+let gated = false;
+function closeGate() { if (!gated) return; gated = false; gate.hidden = true; introAt = null; SND.fx('gate'); }
+gate.addEventListener('click', closeGate);
+title.addEventListener('pointerdown', () => { if (!introSkipped && !gated) skipIntro(); });
+window.addEventListener('keydown', e => { if (title.hidden) return; if (gated) { if (e.key !== 'Tab') closeGate(); } else if (!introSkipped) skipIntro(); });
 // the name on the arch is carved from the Cinzel font: wait for it (a moment at most) before the gate is first drawn
 let titleFontReady = !document.fonts;
 if (document.fonts) Promise.race([document.fonts.load('900 64px Cinzel'), new Promise(ok => setTimeout(ok, 1500))])
@@ -8406,7 +8474,7 @@ function newEmber(w, h, t, anywhere) {
 // low, and embers rising, swaying, flickering and burning out
 function paintTitle(now) {
   titleFrameId = 0;
-  if (title.hidden || !howto.hidden || !vault.hidden) return;
+  if (title.hidden || !howto.hidden || !vault.hidden || !settings.hidden) return;
   const vw = window.innerWidth, vh = window.innerHeight, dpr = Math.min(2, window.devicePixelRatio || 1);
   const cw = Math.round(vw * dpr), ch = Math.round(vh * dpr);
   if (titleArt.width !== cw || titleArt.height !== ch) { titleArt.width = cw; titleArt.height = ch; }
@@ -8430,8 +8498,9 @@ function paintTitle(now) {
     const bottom = (record.hidden ? titleMain.querySelector('.actions') : record).getBoundingClientRect().top - 4;
     // as wide as the game's column, or a little wider when the screen is tall (losing a sliver of wall at each side)
     const k = Math.min(Math.min(vw, vh * 0.6) / CANVAS_W * 1.12, (bottom - top) / (PLAY_H - 2)), sw = CANVAS_W * k, sh = PLAY_H * k, x0 = (vw - sw) / 2, y0 = top - 2 * k;
-    if (introAt === null) introAt = t;                                     // the reveal starts with the first picture
-    const e = introSkipped ? 99 : t - introAt;
+    if (gated) introAt = null;                                             // (dark, at the gate, until a tap)
+    else if (introAt === null) introAt = t;                                // the reveal starts with the first picture
+    const e = gated ? 0 : introSkipped ? 99 : t - introAt;
     if (e > T_MENU_AT) showMenu();
     g.save(); g.translate(x0, y0); g.scale(k, k);
     ART.drawTitle(g, t, e);
@@ -8551,11 +8620,15 @@ howBtn.onclick = () => showHowTo(true);
 backBtn.onclick = () => showHowTo(false);
 vaultBtn.onclick = () => showVault(true);
 vaultBack.onclick = () => showVault(false);
+// the title's Settings: Music and Sounds (the same switches as the game's gear)
+const showSettings = on => { titleMain.hidden = on; settings.hidden = !on; titleArt.hidden = on; title.scrollTop = 0; if (!on) startTitle(); };
+setBtn.onclick = () => showSettings(true);
+setBack.onclick = () => showSettings(false);
 if (location.hash === '#play') title.hidden = true;
 else if (location.hash === '#vault') {                                     // from the end of a run: straight into the Vault
   history.replaceState(null, '', location.pathname + location.search);    // (a later reload opens the title as usual)
   skipIntro(); showVault(true);
-} else startTitle();
+} else { gated = true; gate.hidden = false; startTitle(); }
 window.addEventListener('resize', () => { if (stillTitle) startTitle(); });
 
 // everything on screen is drawn on the canvas, so redraw once the two fonts have downloaded
