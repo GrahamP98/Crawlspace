@@ -47,7 +47,7 @@
   /* the menu waits for the reveal (the torch catching, his eyes opening), then fades in; the Play button breathes like an ember */
   #titleMain .record, #titleMain .actions { opacity: 0; transform: translateY(8px); transition: opacity 0.9s ease-out, transform 0.9s ease-out; }
   #title.shown #titleMain .record, #title.shown #titleMain .actions { opacity: 1; transform: none; }
-  #title.shown #playBtn { animation: ember 3.4s ease-in-out 1.2s infinite; }
+  #title.shown #playBtn, #title.shown #contBtn { animation: ember 3.4s ease-in-out 1.2s infinite; }
   @keyframes ember { 0%, 100% { box-shadow: inset 0 1px 0 rgba(255, 210, 150, 0.25), 0 0 16px rgba(255, 110, 30, 0.16); }
                      50% { box-shadow: inset 0 1px 0 rgba(255, 210, 150, 0.32), 0 0 30px rgba(255, 120, 40, 0.42); } }
   .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -64,16 +64,21 @@
                   background: rgba(14, 11, 16, 0.8); border: 1px solid #6e5a3a; border-radius: 6px; box-shadow: inset 0 1px 0 rgba(255, 220, 160, 0.08); }
   #title button:hover, #title button:focus-visible { border-color: #c9923e; color: #ffe3a8; outline: none; }
   #title button:active { transform: translateY(1px); }
-  #title #playBtn { font-size: 30px; padding: 10px; color: #ffe2a0; border-color: #c9892b; background: linear-gradient(#5e2414, #2a0c08);
+  #title #playBtn, #title #contBtn { font-size: 30px; padding: 10px; color: #ffe2a0; border-color: #c9892b; background: linear-gradient(#5e2414, #2a0c08);
                     text-shadow: 0 0 10px rgba(255, 160, 60, 0.55); box-shadow: inset 0 1px 0 rgba(255, 210, 150, 0.25), 0 0 22px rgba(255, 110, 30, 0.22); }
-  #title #playBtn:hover, #title #playBtn:focus-visible { box-shadow: inset 0 1px 0 rgba(255, 210, 150, 0.3), 0 0 30px rgba(255, 130, 40, 0.45); }
+  #title #playBtn:hover, #title #playBtn:focus-visible, #title #contBtn:hover, #title #contBtn:focus-visible { box-shadow: inset 0 1px 0 rgba(255, 210, 150, 0.3), 0 0 30px rgba(255, 130, 40, 0.45); }
+  /* a saved run: Continue takes the ember, and Play steps back to a plain button (New run, two taps) */
+  #title #contBtn small { display: block; font-size: 15px; letter-spacing: 0.08em; color: #d8b47c; text-shadow: none; margin-top: -1px; }
+  #title #playBtn.minor { font-size: 22px; padding: 11px; color: #e6d6b2; background: rgba(14, 11, 16, 0.8); border-color: #6e5a3a;
+                          text-shadow: none; box-shadow: inset 0 1px 0 rgba(255, 220, 160, 0.08); animation: none; }
+  #title #playBtn.minor.armed { border-color: #b8503c; color: #ffc0a8; }
   #title .whisper { margin: 4px 6px 0; text-align: center; font-style: italic; font-size: 15px; color: #8e8574; text-shadow: 0 1px 4px #000; }
   #title .whisper span { color: #cdbb94; }
   #title .whisper .bulb { display: inline-block; width: 17px; height: 17px; vertical-align: -3px; filter: drop-shadow(0 0 5px rgba(255, 200, 90, 0.75)); }
   #title .whisper .bulb svg { display: block; width: 100%; height: 100%; }
   @keyframes newmark { 0% { opacity: 0; transform: scale(0.3); filter: drop-shadow(0 0 10px rgba(255, 170, 80, 1)); }
                        60% { opacity: 1; transform: scale(1.3); } 100% { opacity: 1; transform: none; } }
-  @media (prefers-reduced-motion: reduce) { #title.shown #playBtn, #title.shown .record .new { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { #title.shown #playBtn, #title.shown #contBtn, #title.shown .record .new { animation: none; } }
   #howto h2 { font-family: var(--title-font); font-weight: 400; font-size: 30px; color: #fc3; margin: 8px 0 0; text-align: center; }
   #howto .lead { text-align: center; color: #aaa; margin: 0; font-style: italic; }
   #howto details { border-top: 1px solid #333; padding: 6px 0; }
@@ -161,6 +166,7 @@
     <div class="stage" aria-hidden="true"></div>
     <div class="record" id="record" role="img" hidden></div>
     <div class="actions">
+      <button id="contBtn" hidden>Continue<small id="contNote"></small></button>
       <button id="playBtn">Play</button>
       <div class="pair"><button id="howBtn">How to Play</button><button id="vaultBtn">Vault</button></div>
       <p class="whisper" id="whisper"></p>
@@ -174,6 +180,7 @@
       <summary>The goal</summary>
       <p>Fight your way down five floors. Every floor is a new random maze. The stairs down sit at the far end of each floor, and an enemy always guards them. On floor 5 the stairs are replaced by the exit, daylight spilling through it, and the <b>Ogre King</b> stands before it. Beat him and you win: you're free.</p>
       <p>You have one life. If your health hits 0, the run ends and you see a summary of how far you got.</p>
+      <p>Your run is saved as you play. Close the game, take a call or go back to the title, and <b>Continue</b> on the title screen picks it up exactly where you left off, with the floor and level you were on written under it. It is saved after every move, so reopening the game never undoes a bad turn. <b>New run</b> starts over and throws the saved run away, so it takes two taps. A run that ends, in death or escape, leaves nothing to continue.</p>
       <p>The title screen keeps count: a skull for every run that ended in death and a crown for every escape, oldest first.</p>
     </details>
 
@@ -350,7 +357,7 @@
     <details>
       <summary>Sound and music</summary>
       <p>Every floor has its own music, and so do fights, the Ogre King, the campfire and the merchant. A blow sounds like what it hits: a slime squelches, bones crack and rattle, flesh thuds, armor rings, and a wraith only sighs. When your health runs low in a fight, you hear your heart.</p>
-      <p>The gear opens the <b>Settings</b>: in the corner of the title screen, and in the top-right corner of the game. There you switch the <b>Music</b> and the <b>Sounds</b> on or off. In the game it also holds <b>Return to the title</b>, which ends the run you are on (tap it twice).</p>
+      <p>The gear opens the <b>Settings</b>: in the corner of the title screen, and in the top-right corner of the game. There you switch the <b>Music</b> and the <b>Sounds</b> on or off. In the game it also holds <b>Return to the title</b>. Your run is saved when you leave, and <b>Continue</b> brings you back to it.</p>
     </details>
     <button id="backBtn">Back</button>
   </div>
@@ -1612,6 +1619,7 @@ function endRun(won, killer) {
   over = true;
   overlay = null;
   recordRun(won);                    // a mark on your slab on the title screen
+  clearSave();                       // the run is over: nothing left to continue
   const secs = Math.round((Date.now() - run.start) / 1000);
   const time = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
   const total = Object.values(run.kills).reduce((a, b) => a + b, 0);
@@ -6407,19 +6415,19 @@ function doorIcon(x, y) {
   ctx.fillStyle = '#e0b860'; ctx.fillRect(x + 2.5, y + 2, 1.6, 1.6);
 }
 const openSettings = () => { overlay = {kind: 'settings'}; saleArm = null; SND.fx('page'); };
-// back to the title: the run is lost (no record is kept of it), so it takes a second tap
-const returnToTitle = () => { location.hash = ''; location.reload(); };
+// back to the title: the run is saved first, so Continue on the title picks it up again
+const returnToTitle = () => { saveRun(); location.hash = ''; location.reload(); };
 function settingsScreen(L, add, menu) {
   const P = L.panel;
   menu('Settings');
   add({id: 'close', x: P.x + P.w - 44, y: P.y + 6, w: 38, h: 36, act: () => { overlay = null; saleArm = null; }, draw: paintClose});
-  const m = SND.prefs.music, s = SND.prefs.sfx, armed = saleArmed('set:title');
+  const m = SND.prefs.music, s = SND.prefs.sfx;
   const top = P.y + 56, rowH = 52;
   rowStack(add, P.x + 8, top, top + 3 * (rowH + 4), P.w - 16, [
     {id: 'set:music', text: 'Music', note: m ? 'On. Tap to turn it off' : 'Off. Tap to turn it on', icon: (x, y) => noteIcon(x, y, m), act: () => { SND.setMusic(!m); soundLabels(); }},
     {id: 'set:sfx', text: 'Sounds', note: s ? 'On. Tap to turn them off' : 'Off. Tap to turn them on', icon: (x, y) => speakerIcon(x, y, s), act: () => { SND.setSfx(!s); soundLabels(); if (!s) SND.fx('coin'); }},
-    {id: 'set:title', text: armed ? 'Return to the title?' : 'Return to the title', note: armed ? 'Tap again: this run will be lost' : over ? 'Back to the gate' : 'Ends this run',
-     armed, icon: (x, y) => doorIcon(x, y), act: () => over ? returnToTitle() : confirmSale('set:title', 'Tap again to leave: this run will be lost.', returnToTitle)}
+    {id: 'set:title', text: 'Return to the title', note: over ? 'Back to the gate' : 'Your run is saved',
+     icon: (x, y) => doorIcon(x, y), act: returnToTitle}
   ], rowH);
 }
 function paintTab(b) {
@@ -8190,6 +8198,7 @@ c.addEventListener('pointerdown', e => {
   }
   handleTap(pt);
   draw();
+  saveRun();
 });
 // a mouse over a button or a card: remember it, so its vines grow in, and show the hand pointer
 c.addEventListener('pointermove', e => {
@@ -8211,7 +8220,7 @@ const endDrag = e => {
   if (!drag || e.pointerId !== drag.id) return;
   const d = drag;
   drag = null;
-  if (!d.moved && e.type === 'pointerup') { handleTap(d.pt); draw(); }
+  if (!d.moved && e.type === 'pointerup') { handleTap(d.pt); draw(); saveRun(); }
 };
 c.addEventListener('pointerup', endDrag);
 c.addEventListener('pointercancel', endDrag);
@@ -8626,7 +8635,100 @@ const showVault = on => {
   titleMain.hidden = on; vault.hidden = !on; titleArt.hidden = on; title.scrollTop = 0; vaultArm = vaultTry = null;
   if (on) renderVault(); else startTitle();
 };
-playBtn.onclick = () => { title.hidden = true; run.start = Date.now(); requestFrames(); };
+// ---- the saved run: closing the game (or a phone call) doesn't end your run ----
+// It is written after every tap and whenever the game goes out of sight, and thrown away the moment the run ends, so
+// there is only ever one, and it always holds what has already happened: reopening the game never undoes a bad turn.
+// Continue on the title screen picks it up. Bump SAVE_V whenever what is saved changes shape: older saves are then dropped
+const SAVE_KEY = 'crawlspace:run', SAVE_V = 1;
+function runSnapshot() {
+  return {v: SAVE_V, floor, map, opened: [...opened], visited: [...visited], enemies, p, prev, worn, perks,
+    level, xp, levelUps, bonusDmg, hand, redraws, secondWinds, coins, potions, maxPotions, shopPotionsLeft, poison,
+    scrolls, bagSlots, scrollNow, pending, shopStock, shopTitle, shopMode, combatView, fightSeed,
+    phase: finale ? 'won' : phase,                                        // (the Ogre King is falling: the win is already yours)
+    current: enemies.indexOf(current), scene: enemies.findIndex(e => e.group === sceneFoes), target: sceneFoes.indexOf(target),
+    run: {...run, start: undefined, elapsed: Date.now() - run.start},     // the clock stops while the game is closed
+    log: {entries: logEntries, report: logReport}};
+}
+function saveRun() {
+  if (!title.hidden) return;                 // (on the title screen the run in memory is a fresh one: leave the save alone)
+  if (over) return clearSave();
+  // (rasters and _art: each enemy's figure and the frames it was drawn in, kept on the enemy itself; they are drawn again)
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(runSnapshot(), (k, v) => k === 'rasters' || k === '_art' ? undefined : v)); } catch (e) {}
+}
+function clearSave() { try { localStorage.removeItem(SAVE_KEY); } catch (e) {} }
+function readSave() {
+  try {
+    const s = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
+    return s && s.v === SAVE_V && Array.isArray(s.map) && Array.isArray(s.enemies) && s.p && s.run && s.log ? s : null;
+  } catch (e) { return null; }
+}
+// put a saved run back in place of the fresh one the page started with
+function restoreRun(s) {
+  floor = s.floor; map = s.map; enemies = s.enemies; p = s.p; prev = s.prev;
+  opened.clear(); s.opened.forEach(k => opened.add(k));
+  visited.clear(); s.visited.forEach(k => visited.add(k));
+  for (const k of Object.keys(worn)) delete worn[k];
+  Object.assign(worn, s.worn);
+  for (const k of Object.keys(perks)) delete perks[k];
+  Object.assign(perks, s.perks);
+  ({level, xp, levelUps, bonusDmg, hand, redraws, secondWinds, coins, potions, maxPotions, shopPotionsLeft, poison,
+    scrolls, bagSlots, scrollNow, pending, shopStock, shopTitle, shopMode, combatView, fightSeed, phase} = s);
+  // the fight on screen: the enemy you walked into, its group, and your target (saved by position, so they are the same objects)
+  current = enemies[s.current] || null;
+  foes = current ? current.group : [];
+  sceneFoes = (enemies[s.scene] && enemies[s.scene].group) || [];
+  target = sceneFoes[s.target] || null;
+  for (const e of enemies) for (const f of e.group || []) { f.bornAt = 0; f.fellAt = f.hp > 0 ? undefined : -1e9; delete f.rasters; delete f._art; }   // the fallen stay down
+  Object.assign(run, s.run);
+  run.start = Date.now() - (s.run.elapsed || 0);
+  delete run.elapsed;
+  logEntries.length = 0;
+  logEntries.push(...s.log.entries);
+  logReport = s.log.report || '';
+  logBatch = logEntries.length ? logEntries[logEntries.length - 1].batch : 0;
+  logBatchStart = logEntries.length;                                      // (the last message shows, dimmed: nothing replays)
+  overlay = null; saleArm = null; turn = null; pops = []; fx = []; mapPos = null;
+  fightIntro = floorFade = lootAt = levelDealtAt = performance.now();     // the map comes up out of the dark, the cards deal again
+  if (phase === 'loot') setTimeout(refresh, LOOT_TAP_GUARD_MS + 30);
+  if (phase === 'won') { phase = 'explore'; combatView = false; endRun(true); }   // closed while the King fell: straight to the victory
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveRun(); });
+window.addEventListener('pagehide', () => saveRun());
+// with a saved run, the title offers Continue (and the floor and level you were on); Play becomes New run, which throws
+// the saved run away, so it takes a second tap
+let savedRun = readSave(), newRunArm = 0, newRunTimer = 0;
+function showSaved() {
+  contBtn.hidden = !savedRun;
+  playBtn.classList.toggle('minor', !!savedRun);
+  playBtn.classList.remove('armed');
+  playBtn.textContent = savedRun ? 'New run' : 'Play';
+  if (savedRun) contNote.textContent = `Floor ${savedRun.floor + 1} · Level ${savedRun.level}`;
+}
+showSaved();
+contBtn.onclick = () => {
+  const s = readSave();
+  if (!s) { savedRun = null; showSaved(); return; }
+  restoreRun(s);
+  title.hidden = true;
+  requestFrames();
+  draw();
+};
+playBtn.onclick = () => {
+  if (savedRun) {
+    if (performance.now() - newRunArm > SALE_CONFIRM_MS) {
+      newRunArm = performance.now();
+      playBtn.textContent = 'Lose this run? Tap again';
+      playBtn.classList.add('armed');
+      clearTimeout(newRunTimer);
+      newRunTimer = setTimeout(showSaved, SALE_CONFIRM_MS);
+      return;
+    }
+    clearTimeout(newRunTimer);
+    clearSave();
+    savedRun = null;
+  }
+  title.hidden = true; run.start = Date.now(); requestFrames();
+};
 howBtn.onclick = () => showHowTo(true);
 backBtn.onclick = () => showHowTo(false);
 vaultBtn.onclick = () => showVault(true);
