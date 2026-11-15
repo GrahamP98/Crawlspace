@@ -2843,7 +2843,8 @@ const LOOKS = {
 let LOOK = {flame: 'ember', hair: 'brown', beard: 'none', rags: 'blue', plume: 'blue'};
 const lookOf = (slot, look = LOOK) => LOOKS[slot][look[slot]] ?? Object.values(LOOKS[slot])[0];
 const flameOf = (look = LOOK) => lookOf('flame', look);
-const heroOf = (gear = {}, look = LOOK) => being({...HERO_PAL, hair: lookOf('hair', look), tunic: lookOf('rags', look)[0], tunicDk: lookOf('rags', look)[1],
+// rest: lying back by the campfire (see REST below) instead of standing ready to fight
+const heroOf = (gear = {}, look = LOOK, rest = false) => being({...HERO_PAL, hair: lookOf('hair', look), tunic: lookOf('rags', look)[0], tunicDk: lookOf('rags', look)[1],
                                                   plume: lookOf('plume', look)[0], plumeLt: lookOf('plume', look)[1]}, (add, P) => {
   const G = kit(add, P, gear), line = lineOf(P);
   const knight = ARMOR.every(G.has), shining = knight && ARMOR.every(k => gear[k] === 2);
@@ -2869,11 +2870,20 @@ const heroOf = (gear = {}, look = LOOK) => being({...HERO_PAL, hair: lookOf('hai
       add([[m[0] - 5, m[1] - 1], [m[0] - 3, m[1] + 2.4], [m[0] - 1, m[1] + 0.2], [m[0] + 1.4, m[1] + 2.6], [m[0] + 5, m[1] - 1]], 'pants', far);   // the frayed edge
     }
   };
-  arm(shL, elL, hdL, 1);                                                   // the far arm, in a guard
-  G.shield(hdL, 1.05);                                                     // ...holding the shield up toward them
-  G.pauldron([11, -95, 5.2], false);
-  leg(hipL, kneeL, ankL, footL, 1);                                        // the left leg, stepping forward
-  leg(hipR, kneeR, ankR, footR, 0);                                        // the right leg, planted behind, nearer you
+  const R = rest && REST;
+  if (rest) {                                                              // lying back by the fire: the shield stood behind him,
+    G.shield(R.shield, 0.95);                                              // one leg out along the floor (the near knee up, below),
+    leg(R.hipF, R.kneeF, R.ankF, R.footF, 1);                              // the far hand resting on his thigh
+    arm(R.shF, R.elF, R.hdF, 1);
+    G.pauldron([...R.shF, 5.2], false);
+  } else {
+    arm(shL, elL, hdL, 1);                                                 // the far arm, in a guard
+    G.shield(hdL, 1.05);                                                   // ...holding the shield up toward them
+    G.pauldron([11, -95, 5.2], false);
+    leg(hipL, kneeL, ankL, footL, 1);                                      // the left leg, stepping forward
+    leg(hipR, kneeR, ankR, footR, 0);                                      // the right leg, planted behind, nearer you
+  }
+  const trunk0 = P.length;                                                 // (resting, the body and head are laid back below)
   const torso = [[-11, -56], [11, -57], [12.5, -68], [14, -84], [12, -95], [6, -100], [-6, -100], [-13, -96], [-15, -84], [-13, -68]];
   if (!(gear.chest >= 1)) {                                                // the old prisoner's tunic: patched, torn and filthy
     add([[-13, -60], [13, -60], [14.5, -47], [10.5, -51], [7, -45.5], [3, -50], [-1, -45], [-5, -49.5], [-9, -45], [-14.5, -50]], 'tunicDk');
@@ -2886,6 +2896,7 @@ const heroOf = (gear = {}, look = LOOK) => being({...HERO_PAL, hair: lookOf('hai
   if (G.has('chest')) { add([[-13, -62], [13, -62], [13, -57.5], [-13, -57.5]], 'leatherDk'); add([[0, -62.5], [4, -62.5], [4, -57], [0, -57]], shining ? 'gold' : 'iron'); }
   else { add([[-13, -61.4], [13, -61.8], [13, -58.4], [-13, -58]], 'rope'); add([[9, -59], [11, -59], [12.5, -50], [10.5, -50]], 'rope'); }   // a frayed rope for a belt
   add(limb([1, -99], [2, -106], 7.5, 7, 6.5), 'skin');                    // neck
+  const head0 = P.length;
   const hc = [3, -114];                                                    // the head, three-quarters: both eyes, the nose your way
   add(off([[-7, -2], [-6.5, -7], [-3, -10.5], [2, -11.2], [6, -9.5], [8.2, -6], [8.6, -2.5], [9.6, 0.5], [8.4, 2], [8.6, 4.5], [7, 7.5], [3.5, 9.6], [-0.5, 9.2], [-4.5, 6.5], [-6.8, 2.5]], hc), 'skin');
   if (!G.has('helmet'))                                                    // messy, matted hair
@@ -2906,9 +2917,39 @@ const heroOf = (gear = {}, look = LOOK) => being({...HERO_PAL, hair: lookOf('hai
     add(off([[-1, -13.4], [-7, -18.6], [-15, -20.2], [-10, -16.4], [-3, -12.2]], hc), 'plumeLt', 0, 1);
   }
   if (shining && gear.helmet === 2) line(off([[-10, 9.4], [11, 8.6]], hc), 1, GEAR.gold);
+  if (rest) {
+    for (let i = trunk0; i < P.length; i++) P[i] = movePart(P[i], i >= head0 ? R.head : R.body);
+    leg(R.hipN, R.kneeN, R.ankN, R.footN, 0);                              // the near leg, knee up, in front of the body
+    arm(R.shN, R.elN, R.hdN, 0);                                           // the near arm propping him up, its forearm on the floor
+    G.pauldron([...R.shN, 6.5], true);
+    G.sword(R.hilt, R.blade);                                              // the sword laid on the floor in front of him
+    return;
+  }
   arm(shR, elR, hdR, 0, () => G.sword(hdR, [0.5, -0.866]));               // the sword arm, nearest you, the blade up toward them
   G.pauldron([-10.5, -93, 6.5], true);
 });
+// a part moved by M (a point -> point function), whatever kind of part it is
+const movePart = (q, M) => q.pts ? {...q, pts: q.pts.map(M)} : q.eye ? {...q, eye: M(q.eye)} : {...q, line: q.line.map(M)};
+// ---- you, resting by the campfire: lying back on the floor, propped on your near elbow with that forearm flat on the
+// floor, the far leg stretched out toward the fire, the near knee up, the far hand on your thigh, your sword on the floor
+// in front of you and your shield stood behind your head. The body and head are the standing ones, laid back about the
+// hip (body), the head tipped up again toward the fire (head); the limbs are placed where they lie
+const REST = (() => {
+  const turn = (a, [px, py], [tx, ty]) => { const c = Math.cos(a), s = Math.sin(a); return ([x, y]) => [tx + (x - px) * c - (y - py) * s, ty + (x - px) * s + (y - py) * c]; };
+  const body = turn(-0.98, [0, -59], [4, -15]);                           // laid back about the hip
+  const nod = turn(0.5, [1.5, -102], [1.5, -102]);                         // the head tipped forward again, toward the fire
+  const head = p => body(nod(p));
+  const hipF = body([5, -61]), hipN = body([-5, -59]), shF = body([11, -95]), shN = body([-11, -93]);
+  const kneeF = [hipF[0] + 24, -15], ankF = [kneeF[0] + 21, -8];           // a little bent, so the foot stays clear of the fire
+  const kneeN = [hipN[0] + 13, -46], ankN = [kneeN[0] + 15, -6];
+  const footF = [[-3, 4], [-3, -4], [2, -9], [5, -12], [7, -12], [7, 5]].map(([x, y]) => [ankF[0] + x, ankF[1] + y]);   // on its heel, toes up
+  const footN = [[-5, -4], [4, -4], [8, 1], [11, 4.5], [11, 6], [-6, 6]].map(([x, y]) => [ankN[0] + x, ankN[1] + y]);   // flat on the floor
+  const hdF = [hipF[0] + 16, hipF[1] - 9], elF = [lerp(shF[0], hdF[0], 0.5) + 4, lerp(shF[1], hdF[1], 0.5) + 5];   // the far hand on his thigh
+  const elN = [shN[0] - 4, -5], hdN = [elN[0] + 16, -4.5];                 // the elbow on the floor, the forearm lying flat along it
+  const hilt = [-30, 14], blade = [1, -0.03], shield = [-52, -14];         // the shield stood on the floor behind his head
+  return {body, head, hipF, hipN, shF, shN, kneeF, ankF, kneeN, ankN, footF, footN, hdF, elF, hdN, elN, hilt, blade, shield,
+    anchor: {helmet: head([3, -116]), chest: body([0, -80]), bracers: mid(elN, hdN, 0.5), greaves: mid(kneeN, ankN, 0.5), weapon: hilt, shield}};
+})();
 
 // ---- the Goblin: small, crouched, a thief with a pouch of stolen coins ----
 const goblinOf = (gear = {}) => being({skin: [158, 154, 66], cloth: [76, 56, 38], bone: [220, 208, 178], dark: [26, 22, 10], pouch: [96, 62, 32], coin: [232, 190, 70]}, (add, P) => {
@@ -3636,7 +3677,8 @@ function drawStrip(g, key, h, t) {
   g.fillStyle = v; g.fillRect(0, 0, W, h);
   g.restore();
 }
-const drawCamp = (g, f, hero, t) => drawFight(g, {room: ['camp-' + ROOM_OF_FLOOR[Math.min(f, 4)], 7], hero, foes: [], ring: null, t});
+const drawCamp = (g, f, hero, t) => drawFight(g, {room: ['camp-' + ROOM_OF_FLOOR[Math.min(f, 4)], 7], hero: {...hero, rest: true}, foes: [], ring: null, t});
+const REST_AT = [72, 300];                                                // where you lie by the campfire (your hip), the fire at CAMP_AT
 function roomFor(key, seed) {
   const k = key + ':' + seed;
   if (!rooms.has(k)) { rooms = new Map(); rooms.set(k, buildRoom(key, seed)); }
@@ -3723,18 +3765,18 @@ function quantizeSolid(d, w) {
   }
 }
 // the anchor points of your gear on your figure (feet at 0,0, facing right), where an enchanted piece glows
-const HERO_ANCHOR = {helmet: [3, -116], chest: [0, -80], bracers: [0, -77], greaves: [-2, -22], weapon: [9, -80], shield: [31, -69]};
-const BLADE = [0.5, -0.866];
+const HERO_ANCHOR_UP = {helmet: [3, -116], chest: [0, -80], bracers: [0, -77], greaves: [-2, -22], weapon: [9, -80], shield: [31, -69]};
+const BLADE_UP = [0.5, -0.866];
 // your figure, from what you wear: gear = {weapon, helmet, chest, bracers, greaves} as tiers
 const heroCache = new Map();
-function heroParts(gear) {
-  const k = JSON.stringify(gear);
-  if (!heroCache.has(k)) { if (heroCache.size > 8) heroCache.clear(); heroCache.set(k, heroOf(gear)); }
+function heroParts(gear, rest = false) {
+  const k = JSON.stringify(gear) + (rest ? '|rest' : '');
+  if (!heroCache.has(k)) { if (heroCache.size > 8) heroCache.clear(); heroCache.set(k, heroOf(gear, LOOK, rest)); }
   return heroCache.get(k);
 }
 // enchanted gear glows in its enchantment's color; the weapon's enchantment also shows along the blade
-function enchantGlows(g, at, s, glows, weapon, t) {
-  const T = ([x, y]) => [at[0] + x * s, at[1] + y * s];
+function enchantGlows(g, at, s, glows, weapon, t, rest = false) {
+  const T = ([x, y]) => [at[0] + x * s, at[1] + y * s], HERO_ANCHOR = rest ? REST.anchor : HERO_ANCHOR_UP, BLADE = rest ? REST.blade : BLADE_UP;
   const dot = (x, y, r, col, a) => { g.globalAlpha = Math.max(0, Math.min(1, a)); stamp(g, col, 1, x, y, r); g.globalAlpha = 1; };
   for (const [slot, hex] of Object.entries(glows || {})) {
     const col = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16)).join(','), pulse = 0.5 + 0.2 * Math.sin(t * 3 + slot.length);
@@ -3792,7 +3834,7 @@ function rasterOf(holder, key, build, x, fade, lights) {
   return r;
 }
 function figuresAt(room, spec, ts) {
-  const roomKey = spec.room.join(':'), hx = 70, hy = 298, hs = 1.12;
+  const roomKey = spec.room.join(':'), rest = !!spec.hero.rest, [hx, hy] = rest ? REST_AT : [70, 298], hs = 1.12;
   const order = [{x: hx, y: hy}, ...spec.foes].map((o, i) => ({o, i})).sort((a, b) => a.o.y - b.o.y);
   const lights = room.sc.lights.map(L => [L.x, L.y, L.reach * 0.95, L.s]).concat(order.map(({o}) => [o.x, o.y - 78, 110, 0.32]));
   const cast = [], boxes = new Map(), eyes = [];
@@ -3800,8 +3842,8 @@ function figuresAt(room, spec, ts) {
   for (const {o, i} of order) {
     if (i === 0) {                                                         // you
       const [len, n] = cycleOf({}), tq = Math.floor((ts + 0.7) / (len / n)) * (len / n), gearKey = JSON.stringify(spec.hero.gear);
-      const R = rasterOf(heroHolder, `${roomKey}|${gearKey}|${(tq % len).toFixed(3)}`, () => place(posed(heroParts(spec.hero.gear), {}, tq, 0), hx, hy, false, hs), hx, 0, lights);
-      cast.push({R, x: hx, y: hy, rx: HERO.rx}); heroBox = {...R.box, x: hx, y: hy}; eyes.push(...R.eyes);
+      const R = rasterOf(heroHolder, `${roomKey}|${gearKey}|${rest}|${(tq % len).toFixed(3)}`, () => place(posed(heroParts(spec.hero.gear, rest), {}, tq, 0), hx, hy, false, hs), hx, 0, lights);
+      cast.push({R, x: hx, y: hy, rx: rest ? HERO.rx * 2.4 : HERO.rx}); heroBox = {...R.box, x: hx, y: hy}; eyes.push(...R.eyes);
       continue;
     }
     const f = o.f, K = KINDS[f.name] || KINDS.Goblin, down = o.fall > 0, s = o.s * (K.size || 1);
@@ -3853,7 +3895,7 @@ function castPixels(buf, cast) {
 }
 function drawFight(g, spec) {
   const room = roomFor(...spec.room), t = spec.t, ts = Math.floor(t / STEP) * STEP;
-  const sig = [spec.room.join(':'), ts, JSON.stringify(spec.hero.gear), ...spec.foes.map(o => [o.f.name, o.f.piece, o.x, o.y, o.s.toFixed(3), Math.round(o.fall * 24), o.gone ? 1 : 0].join(','))].join('|');
+  const sig = [spec.room.join(':'), ts, JSON.stringify(spec.hero.gear), spec.hero.rest ? 'rest' : '', ...spec.foes.map(o => [o.f.name, o.f.piece, o.x, o.y, o.s.toFixed(3), Math.round(o.fall * 24), o.gone ? 1 : 0].join(','))].join('|');
   if (!memo || memo.sig !== sig) memo = {sig, ...figuresAt(room, spec, ts)};
   const {cast, boxes, figs, eyes} = memo;
   g.save();
@@ -3869,7 +3911,7 @@ function drawFight(g, spec) {
   g.globalAlpha = 1;
   driftMotes(g, room, ts);
   for (const q of eyes) stamp(g, q.col.join(','), 0.55, q.eye[0], q.eye[1], 4.5);   // eyes glowing in the dark
-  enchantGlows(g, [70, 298], 1.12, spec.hero.glows, spec.hero.weapon || {}, t);
+  enchantGlows(g, spec.hero.rest ? REST_AT : [70, 298], 1.12, spec.hero.glows, spec.hero.weapon || {}, t, !!spec.hero.rest);
   g.globalCompositeOperation = 'source-over';
   for (const [sx, sy] of room.sc.smoke || []) for (let k = 0; k < 4; k++) {   // smoke drifting up
     const q = (t * 0.05 + k / 4) % 1, rr = 10 + q * 28;
