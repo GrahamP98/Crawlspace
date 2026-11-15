@@ -326,7 +326,7 @@
     </details>
     <details>
       <summary>The Vault</summary>
-      <p>Escape, and every coin you still carry goes into the <b>Vault</b> (tap <b>Vault</b> on the title screen). Die, and your coins are lost with you. So at the last merchant there is a choice: spend to get stronger, or save for the Vault.</p>
+      <p>Escape, and every coin you still carry goes into the <b>Vault</b> (tap <b>Vault</b> on the title screen, or on the screen at the end of a run). Die, and your coins are lost with you. So at the last merchant there is a choice: spend to get stronger, or save for the Vault.</p>
       <p>The Vault sells looks: the color of your torch's flame (Ghostfire, Witchfire or Soulfire), your hair, a beard, the dye of your prisoner's rags, and the plume you wear in full armor with a Steel helm. They change nothing but how you look. Tap a look to try it on, tap it again to buy it, and tap one you own to wear it.</p>
     </details>
     <button id="backBtn">Back</button>
@@ -931,6 +931,8 @@ function endRun(won, killer) {
 }
 // Play again skips the title screen
 const playAgain = () => { location.hash = 'play'; location.reload(); };
+// Vault, after a run, opens the title screen straight onto the Vault (its Back leads to the title)
+const openVault = () => { location.hash = 'vault'; location.reload(); };
 const opened = new Set();
 const visited = new Set();
 const lastFloor = () => floor === FLOORS - 1;
@@ -6525,7 +6527,9 @@ function summaryScreen(L, add, menu) {
       y += paragraph(note, P.x + 14, y, P.w - 28, 15, lines) * 15 + 5;
     }
   }});
-  add({id: 'again', x: P.x + 8, y: P.y + P.h - 10 - 48, w: P.w - 16, h: 48, label: 'Play again', tone: 'gold', act: playAgain, draw: paintButton});
+  buttonRow(add, P.x + 8, P.y + P.h - 10 - 48, P.w - 16, 48, [             // go again, or spend what the Vault holds on how you look
+    {id: 'again', label: 'Play again', tone: 'gold', act: playAgain},
+    {id: 'toVault', label: 'Vault', sub: `${readVault().coins} coins`, act: openVault}]);
 }
 
 // ends the run if you're dead; returns true while you're still alive
@@ -7402,7 +7406,10 @@ backBtn.onclick = () => showHowTo(false);
 vaultBtn.onclick = () => showVault(true);
 vaultBack.onclick = () => showVault(false);
 if (location.hash === '#play') title.hidden = true;
-else startTitle();
+else if (location.hash === '#vault') {                                     // from the end of a run: straight into the Vault
+  history.replaceState(null, '', location.pathname + location.search);    // (a later reload opens the title as usual)
+  skipIntro(); showVault(true);
+} else startTitle();
 window.addEventListener('resize', () => { if (stillTitle) startTitle(); });
 
 // everything on screen is drawn on the canvas, so redraw once the two fonts have downloaded
