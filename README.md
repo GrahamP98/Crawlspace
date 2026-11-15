@@ -18,7 +18,7 @@ On a phone, use **Add to Home Screen**. The game then opens full screen like an 
 - **Perk cards.** Every level-up deals three perk cards, tarot style, and you keep one. You can Redraw a hand for coins.
 - **Gear and enchantments.** Leather, iron and steel gear shows on your character. Scrolls found in capsae enchant it.
 - **Merchants and campfires.** A merchant's wagon stands halfway through floors 2 and 4, and a campfire halfway through floors 3 and 5. Each gives you one visit: once you leave, the wagon rolls on and the fire goes out.
-- **The Vault.** Coins you carry out of a winning run go into the Vault, where they buy cosmetic looks for your hero.
+- **The Vault.** Coins you carry out of a winning run go into the Vault, where they buy cosmetic looks for your hero. Open it from the title screen, or straight from the screen at the end of a run.
 
 The full rules are in the game under **How to Play**.
 
