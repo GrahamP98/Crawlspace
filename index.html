@@ -5757,7 +5757,7 @@ function layout() {
   const util = {y: bottom - 46, h: 40}, act = {y: bottom - 102, h: 50};
   return {
     bottom, util, act,
-    logY: Math.max(view.controls + 4, act.y - 30),
+    logY: view.controls + 4,                                               // the log sits right under the map; the floor's strip fills below it
     panel: {x: 6, y: view.top + TOP_H + 6, w: CANVAS_W - 12, h: bottom - (view.top + TOP_H) - 12}
   };
 }
@@ -5845,7 +5845,8 @@ function rowStack(add, x, top, bottom, w, rows, maxH = 46) {
 
 // ---- exploring and fighting: the log line, the action buttons, Hero and Bag ----
 function playControls(L, add) {
-  add({draw: () => paintLedge(view.controls, L.logY - 4 - view.controls)});
+  const stripY = L.logY + 30;                                              // the floor's strip: from under the log down behind the banner (or the buttons)
+  add({draw: () => paintLedge(stripY, L.util.y - 6 - stripY)});
   add({id: 'log', x: 6, y: L.logY, w: 276, h: 26, act: openLog, draw: paintLogLine});
   if (phase === 'finale') return;                                          // nothing to press while the Ogre King falls
   if (phase === 'choice') buttonRow(add, 6, L.act.y, 276, L.act.h, [
@@ -5863,10 +5864,9 @@ function playControls(L, add) {
       {id: 'equip', label: eqArmed ? 'Equip?' : 'Equip', sub: eqArmed ? 'tap again' : undefined, tone: 'gold', fade: ready, enabled: ready >= 1, act: equipItem},
       {id: 'leaveItem', label: lvArmed ? 'Leave?' : 'Leave', sub: lvArmed ? 'tap again' : undefined, fade: ready, enabled: ready >= 1, act: leaveItem}]);
   } else if (phase === 'explore') {
-    add({draw: () => {                                       // where you are, and how to move
-      const rb = ribbonOrn(276, 28); drawOrn(rb, 6, L.act.y + 2);           // the name on a banderole
-      titleText(`Floor ${floor + 1}: ${ART.roomTitle(floor)}`, 144, L.act.y + 20, 18, '#5a1e14', 'center', 226);
-      centerText('Tap the side of the map to move', 144, L.act.y + 41, `italic 400 13px ${GAME_FONT}`, '#5e5866');
+    add({draw: () => {                                       // where you are: the floor's name on a banderole, centred in the space
+      const rb = ribbonOrn(276, 28); drawOrn(rb, 6, L.act.y + 11);
+      titleText(`Floor ${floor + 1}: ${ART.roomTitle(floor)}`, 144, L.act.y + 29, 18, '#5a1e14', 'center', 226);
     }});
   }
   buttonRow(add, 6, L.util.y, 276, L.util.h, [
