@@ -4525,7 +4525,11 @@ function drawCombat() {
     if (!b) continue;
     const dead = f.hp <= 0, label = f.name + (f.items.length ? '*' : '') + (f.burn > 0 && !dead ? ' (burning)' : '');
     const half = ctx.measureText(label).width / 2, cx = Math.max(half + 4, Math.min(284 - half, (b.x0 + b.x1) / 2)), top = Math.max(b.y0, 26);
-    if (!dead) bar(Math.max(4, Math.min(236, cx - 24)), top - 9, 48, 5, f.hp, f.max, 'hp');
+    if (!dead) {                                                           // a dark plaque with a gilt edge behind the name and its bar
+      const pw = Math.max(54, ctx.measureText(label).width + 12), px = Math.max(2, Math.min(286 - pw, cx - pw / 2));
+      chamfer(px, top - 24, pw, 22, 3); ctx.fillStyle = 'rgba(14,10,16,0.62)'; ctx.fill(); ctx.strokeStyle = 'rgba(214,170,80,0.55)'; ctx.lineWidth = 0.8; ctx.stroke();
+      bar(Math.max(4, Math.min(236, cx - 24)), top - 9, 48, 5, f.hp, f.max, 'hp');
+    }
     outlinedText(label, cx, top - 12, dead ? '#777' : '#fff');
   }
   ctx.textAlign = 'left';
@@ -5057,6 +5061,21 @@ const medallionOrn = (s, m = 'gold') => ornament(`medal:${s}:${m}`, s, s, g => {
 // a crocket: a leaf hook, the kind that climbs the edge of a gothic arch
 const crocketOrn = (m = 'gold') => ornament(`crocket:${m}`, 6, 6, g => {
   g.fillStyle = mcol(m); g.beginPath(); g.moveTo(0.5, 5.5); g.bezierCurveTo(0.4, 2, 3, 0.2, 5.6, 1.2); g.bezierCurveTo(4, 1.8, 3.2, 3, 3.6, 4.4); g.bezierCurveTo(2.6, 3.6, 1.8, 4.4, 1.6, 5.6); g.closePath(); g.fill();
+});
+// a banderole: a parchment ribbon with its ends folded back and cut in swallowtails, for a name to be written on
+const ribbonOrn = (w, h) => ornament(`ribbon:${w}:${h}`, w, h, g => {
+  const top = 2, bot = h - 6, wave = x => Math.sin(x / w * Math.PI * 2) * 1.2;
+  for (const s of [1, -1]) {                                               // the tails, behind
+    g.save(); if (s < 0) { g.translate(w, 0); g.scale(-1, 1); }
+    g.beginPath(); g.moveTo(20, 7); g.lineTo(0, 7); g.lineTo(7, (7 + h - 1) / 2); g.lineTo(0, h - 1); g.lineTo(20, h - 1); g.closePath(); g.fillStyle = '#a08a5c'; g.fill();
+    g.beginPath(); g.moveTo(14, bot); g.lineTo(20, bot); g.lineTo(20, h - 1); g.closePath(); g.fillStyle = '#5e4a2c'; g.fill();   // the fold
+    g.restore();
+  }
+  g.beginPath(); g.moveTo(14, top + wave(14));                             // the band
+  for (let x = 14; x <= w - 14; x += 2) g.lineTo(x, top + wave(x));
+  for (let x = w - 14; x >= 14; x -= 2) g.lineTo(x, bot + wave(x));
+  g.closePath(); g.fillStyle = '#dcc79c'; g.fill();
+  g.fillStyle = 'rgba(150,120,70,0.5)'; for (const x of [w * 0.25, w * 0.5, w * 0.75]) g.fillRect(x, top + 2, 1, bot - top - 4);   // its folds
 });
 // the tooled ground of an old tarot card: a lozenge lattice punched into burnished metal, a little sun in every lozenge
 const groundCache = new Map();
@@ -5800,7 +5819,8 @@ function playControls(L, add) {
       {id: 'leaveItem', label: lvArmed ? 'Leave?' : 'Leave', sub: lvArmed ? 'tap again' : undefined, fade: ready, enabled: ready >= 1, act: leaveItem}]);
   } else if (phase === 'explore') {
     add({draw: () => {                                       // where you are, and how to move
-      titleText(`Floor ${floor + 1}: ${ART.roomTitle(floor)}`, 144, L.act.y + 21, 21, '#c9a24a', 'center', 270);
+      const rb = ribbonOrn(276, 28); drawOrn(rb, 6, L.act.y + 2);           // the name on a banderole
+      titleText(`Floor ${floor + 1}: ${ART.roomTitle(floor)}`, 144, L.act.y + 20, 18, '#5a1e14', 'center', 226);
       centerText('Tap the side of the map to move', 144, L.act.y + 41, `italic 400 13px ${GAME_FONT}`, '#5e5866');
     }});
   }
