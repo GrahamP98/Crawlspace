@@ -368,7 +368,7 @@ const SND = (() => {
   const prefs = {music: true, sfx: true};
   try { const r = JSON.parse(localStorage.getItem(PREF_KEY) || '{}'); for (const k of ['music', 'sfx']) if (typeof r[k] === 'boolean') prefs[k] = r[k]; } catch (e) {}
   const savePrefs = () => { try { localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); } catch (e) {} };
-  const MUSIC_LEVEL = 0.4, SFX_LEVEL = 0.9;
+  const MUSIC_LEVEL = 0.75, SFX_LEVEL = 0.9;
   let A = null, G = null;                                                  // the audio context, and its graph (buses, echo, noise)
   const rr = (a, b) => a + Math.random() * (b - a);
   const vary = (k = 0.06) => 1 + rr(-k, k);                                // so a sound never repeats exactly
@@ -379,7 +379,7 @@ const SND = (() => {
     const g = {ac};
     g.out = ac.createDynamicsCompressor();
     g.out.threshold.value = -12; g.out.knee.value = 12; g.out.ratio.value = 5; g.out.attack.value = 0.003; g.out.release.value = 0.25;
-    g.out.connect(ac.destination);
+    const master = ac.createGain(); master.gain.value = 0.62; g.out.connect(master); master.connect(ac.destination);   // headroom: never past full scale
     g.sfx = ac.createGain(); g.sfx.gain.value = prefs.sfx ? SFX_LEVEL : 0; g.sfx.connect(g.out);
     g.music = ac.createGain(); g.music.gain.value = prefs.music ? MUSIC_LEVEL : 0; g.music.connect(g.out);
     const n = Math.floor(ac.sampleRate * 2.8), ir = ac.createBuffer(2, n, ac.sampleRate);   // the echo of stone halls
@@ -946,12 +946,21 @@ const SND = (() => {
     ticker = setInterval(tick, 60);
     if (want) setMood(want);
   }
-  const wake = () => { boot(); if (A && A.state === 'suspended') A.resume().catch(() => {}); };
-  for (const ev of ['pointerdown', 'keydown', 'touchend']) window.addEventListener(ev, wake, {capture: true, passive: true});
+  // Phones only let sound start inside the right kind of tap (the end of a touch, or a click), and iPhones want a
+  // sound actually played inside it, so every kind of tap tries: start the context, resume it, play a silent blip
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}   // (so an iPhone's silent switch doesn't mute the game)
+  const wake = () => {
+    boot();
+    if (!A || A.state === 'running') return;
+    try { const s = A.createBufferSource(); s.buffer = A.createBuffer(1, 1, A.sampleRate); s.connect(A.destination); s.start(0); } catch (e) {}
+    A.resume().then(() => { if (want) setMood(want); }).catch(() => {});
+  };
+  for (const ev of ['pointerdown', 'pointerup', 'mousedown', 'touchstart', 'touchend', 'click', 'keydown']) window.addEventListener(ev, wake, {capture: true, passive: true});
   document.addEventListener('visibilitychange', () => { if (!A) return; if (document.hidden) A.suspend().catch(() => {}); else A.resume().catch(() => {}); });
 
   return {
     S, PIECES, prefs,
+    state: () => A ? A.state : 'not started',
     // play sound name in delay seconds, with opts (pan, mat, size, ...); under the current tag
     fx(name, opts = {}, delay = 0) {
       if (!A || !prefs.sfx || A.state !== 'running' || !S[name]) return;
