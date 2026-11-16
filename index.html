@@ -269,17 +269,17 @@
       <h4>Basics</h4>
       <ul>
         <li><b>Attack</b>: more damage on every hit. Your first pick gives +2, and the total grows to +3, +4, +5, +6 with more picks.</li>
-        <li><b>Vitality</b>: +25 max health (and heals 25), and you heal 1 after every fight you win.</li>
+        <li><b>Vitality</b>: +20 max health (and heals 20), and you heal 1 after every fight you win.</li>
         <li><b>Focus</b>: +4% critical hit chance, and every miss chance shrinks by 10% (including Heavy and against Bats).</li>
       </ul>
       <h4>Specials</h4>
       <ul>
         <li><b>Pathfinder</b> (rare, once): see 1 more tile around you, and enemies within sight show on the map, with their gear and group size, before you meet them. In a fight you also see each enemy's move after next (dimmed, beside its badge), and what a Wraith is about to do.</li>
         <li><b>Ambusher</b>: your first hit in every fight is an <b>Ambush</b> for +35% damage (a miss doesn't use it up). More picks raise it to +47%, +52% and so on. Running away and coming back doesn't give you a second ambush on the same group.</li>
-        <li><b>Executioner</b>: +50% damage to enemies below half health.</li>
+        <li><b>Executioner</b>: +40% damage to enemies below half health. More picks raise it to +53%, +60% and so on.</li>
         <li><b>Antidote</b>: potions heal 10 more, and poison is weaker and shorter.</li>
-        <li><b>Shield Bash</b>: when you Block, you also bash your target for 5 damage, and the stun chance rises to 21%.</li>
-        <li><b>Second Wind</b> (rare, once): the first blow that would kill you leaves you at 10% of your max health instead. It saves you one time.</li>
+        <li><b>Shield Bash</b>: when you Block, you also bash your target for 3 damage, and the stun chance rises to 15%. More picks raise both (5 damage and 18% at two).</li>
+        <li><b>Second Wind</b> (rare, once): the first blow that would kill you leaves you at 30% of your max health instead. It saves you one time.</li>
         <li><b>Tight Purse</b>: Goblins can't steal from you, you find 30% more gold, and you deal +1 damage for every 80 coins you carry (up to +2). Spending your gold lowers the damage bonus, so you choose between buying now and hitting harder.</li>
       </ul>
     </details>
@@ -1127,15 +1127,15 @@ const RARITY_WEIGHT = {common: 10, uncommon: 6, rare: 3}; // how often a perk is
 const OWNED_WEIGHT_MULT = 1.5;  // specials you already have turn up a bit more often
 const REDRAW_COST = 10;         // coins; each extra redraw in the same level-up costs this much more
 const ATTACK_TOP = 10;                               // Attack: total +2, 3, 4, 5, 6... damage
-const VITALITY_HP = 25, VITALITY_MEND = 1;           // Vitality: +25 max HP; heal 1 per pick after each won fight
+const VITALITY_HP = 20, VITALITY_MEND = 1;           // Vitality: +20 max HP; heal 1 per pick after each won fight
 const FOCUS_CRIT = 0.04, FOCUS_MISS_KEEP = 0.90;     // Focus: +4% crit, miss chance x0.90
 const AMBUSH_TOP = 0.7;                              // Ambusher: your first hit in each fight +35%, 47%, 52%...
-const EXEC_THRESHOLD = 0.50, EXEC_TOP = 1.0;         // Executioner: +50%, 67%, 75%... vs enemies under 50% HP
+const EXEC_THRESHOLD = 0.50, EXEC_TOP = 0.8;         // Executioner: +40%, 53%, 60%... vs enemies under 50% HP
 const ANTIDOTE_HEAL_TOP = 20;                        // Antidote: potions heal +10, 13, 15...
-const BASH_TOP = 0.32, BASH_DMG_TOP = 14;            // Shield Bash: stun 21%, 26%, 29%...; bash 5, 7, 8...
+const BASH_TOP = 0.16, BASH_DMG_TOP = 10;            // Shield Bash: stun 15%, 18%, 20%...; bash 3, 5, 6...
 const PURSE_TOP = 0.60;                              // Tight Purse: gold +30% (it can only be taken once)
 const PURSE_DMG_COINS = 80, PURSE_DMG_MAX = 2;       // Tight Purse: also +1 damage per 80 coins you carry, up to +2
-const SECOND_WIND_SHARE = 0.10;                      // Second Wind: the save leaves you at 10% of your max HP
+const SECOND_WIND_SHARE = 0.30;                      // Second Wind: the save leaves you at 30% of your max HP
 // Pathfinder and Second Wind are 'once' perks: after you take one, it is never dealt again
 
 // k = how many times the perk is taken; each helper defaults to your current count
@@ -1635,10 +1635,10 @@ const pick = z => {
 // boss on the last floor)], each [enemy HP x, enemy damage x, group bias (more of them in a group when above 0)]
 const STRETCH = [
   [[1, 1, 0], [1, 1.1, 0], [1.2, 1.1, 0]],                         // floor 1: a sting in its far half and its guard
-  [[1.05, 1.05, 0], [1.2, 1.12, 0], [1.3, 1.12, 0]],               // floor 2: its far half has no trios, so each Orc there is tougher
-  [[0.93, 0.92, -0.05], [0.95, 0.93, -0.08], [1.25, 1.03, 0]],   // floor 3: eased in front of the campfire (you only get one visit)
-  [[1.0, 0.98, -0.03], [1.01, 1.01, -0.02], [1.3, 1.08, 0]],     // floor 4: its near half no longer goes soft
-  [[1.1, 1.05, 0], [1.03, 1.02, 0.04], [1, 1, 0]]                 // floor 5: no breather before the gauntlet past the campfire (the King has his own numbers)
+  [[1.05, 1.05, 0], [1.2, 1.09, 0], [1.3, 1.09, 0]],               // floor 2: its far half has no trios, so each Orc there is tougher
+  [[0.93, 0.89, -0.05], [0.95, 0.9, -0.08], [1.25, 1, 0]],   // floor 3: eased in front of the campfire (you only get one visit)
+  [[1.0, 0.95, -0.03], [1.01, 0.98, -0.02], [1.3, 1.05, 0]],     // floor 4: its near half no longer goes soft
+  [[1.1, 1.02, 0], [1.03, 0.99, 0.04], [1, 1, 0]]                 // floor 5: no breather before the gauntlet past the campfire (the King has his own numbers)
 ];
 // Groups (2026-11-16, from a census of 50,000 bot fights): a trio cost about eight times what a lone enemy did and
 // caused most deaths, so the difficulty now sits in the enemies themselves, not in the roll for how many there are.
