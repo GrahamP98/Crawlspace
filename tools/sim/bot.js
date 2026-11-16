@@ -1,6 +1,7 @@
-// Crawlspace bot v2: plays full runs through the game's own action functions (the ones the buttons call),
+// Crawlspace bot v3: plays full runs through the game's own action functions (the ones the buttons call),
 // with fog of war (it only knows tiles it has seen and enemies it has bumped into or spotted with Pathfinder).
-// Strategy knobs come in window.__SIM.pol; results go to localStorage, one page load per run.
+// Strategy knobs come in window.__SIM.pol; results go to localStorage, one page load per run. In a fight it plays
+// every option out (expertTurn, below); pol.tactics = 'old' brings back the v2 rules of thumb for comparison.
 (() => {
   if (location.protocol !== 'file:' || window.__simBot) return;
   window.__simBot = true;
@@ -219,7 +220,152 @@
     return live.slice().sort((a, b) => (foeAvg(b) / Math.max(1, b.hp / myAvg(b))) - (foeAvg(a) / Math.max(1, a.hp / myAvg(a))))[0];
   }
 
+  // ---------------------------------------------------------------- expert tactics
+  // Every option this turn (Normal or Heavy at each enemy in reach, Block, a potion) is played out SAMPLES times with
+  // the game's own rules: your swing (miss, crit, the stances, Off balance, Shaken, Ambush, Executioner, Giantslayer,
+  // a shield catching it, Swift, Flaming, Vampiric), then each enemy's shown move (big moves, crits, misses, ripostes,
+  // Guard, war cry, Thorns, stuns off your shield, Shield Bash, poison, Second Wind). Each sample is scored in HP: what
+  // you lose this turn, plus what the rest of the fight should cost from where it leaves things, plus DEATH_COST if it
+  // kills you. The option with the lowest average cost is taken
+  const SAMPLES = 200, DEATH_COST = 500, SW_COST = 45, MARGIN = 2;
+  // the dice for a play-out: every option is played on the same rolls (sample k uses seed k), so options are compared fairly
+  let seed = 1; const R = () => { seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  const rnd = (a, b) => a + Math.floor(R() * (b - a + 1));
+  // what one of your swings at t does: {dmg, crit, hit}
+  function swingAt(t, heavy, hp) {
+    const base = (t.next === 'flit' ? FLIT_EVADE : t.evasion ?? PLAYER_MISS) + (heavy ? HEAVY_MISS : 0);
+    const miss = t.off ? 0 : Math.min(0.95, base * missKeep() * (heavy ? 1 - enchSum('balanced') : 1));
+    const r = R();
+    if (r < miss) return {dmg: 0, crit: false, hit: false};
+    const crit = r < miss + critChance();
+    let d = Math.max(1, rnd(8, 14) + power('weapon') + bonusDmg + purseDmg() - t.def);
+    if (heavy) d = Math.round(d * HEAVY_MULT);
+    if (perkN('executioner') && hp < t.max * EXEC_THRESHOLD) d = Math.round(d * (1 + execBonus()));
+    if (current && current.ambushReady) d = Math.round(d * (1 + ambushBonus()));
+    if (t.max >= GIANT_HP && enchSum('giantslayer') > 0) d = Math.round(d * (1 + enchSum('giantslayer')));
+    if (crit) d *= PLAYER_CRIT_MULT;
+    if (weak) d = Math.max(1, Math.round(d * WAIL_KEEP));
+    if (t.next === 'brace') d = Math.max(1, Math.round(d * BRACE_KEEP));
+    if (!t.off && t.shield !== undefined && R() < FOE_SHIELD_BLOCK[t.shield]) d = Math.max(1, Math.round(d * FOE_SHIELD_KEEP));
+    return {dmg: d, crit, hit: true};
+  }
+  // one enemy blow at you: mult from your stance; move = what it is doing
+  function blowAt(f, mult, move, cry) {
+    const M = (move && MOVES[move]) || MOVES.attack, big = !!M.big;
+    const r = R();
+    if (!big && r < FOE_MISS) return 0;
+    const crit = !big && r < FOE_MISS + FOE_CRIT;
+    let d = Math.max(1, rnd(f.dmg[0], f.dmg[1]) + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0) + cry - (move === 'crush' ? 0 : armorNow()));
+    if (crit) d = Math.round(d * FOE_CRIT_MULT);
+    if (big && move !== 'crush') d *= M.big;
+    return Math.max(1, Math.round(d * mult));
+  }
+  // what the rest of the fight should cost in HP, from a state: [{f, hp}] of living enemies (killing the worst first)
+  function restCost(state) {
+    const alive = state.filter(s => s.hp > 0);
+    if (!alive.length) return 0;
+    const crier = alive.some(s => s.f.cry);
+    const per = s => { const f = s.f;
+      const cry = crier && !f.cry ? WARCRY_BONUS : 0;
+      const raw = (f.dmg[0] + f.dmg[1]) / 2 + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0) + cry;
+      return Math.max(1, raw - armorNow()) * (1 - FOE_MISS) * (1 + FOE_CRIT * (FOE_CRIT_MULT - 1)) * (f.boss ? 1.12 : 1); };
+    const eff = s => { const f = s.f; return Math.max(2, myAvg(f, false) - (f.regen && !(f.burn > 0) ? f.regen * 0.8 : 0)); };
+    const hpOf = s => s.hp + (s.f.reassemble && !s.f.rose ? s.f.max * REASSEMBLE_HP * REASSEMBLE_CHANCE : 0) + (s.f.split ? 14 * 2 * 0.8 : 0);
+    const order = alive.slice().sort((a, b) => per(b) / Math.max(1, hpOf(b) / eff(b)) - per(a) / Math.max(1, hpOf(a) / eff(a)));
+    let incoming = order.reduce((a, s) => a + per(s), 0), cost = 0;
+    for (const s of order) { const rounds = hpOf(s) / eff(s); cost += rounds * incoming; incoming -= per(s); }
+    return cost * (1 - enchSum('vampiric') * 0.6);
+  }
+  // what the enemies still standing should deal next turn, on average
+  function nextTurn(state) {
+    const alive = state.filter(s => s.hp > 0), crier = alive.some(s => s.f.cry);
+    return alive.reduce((a, s) => { const f = s.f, cry = crier && !f.cry ? WARCRY_BONUS : 0;
+      return a + Math.max(1, (f.dmg[0] + f.dmg[1]) / 2 + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust ? f.bloodlust : 0) + cry - armorNow()) * (1 - FOE_MISS); }, 0);
+  }
+  // play one option out once; returns its cost in HP
+  function playOut(opt, live) {
+    const st = new Map(live.map(f => [f, {f, hp: f.hp, stunned: f.stunned}]));
+    let hp = p.hp, cost = 0;
+    const exposure = opt.kind === 'heavy' ? HEAVY_EXPOSED : 1, blocking = opt.kind === 'block';
+    const reach = live.filter(f => reachable(f));
+    const hitFoe = (f, d, crit) => {
+      const s = st.get(f); s.hp -= d;
+      if (s.hp <= 0 && f.reassemble && !f.rose && !crit && R() < REASSEMBLE_CHANCE) s.hp = Math.round(f.max * REASSEMBLE_HP);
+      if (s.hp <= 0 && f.split) for (let k = 0; k < 2; k++) st.set({...LITTLE_SLIME, max: LITTLE_SLIME.hp, def: 0, bonus: 0}, {f: {...LITTLE_SLIME, max: LITTLE_SLIME.hp, def: 0, bonus: 0}, hp: LITTLE_SLIME.hp, fresh: true});
+    };
+    let dealt = 0;
+    if (opt.kind === 'normal' || opt.kind === 'heavy') {
+      const t = opt.t, sw = swingAt(t, opt.kind === 'heavy', t.hp);
+      if (sw.hit) { hitFoe(t, sw.dmg, sw.crit); dealt += sw.dmg;
+        if (enchSum('flaming') && st.get(t).hp > 0) st.get(t).burnNow = enchSum('flaming');
+        if (R() < enchSum('swift')) { const n2 = st.get(t).hp > 0 ? t : reach.find(f => f !== t && st.get(f).hp > 0);
+          if (n2) { const s2 = swingAt(n2, opt.kind === 'heavy', st.get(n2).hp); if (s2.hit) { hitFoe(n2, s2.dmg, s2.crit); dealt += s2.dmg; } } } }
+      if (st.get(t).hp > 0 && !t.off && !t.stunned && ((!sw.hit && t.riposte) || t.next === 'guard')) { const d = blowAt(t, exposure, 'attack', 0); hp -= d; cost += d; }
+    } else if (blocking) {
+      if (perkN('shieldbash') && reach.length) { const t = target && reachable(target) ? target : reach[0]; hitFoe(t, bashDmg(), false); }
+    } else if (opt.kind === 'potion') {
+      hp = Math.min(p.max, hp + potionHeal()); cost -= Math.min(potionHeal(), p.max - p.hp) - potionHeal();   // (only overheal is lost)
+    }
+    hp += Math.min(Math.round(dealt * enchSum('vampiric')), p.max - hp); cost -= Math.round(dealt * enchSum('vampiric'));
+    // the enemies' turn, in order
+    const crierAlive = () => [...st.values()].some(s => s.f.cry && s.hp > 0);
+    let stunsSaved = 0;
+    for (const f of live) {
+      const s = st.get(f); if (s.hp <= 0) continue;
+      if (f.burn > 0 || s.burnNow) { s.hp -= f.burnDmg || s.burnNow; if (s.hp <= 0) continue; }
+      if (f.stunned) continue;
+      const move = f.next || 'attack', M = MOVES[move] || MOVES.attack;
+      if (move === 'lick' && !(f.burn > 0)) s.hp = Math.min(f.max, s.hp + f.regen * LICK_REGENS);
+      if (move === 'feast') s.hp = Math.min(f.max, s.hp + FEAST_HEAL);
+      if (move === 'roar') st.set({k: 'servant'}, {f: types.find(t => t.name === 'Goblin'), hp: 40, fresh: true});
+      if (!M.hit) continue;
+      const cry = crierAlive() && !f.cry ? WARCRY_BONUS : 0;
+      const guardBig = blocking && M.big && typeof BIG_BLOCK === 'number' ? BIG_BLOCK : 1;   // (a big blow may break through a raised guard)
+      const d = blowAt(f, blocking ? 1 - (1 - blockMult()) * guardBig : exposure, move, cry);
+      if (d > 0) {
+        hp -= d; cost += d;
+        if (f.poison && R() < POISON_CHANCE) cost += Math.max(1, poisonTurns() - enchSum('purity')) * poisonDmg() * 0.8;
+        if (blocking && !f.stunProof && R() < stunChance()) stunsSaved += restCost([s]) > 0 ? (f.dmg[0] + f.dmg[1]) / 2 : 0;
+        if (!blocking && enchSum('thorns')) s.hp -= enchSum('thorns');
+        if (move === 'snatch' && !blocking && !f.stolen && coins > 0 && !perkN('purse')) cost += 4;   // (coins you may not get back)
+        if (move === 'sunder' || move === 'acid') cost += 3;
+      }
+      if (hp <= 0) break;
+    }
+    // poison ticks after their turn, and keeps ticking (every turn and step) until it wears off; a potion cures it
+    if (poison && opt.kind !== 'potion') { hp -= poisonDmg(); cost += poisonDmg() * poison; }
+    if (hp <= 0) { if (secondWinds > 0) { cost += SW_COST; hp = Math.max(1, Math.round(p.max * SECOND_WIND_SHARE)); } else return cost + DEATH_COST; }
+    const rest = restCost([...st.values()]) - stunsSaved, avail = healAvail() - (opt.kind === 'potion' ? potionHeal() : 0);
+    // ending the turn low against what is still standing: their next blows could finish you before a potion helps
+    const next = nextTurn([...st.values()]);
+    if (potions - (opt.kind === 'potion' ? 1 : 0) > 0 && hp < next * 1.5) cost += (next * 1.5 - hp) * 2.5;   // (only worth it with a potion to drink)
+    cost += rest + (rest > hp + avail ? (rest - hp - avail) * 2 : 0);    // a fight you can't finish costs more
+    return cost;
+  }
+  function expertTurn() {
+    const live = foes.filter(f => f.hp > 0), reach = live.filter(f => reachable(f));
+    const opts = [{kind: 'block'}];
+    for (const t of reach) { opts.push({kind: 'normal', t}); opts.push({kind: 'heavy', t}); }
+    if (potions > 0 && p.hp < p.max) opts.push({kind: 'potion'});
+    const base = (Math.random() * 1e9) | 0;
+    const costOf = o => { let c = 0; for (let k = 0; k < SAMPLES; k++) { seed = base + k * 7919; c += playOut(o, live); } return c / SAMPLES; };
+    // the plain hit at the best target is the default; anything else has to beat it by a clear margin (MARGIN HP)
+    let best = null, bestCost = Infinity;
+    for (const o of opts.filter(o => o.kind === 'normal')) { const c = costOf(o); if (c < bestCost) { bestCost = c; best = o; } }
+    if (!best) { best = opts[0]; bestCost = costOf(best); }
+    const plain = bestCost;
+    for (const o of opts.filter(o => o.kind !== 'normal' && o !== best)) {
+      const c = costOf(o) + (o.kind === 'potion' ? 2 : 0);                 // (a small bias toward keeping potions for later)
+      if (c < bestCost && c < plain - MARGIN) { bestCost = c; best = o; }
+    }
+    if (best.kind === 'potion') { ST.potFight++; return drinkPotion(); }
+    ST.turns++; ST[best.kind]++;
+    if (best.t) target = best.t;
+    act(best.kind);
+  }
+
   function fightTurn() {
+    if (P.tactics !== 'old') return expertTurn();
     const live = foes.filter(f => f.hp > 0);
     target = pickTarget(live);
     const danger = incoming(1);

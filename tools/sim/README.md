@@ -2,6 +2,8 @@
 
 Headless bot runs of `index.html` for balance testing. Each run is one full game. The bot presses the same functions the buttons call, and it only knows what a player could see: tiles it has seen and enemies it has met or spotted with Pathfinder. Needs Windows PowerShell and Microsoft Edge.
 
+In a fight the bot reads every enemy's intent and plays each option out (Normal or Heavy at each enemy in reach, Block, a potion) 200 times on the same dice, using the game's own rules: stances, Off balance, crits, burning, Swift, Vampiric, Thorns, stuns, Shield Bash, poison and Second Wind. It takes the option that should cost the least HP over the rest of the fight, counting the risk of dying. A plain hit is the default; another option must beat it by 2 HP. A policy with `"tactics": "old"` uses the older rules of thumb instead.
+
 ```powershell
 cd tools\sim
 .\batch.ps1 -Pols A_atk,C_crit,E_scout -W 2 -N 300 -Label today   # 3 builds x 2 workers x 300 runs

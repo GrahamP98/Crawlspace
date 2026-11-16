@@ -210,7 +210,7 @@
       <ul>
         <li><b>Normal</b>: your reliable hit, 8-14 damage plus your weapon and bonuses, minus the enemy's armor. It misses 10% of the time, and 10% of hits are critical hits for double damage.</li>
         <li><b>Heavy</b>: 1.75 times the damage, but it misses 45% of the time, and enemies hit you 20% harder that turn. Use it to finish a fight faster when you can afford the risk.</li>
-        <li><b>Block</b>: you don't attack, but you take less damage. Without a shield Block stops 45% of each hit; a shield raises that (Wooden Buckler 55%, Iron Shield 65%, Steel Kite Shield 75%, the most it can be). Each hit you block has a 10% chance to stun that enemy so it skips its next attack. A shield raises the stun chance. Stuns don't chain: an enemy that was just stunned can't be stunned by its very next attack (another enemy in the group still can). Thorns doesn't cut enemies on a turn you Block.</li>
+        <li><b>Block</b>: you don't attack, but you take less damage. Without a shield Block stops 45% of each hit; a shield raises that (Wooden Buckler 55%, Iron Shield 65%, Steel Kite Shield 70%, the most it can be). Each hit you block has a 10% chance to stun that enemy so it skips its next attack. A shield raises the stun chance. Stuns don't chain: an enemy that was just stunned can't be stunned by its very next attack (another enemy in the group still can). Thorns doesn't cut enemies on a turn you Block.</li>
       </ul>
       <p>Enemies miss 10% of the time too, and 10% of their hits are critical hits for 1.5 times the damage. Your armor takes points off every hit, but a hit always does at least 1.</p>
       <p>When a fight ends you get coins and XP for each enemy, and the group drops a piece of gear. A card shows what you found (<b>Found</b>, on the left) next to what you have in that slot (<b>Equipped</b>, on the right): each piece's symbol (its shape and color show the material: brown leather, grey iron, bright steel trimmed in gold), its number (damage for a weapon, defense for armor, block for a shield), and its enchantment as a symbol and a few words. Between them a badge tells you at a glance: a green arrow up for <b>Better</b>, a red arrow down for <b>Worse</b>, = for <b>Same</b>, or a yellow <b>Trade-off</b> when it is better one way and worse another (say, a bigger number but no enchantment). You can <b>Equip</b> it or <b>Leave</b> it, and either one takes you back to the map. The two buttons fade in for a moment before they work, so a tap meant for the fight can't grab the item, and both take two taps: tap Equip (or Leave), then tap it again to confirm.</p>
@@ -291,7 +291,7 @@
         <li><b>Iron</b>: Iron Sword, Iron Shield, Iron Helm, Chainmail, Iron Bracers, Iron Greaves</li>
         <li><b>Steel</b>: Steel Sword, Steel Kite Shield, Steel Helm, Steel Plate, Steel Bracers, Steel Greaves</li>
       </ul>
-      <p>A weapon adds its number to your damage. Armor numbers add up to your <b>Defense</b>, which comes off every enemy hit. Full Steel armor gives 13. What you find depends on the floor: floor 1 is mostly leather with the odd iron piece (but no Chainmail yet), floor 2 is half leather and half iron, Steel first turns up on floor 3, and floor 5 holds only iron and steel. A <b>shield</b> adds nothing to Defense; it makes <b>Block</b> stronger instead: each point stops 10% more of a blocked hit and adds 4% to the stun chance (with no shield Block stops 45%; a Steel Kite Shield, +3, takes it to 75%, the most it can be, and the stun chance from 10% to 22%). Gear drops from fights and chests, and merchants sell it (price = 5 coins per point). Better material also lets you use stronger enchantments.</p>
+      <p>A weapon adds its number to your damage. Armor numbers add up to your <b>Defense</b>, which comes off every enemy hit. Full Steel armor gives 13. What you find depends on the floor: floor 1 is mostly leather with the odd iron piece (but no Chainmail yet), floor 2 is half leather and half iron, Steel first turns up on floor 3, and floor 5 holds only iron and steel. A <b>shield</b> adds nothing to Defense; it makes <b>Block</b> stronger instead: each point stops 10% more of a blocked hit and adds 4% to the stun chance (with no shield Block stops 45%; a Steel Kite Shield, +3, takes it to 70%, the most it can be, and the stun chance from 10% to 22%). Gear drops from fights and chests, and merchants sell it (price = 5 coins per point). Better material also lets you use stronger enchantments.</p>
       <p>Everything you wear shows on your character in fights, from a rusty sword to a steel great helm. You start out in a prisoner's rags: a torn tunic, a bandaged arm and bare feet. Wear all four armor pieces (helmet, chest, bracers and greaves) with a steel helm, and a knight's blue plume streams from it. A full set of Steel adds gold trim, and enchanted gear glows in its enchantment's color. Enemies show their gear the same way (see Fighting).</p>
       <p>Tap <b>Hero</b> to see yourself in everything you wear, with your six slots around you. Each slot shows its piece's symbol, shaped and colored by its material (a rusty sword, an iron sword, a gold-guarded steel sword, and so on), and its number. An enchanted piece glows and shows its enchantment's symbol, with one, two or three dots for Minor, Good or Major. Below are your stats, each with its symbol (the damage range of your hits, Defense, Max HP, how much Block stops, stun, critical hit, miss and flee chances) and your perks. Tap any piece of gear or perk to read what it does. The <b>Bag</b> tab holds your scrolls.</p>
     </details>
@@ -1142,8 +1142,8 @@ const perkN = id => perks[id] || 0;
 const curve = (top, c, k) => top * k / (k + c);  // grows by less with every repeat
 const pct = x => `${Math.round(x * 100)}%`;
 // Block: with no shield it stops BLOCK_BASE of a hit; each point of shield stops SHIELD_BLOCK more (Wooden 55%,
-// Iron 65%, Steel 75%), never past BLOCK_CAP. Each point of shield also adds SHIELD_STUN to the stun chance
-const BLOCK_BASE = 0.45, SHIELD_BLOCK = 0.10, BLOCK_CAP = 0.75, SHIELD_STUN = 0.04;
+// Iron 65%, Steel 70%: its +3 would make 75%, but no Block stops more than BLOCK_CAP). Each point of shield also adds SHIELD_STUN to the stun chance
+const BLOCK_BASE = 0.45, SHIELD_BLOCK = 0.10, BLOCK_CAP = 0.70, SHIELD_STUN = 0.04;
 const blockStops = () => Math.min(BLOCK_CAP, BLOCK_BASE + SHIELD_BLOCK * power('shield'));
 const blockMult = () => 1 - blockStops();   // the share of a hit that still gets through your Block
 const critChance = (k = perkN('focus')) => PLAYER_CRIT + FOCUS_CRIT * k;
@@ -1506,7 +1506,7 @@ const THIEF_STEAL = [3, 6], THIEF_TURNS = 3;   // a Goblin's Snatch takes 3-6 co
 const REASSEMBLE_CHANCE = 0.33, REASSEMBLE_HP = 0.25;
 const POISON_CHANCE = 0.35, POISON_DMG = 3, POISON_TURNS = 4;
 // your combat moves: Heavy hits harder but misses more often and leaves you open
-// (enemies hit 20% harder in their next attacks); Block cuts incoming damage by 45-75% (more with a better shield)
+// (enemies hit 20% harder in their next attacks); Block cuts incoming damage by 45-70% (more with a better shield)
 const HEAVY_MULT = 1.75, HEAVY_MISS = 0.35, HEAVY_EXPOSED = 1.20;   // (how much Block stops: see blockStops)
 const STUN_CHANCE = 0.10; // chance a blocked hit stuns that enemy for its next turn
 // every crushEvery-th Ogre King attack ignores your defense (he warns you the turn before)
