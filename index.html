@@ -199,7 +199,7 @@
 
     <details>
       <summary>Fighting</summary>
-      <p>Walk into an enemy to start a fight. The view switches to the <b>combat screen</b>: you stand on the left, facing the enemies on the right, each drawn as its own creature with its name and a green health bar over its head. Every floor has its own room, and the Ogre King fights you in his own hall. Enemies can come in groups of up to 3 on deeper floors; a group stands spread out in depth, the ones further back smaller. A <b>*</b> after a name means that enemy carries gear, so it hits harder or has armor.</p>
+      <p>Walk into an enemy to start a fight. The view switches to the <b>combat screen</b>: you stand on the left, facing the enemies on the right, each drawn as its own creature with its name and a green health bar over its head. Every floor has its own room, and the Ogre King fights you in his own hall. Enemies can come in pairs, and from floor 3 in groups of 3 (the enemy guarding the stairs never brings more than one other); a group stands spread out in depth, the ones further back smaller. A <b>*</b> after a name means that enemy carries gear, so it hits harder or has armor.</p>
       <p>Enemies wear the gear they carry, just like you. A sword in hand means it hits harder; a helmet, body armor, bracers or greaves mean it takes less damage. An enemy with a shield sometimes catches your hit on it and takes only half (a wooden one 15% of the time, iron 20%, steel 25%). Leather is brown, iron is grey and steel shines silver. Only Goblins, Skeletons, Orcs and Dark Knights carry gear. Their gear is never better than the floor allows: leather on floors 1 and 2, up to iron on floor 3, and steel only from floor 4. Every other enemy fights with teeth, claws and fists.</p>
       <p><b>Tap an enemy to target it.</b> A yellow ring under an enemy shows your target, and your attacks go to it. When your target falls, the next enemy is targeted for you.</p>
       <p>Damage rises over the one who took it as a <b style="color:#f44">red</b> number, healing as a <b style="color:#4e4">green</b> one. <b>MISS</b> appears over whoever an attack was aimed at, <b style="color:#6df">STUNNED</b> over a stunned enemy, and <b style="color:#fc3">SECOND WIND</b> over you when that perk saves your life.</p>
@@ -219,6 +219,7 @@
     <details>
       <summary>Enemies and their tricks</summary>
       <p>Every enemy has a special ability, and most have a move or two besides their attack. Their moves follow a pattern, so you can learn them; the badge over each enemy shows the next one. Some moves need gear: only an enemy with a shield can Brace, Guard or Cower, and only a Dark Knight with a steel sword can Sunder. The message log tells you when anything happens.</p>
+      <p>Each floor has its own kinds in its first half and tougher ones past the merchant or campfire. Some groups in the far half are led by a <b>veteran</b> of the first half's kinds: the same enemy, with more health and a harder hit. The enemy guarding the stairs is always one of the floor's tougher kind.</p>
       <p><b>Sundered</b>: acid and a Sundering blow take 1 off your defense each (2 at most) until the fight ends. <b>Shaken</b>: after a Wail your next attack does 30% less. Both show under your health in a fight.</p>
       <h4>Floors <span class="num">1-2</span></h4>
       <ul>
@@ -1634,18 +1635,25 @@ const pick = z => {
 // boss on the last floor)], each [enemy HP x, enemy damage x, group bias (more of them in a group when above 0)]
 const STRETCH = [
   [[1, 1, 0], [1, 1.1, 0], [1.2, 1.1, 0]],                         // floor 1: a sting in its far half and its guard
-  [[1.05, 1.05, 0], [1.02, 1.03, 0], [1.15, 1.05, 0]],             // floor 2: no longer a stroll
-  [[0.9, 0.9, -0.05], [0.92, 0.92, -0.08], [1.1, 1, 0]],         // floor 3: eased in front of the campfire (you only get one visit), and its far half was a sudden spike
-  [[0.92, 0.93, -0.03], [1.01, 1.01, -0.02], [1.1, 1.05, 0]],    // floor 4: eased in front of the merchant (no shop on floor 3, and one visit only)
-  [[0.95, 0.95, 0], [1.03, 1.02, 0.04], [1, 1, 0]]                // floor 5: a breather, then the gauntlet past the campfire (the King has his own numbers)
+  [[1.05, 1.05, 0], [1.2, 1.12, 0], [1.3, 1.12, 0]],               // floor 2: its far half has no trios, so each Orc there is tougher
+  [[0.93, 0.92, -0.05], [0.95, 0.93, -0.08], [1.25, 1.03, 0]],   // floor 3: eased in front of the campfire (you only get one visit)
+  [[1.0, 0.98, -0.03], [1.01, 1.01, -0.02], [1.3, 1.08, 0]],     // floor 4: its near half no longer goes soft
+  [[1.1, 1.05, 0], [1.03, 1.02, 0.04], [1, 1, 0]]                 // floor 5: no breather before the gauntlet past the campfire (the King has his own numbers)
 ];
+// Groups (2026-11-16, from a census of 50,000 bot fights): a trio cost about eight times what a lone enemy did and
+// caused most deaths, so the difficulty now sits in the enemies themselves, not in the roll for how many there are.
+// No trios on floors 1-2, the stairs guard is never a trio, trios are rarer deeper down, and the guards and the soft
+// stretches are tougher instead (STRETCH). A far half used to hold one kind of enemy: now FAR_MIX of its groups are led
+// by an enemy of the floor's near half, a veteran with more health and a harder hit (the guard keeps the floor's own kind)
+const TRIO_FROM_FLOOR = 3;           // the first floor (counting from 1) where a group can be three
+const FAR_MIX = 0.35, VETERAN_HP = 1.3, VETERAN_DMG = 1.1;
 const stretchOf = e => STRETCH[Math.min(floor, FLOORS - 1)][e && (e.boss || e.guard) ? 2 : e && e.hard ? 1 : 0];
 function groupSize(zone, bias = 0) {
   const r = Math.random() - bias;
   if (zone === 0) return r < 0 ? 2 : 1;
   if (zone === 1) return r < 0.3 ? 2 : 1;
-  if (zone === 2) return r < 0.15 ? 3 : r < 0.55 ? 2 : 1;
-  return r < 0.25 ? 3 : r < 0.65 ? 2 : 1;
+  if (zone === 2) return r < 0.10 ? 3 : r < 0.55 ? 2 : 1;
+  return r < 0.15 ? 3 : r < 0.65 ? 2 : 1;
 }
 
 // the best gear an enemy can carry on each floor (0 Rusty/Leather, 1 Iron, 2 Steel), so it is never better
@@ -1684,9 +1692,14 @@ const FOE_SHIELD_BLOCK = [0.15, 0.20, 0.25], FOE_SHIELD_KEEP = 0.5;
 // a group for enemy e on the map (its zone, and how hard its stretch of the floor is)
 function makeGroup(zone, e) {
   const [hpX, dmgX, bias] = stretchOf(e);
-  return Array.from({length: groupSize(zone, bias)}, (_, i) => {
-    const t = pick(i === 0 ? zone : roll(Math.max(0, zone - 1), zone)), hp = Math.round(t.hp * hpX);
-    const f = {...t, hp, max: hp, dmg: t.dmg.map(v => Math.round(v * dmgX)), bonus: 0, def: 0, items: [], gear: {}};
+  const most = floor + 1 < TRIO_FROM_FLOOR || (e && e.guard) ? 2 : 3;
+  // a far half with only one kind of its own: some of its groups are led by a veteran from the near half's kinds
+  const oneKind = types.filter(t => t.zone === zone && floor + 1 >= (t.minFloor || 1)).length === 1;
+  const mixLead = !!(e && e.hard && !e.guard && !e.boss && zone > 0 && oneKind && Math.random() < FAR_MIX);
+  return Array.from({length: Math.min(most, groupSize(zone, bias))}, (_, i) => {
+    const vet = i === 0 && mixLead;
+    const t = pick(i === 0 ? (mixLead ? zone - 1 : zone) : roll(Math.max(0, zone - 1), zone)), hp = Math.round(t.hp * hpX * (vet ? VETERAN_HP : 1));
+    const f = {...t, hp, max: hp, dmg: t.dmg.map(v => Math.round(v * dmgX * (vet ? VETERAN_DMG : 1))), bonus: 0, def: 0, items: [], gear: {}};
     if (t.gearTier !== undefined) equipFoe(f, t);
     return f;
   });
