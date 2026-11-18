@@ -6602,7 +6602,7 @@ function settingsScreen(L, add, menu) {
   rowStack(add, P.x + 8, top, top + 4 * (rowH + 4), P.w - 16, [
     {id: 'set:music', text: 'Music', note: m ? 'On. Tap to turn it off' : 'Off. Tap to turn it on', icon: (x, y) => noteIcon(x, y, m), act: () => { SND.setMusic(!m); soundLabels(); }},
     {id: 'set:sfx', text: 'Sounds', note: s ? 'On. Tap to turn them off' : 'Off. Tap to turn them on', icon: (x, y) => speakerIcon(x, y, s), act: () => { SND.setSfx(!s); soundLabels(); if (!s) SND.fx('coin'); }},
-    {id: 'set:journal', text: 'Save play journal', note: runsKept ? `${runsKept} run${runsKept === 1 ? '' : 's'} recorded. Tap to save it as a file` : 'Nothing recorded yet',
+    {id: 'set:journal', text: 'Save play journal', note: journalNote() || (runsKept ? `${runsKept} run${runsKept === 1 ? '' : 's'} recorded. Tap to save it as a file` : 'Nothing recorded yet'),
      enabled: runsKept > 0, icon: (x, y) => journalIcon(x, y), act: exportJournal},
     {id: 'set:title', text: 'Return to the title', note: over ? 'Back to the gate' : 'Your run is saved',
      icon: (x, y) => doorIcon(x, y), act: returnToTitle}
@@ -9203,21 +9203,44 @@ if (!window.__SIM) {
   // written with the saved run: after every tap, and whenever the game goes out of sight
   journalWrap(() => saveRun, f => { saveRun = f; }, null, () => journalSave());
 }
-// Settings > Save play journal: share it (phones) or download it (computers) as a file
-function exportJournal() {
+// Settings > Save play journal: the share sheet on a phone (Save to Files, AirDrop, Mail...), a download on a computer.
+// A phone opens the share sheet (or the clipboard) only for a tap that has ended, and the game acts the moment a finger
+// lands, so tapping the row only asks for it (exportJournal) and the finger lifting does it (journalGesture)
+let journalWanted = false, journalCopyNext = false, journalStatus = null;   // journalStatus: {text, t}, shown on the row
+function exportJournal() { journalWanted = true; journalSay('Opening...'); }
+const journalGesture = () => { if (!journalWanted) return; journalWanted = false; shareJournal(); };
+for (const ev of ['pointerup', 'touchend', 'click']) document.addEventListener(ev, journalGesture, true);
+function journalSay(text) { journalStatus = {text, t: performance.now()}; draw(); }
+const journalNote = () => journalStatus && performance.now() - journalStatus.t < 15000 ? journalStatus.text : null;
+function shareJournal() {
   journalSave();
   const book = journalLoad(), runs = book.runs.concat(journalRun && !journalRun.filed ? [{...journalRun, unfinished: true}] : []);
   const text = JSON.stringify({v: JOURNAL_V, exported: new Date().toISOString(), runs});
-  const name = `crawlspace-journal-${new Date().toISOString().slice(0, 10)}.json`;
-  try {
-    const file = new File([text], name, {type: 'application/json'});
-    if (navigator.canShare && navigator.canShare({files: [file]})) { navigator.share({files: [file], title: 'Crawlspace play journal'}).catch(() => {}); return; }
-  } catch (e) {}
+  const name = `crawlspace-journal-${new Date().toISOString().slice(0, 10)}`;
+  const copy = () => navigator.clipboard && navigator.clipboard.writeText
+    ? navigator.clipboard.writeText(text).then(() => journalSay('Copied. Paste it into a note or an email.'), () => journalSay("Couldn't copy it either. Tell Claude."))
+    : journalSay("This browser can't share or copy it.");
+  if (journalCopyNext) { journalCopyNext = false; return copy(); }
+  const phone = matchMedia('(pointer: coarse)').matches;               // (Windows can share too, but a computer should just download)
+  if (phone && navigator.share && navigator.canShare) {
+    for (const [type, ext] of [['application/json', '.json'], ['text/plain', '.txt']]) {   // (some phones only share some kinds of file)
+      let file = null;
+      try { file = new File([text], name + ext, {type}); } catch (e) {}
+      if (!file || !navigator.canShare({files: [file]})) continue;
+      navigator.share({files: [file], title: 'Crawlspace play journal'}).then(
+        () => journalSay('Sent.'),
+        e => { if (e && e.name === 'AbortError') journalSay('Not sent. Tap to try again.');
+               else { journalCopyNext = true; journalSay("Couldn't share it. Tap again to copy it instead."); } });
+      return;
+    }
+  }
+  if (phone) return copy();                                                // a phone that can't share files: the clipboard
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([text], {type: 'application/json'}));
-  a.download = name;
+  a.download = name + '.json';
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  journalSay('Saved to your Downloads folder.');
 }
 const journalCount = () => journalLoad().runs.length + (journalRun && !journalRun.filed ? 1 : 0);
 
