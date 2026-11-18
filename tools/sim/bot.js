@@ -138,6 +138,8 @@
 
   // ---------------------------------------------------------------- combat math
   // the bot reads each enemy's intent (f.next, see MOVES in the game) just as a player reads its badge
+  const HM = () => typeof heavyMult === 'function' ? heavyMult() : HEAVY_MULT;
+  const bigT = t => typeof isBig === 'function' ? isBig(t) : t.max >= GIANT_HP;
   const moveOf = f => (typeof MOVES !== 'undefined' && f.next && MOVES[f.next]) || null;
   const bigMult = f => { const M = moveOf(f); return M && M.big && f.next !== 'crush' ? M.big : 1; };
   const strikes = f => { const M = moveOf(f); return !M || !!M.hit; };   // (a stance, a heal or a cry hurts no one this turn)
@@ -161,8 +163,8 @@
   const shieldKeep = t => t.shield !== undefined ? 1 - FOE_SHIELD_BLOCK[t.shield] * (1 - FOE_SHIELD_KEEP) : 1;
   function myAvg(t, heavy) {
     let d = Math.max(1, 11 + power('weapon') + bonusDmg - (t.def || 0));
-    if (heavy) d *= HEAVY_MULT;
-    if (t.max >= GIANT_HP) d *= 1 + enchSum('giantslayer');
+    if (heavy) d *= HM();
+    if (bigT(t)) d *= 1 + enchSum('giantslayer');
     if (perkN('executioner') && t.hp < t.max * EXEC_THRESHOLD) d *= 1 + execBonus();
     const miss = ((t.evasion ?? PLAYER_MISS) + (heavy ? HEAVY_MISS : 0)) * missKeep() * (heavy ? 1 - enchSum('balanced') : 1);
     const hit = 1 - miss;
@@ -239,10 +241,10 @@
     if (r < miss) return {dmg: 0, crit: false, hit: false};
     const crit = r < miss + critChance();
     let d = Math.max(1, rnd(8, 14) + power('weapon') + bonusDmg + purseDmg() - t.def);
-    if (heavy) d = Math.round(d * HEAVY_MULT);
+    if (heavy) d = Math.round(d * HM());
     if (perkN('executioner') && hp < t.max * EXEC_THRESHOLD) d = Math.round(d * (1 + execBonus()));
     if (current && current.ambushReady) d = Math.round(d * (1 + ambushBonus()));
-    if (t.max >= GIANT_HP && enchSum('giantslayer') > 0) d = Math.round(d * (1 + enchSum('giantslayer')));
+    if (bigT(t) && enchSum('giantslayer') > 0) d = Math.round(d * (1 + enchSum('giantslayer')));
     if (crit) d *= PLAYER_CRIT_MULT;
     if (weak) d = Math.max(1, Math.round(d * WAIL_KEEP));
     if (t.next === 'brace') d = Math.max(1, Math.round(d * BRACE_KEEP));
@@ -253,8 +255,9 @@
   function blowAt(f, mult, move, cry) {
     const M = (move && MOVES[move]) || MOVES.attack, big = !!M.big;
     const r = R();
-    if (!big && r < FOE_MISS) return 0;
-    const crit = !big && r < FOE_MISS + FOE_CRIT;
+    const fm = FOE_MISS + (typeof fleetEvade === 'function' ? fleetEvade() : 0);
+    if (!big && r < fm) return 0;
+    const crit = !big && r < fm + FOE_CRIT;
     let d = Math.max(1, rnd(f.dmg[0], f.dmg[1]) + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0) + cry - (move === 'crush' ? 0 : armorNow()));
     if (crit) d = Math.round(d * FOE_CRIT_MULT);
     if (big && move !== 'crush') d *= M.big;
@@ -269,7 +272,13 @@
       const cry = crier && !f.cry ? WARCRY_BONUS : 0;
       const raw = (f.dmg[0] + f.dmg[1]) / 2 + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0) + cry;
       return Math.max(1, raw - armorNow()) * (1 - FOE_MISS) * (1 + FOE_CRIT * (FOE_CRIT_MULT - 1)) * (f.boss ? 1.12 : 1); };
-    const eff = s => { const f = s.f; return Math.max(2, myAvg(f, false) - (f.regen && !(f.burn > 0) ? f.regen * 0.8 : 0)); };
+    // (Flaming keeps a Troll burning from your next hit on, so it stops regenerating; Thorns cuts every enemy that swings at you;
+    //  a Wraith's drain heals it by a share of what it hits you for)
+    const thornsEach = enchSum('thorns') * (1 - FOE_MISS);
+    const eff = s => { const f = s.f;
+      const regen = f.regen && !(f.burn > 0) && !enchSum('flaming') ? f.regen * 0.8 : 0;
+      const drain = f.drain ? per(s) * f.drain * purityKeep() : 0;
+      return Math.max(2, myAvg(f, false) - regen - drain + thornsEach); };
     const hpOf = s => s.hp + (s.f.reassemble && !s.f.rose ? s.f.max * REASSEMBLE_HP * REASSEMBLE_CHANCE : 0) + (s.f.split ? 14 * 2 * 0.8 : 0);
     const order = alive.slice().sort((a, b) => per(b) / Math.max(1, hpOf(b) / eff(b)) - per(a) / Math.max(1, hpOf(a) / eff(a)));
     let incoming = order.reduce((a, s) => a + per(s), 0), cost = 0;
@@ -299,7 +308,8 @@
       if (sw.hit) { hitFoe(t, sw.dmg, sw.crit); dealt += sw.dmg;
         if (enchSum('flaming') && st.get(t).hp > 0) st.get(t).burnNow = enchSum('flaming');
         if (R() < enchSum('swift')) { const n2 = st.get(t).hp > 0 ? t : reach.find(f => f !== t && st.get(f).hp > 0);
-          if (n2) { const s2 = swingAt(n2, opt.kind === 'heavy', st.get(n2).hp); if (s2.hit) { hitFoe(n2, s2.dmg, s2.crit); dealt += s2.dmg; } } } }
+          if (n2) { const s2 = swingAt(n2, opt.kind === 'heavy', st.get(n2).hp); if (s2.hit) { hitFoe(n2, s2.dmg, s2.crit); dealt += s2.dmg;
+            if (enchSum('flaming') && st.get(n2).hp > 0) st.get(n2).burnNow = enchSum('flaming'); } } } }
       if (st.get(t).hp > 0 && !t.off && !t.stunned && ((!sw.hit && t.riposte) || t.next === 'guard')) { const d = blowAt(t, exposure, 'attack', 0); hp -= d; cost += d; }
     } else if (blocking) {
       if (perkN('shieldbash') && reach.length) { const t = target && reachable(target) ? target : reach[0]; hitFoe(t, bashDmg(), false); }
@@ -324,6 +334,7 @@
       const d = blowAt(f, blocking ? 1 - (1 - blockMult()) * guardBig : exposure, move, cry);
       if (d > 0) {
         hp -= d; cost += d;
+        if (f.drain) s.hp = Math.min(f.max, s.hp + Math.round(d * f.drain * purityKeep()));
         if (f.poison && R() < POISON_CHANCE) cost += Math.max(1, poisonTurns() - enchSum('purity')) * poisonDmg() * 0.8;
         if (blocking && !f.stunProof && R() < stunChance()) stunsSaved += restCost([s]) > 0 ? (f.dmg[0] + f.dmg[1]) / 2 : 0;
         if (!blocking && enchSum('thorns')) s.hp -= enchSum('thorns');
@@ -387,7 +398,7 @@
     else if (P.heavy === 'ev') {
       const base = target.evasion ?? PLAYER_MISS;
       const normalEV = 1 - base * missKeep();
-      const heavyEV = (1 - (base + HEAVY_MISS) * missKeep() * (1 - enchSum('balanced'))) * HEAVY_MULT;
+      const heavyEV = (1 - (base + HEAVY_MISS) * missKeep() * (1 - enchSum('balanced'))) * HM();
       if (!target.riposte && heavyEV > normalEV * 1.15 && p.hp > incoming(HEAVY_EXPOSED) * 3) kind = 'heavy';
     }
     ST[kind]++;

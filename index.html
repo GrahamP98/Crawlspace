@@ -209,7 +209,7 @@
       <p>Each turn of a fight, pick one move. The enemies then take their turn. If every enemy is out of reach, Normal and Heavy raise your guard instead.</p>
       <ul>
         <li><b>Normal</b>: your reliable hit, 8-14 damage plus your weapon and bonuses, minus the enemy's armor. It misses 10% of the time, and 10% of hits are critical hits for double damage.</li>
-        <li><b>Heavy</b>: 1.75 times the damage, but it misses 45% of the time, and enemies hit you 20% harder that turn. Use it to finish a fight faster when you can afford the risk.</li>
+        <li><b>Heavy</b>: 1.75 times the damage (more with a Balanced weapon), but it misses 45% of the time, and enemies hit you 20% harder that turn. Use it to finish a fight faster when you can afford the risk.</li>
         <li><b>Block</b>: you don't attack, but you take less damage. Without a shield Block stops 45% of each hit; a shield raises that (Wooden Buckler 55%, Iron Shield 65%, Steel Kite Shield 70%, the most it can be). Each hit you block has a 10% chance to stun that enemy so it skips its next attack. A shield raises the stun chance. Stuns don't chain: an enemy that was just stunned can't be stunned by its very next attack (another enemy in the group still can). Thorns doesn't cut enemies on a turn you Block.</li>
       </ul>
       <p>Enemies miss 10% of the time too, and 10% of their hits are critical hits for 1.5 times the damage. Your armor takes points off every hit, but a hit always does at least 1.</p>
@@ -303,19 +303,19 @@
       <p>Enchantments come in three tiers. <b>Minor</b> fits any gear, <b>Good</b> needs Iron or Steel gear, and <b>Major</b> needs Steel gear. Numbers below are Minor / Good / Major.</p>
       <h4>Weapon</h4>
       <ul>
-        <li><b>Flaming</b>: hits set the enemy on fire for 3 / 4 / 5 damage a turn for 3 turns. A burning Troll can't regenerate.</li>
+        <li><b>Flaming</b>: hits set the enemy on fire for 2 / 3 / 4 damage a turn for 3 turns. A burning Troll can't regenerate.</li>
         <li><b>Vampiric</b>: heal 4% / 6% / 9% of the damage you deal.</li>
-        <li><b>Balanced</b>: Heavy misses 25% / 35% / 45% less often.</li>
-        <li><b>Giantslayer</b>: +20% / 40% / 55% damage to big enemies (100+ health).</li>
-        <li><b>Swift</b>: 12% / 20% / 26% chance to strike a second time.</li>
+        <li><b>Balanced</b>: Heavy misses 25% / 35% / 45% less often and hits 7% / 10% / 13% harder.</li>
+        <li><b>Giantslayer</b>: +15% / 30% / 40% damage to big enemies: Orcs, Trolls, Minotaurs, Wyverns and the Ogre King.</li>
+        <li><b>Swift</b>: 15% / 23% / 30% chance to strike a second time.</li>
       </ul>
       <h4>Armor and shield</h4>
       <ul>
-        <li><b>Thorns</b>: enemies that hit you take 2 / 3 / 4 damage, but not on a turn you Block.</li>
-        <li><b>Mending</b>: heal 4 / 7 / 10 after every fight you win.</li>
-        <li><b>Fortitude</b>: +20 / 35 / 50 max health, and each potion heals 1 / 2 / 3 more.</li>
-        <li><b>Purity</b>: poison lasts 1 / 2 / 3 fewer turns, and Wraith drain is cut 25% / 50% / 75%.</li>
-        <li><b>Fleetfoot</b> (greaves only): +6% / 8% / 10% chance to flee.</li>
+        <li><b>Thorns</b>: enemies that hit you take 1 / 2 / 3 damage, but not on a turn you Block.</li>
+        <li><b>Mending</b>: heal 2 / 4 / 6 after every fight you win.</li>
+        <li><b>Fortitude</b>: +20 / 30 / 40 max health, and each potion heals 1 / 2 / 3 more.</li>
+        <li><b>Purity</b>: poison lasts 1 / 2 / 3 fewer turns, Wraith drain is cut 25% / 50% / 75%, and a 20% / 30% / 40% chance to shrug off armor loss from Slime acid or a Sundering blow.</li>
+        <li><b>Fleetfoot</b> (greaves only): +6% / 8% / 10% chance to flee, and enemies miss you 5% / 8% / 10% more often (not their big moves).</li>
         <li><b>Fortune</b>: +10% / 20% / 30% gold.</li>
       </ul>
       <h4>Where to get them</h4>
@@ -355,6 +355,7 @@
       <summary>Sound and music</summary>
       <p>Every floor has its own music, and so do fights, the Ogre King, the campfire and the merchant. A blow sounds like what it hits: a slime squelches, bones crack and rattle, flesh thuds, armor rings, and a wraith only sighs. When your health runs low in a fight, you hear your heart.</p>
       <p>The gear opens the <b>Settings</b>: in the corner of the title screen, and in the top-right corner of the game. There you switch the <b>Music</b> and the <b>Sounds</b> on or off. In the game it also holds <b>Return to the title</b>. Your run is saved when you leave, and <b>Continue</b> brings you back to it.</p>
+      <p>The game keeps a <b>play journal</b> of your last 30 runs on your device: every fight, turn, perk, find and purchase. <b>Save play journal</b> in the game's Settings shares it (on a phone) or downloads it (on a computer) as a file, so it can be studied to balance the game. It never leaves your device unless you save it.</p>
     </details>
     <button id="backBtn">Back</button>
   </div>
@@ -1218,32 +1219,38 @@ const TIER_PRICE = [15, 30, 50];         // what an enchantment is worth (sellin
 const ENCHANT_DROP_CHANCE = 0.20;        // gear from fights and chests comes enchanted
 const CAPSAE_PER_FLOOR = 1;              // a capsa, a leather scroll case, always holds a scroll (and chests never do)
 const BAG_SLOTS = 2, SATCHEL_PRICE = 25; // scroll bag; the Scroll Satchel adds one slot
-const BURN_TURNS = 3, GIANT_HP = 100;
+const BURN_TURNS = 3;
+// Giantslayer works on these enemies by name (a floor's scaling can't push one in or out)
+const GIANT_TYPES = ['Orc', 'Troll', 'Minotaur', 'Wyvern', 'Ogre King'];
+const isBig = t => GIANT_TYPES.includes(t.name);
 const PURITY_DRAIN = [0.25, 0.50, 0.75]; // share of Wraith drain each Purity item blocks
+const PURITY_ARMOR = [0.20, 0.30, 0.40]; // chance each Purity item gives to shrug off an armor loss (acid, Sunder)
 const FORT_POTION = [1, 2, 3];           // each Fortitude item also makes potions heal this much more
+const FLEET_EVADE = [0.05, 0.08, 0.10];  // Fleetfoot also makes enemies miss you this much more often
 // vals = strength at Minor / Good / Major
 const ENCHANTS = {
-  flaming:     {name: 'Flaming', slot: 'weapon', vals: [3, 4, 5], desc: 'sets enemies on fire',
+  flaming:     {name: 'Flaming', slot: 'weapon', vals: [2, 3, 4], desc: 'sets enemies on fire',
                 text: v => `hits burn for ${v} a turn for ${BURN_TURNS} turns, and burning Trolls can't regenerate`},
   vampiric:    {name: 'Vampiric', slot: 'weapon', vals: [0.04, 0.06, 0.09], desc: 'heals you as you hit',
                 text: v => `heal ${pct(v)} of the damage you deal`},
-  balanced:    {name: 'Balanced', slot: 'weapon', vals: [0.25, 0.35, 0.45], desc: 'Heavy misses less',
-                text: v => `Heavy misses ${pct(v)} less often`},
-  giantslayer: {name: 'Giantslayer', slot: 'weapon', vals: [0.20, 0.40, 0.55], desc: 'hurts big enemies more',
-                text: v => `+${pct(v)} damage to enemies with ${GIANT_HP}+ HP`},
-  swift:       {name: 'Swift', slot: 'weapon', vals: [0.12, 0.20, 0.26], desc: 'may strike twice',
+  // Balanced: Heavy misses less, and hits harder by half the same number (see heavyMult)
+  balanced:    {name: 'Balanced', slot: 'weapon', vals: [0.25, 0.35, 0.45], desc: 'better Heavy hits',
+                text: v => `Heavy misses ${pct(v)} less often and hits ${pct(v / 2 / HEAVY_MULT)} harder`},
+  giantslayer: {name: 'Giantslayer', slot: 'weapon', vals: [0.15, 0.30, 0.40], desc: 'hurts big enemies more',
+                text: v => `+${pct(v)} damage to Orcs, Trolls, Minotaurs, Wyverns and the Ogre King`},
+  swift:       {name: 'Swift', slot: 'weapon', vals: [0.15, 0.23, 0.30], desc: 'may strike twice',
                 text: v => `${pct(v)} chance to strike a second time`},
-  thorns:      {name: 'Thorns', slot: 'armor', vals: [2, 3, 4], desc: 'hurts enemies that hit you',
+  thorns:      {name: 'Thorns', slot: 'armor', vals: [1, 2, 3], desc: 'hurts enemies that hit you',
                 text: v => `enemies that hit you take ${v} damage (not when you Block)`},
-  mending:     {name: 'Mending', slot: 'armor', vals: [4, 7, 10], desc: 'heals you after fights',
+  mending:     {name: 'Mending', slot: 'armor', vals: [2, 4, 6], desc: 'heals you after fights',
                 text: v => `heal ${v} HP after every fight you win`},
-  fortitude:   {name: 'Fortitude', slot: 'armor', vals: [20, 35, 50], desc: 'more max HP, stronger potions',
+  fortitude:   {name: 'Fortitude', slot: 'armor', vals: [20, 30, 40], desc: 'more max HP, stronger potions',
                 text: v => `+${v} max HP, and potions heal ${FORT_POTION[ENCHANTS.fortitude.vals.indexOf(v)]} more`},
-  purity:      {name: 'Purity', slot: 'armor', vals: [1, 2, 3], desc: 'resists poison and drain',
-                text: v => `poison lasts ${v} fewer turns and Wraith drain is cut ${pct(PURITY_DRAIN[v - 1])}`},
-  // Fleetfoot only goes on greaves (slots), so it takes fleeing from 25% to at most 35%
-  fleetfoot:   {name: 'Fleetfoot', slot: 'armor', slots: ['greaves'], vals: [0.06, 0.08, 0.10], desc: 'easier to flee (greaves only)',
-                text: v => `+${pct(v)} chance to flee`},
+  purity:      {name: 'Purity', slot: 'armor', vals: [1, 2, 3], desc: 'resists poison, drain and armor loss',
+                text: v => `poison lasts ${v} fewer turns, Wraith drain is cut ${pct(PURITY_DRAIN[v - 1])}, and you shrug off armor loss from acid or Sunder ${pct(PURITY_ARMOR[v - 1])} of the time`},
+  // Fleetfoot only goes on greaves (slots), so it takes fleeing from 25% to at most 35%, and dodging up by at most 10%
+  fleetfoot:   {name: 'Fleetfoot', slot: 'armor', slots: ['greaves'], vals: [0.06, 0.08, 0.10], desc: 'flee and dodge (greaves only)',
+                text: v => `+${pct(v)} chance to flee, and enemies miss you ${pct(FLEET_EVADE[ENCHANTS.fleetfoot.vals.indexOf(v)])} more often`},
   fortune:     {name: 'Fortune', slot: 'armor', vals: [0.10, 0.20, 0.30], desc: 'more gold',
                 text: v => `+${pct(v)} gold from kills and chests`}
 };
@@ -1254,7 +1261,7 @@ const enchText = e => ENCHANTS[e.id].text(ENCHANTS[e.id].vals[e.t]);
 // an enchantment in a few words, next to its symbol (enchText is the whole sentence)
 const ENCH_SHORT = {flaming: v => `Burn ${v}`, vampiric: v => `Leech ${pct(v)}`, balanced: v => `Heavy miss \u2212${pct(v)}`,
   giantslayer: v => `Big foes +${pct(v)}`, swift: v => `Double hit ${pct(v)}`, thorns: v => `Thorns ${v}`, mending: v => `Mend ${v}`,
-  fortitude: v => `+${v} max HP`, purity: v => `Poison \u2212${v}`, fleetfoot: v => `Flee +${pct(v)}`, fortune: v => `Gold +${pct(v)}`};
+  fortitude: v => `+${v} max HP`, purity: v => `Poison \u2212${v}`, fleetfoot: v => `Dodge +${pct(FLEET_EVADE[ENCHANTS.fleetfoot.vals.indexOf(v)])}`, fortune: v => `Gold +${pct(v)}`};
 const enchShort = e => ENCH_SHORT[e.id](ENCHANTS[e.id].vals[e.t]);
 const statWord = slot => slot === 'weapon' ? 'damage' : slot === 'shield' ? 'block' : 'defense';
 const itemName = it => it.ench ? `${it.name} of ${ENCHANTS[it.ench.id].name} (${TIERS[it.ench.t]})` : it.name;
@@ -1266,6 +1273,11 @@ const purityKeep = () => Object.values(worn).reduce((m, it) =>
 // extra potion healing from the Fortitude items you wear
 const fortPotion = () => Object.values(worn).reduce((s, it) =>
   s + (it && it.ench && it.ench.id === 'fortitude' ? FORT_POTION[it.ench.t] : 0), 0);
+// Fleetfoot's dodge (it only goes on greaves, so it never stacks), and the chance Purity gives to shrug off an armor loss
+const fleetEvade = () => Object.values(worn).reduce((s, it) =>
+  s + (it && it.ench && it.ench.id === 'fleetfoot' ? FLEET_EVADE[it.ench.t] : 0), 0);
+const purityArmor = () => 1 - Object.values(worn).reduce((m, it) =>
+  m * (it && it.ench && it.ench.id === 'purity' ? 1 - PURITY_ARMOR[it.ench.t] : 1), 1);
 // highest tier drops and scrolls can have on this floor
 const floorTier = () => TIER_FLOOR.filter(f => floor + 1 >= f).length - 1;
 const randomEnchant = slotKey => {
@@ -1509,6 +1521,7 @@ const POISON_CHANCE = 0.35, POISON_DMG = 3, POISON_TURNS = 4;
 // your combat moves: Heavy hits harder but misses more often and leaves you open
 // (enemies hit 20% harder in their next attacks); Block cuts incoming damage by 45-70% (more with a better shield)
 const HEAVY_MULT = 1.75, HEAVY_MISS = 0.35, HEAVY_EXPOSED = 1.20;   // (how much Block stops: see blockStops)
+const heavyMult = () => HEAVY_MULT + enchSum('balanced') / 2;      // a Balanced weapon hits harder with Heavy
 const STUN_CHANCE = 0.10; // chance a blocked hit stuns that enemy for its next turn
 // every crushEvery-th Ogre King attack ignores your defense (he warns you the turn before)
 const BOSS = {name: 'Ogre King', hp: 475, dmg: [22, 29], gold: [40, 60], color: '#900', def: 4, crushEvery: 3, boss: true};
@@ -6575,6 +6588,7 @@ function gearIcon(cx, cy, r, col) { pixelIcon('ui:gear:' + col, r, g => GLYPHS.u
 function speakerIcon(x, y, on) { pixelIcon('ui:sounds:' + on, 10, g => GLYPHS.ui(g, 'sounds', on), x, y); }
 function noteIcon(x, y, on) { pixelIcon('ui:music:' + on, 10, g => GLYPHS.ui(g, 'music', on), x, y); }
 function doorIcon(x, y) { pixelIcon('ui:door', 10, g => GLYPHS.ui(g, 'door'), x, y); }
+function journalIcon(x, y) { pixelIcon('ui:journal', 10, g => GLYPHS.ui(g, 'journal'), x, y); }
 const openSettings = () => { overlay = {kind: 'settings'}; saleArm = null; SND.fx('page'); };
 // back to the title: the run is saved first, so Continue on the title picks it up again
 const returnToTitle = () => { saveRun(); location.hash = ''; location.reload(); };
@@ -6584,9 +6598,12 @@ function settingsScreen(L, add, menu) {
   add({id: 'close', x: P.x + P.w - 44, y: P.y + 6, w: 38, h: 36, act: () => { overlay = null; saleArm = null; }, draw: paintClose});
   const m = SND.prefs.music, s = SND.prefs.sfx;
   const top = P.y + 56, rowH = 52;
-  rowStack(add, P.x + 8, top, top + 3 * (rowH + 4), P.w - 16, [
+  const runsKept = journalCount();
+  rowStack(add, P.x + 8, top, top + 4 * (rowH + 4), P.w - 16, [
     {id: 'set:music', text: 'Music', note: m ? 'On. Tap to turn it off' : 'Off. Tap to turn it on', icon: (x, y) => noteIcon(x, y, m), act: () => { SND.setMusic(!m); soundLabels(); }},
     {id: 'set:sfx', text: 'Sounds', note: s ? 'On. Tap to turn them off' : 'Off. Tap to turn them on', icon: (x, y) => speakerIcon(x, y, s), act: () => { SND.setSfx(!s); soundLabels(); if (!s) SND.fx('coin'); }},
+    {id: 'set:journal', text: 'Save play journal', note: runsKept ? `${runsKept} run${runsKept === 1 ? '' : 's'} recorded. Tap to save it as a file` : 'Nothing recorded yet',
+     enabled: runsKept > 0, icon: (x, y) => journalIcon(x, y), act: exportJournal},
     {id: 'set:title', text: 'Return to the title', note: over ? 'Back to the gate' : 'Your run is saved',
      icon: (x, y) => doorIcon(x, y), act: returnToTitle}
   ], rowH);
@@ -7017,6 +7034,13 @@ const GLYPHS = (() => {
       h.path('#9a6232', () => { g.moveTo(-6, 9.4); g.lineTo(-6, -2); g.arc(0, -2, 6, Math.PI, 0); g.lineTo(6, 9.4); });
       h.line(K, 0.8, [[-2, -7.6], [-2, 9.4]]); h.line(K, 0.8, [[2, -7.6], [2, 9.4]]);
       h.box(IRON, -6, -1, 12, 1.4); h.box(IRON, -6, 5, 12, 1.4); h.disc(GOLD, 3.8, 2.4, 1.1);
+    } else if (id === 'journal') {                                         // a leather-bound journal: gold corners, an iron clasp
+      h.box('#e8dcc0', -5.4, -8.2, 13, 17);                                 // the page edges
+      h.box('#6a2e22', -7.4, -9, 13.4, 18);                                 // the cover
+      h.box('#4a1e16', -7.4, -9, 2.2, 18);                                  // the spine
+      h.box(GOLD, -7.4, -9, 3, 2.4); h.box(GOLD, -7.4, 6.6, 3, 2.4); h.box(GOLD, 3, -9, 3, 2.4); h.box(GOLD, 3, 6.6, 3, 2.4);
+      h.ring(GOLD, 1, 0.6, -0.4, 3.2); h.line(GOLD, 1, [[0.6, -2.8], [0.6, 2]]); h.line(GOLD, 1, [[-1.6, -0.8], [2.8, -0.8]]);   // a cross in a ring
+      h.box(IRON, 4.6, -1.4, 4.2, 2.8); h.disc(GOLD_HI, 7.8, 0, 0.9);       // the clasp
     } else if (id === 'gear') {
       g.fillStyle = tint; g.beginPath();
       for (let i = 0; i < 16; i++) { const a = i * Math.PI / 8 - Math.PI / 16, rr = i % 2 ? 6.6 : 9.4; g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); g.lineTo(Math.cos(a + Math.PI / 8) * rr, Math.sin(a + Math.PI / 8) * rr); }
@@ -7389,7 +7413,7 @@ function playControls(L, add) {
      enabled: canFlee(), act: tryFlee}]);
   else if (phase === 'fight') buttonRow(add, 6, L.act.y, 276, L.act.h, [
     {id: 'normal', label: 'Normal', sub: 'steady', act: () => act('normal')},
-    {id: 'heavy', label: 'Heavy', sub: `x${HEAVY_MULT}, risky`, tone: 'fight', act: () => act('heavy')},
+    {id: 'heavy', label: 'Heavy', sub: `x${+heavyMult().toFixed(2)}, risky`, tone: 'fight', act: () => act('heavy')},
     {id: 'block', label: 'Block', sub: `stops ${pct(1 - blockMult())}`, tone: 'guard', act: () => act('block')}]);
   else if (phase === 'loot') {
     add({draw: paintLootCard});
@@ -8044,7 +8068,7 @@ function foeStrike(f, mult, blocking = false, move = 'attack') {
   f.swings = (f.swings || 0) + 1;
   const crush = move === 'crush', big = !!M.big;
   // a big move (the Crushing Blow, the Charge, a Dive...) always lands, and never crits
-  const result = big ? 'hit' : swingResult(FOE_MISS, FOE_CRIT);
+  const result = big ? 'hit' : swingResult(FOE_MISS + fleetEvade(), FOE_CRIT);   // (Fleetfoot dodges plain blows, not big moves)
   f.landed = result !== 'miss';
   after(turnOpen() && turn.beats.length ? TURN.gap - TURN.foeSwing : 0);  // each enemy steps in after the last
   cue('foeSwing', {who: f});
@@ -8053,12 +8077,14 @@ function foeStrike(f, mult, blocking = false, move = 'attack') {
     cue('foeMiss', {who: f});
     popup('player', 'MISS', 'miss');
     msg.textContent += ` ${f.name} misses you.`;
+    journalBlow(f, move, 'm', 0, blocking);
   } else {
     const lust = f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0;
     let hurt = Math.max(1, roll(f.dmg[0], f.dmg[1]) + f.bonus + rage + lust + warcry(f) - (crush ? 0 : armorNow()));
     if (result === 'crit') hurt = Math.round(hurt * FOE_CRIT_MULT);
     if (big && !crush) hurt *= M.big;
     hurt = Math.max(1, Math.round(hurt * mult));
+    journalBlow(f, move, result === 'crit' ? 'c' : big ? 'b' : '', hurt, blocking);
     run.taken += Math.min(hurt, p.hp);
     p.hp = Math.max(0, p.hp - hurt);
     cue('struck', {by: f, blocking, big: big || result === 'crit' || hurt >= p.max * 0.2});
@@ -8071,7 +8097,10 @@ function foeStrike(f, mult, blocking = false, move = 'attack') {
         ? ` ${f.name} lands a CRITICAL HIT for ${hurt}!`
         : ` ${f.name} ${move === 'acid' ? 'spits acid at you' : lust ? 'hits you in a bloodlust' : 'hits you'} for ${hurt}.`;
     // acid and a Sundering blow eat into your armor until the fight ends
-    if ((move === 'acid' || move === 'sunder') && p.hp > 0 && sunder < SUNDER_MAX) {
+    // (Purity may shrug it off)
+    const warded = (move === 'acid' || move === 'sunder') && p.hp > 0 && sunder < SUNDER_MAX && Math.random() < purityArmor();
+    if (warded) msg.textContent += ` Your Purity wards off the ${move === 'acid' ? 'acid' : 'blow'}: your armor holds.`;
+    else if ((move === 'acid' || move === 'sunder') && p.hp > 0 && sunder < SUNDER_MAX) {
       sunder++;
       popup('player', 'ARMOR −1', 'miss');
       msg.textContent += ` Your armor is ${move === 'acid' ? 'eaten away' : 'dented'}: −${sunder} defense for this fight.`;
@@ -8342,7 +8371,7 @@ function strike(t, heavy, label) {
     return result;
   }
   let dmg = Math.max(1, roll(8, 14) + power('weapon') + bonusDmg + purseDmg() - t.def);
-  if (heavy) dmg = Math.round(dmg * HEAVY_MULT);
+  if (heavy) dmg = Math.round(dmg * heavyMult());
   const finisher = perkN('executioner') && t.hp < t.max * EXEC_THRESHOLD;
   if (finisher) dmg = Math.round(dmg * (1 + execBonus()));
   const ambush = current && current.ambushReady;
@@ -8351,7 +8380,7 @@ function strike(t, heavy, label) {
     current.ambushed = true;
     dmg = Math.round(dmg * (1 + ambushBonus()));
   }
-  const giant = t.max >= GIANT_HP && enchSum('giantslayer') > 0;
+  const giant = isBig(t) && enchSum('giantslayer') > 0;
   if (giant) dmg = Math.round(dmg * (1 + enchSum('giantslayer')));
   if (result === 'crit') { dmg *= PLAYER_CRIT_MULT; run.crits++; }
   if (shaken) dmg = Math.max(1, Math.round(dmg * WAIL_KEEP));
@@ -9064,6 +9093,134 @@ const showVault = on => {
   titleMain.hidden = on; vault.hidden = !on; titleArt.hidden = on; title.scrollTop = 0; vaultArm = vaultTry = null;
   if (on) renderVault(); else startTitle();
 };
+// ---- the play journal: a record of your last runs, to study how the game really plays (Settings > Save play journal) ----
+// Each run is a list of events, each one an array starting with its kind and the seconds into the run:
+//   F floor arrived [floor, hp, max, potions, coins, level, gear, perks]   B a fight began [stretch, foes, hp, max, potions]
+//   T a turn [move, target, foes before (name, hp, max, intent), hp before, hp after, damage dealt, damage taken, blows]
+//   R a flee attempt [got away, blows]   W a fight won [hp, max]   P a potion [in a fight?, hp before, hp after, blows]
+//   blows: every enemy blow at you in that turn, [enemy, its move, damage, kind ('' a hit, 'c' a critical, 'b' a big move,
+//   'm' a miss), you were Blocking]. The damage is the blow's own, before it is cut to the HP you had left
+//   K a perk taken [the hand, the pick]   D a redraw   L found gear [the item, what you wore, equipped?]
+//   S a scroll [the scroll, where it went]   $ bought [item, price]   V sold [what, coins]   C a campfire [choice]
+//   X the end [won, killer, floor, level, coins, potions, damage dealt, damage taken]
+// It never changes the game: it only wraps the functions the buttons call, and it is off while the balance bots play.
+// Finished runs are kept under JOURNAL_KEY (written once, when a run ends); the run being played under JOURNAL_NOW (small,
+// so writing it after every tap stays cheap)
+const JOURNAL_KEY = 'crawlspace:journal', JOURNAL_NOW = 'crawlspace:journal:now', JOURNAL_V = 1, JOURNAL_RUNS = 30;
+let journalBook = null, journalRun = null, journalDirty = false;
+function journalLoad() {
+  if (journalBook) return journalBook;
+  try { journalBook = JSON.parse(localStorage.getItem(JOURNAL_KEY) || 'null'); } catch (e) {}
+  if (!journalBook || journalBook.v !== JOURNAL_V || !Array.isArray(journalBook.runs)) journalBook = {v: JOURNAL_V, runs: []};
+  try { journalRun = JSON.parse(localStorage.getItem(JOURNAL_NOW) || 'null'); } catch (e) {}
+  if (journalRun && !Array.isArray(journalRun.ev)) journalRun = null;
+  return journalBook;
+}
+function journalStore(key, value) {
+  for (let tries = 0; tries < 6; tries++) {
+    try { localStorage.setItem(key, JSON.stringify(value)); return; }
+    catch (e) { if (journalBook.runs.length > 1) { journalBook.runs.splice(0, Math.ceil(journalBook.runs.length / 4)); localStorage.setItem(JOURNAL_KEY, JSON.stringify(journalBook)); } else return; }   // full: drop the oldest runs
+  }
+}
+function journalSave() {
+  if (!journalDirty || !journalRun) return;
+  journalDirty = false;
+  journalStore(journalRun.filed ? JOURNAL_KEY : JOURNAL_NOW, journalRun.filed ? journalBook : journalRun);
+}
+// a run is over (or another one began): it joins the finished runs. It stays current (filed), so the blow that ended
+// the run, noted a moment after the end, still lands in it
+function journalFile() {
+  if (!journalRun || journalRun.filed) return;
+  journalRun.filed = true;
+  journalBook.runs = journalBook.runs.filter(r => r.id !== journalRun.id).concat([journalRun]);
+  while (journalBook.runs.length > JOURNAL_RUNS) journalBook.runs.shift();
+  try { localStorage.removeItem(JOURNAL_NOW); } catch (e) {}
+  journalStore(JOURNAL_KEY, journalBook);
+}
+const gearNote = () => Object.keys(slots).map(k => worn[k] ? `${k}:${worn[k].tier}${worn[k].ench ? '/' + worn[k].ench.id + worn[k].ench.t : ''}` : `${k}:-`).join(' ');
+const perkNote = () => Object.keys(PERKS).filter(perkN).map(id => `${id}${perkN(id)}`).join(' ');
+const foeNote = () => foes.map(f => [f.name, f.hp, f.max, f.next || '']);
+const itemNote = it => it ? `${it.name}${it.ench ? ' of ' + it.ench.id + it.ench.t : ''}` : '-';
+// the enemy blows of the turn being played (foeStrike notes each one); a turn, flee or potion takes them for its event
+let journalBlows = [];
+function journalBlow(f, move, kind, dmg, blocking) { if (!window.__SIM) journalBlows.push([f.name, move, dmg, kind, !!blocking]); }
+const takeBlows = () => { const b = journalBlows; journalBlows = []; return b; };
+function journal(...ev) {
+  if (window.__SIM || !journalLoad()) return;
+  if (!run.id) run.id = Date.now();
+  if (!journalRun || journalRun.id !== run.id) {
+    journalFile();                                    // (a run left unfinished: it is filed as it stands)
+    journalRun = journalBook.runs.find(r => r.id === run.id) || null;
+    if (!journalRun) {
+      journalRun = {id: run.id, date: new Date(run.id).toISOString(), ev: []};
+      if (ev[0] !== 'F') journalRun.ev.push(['F', 0, floor + 1, p.hp, p.max, potions, coins, level, gearNote(), perkNote()]);
+    }
+  }
+  journalRun.ev.push([ev[0], Math.round((Date.now() - run.start) / 1000), ...ev.slice(1)]);
+  journalDirty = true;
+  if (journalRun.filed) journalSave();                // (after the end: straight into the finished runs)
+}
+// wrap one of the game's own functions: note runs after it, with what was true before it (pre)
+function journalWrap(get, set, pre, note) {
+  const orig = get();
+  set(function (...args) {
+    const before = pre ? pre(...args) : null;
+    const out = orig.apply(this, args);
+    try { note(before, ...args); } catch (e) {}
+    return out;
+  });
+}
+if (!window.__SIM) {
+  journalWrap(() => loadFloor, f => { loadFloor = f; }, null,
+    () => journal('F', floor + 1, p.hp, p.max, potions, coins, level, gearNote(), perkNote()));
+  const stretch = () => !current ? '?' : current.boss ? 'B' : current.guard ? 'G' : current.hard ? 'F' : 'N';
+  const fightBegins = () => { if (phase === 'choice') journal('B', `${floor + 1}${stretch()}`, foeNote(), p.hp, p.max, potions); };
+  journalWrap(() => startFight, f => { startFight = f; }, fightBegins, () => {});
+  journalWrap(() => tryFlee, f => { tryFlee = f; }, () => { const was = phase === 'choice'; fightBegins(); takeBlows(); return was; },
+    was => { if (was) journal('R', phase === 'explore', takeBlows()); });
+  journalWrap(() => act, f => { act = f; }, kind => { takeBlows(); return phase === 'fight' && !over ? {hp: p.hp, foes: foeNote(), t: target && target.name, dealt: run.dealt, taken: run.taken} : null; },
+    (b, kind) => { if (b) journal('T', kind, b.t || '', b.foes, b.hp, p.hp, run.dealt - b.dealt, run.taken - b.taken, takeBlows()); });
+  journalWrap(() => endFight, f => { endFight = f; }, null, () => journal('W', p.hp, p.max));
+  journalWrap(() => drinkPotion, f => { drinkPotion = f; }, () => { takeBlows(); return {n: potions, hp: p.hp, fight: phase === 'fight'}; },
+    b => { if (potions < b.n) journal('P', b.fight, b.hp, p.hp, takeBlows()); });
+  journalWrap(() => takePerk, f => { takePerk = f; }, id => ({h: hand.slice(), n: perkN(id)}), (b, id) => { if (perkN(id) > b.n) journal('K', b.h, id); });
+  journalWrap(() => redraw, f => { redraw = f; }, () => redraws, n => { if (redraws !== n) journal('D', hand.slice()); });
+  const lootPre = () => phase === 'loot' && pending ? {it: itemNote(pending), cur: itemNote(worn[pending.slot])} : null;
+  journalWrap(() => equipItem, f => { equipItem = f; }, lootPre, b => { if (b && phase !== 'loot') journal('L', b.it, b.cur, true); });
+  journalWrap(() => leaveItem, f => { leaveItem = f; }, lootPre, b => { if (b && phase !== 'loot') journal('L', b.it, b.cur, false); });
+  journalWrap(() => scrollChoice, f => { scrollChoice = f; }, () => scrollNow && {s: scrollNow.id + scrollNow.t, n: scrolls.length},
+    (b, k) => { if (b && (scrollNow === null || phase !== 'scroll' || scrolls.length !== b.n)) journal('S', b.s, k); });
+  journalWrap(() => buyItem, f => { buyItem = f; }, i => ({c: coins, name: shopStock[i] && shopStock[i].name}),
+    b => { if (coins !== b.c) journal('$', b.name, b.c - coins); });
+  for (const [get, set, what] of [[() => sellGear, f => { sellGear = f; }, k => 'gear:' + k], [() => sellPotion, f => { sellPotion = f; }, () => 'potion'],
+                                  [() => sellScroll, f => { sellScroll = f; }, i => 'scroll:' + (scrolls[i] ? scrolls[i].id + scrolls[i].t : '?')]])
+    journalWrap(get, set, (...a) => ({c: coins, w: what(...a)}), b => { if (coins > b.c) journal('V', b.w, coins - b.c); });
+  journalWrap(() => campChoice, f => { campChoice = f; }, () => phase === 'camp', (was, kind) => { if (was) journal('C', kind); });
+  journalWrap(() => endRun, f => { endRun = f; }, null, (b, won, killer) => {
+    journal('X', !!won, killer || '', floor + 1, level, coins, potions, run.dealt, run.taken);
+    journalFile();
+  });
+  // written with the saved run: after every tap, and whenever the game goes out of sight
+  journalWrap(() => saveRun, f => { saveRun = f; }, null, () => journalSave());
+}
+// Settings > Save play journal: share it (phones) or download it (computers) as a file
+function exportJournal() {
+  journalSave();
+  const book = journalLoad(), runs = book.runs.concat(journalRun && !journalRun.filed ? [{...journalRun, unfinished: true}] : []);
+  const text = JSON.stringify({v: JOURNAL_V, exported: new Date().toISOString(), runs});
+  const name = `crawlspace-journal-${new Date().toISOString().slice(0, 10)}.json`;
+  try {
+    const file = new File([text], name, {type: 'application/json'});
+    if (navigator.canShare && navigator.canShare({files: [file]})) { navigator.share({files: [file], title: 'Crawlspace play journal'}).catch(() => {}); return; }
+  } catch (e) {}
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], {type: 'application/json'}));
+  a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+const journalCount = () => journalLoad().runs.length + (journalRun && !journalRun.filed ? 1 : 0);
+
 // ---- the saved run: closing the game (or a phone call) doesn't end your run ----
 // It is written after every tap and whenever the game goes out of sight, and thrown away the moment the run ends, so
 // there is only ever one, and it always holds what has already happened: reopening the game never undoes a bad turn.
