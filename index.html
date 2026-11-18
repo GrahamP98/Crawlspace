@@ -230,7 +230,7 @@
       </ul>
       <h4>Floors <span class="num">2-4</span></h4>
       <ul>
-        <li><span class="sw" style="background:#c33"></span><b>Orc</b> (deep in floor 2 on): bloodlust. Hits 4 harder while you are below half health, so heal before it gets going. In a group its first move is a <b>War cry</b> (horn): the rest of the group hits 2 harder while the Orc lives. Kill it first.</li>
+        <li><span class="sw" style="background:#c33"></span><b>Orc</b> (deep in floor 2 on): bloodlust. Hits 4 harder while you are below half health, so heal before it gets going. In a group its first move is a <b>War cry</b> (horn): the rest of the group hits 2 harder while the Orc lives. Kill it first. Only one Orc in a group cries: the others just attack, so war cries never stack.</li>
         <li><span class="sw" style="background:#a52"></span><b>Troll</b> (floor 3 on): regenerates 6 health every turn. A critical hit stops it for one turn, and fire stops it while the Troll burns. Finish Trolls fast. Every third turn it hurls a <b>Boulder</b> (a big move: Block it). Once, below half health, it <b>Licks its wounds</b> (heart) for 18 and doesn't attack: a free Heavy for you (fire stops the healing).</li>
       </ul>
       <h4>Floors <span class="num">3-5</span></h4>
@@ -1581,7 +1581,8 @@ function planMove(f, n, prev, ahead = false) {
       if (!f.stolen && n % 2 === 1 && coins > 0 && !perkN('purse')) return 'snatch';
       return shield && others.length && n % 3 === 2 ? 'cower' : 'attack';
     case 'Skeleton': return shield && n % 3 === 2 ? 'brace' : 'attack';
-    case 'Orc': return n === 0 && others.length ? 'warcry' : 'attack';
+    // only one War cry per group: an Orc whose group already has one (cried, or about to) just attacks
+    case 'Orc': return n === 0 && others.length && !others.some(o => o.cry || o.next === 'warcry') ? 'warcry' : 'attack';
     case 'Troll': return f.hp < f.max / 2 && !f.licked && prev !== 'lick' ? 'lick' : n % 3 === 2 ? 'boulder' : 'attack';
     case 'Wraith': return n > 0 && prev !== 'wail' && Math.random() < 1 / 3 ? 'wail' : 'attack';
     case 'Dark Knight': return shield && n % 3 === 2 ? 'guard' : f.gear && f.gear.weapon === 2 && n % 3 === 0 && n > 0 ? 'sunder' : 'attack';
@@ -1598,7 +1599,8 @@ function planMove(f, n, prev, ahead = false) {
 function moveFits(f, m) {
   const others = foes.some(o => o !== f && o.hp > 0);
   if (m === 'snatch') return !f.stolen && coins > 0 && !perkN('purse');
-  if (m === 'cower' || m === 'warcry') return others;
+  if (m === 'cower') return others;
+  if (m === 'warcry') return others && !foes.some(o => o !== f && o.hp > 0 && (o.cry || o.next === 'warcry'));   // (one War cry per group)
   if (m === 'run') return f.fleeIn === 0;
   if (m === 'dive') return f.next === 'wing';       // (it only dives from the air)
   if (m === 'lick') return !f.licked;
