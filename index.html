@@ -247,7 +247,7 @@
         <li><span class="sw" style="background:#35b"></span><b>Minotaur</b>: its first move in a fight is a <b>Charge</b> (horns on red) that never misses and deals double damage. Block it. Every fourth turn it <b>paws the ground</b> (horns) and charges again the turn after.</li>
       </ul>
       <h4>The Ogre King</h4>
-      <p><span class="sw" style="background:#900"></span>475 health and armor of his own, and he hits for 14-18. Every third attack is a <b>Crushing Blow</b> (hammer) that ignores your armor. The turn before, his badge turns red and the log warns you: "The Ogre King winds up a huge swing..." That is your cue to <b>Block</b> or drink a potion. Below half health he flies into a rage and hits 3 harder. At two thirds of his health he <b>Roars</b> (horn) for a Goblin servant, and once below half he <b>Feasts</b> (heart), healing 40 without attacking. When he falls, his servant flees.</p>
+      <p><span class="sw" style="background:#900"></span>333 health and armor of his own, and he hits for 14-18. Every third attack is a <b>Crushing Blow</b> (hammer) that ignores your armor. The turn before, his badge turns red and the log warns you: "The Ogre King winds up a huge swing..." That is your cue to <b>Block</b> or drink a potion. Below half health he flies into a rage and hits 3 harder. At two thirds of his health he <b>Roars</b> (horn) for a Goblin servant, and once below half he <b>Feasts</b> (heart), healing 40 without attacking. When he falls, his servant flees.</p>
     </details>
 
     <details>
@@ -1657,13 +1657,15 @@ const pick = z => {
 // The damage column was cut on 2026-11-20 when armor became a share cut (see ARMOR_PER_POINT): F1 x0.67, F2 x0.515,
 // F3 x0.381, F4 x0.453, F5 x0.536, the King x0.62. Later the same day floors 3-5 traded HP for damage (x1.4, x1.6, x1.8,
 // so a fight costs about the same but each blow lands harder and fights are shorter), floor 2's far half eased 10%,
-// floor 3 hit 10% harder, and floors 2-5 were scaled x0.9 (bots: average 8.4%, elite 14.5%)
+// floor 3 hit 10% harder, and floors 2-5 were scaled x0.9 (bots: average 8.4%, elite 14.5%). Then the Ogre King's HP
+// went x0.7 (475 -> 333: he killed 67% of the runs that reached him, now about 53%) and floor 4 and floor 5's
+// gauntlet hit 8% harder to keep the overall rate (bots: average 9.0%, elite 16.2%)
 const STRETCH = [
   [[1, 0.67, 0], [1, 0.737, 0], [1.2, 0.737, 0]],                  // floor 1: a sting in its far half and its guard
   [[1.05, 0.487, 0], [1.2, 0.454, 0], [1.3, 0.454, 0]],               // floor 2: its far half has no trios, so each Orc there is tougher
   [[0.664, 0.47, -0.05], [0.679, 0.475, -0.08], [0.893, 0.528, 0]],   // floor 3: eased in front of the campfire (you only get one visit)
-  [[0.625, 0.619, -0.03], [0.631, 0.639, -0.02], [0.812, 0.685, 0]],     // floor 4: its near half no longer goes soft
-  [[0.611, 0.886, 0], [0.572, 0.86, 0.04], [1.0, 0.62, 0]]                 // floor 5: no breather before the gauntlet past the campfire (the King has his own numbers)
+  [[0.625, 0.669, -0.03], [0.631, 0.69, -0.02], [0.812, 0.74, 0]],     // floor 4: its near half no longer goes soft
+  [[0.611, 0.957, 0], [0.572, 0.929, 0.04], [0.7, 0.62, 0]]                 // floor 5: no breather before the gauntlet past the campfire (the King has his own numbers)
 ];
 // Groups (2026-11-16, from a census of 50,000 bot fights): a trio cost about eight times what a lone enemy did and
 // caused most deaths, so the difficulty now sits in the enemies themselves, not in the roll for how many there are.
