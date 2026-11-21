@@ -145,10 +145,12 @@
   const strikes = f => { const M = moveOf(f); return !M || !!M.hit; };   // (a stance, a heal or a cry hurts no one this turn)
   const armorVs = f => f.next === 'crush' ? 0 : (typeof armorNow === 'function' ? armorNow() : defense());
   const cryBonus = f => typeof warcry === 'function' ? warcry(f) : 0;
+  // raw damage after pts of armor: a share cut (the game's armorCut, 2026-11-20), or points off in older copies of the game
+  const afterArmor = (raw, pts) => Math.max(1, typeof armorCut === 'function' ? raw * (1 - armorCut(pts)) : raw - pts);
   function foeHit(f) {
     if (!strikes(f)) return 0;
     const raw = f.dmg[1] + f.bonus + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0) + cryBonus(f);
-    return Math.max(1, raw - armorVs(f)) * bigMult(f);
+    return afterArmor(raw, armorVs(f)) * bigMult(f);
   }
   const incoming = (mult = 1) => foes.filter(f => f.hp > 0 && !f.stunned && strikes(f))
     .reduce((s, f) => s + Math.max(1, Math.round(foeHit(f) * mult)), 0) + (poison ? poisonDmg() : 0);
@@ -157,12 +159,12 @@
     if (spike && !strikes(f)) return 0;
     const big = spike && moveOf(f) && moveOf(f).big;
     const raw = (f.dmg[0] + f.dmg[1]) / 2 + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0) + cryBonus(f);
-    const h = Math.max(1, raw - (big ? armorVs(f) : defense())) * (big ? bigMult(f) : 1);
+    const h = afterArmor(raw, big ? armorVs(f) : defense()) * (big ? bigMult(f) : 1);
     return big ? h : h * (1 - FOE_MISS) * (1 + FOE_CRIT * (FOE_CRIT_MULT - 1));
   }
   const shieldKeep = t => t.shield !== undefined ? 1 - FOE_SHIELD_BLOCK[t.shield] * (1 - FOE_SHIELD_KEEP) : 1;
   function myAvg(t, heavy) {
-    let d = Math.max(1, 11 + power('weapon') + bonusDmg - (t.def || 0));
+    let d = afterArmor(11 + power('weapon') + bonusDmg, t.def || 0);
     if (heavy) d *= HM();
     if (bigT(t)) d *= 1 + enchSum('giantslayer');
     if (perkN('executioner') && t.hp < t.max * EXEC_THRESHOLD) d *= 1 + execBonus();
@@ -240,7 +242,7 @@
     const r = R();
     if (r < miss) return {dmg: 0, crit: false, hit: false};
     const crit = r < miss + critChance();
-    let d = Math.max(1, rnd(8, 14) + power('weapon') + bonusDmg + purseDmg() - t.def);
+    let d = Math.round(afterArmor(rnd(8, 14) + power('weapon') + bonusDmg + purseDmg(), t.def));
     if (heavy) d = Math.round(d * HM());
     if (perkN('executioner') && hp < t.max * EXEC_THRESHOLD) d = Math.round(d * (1 + execBonus()));
     if (current && current.ambushReady) d = Math.round(d * (1 + ambushBonus()));
@@ -258,7 +260,7 @@
     const fm = FOE_MISS + (typeof fleetEvade === 'function' ? fleetEvade() : 0);
     if (!big && r < fm) return 0;
     const crit = !big && r < fm + FOE_CRIT;
-    let d = Math.max(1, rnd(f.dmg[0], f.dmg[1]) + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0) + cry - (move === 'crush' ? 0 : armorNow()));
+    let d = Math.round(afterArmor(rnd(f.dmg[0], f.dmg[1]) + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0) + cry, move === 'crush' ? 0 : armorNow()));
     if (crit) d = Math.round(d * FOE_CRIT_MULT);
     if (big && move !== 'crush') d *= M.big;
     return Math.max(1, Math.round(d * mult));
@@ -271,7 +273,7 @@
     const per = s => { const f = s.f;
       const cry = crier && !f.cry ? WARCRY_BONUS : 0;
       const raw = (f.dmg[0] + f.dmg[1]) / 2 + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0) + cry;
-      return Math.max(1, raw - armorNow()) * (1 - FOE_MISS) * (1 + FOE_CRIT * (FOE_CRIT_MULT - 1)) * (f.boss ? 1.12 : 1); };
+      return afterArmor(raw, armorNow()) * (1 - FOE_MISS) * (1 + FOE_CRIT * (FOE_CRIT_MULT - 1)) * (f.boss ? 1.12 : 1); };
     // (Flaming keeps a Troll burning from your next hit on, so it stops regenerating; Thorns cuts every enemy that swings at you;
     //  a Wraith's drain heals it by a share of what it hits you for)
     const thornsEach = enchSum('thorns') * (1 - FOE_MISS);
@@ -289,7 +291,7 @@
   function nextTurn(state) {
     const alive = state.filter(s => s.hp > 0), crier = alive.some(s => s.f.cry);
     return alive.reduce((a, s) => { const f = s.f, cry = crier && !f.cry ? WARCRY_BONUS : 0;
-      return a + Math.max(1, (f.dmg[0] + f.dmg[1]) / 2 + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust ? f.bloodlust : 0) + cry - armorNow()) * (1 - FOE_MISS); }, 0);
+      return a + afterArmor((f.dmg[0] + f.dmg[1]) / 2 + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust ? f.bloodlust : 0) + cry, armorNow()) * (1 - FOE_MISS); }, 0);
   }
   // play one option out once; returns its cost in HP
   function playOut(opt, live) {

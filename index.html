@@ -199,7 +199,7 @@
 
     <details>
       <summary>Fighting</summary>
-      <p>Walk into an enemy to start a fight. The view switches to the <b>combat screen</b>: you stand on the left, facing the enemies on the right, each drawn as its own creature with its name and a green health bar over its head. Every floor has its own room, and the Ogre King fights you in his own hall. Enemies can come in pairs, and from floor 3 in groups of 3 (the enemy guarding the stairs never brings more than one other); a group stands spread out in depth, the ones further back smaller. A <b>*</b> after a name means that enemy carries gear, so it hits harder or has armor.</p>
+      <p>Walk into an enemy to start a fight. The view switches to the <b>combat screen</b>: you stand on the left, facing the enemies on the right, each drawn as its own creature with its name and a green health bar over its head. Every floor has its own room, and the Ogre King fights you in his own hall. Enemies can come in pairs, and from floor 3 in groups of 3 (the enemy guarding the stairs never brings more than one other); a group stands spread out in depth, the ones further back smaller. A <b>*</b> after a name means that enemy carries gear, so it hits harder or has armor. A red <b>V</b> after a name, and a red glow round it, mark a <b>veteran</b> (see below).</p>
       <p>Enemies wear the gear they carry, just like you. A sword in hand means it hits harder; a helmet, body armor, bracers or greaves mean it takes less damage. An enemy with a shield sometimes catches your hit on it and takes only half (a wooden one 15% of the time, iron 20%, steel 25%). Leather is brown, iron is grey and steel shines silver. Only Goblins, Skeletons, Orcs and Dark Knights carry gear. Their gear is never better than the floor allows: leather on floors 1 and 2, up to iron on floor 3, and steel only from floor 4. Every other enemy fights with teeth, claws and fists.</p>
       <p><b>Tap an enemy to target it.</b> A yellow ring under an enemy shows your target, and your attacks go to it. When your target falls, the next enemy is targeted for you.</p>
       <p>Damage rises over the one who took it as a <b style="color:#f44">red</b> number, healing as a <b style="color:#4e4">green</b> one. <b>MISS</b> appears over whoever an attack was aimed at, <b style="color:#6df">STUNNED</b> over a stunned enemy, and <b style="color:#fc3">SECOND WIND</b> over you when that perk saves your life.</p>
@@ -208,19 +208,19 @@
       <p>A big move leaves the enemy <b>Off balance</b> (it says so after its name) until it acts again: your hits on it can't miss, its shield can't catch them and it can't strike back. That is the moment for a <b>Heavy</b>.</p>
       <p>Each turn of a fight, pick one move. The enemies then take their turn. If every enemy is out of reach, Normal and Heavy raise your guard instead.</p>
       <ul>
-        <li><b>Normal</b>: your reliable hit, 8-14 damage plus your weapon and bonuses, minus the enemy's armor. It misses 10% of the time, and 10% of hits are critical hits for double damage.</li>
+        <li><b>Normal</b>: your reliable hit, 8-14 damage plus your weapon and bonuses, less the share the enemy's armor cuts. It misses 10% of the time, and 10% of hits are critical hits for double damage.</li>
         <li><b>Heavy</b>: 1.75 times the damage (more with a Balanced weapon), but it misses 45% of the time, and enemies hit you 20% harder that turn. Use it to finish a fight faster when you can afford the risk.</li>
         <li><b>Block</b>: you don't attack, but you take less damage. Without a shield Block stops 45% of each hit; a shield raises that (Wooden Buckler 55%, Iron Shield 65%, Steel Kite Shield 70%, the most it can be). Each hit you block has a 10% chance to stun that enemy so it skips its next attack. A shield raises the stun chance. Stuns don't chain: an enemy that was just stunned can't be stunned by its very next attack (another enemy in the group still can). Thorns doesn't cut enemies on a turn you Block.</li>
       </ul>
-      <p>Enemies miss 10% of the time too, and 10% of their hits are critical hits for 1.5 times the damage. Your armor takes points off every hit, but a hit always does at least 1.</p>
+      <p>Enemies miss 10% of the time too, and 10% of their hits are critical hits for 1.5 times the damage. Your armor cuts a share off every hit (3.5% for each point of Defense, 45% at most), and enemy armor cuts your hits the same way. A hit always does at least 1.</p>
       <p>When a fight ends you get coins and XP for each enemy, and the group drops a piece of gear. A card shows what you found (<b>Found</b>, on the left) next to what you have in that slot (<b>Equipped</b>, on the right): each piece's symbol (its shape and color show the material: brown leather, grey iron, bright steel trimmed in gold), its number (damage for a weapon, defense for armor, block for a shield), and its enchantment as a symbol and a few words. Between them a badge tells you at a glance: a green arrow up for <b>Better</b>, a red arrow down for <b>Worse</b>, = for <b>Same</b>, or a yellow <b>Trade-off</b> when it is better one way and worse another (say, a bigger number but no enchantment). You can <b>Equip</b> it or <b>Leave</b> it, and either one takes you back to the map. The two buttons fade in for a moment before they work, so a tap meant for the fight can't grab the item, and both take two taps: tap Equip (or Leave), then tap it again to confirm.</p>
     </details>
 
     <details>
       <summary>Enemies and their tricks</summary>
       <p>Every enemy has a special ability, and most have a move or two besides their attack. Their moves follow a pattern, so you can learn them; the badge over each enemy shows the next one. Some moves need gear: only an enemy with a shield can Brace, Guard or Cower, and only a Dark Knight with a steel sword can Sunder. The message log tells you when anything happens.</p>
-      <p>Each floor has its own kinds in its first half and tougher ones past the merchant or campfire. Some groups in the far half are led by a <b>veteran</b> of the first half's kinds: the same enemy, with more health and a harder hit. The enemy guarding the stairs is always one of the floor's tougher kind.</p>
-      <p><b>Sundered</b>: acid and a Sundering blow take 1 off your defense each (2 at most) until the fight ends. <b>Shaken</b>: after a Wail your next attack does 30% less. Both show under your health in a fight.</p>
+      <p>Each floor has its own kinds in its first half and tougher ones past the merchant or campfire. Some groups in the far half are led by a <b>veteran</b> of the first half's kinds: the same enemy, with more health and a harder hit. A veteran has a red <b>V</b> after its name and glows red in the fight. The enemy guarding the stairs is always one of the floor's tougher kind.</p>
+      <p><b>Sundered</b>: acid and a Sundering blow take 1 off your Defense each (2 at most, so your armor cuts up to 7% less) until the fight ends. <b>Shaken</b>: after a Wail your next attack does 30% less. Both show under your health in a fight.</p>
       <h4>Floors <span class="num">1-2</span></h4>
       <ul>
         <li><span class="sw" style="background:#98a"></span><b>Bat</b>: hard to hit. You miss it 30% of the time instead of 10%, so Heavy is a poor choice. Every third turn it <b>Flits</b> (bat): it darts about in the dark and you miss it 70% of the time. Hit something else, or Block.</li>
@@ -247,7 +247,7 @@
         <li><span class="sw" style="background:#35b"></span><b>Minotaur</b>: its first move in a fight is a <b>Charge</b> (horns on red) that never misses and deals double damage. Block it. Every fourth turn it <b>paws the ground</b> (horns) and charges again the turn after.</li>
       </ul>
       <h4>The Ogre King</h4>
-      <p><span class="sw" style="background:#900"></span>475 health and armor of his own, and he hits for 22-29. Every third attack is a <b>Crushing Blow</b> (hammer) that ignores your armor. The turn before, his badge turns red and the log warns you: "The Ogre King winds up a huge swing..." That is your cue to <b>Block</b> or drink a potion. Below half health he flies into a rage and hits 3 harder. At two thirds of his health he <b>Roars</b> (horn) for a Goblin servant, and once below half he <b>Feasts</b> (heart), healing 40 without attacking. When he falls, his servant flees.</p>
+      <p><span class="sw" style="background:#900"></span>475 health and armor of his own, and he hits for 14-18. Every third attack is a <b>Crushing Blow</b> (hammer) that ignores your armor. The turn before, his badge turns red and the log warns you: "The Ogre King winds up a huge swing..." That is your cue to <b>Block</b> or drink a potion. Below half health he flies into a rage and hits 3 harder. At two thirds of his health he <b>Roars</b> (horn) for a Goblin servant, and once below half he <b>Feasts</b> (heart), healing 40 without attacking. When he falls, his servant flees.</p>
     </details>
 
     <details>
@@ -292,7 +292,7 @@
         <li><b>Iron</b>: Iron Sword, Iron Shield, Iron Helm, Chainmail, Iron Bracers, Iron Greaves</li>
         <li><b>Steel</b>: Steel Sword, Steel Kite Shield, Steel Helm, Steel Plate, Steel Bracers, Steel Greaves</li>
       </ul>
-      <p>A weapon adds its number to your damage. Armor numbers add up to your <b>Defense</b>, which comes off every enemy hit. Full Steel armor gives 13. What you find depends on the floor: floor 1 is mostly leather with the odd iron piece (but no Chainmail yet), floor 2 is half leather and half iron, Steel first turns up on floor 3, and floor 5 holds only iron and steel. A <b>shield</b> adds nothing to Defense; it makes <b>Block</b> stronger instead: each point stops 10% more of a blocked hit and adds 4% to the stun chance (with no shield Block stops 45%; a Steel Kite Shield, +3, takes it to 70%, the most it can be, and the stun chance from 10% to 22%). Gear drops from fights and chests, and merchants sell it (price = 5 coins per point). Better material also lets you use stronger enchantments.</p>
+      <p>A weapon adds its number to your damage. Armor numbers add up to your <b>Defense</b>, and each point cuts 3.5% off every enemy hit, 45% at most: full Leather (5) cuts 18%, full Iron (9) 32%, and full Steel (13) the full 45%. The Hero tab shows how much yours cuts. What you find depends on the floor: floor 1 is mostly leather with the odd iron piece (but no Chainmail yet), floor 2 is half leather and half iron, Steel first turns up on floor 3, and floor 5 holds only iron and steel. A <b>shield</b> adds nothing to Defense; it makes <b>Block</b> stronger instead: each point stops 10% more of a blocked hit and adds 4% to the stun chance (with no shield Block stops 45%; a Steel Kite Shield, +3, takes it to 70%, the most it can be, and the stun chance from 10% to 22%). Gear drops from fights and chests, and merchants sell it (price = 5 coins per point). Better material also lets you use stronger enchantments.</p>
       <p>Everything you wear shows on your character in fights, from a rusty sword to a steel great helm. You start out in a prisoner's rags: a torn tunic, a bandaged arm and bare feet. Wear all four armor pieces (helmet, chest, bracers and greaves) with a steel helm, and a knight's blue plume streams from it. A full set of Steel adds gold trim, and enchanted gear glows in its enchantment's color. Enemies show their gear the same way (see Fighting).</p>
       <p>Tap <b>Hero</b> to see yourself in everything you wear, with your six slots around you. Each slot shows its piece's symbol, shaped and colored by its material (a rusty sword, an iron sword, a gold-guarded steel sword, and so on), and its number. An enchanted piece glows and shows its enchantment's symbol, with one, two or three dots for Minor, Good or Major. Below are your stats, each with its symbol (the damage range of your hits, Defense, Max HP, how much Block stops, stun, critical hit, miss and flee chances) and your perks. Tap any piece of gear or perk to read what it does. The <b>Bag</b> tab holds your scrolls.</p>
     </details>
@@ -1566,6 +1566,12 @@ const WAIL_KEEP = 0.7;        // after a Wail your next attack does this share o
 const SUNDER_MAX = 2;         // Sundered: your armor counts this much less at most, until the fight ends
 let sunder = 0, weak = false; // you, in this fight: armor lost to Sunder and acid, and shaken by a Wail
 const armorNow = () => Math.max(0, defense() - sunder);
+// armor cuts a share of each hit: ARMOR_PER_POINT for each point of Defense, ARMOR_CAP at most (full Leather 5 = 18%,
+// full Iron 9 = 32%, full Steel 13 = 45%). Enemies' armor cuts your hits the same way. (Until 2026-11-20 armor took its
+// points off each hit, which left most hits on the middle floors at 1-2 damage.) A hit always does at least 1
+const ARMOR_PER_POINT = 0.035, ARMOR_CAP = 0.45;
+const armorCut = pts => Math.min(ARMOR_CAP, Math.max(0, pts) * ARMOR_PER_POINT);
+const throughArmor = (raw, pts) => Math.max(1, Math.round(raw * (1 - armorCut(pts))));
 const isHidden = f => !!(f.next && MOVES[f.next] && MOVES[f.next].hide);
 const reachable = f => f.hp > 0 && !isHidden(f);
 const warcry = f => foes.some(o => o !== f && o.cry && o.hp > 0) ? WARCRY_BONUS : 0;   // the bonus f hits with
@@ -1635,7 +1641,7 @@ function intentDmg(f, m) {
   const M = MOVES[m];
   if (!M || !M.hit) return null;
   const lust = f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0;
-  let d = (f.dmg[0] + f.dmg[1]) / 2 + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + lust + warcry(f) - (m === 'crush' ? 0 : armorNow());
+  let d = ((f.dmg[0] + f.dmg[1]) / 2 + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + lust + warcry(f)) * (1 - (m === 'crush' ? 0 : armorCut(armorNow())));
   d = Math.max(1, d);
   if (M.big && m !== 'crush') d *= M.big;
   return Math.max(1, Math.round(d));
@@ -1647,13 +1653,15 @@ const pick = z => {
 };
 
 // the difficulty director: how hard each stretch of the run is. Per floor: [near half, far half, stairs guard (the
-// boss on the last floor)], each [enemy HP x, enemy damage x, group bias (more of them in a group when above 0)]
+// boss on the last floor)], each [enemy HP x, enemy damage x, group bias (more of them in a group when above 0)].
+// The damage column was cut on 2026-11-20 when armor became a share cut (see ARMOR_PER_POINT): F1 x0.67, F2 x0.515,
+// F3 x0.381, F4 x0.453, F5 x0.536, the King x0.62, so hits grow from floor to floor (bots: average 10.3%, elite 10.5%)
 const STRETCH = [
-  [[1, 1, 0], [1, 1.1, 0], [1.2, 1.1, 0]],                         // floor 1: a sting in its far half and its guard
-  [[1.05, 1.05, 0], [1.2, 1.09, 0], [1.3, 1.09, 0]],               // floor 2: its far half has no trios, so each Orc there is tougher
-  [[0.93, 0.89, -0.05], [0.95, 0.9, -0.08], [1.25, 1, 0]],   // floor 3: eased in front of the campfire (you only get one visit)
-  [[1.0, 0.95, -0.03], [1.01, 0.98, -0.02], [1.3, 1.05, 0]],     // floor 4: its near half no longer goes soft
-  [[1.1, 1.02, 0], [1.03, 0.99, 0.04], [1, 1, 0]]                 // floor 5: no breather before the gauntlet past the campfire (the King has his own numbers)
+  [[1, 0.67, 0], [1, 0.737, 0], [1.2, 0.737, 0]],                  // floor 1: a sting in its far half and its guard
+  [[1.05, 0.541, 0], [1.2, 0.561, 0], [1.3, 0.561, 0]],               // floor 2: its far half has no trios, so each Orc there is tougher
+  [[0.93, 0.339, -0.05], [0.95, 0.343, -0.08], [1.25, 0.381, 0]],   // floor 3: eased in front of the campfire (you only get one visit)
+  [[1.0, 0.43, -0.03], [1.01, 0.444, -0.02], [1.3, 0.476, 0]],     // floor 4: its near half no longer goes soft
+  [[1.1, 0.547, 0], [1.03, 0.531, 0.04], [1, 0.62, 0]]                 // floor 5: no breather before the gauntlet past the campfire (the King has his own numbers)
 ];
 // Groups (2026-11-16, from a census of 50,000 bot fights): a trio cost about eight times what a lone enemy did and
 // caused most deaths, so the difficulty now sits in the enemies themselves, not in the roll for how many there are.
@@ -1715,6 +1723,7 @@ function makeGroup(zone, e) {
     const vet = i === 0 && mixLead;
     const t = pick(i === 0 ? (mixLead ? zone - 1 : zone) : roll(Math.max(0, zone - 1), zone)), hp = Math.round(t.hp * hpX * (vet ? VETERAN_HP : 1));
     const f = {...t, hp, max: hp, dmg: t.dmg.map(v => Math.round(v * dmgX * (vet ? VETERAN_DMG : 1))), bonus: 0, def: 0, items: [], gear: {}};
+    if (vet) f.vet = true;                                                // (a V by its name and a red glow round it in fights)
     if (t.gearTier !== undefined) equipFoe(f, t);
     return f;
   });
@@ -5135,6 +5144,21 @@ function drawFight(g, spec) {
     rg.setTransform(1, 0, 0, 1, 0, 0); rg.globalCompositeOperation = 'destination-out'; rg.drawImage(figs, 0, 0);
     g.imageSmoothingEnabled = false; g.drawImage(rc, 0, 0, W, H);
   }
+  // a veteran: a slow-pulsing blood-red glow round its figure, on the pixel grid and behind it (the figures cut it out)
+  const vets = spec.foes.filter(o => o.f.vet && !o.fall && !o.gone && boxes.has(o.f));
+  if (vets.length) {
+    const vc = LOWS.vet || (LOWS.vet = lowCanvas()), vg = vc.getContext('2d');
+    vg.setTransform(1, 0, 0, 1, 0, 0); vg.globalCompositeOperation = 'source-over'; vg.clearRect(0, 0, vc.width, vc.height);
+    vg.setTransform(1 / PIX, 0, 0, 1 / PIX, 0, 0);
+    for (const o of vets) {
+      const b = boxes.get(o.f), w = b.x1 - b.x0, h = b.y1 - b.y0;
+      vg.globalAlpha = 0.7 + 0.3 * Math.sin(t * 2.6 + (o.f.animPhase || 0));
+      stamp(vg, '220,30,20', 0.85, (b.x0 + b.x1) / 2, b.y0 + h * 0.5, w * 0.5 + 9, h * 0.5 + 9);
+    }
+    vg.globalAlpha = 1;
+    vg.setTransform(1, 0, 0, 1, 0, 0); vg.globalCompositeOperation = 'destination-out'; vg.drawImage(figs, 0, 0);
+    g.globalCompositeOperation = 'lighter'; g.imageSmoothingEnabled = false; g.drawImage(vc, 0, 0, W, H);
+  }
   g.restore();
   return {boxes, hero: memo.hero};
 }
@@ -5841,7 +5865,7 @@ function drawCombat() {
   for (const f of (F && F.T >= 0) || intro < 1 ? [] : sceneFoes) {         // (no labels while the Ogre King falls, or as they step in)
     const b = fightBoxes.boxes.get(f);
     if (!b || f.bornAt > now) continue;
-    const fh = shownHp(f), dead = fh <= 0, label = f.name + (f.items.length ? '*' : '') + (f.burn > 0 && !dead ? ' (burning)' : '') +
+    const fh = shownHp(f), dead = fh <= 0, label = f.name + (f.items.length ? '*' : '') + (f.vet ? ' V' : '') + (f.burn > 0 && !dead ? ' (burning)' : '') +
       (f.off && !dead ? ' (off balance)' : '');
     const half = ctx.measureText(label).width / 2, cx = Math.max(half + 4, Math.min(284 - half, (b.x0 + b.x1) / 2)), top = Math.max(b.y0, dead ? 26 : 44);
     if (!dead && phase !== 'loot') { drawIntent(f, Math.max(30, Math.min(258, cx)), top - 26); ctx.font = `600 11px ${GAME_FONT}`; }
@@ -5850,7 +5874,14 @@ function drawCombat() {
       chamfer(px, top - 24, pw, 22, 3); ctx.fillStyle = 'rgba(14,10,16,0.62)'; ctx.fill(); ctx.strokeStyle = 'rgba(214,170,80,0.55)'; ctx.lineWidth = 0.8; ctx.stroke();
       bar(Math.max(4, Math.min(236, cx - 24)), top - 9, 48, 5, fh, f.max, 'hp', f);
     }
-    outlinedText(label, cx, top - 12, dead ? '#777' : '#fff');
+    if (f.vet && !dead) {                                                  // a veteran: its name in white, then a blood-red V
+      const pre = f.name + (f.items.length ? '*' : '') + ' ', post = label.slice(pre.length + 1), x0 = cx - half, xv = x0 + ctx.measureText(pre).width;
+      ctx.textAlign = 'left';
+      outlinedText(pre, x0, top - 12, '#fff');
+      outlinedText('V', xv, top - 12, '#ff5040');
+      if (post) outlinedText(post, xv + ctx.measureText('V').width, top - 12, '#fff');
+      ctx.textAlign = 'center';
+    } else outlinedText(label, cx, top - 12, dead ? '#777' : '#fff');
   }
   ctx.textAlign = 'left';
   if (F) drawFinale(t);
@@ -7298,7 +7329,7 @@ function heroDetail(pick) {
     return `${itemName(it)} +${it.power}` + (it.ench ? `: ${enchText(it.ench)}.` : '.') +
       (k === 'weapon' ? ' Its number adds to every hit.'
         : k === 'shield' ? ` When you Block, Block stops ${pct(blockStops())} of each hit (${pct(BLOCK_BASE)} without a shield), and the chance to stun the attacker rises by ${pct(SHIELD_STUN * it.power)}.`
-        : ' Its number adds to your Defense.');
+        : ` Each point cuts ${(ARMOR_PER_POINT * 100).toFixed(1)}% off enemy hits (${pct(ARMOR_CAP)} at most).`);
   }
   if (pick && pick.startsWith('perk:')) {
     const id = pick.slice(5), n = perkN(id);
@@ -7903,7 +7934,7 @@ function heroScreen(L, add, menu) {
     paragraph(heroDetail(o.pick), P.x + 14, dy + 14, P.w - 28, 14, 2);
   }});
   const sy = dy + 42, dmg = power('weapon') + bonusDmg + purseDmg(), stats = [
-    ['hit', 'Hit', `${8 + dmg}-${14 + dmg}`], ['defense', 'Defense', defense()], ['maxhp', 'Max HP', p.max], ['block', 'Block', pct(1 - blockMult())],
+    ['hit', 'Hit', `${8 + dmg}-${14 + dmg}`], ['defense', 'Defense', pct(armorCut(defense()))], ['maxhp', 'Max HP', p.max], ['block', 'Block', pct(1 - blockMult())],
     ['stun', 'Stun', pct(stunChance())], ['crit', 'Crit', pct(critChance())], ['miss', 'Miss', pct(PLAYER_MISS * missKeep())], ['flee', 'Flee', pct(fleeChance())]];
   add({draw: () => stats.forEach(([id, label, value], i) => {               // each stat: its symbol, its number, its name under it
     const cw = (P.w - 16) / 4, x = P.x + 8 + (i % 4) * cw, y = sy + Math.floor(i / 4) * 33;
@@ -8082,7 +8113,7 @@ function foeStrike(f, mult, blocking = false, move = 'attack') {
     journalBlow(f, move, 'm', 0, blocking);
   } else {
     const lust = f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0;
-    let hurt = Math.max(1, roll(f.dmg[0], f.dmg[1]) + f.bonus + rage + lust + warcry(f) - (crush ? 0 : armorNow()));
+    let hurt = throughArmor(roll(f.dmg[0], f.dmg[1]) + f.bonus + rage + lust + warcry(f), crush ? 0 : armorNow());
     if (result === 'crit') hurt = Math.round(hurt * FOE_CRIT_MULT);
     if (big && !crush) hurt *= M.big;
     hurt = Math.max(1, Math.round(hurt * mult));
@@ -8372,7 +8403,7 @@ function strike(t, heavy, label) {
     msg.textContent += label + (heavy ? `Your heavy swing misses the ${t.name}.` : `You swing at ${t.name} and miss.`);
     return result;
   }
-  let dmg = Math.max(1, roll(8, 14) + power('weapon') + bonusDmg + purseDmg() - t.def);
+  let dmg = throughArmor(roll(8, 14) + power('weapon') + bonusDmg + purseDmg(), t.def);
   if (heavy) dmg = Math.round(dmg * heavyMult());
   const finisher = perkN('executioner') && t.hp < t.max * EXEC_THRESHOLD;
   if (finisher) dmg = Math.round(dmg * (1 + execBonus()));
