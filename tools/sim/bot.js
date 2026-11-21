@@ -79,16 +79,31 @@
     // every fight, by where it was: floor + N (the near half), F (the far half), G (the stairs guard) or B (the boss);
     // segs[key] = [fights, share of max HP lost in them, coins gained in them]; deathSeg = where the run ended
     ST.segs = {}; ST.deathSeg = null;
+    // every enemy kind, by floor: foe["Orc@2"] = [blows that landed or missed, HP they took, the same as a share of max HP,
+    // fights it was in, share of max HP those whole fights cost]
+    ST.foe = {};
+    const foeRec = k => ST.foe[k] || (ST.foe[k] = [0, 0, 0, 0, 0]);
+    if (typeof foeStrike === 'function' && !window.__foeWrapped) {
+      window.__foeWrapped = true;
+      const origStrike = foeStrike;
+      foeStrike = function (f, ...a) {
+        const before = p.hp, r = origStrike.call(this, f, ...a), lost = Math.max(0, before - p.hp);
+        const s = foeRec(`${f.name}@${floor + 1}`); s[0]++; s[1] += lost; s[2] += lost / Math.max(1, p.max);
+        return r;
+      };
+    }
+    let fightNames = null;
     const segOf = e => `${floor + 1}${e.boss ? 'B' : openNbrs(map.map(r => [...r]), e.x, e.y).some(([a, b]) => map[b][a] === 'D') ? 'G' : e.hard ? 'F' : 'N'}`;
     let seg = null, segTaken = 0, segMax = 1, segGold = 0;
     let n = 0, lastHp = p.hp;
     while (!over && n < 30000) {
       n++;
       step();
-      if (current && !seg) { seg = segOf(current); segTaken = run.taken; segMax = p.max; segGold = run.gold; }
+      if (current && !seg) { seg = segOf(current); segTaken = run.taken; segMax = p.max; segGold = run.gold; fightNames = [...new Set((current.group || []).map(f => f.name))]; }
       else if (seg && (!current || over)) {
         const s = ST.segs[seg] || (ST.segs[seg] = [0, 0, 0]);
         s[0]++; s[1] += (run.taken - segTaken) / segMax; s[2] += run.gold - segGold;
+        for (const nm of fightNames || []) { const q = foeRec(`${nm}@${seg[0]}`); q[3]++; q[4] += (run.taken - segTaken) / segMax; }
         if (over && !runSummary.won) ST.deathSeg = seg;
         seg = null;
       }
@@ -105,7 +120,7 @@
       fights: ST.fights, fled: ST.fled, fleeTry: ST.fleeTry, turns: ST.turns, heavy: ST.heavy, block: ST.block, normal: ST.normal,
       potFight: ST.potFight, potExplore: ST.potExplore, bought: ST.bought, enchBought: ST.enchBought, sold: ST.sold, redraws: ST.redraws,
       arrive: ST.arrive, hpLost: ST.hpLostFloor, coinsEnd: ST.coinsEnd, skipped: ST.skipped, maxPotions, sw: secondWinds,
-      segs: ST.segs, deathSeg: ST.deathSeg, spent: ST.bought.length, camp: ST.camp || null
+      segs: ST.segs, deathSeg: ST.deathSeg, foe: ST.foe, spent: ST.bought.length, camp: ST.camp || null
     };
   }
   function arrive() { ST.arrive[floor] = [p.hp, p.max, potions, level, coins, defense(), power('weapon'), power('shield')]; }

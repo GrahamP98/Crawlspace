@@ -21,6 +21,7 @@ Everything a run makes goes to `%LOCALAPPDATA%\CrawlspaceSim`, outside OneDrive:
 - `batch.ps1`: starts the workers. `-Patch name` (or `a+b`) first applies `patches\<name>.txt` to a copy of the game in the work folder's `games\`. A patch file holds literal `find ==> replace` lines, and `index.html` itself is never changed.
 - `report.ps1`: sums up a batch.
 - `curve.ps1`: the difficulty curve of a batch, with every policy pooled. For each stretch of the run (floor + `N` near half, `F` far half, `G` stairs guard, `B` the Ogre King) it shows how many runs got there, the share that died there, the number of fights, and how much max HP a fight there cost. Then where the gold went. Tune the curve with `STRETCH` in `index.html` (the difficulty director: enemy HP and damage multipliers and a group-size bias for each stretch).
+- `foes.ps1`: each enemy kind on each floor, every policy pooled: fights per run, what one of its blows does (in HP and as a share of max HP, misses counted as 0), what a whole fight with it costs, and how many runs it ended. The bot records these in each run's `foe` field (`"Orc@2"`: blows, HP lost, share of max HP, fights, share of max HP those fights cost).
 - `policies\`: one JSON file per playstyle.
 - `patches\package-B.txt`: the optional Ogre King change from the 2026-11-13 study. It is not applied to the game.
 
@@ -28,6 +29,8 @@ Everything a run makes goes to `%LOCALAPPDATA%\CrawlspaceSim`, outside OneDrive:
 
 | Policy | Plays |
 |---|---|
+| `Tr11_survive` | Expert (v3) bot: Second Wind and Vitality first, then Attack. The best strategy found on 2026-11-20; with `Tr03_tank` it is the "elite player" |
+| `Tr03_tank` | Expert (v3) bot: Vitality, Second Wind, Antidote; Fortitude gear |
 | `A_atk` | Attack and Executioner first, fights everything |
 | `B_tank` | Vitality, Second Wind, Antidote; Fortitude gear |
 | `C_crit` | Focus and Executioner; prefers Swift and Balanced |
