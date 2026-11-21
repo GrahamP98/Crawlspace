@@ -274,7 +274,7 @@
       </ul>
       <h4>Specials</h4>
       <ul>
-        <li><b>Pathfinder</b> (rare, once): see 1 more tile around you, and enemies within sight show on the map, with their gear and group size, before you meet them. In a fight you also see each enemy's move after next (dimmed, beside its badge), and what a Wraith is about to do.</li>
+        <li><b>Pathfinder</b> (rare, once): see 1 more tile around you, and enemies within sight show on the map, with their gear and group size, before you meet them. In a fight you also see each enemy's move after next (dimmed, beside its badge), and what a Wraith is about to do. Reading them also makes their plain blows miss you 4% more often.</li>
         <li><b>Ambusher</b>: your first hit in every fight is an <b>Ambush</b> for +35% damage (a miss doesn't use it up). More picks raise it to +47%, +52% and so on. Running away and coming back doesn't give you a second ambush on the same group.</li>
         <li><b>Executioner</b>: +40% damage to enemies below half health. More picks raise it to +53%, +60% and so on.</li>
         <li><b>Antidote</b>: potions heal 8 more (10 with a second pick, 11 with a third), and poison is weaker and shorter.</li>
@@ -313,7 +313,7 @@
       <ul>
         <li><b>Thorns</b>: enemies that hit you take 1 / 2 / 3 damage, but not on a turn you Block.</li>
         <li><b>Mending</b>: heal 2 / 4 / 6 after every fight you win.</li>
-        <li><b>Fortitude</b>: +20 / 30 / 40 max health, and each potion heals 1 / 2 / 3 more.</li>
+        <li><b>Fortitude</b>: +20 / 30 / 40 max health, and each potion heals 2 / 3 / 4 more.</li>
         <li><b>Purity</b>: poison lasts 1 / 2 / 3 fewer turns, Wraith drain is cut 25% / 50% / 75%, and a 20% / 30% / 40% chance to shrug off armor loss from Slime acid or a Sundering blow.</li>
         <li><b>Fleetfoot</b> (greaves only): +6% / 8% / 10% chance to flee, and enemies miss you 5% / 8% / 10% more often (not their big moves).</li>
         <li><b>Fortune</b>: +10% / 20% / 30% gold.</li>
@@ -1152,6 +1152,8 @@ const critChance = (k = perkN('focus')) => PLAYER_CRIT + FOCUS_CRIT * k;
 const missKeep = (k = perkN('focus')) => FOCUS_MISS_KEEP ** k;
 const attackBonus = (k = perkN('attack')) => Math.round(curve(ATTACK_TOP, 4, k));
 const sight = (k = perkN('pathfinder')) => 1 + k;
+const PATH_DODGE = 0.04;   // Pathfinder reads your foes, so their plain blows miss you this much more often (2026-11-21)
+const pathDodge = (k = perkN('pathfinder')) => k > 0 ? PATH_DODGE : 0;
 const execBonus = (k = perkN('executioner')) => curve(EXEC_TOP, 1, k);
 const poisonScale = (k = perkN('antidote')) => 2 / (k + 2);
 const poisonDmg = (k = perkN('antidote')) => Math.max(1, Math.round(POISON_DMG * poisonScale(k)));
@@ -1182,7 +1184,7 @@ const PERKS = {
   pathfinder: {name: 'Pathfinder', rarity: 'rare', once: true,
     brief: k => "See farther. Read foes' next moves. Once only.",
     card: k => `See ${sight(k)}, read foes`,
-    info: k => `See ${sight(k)} tiles around you, and enemies in sight show on the map before you meet them. In a fight you see each enemy's move after next too, and what a Wraith is about to do. You can only take it once.`},
+    info: k => `See ${sight(k)} tiles around you, and enemies in sight show on the map before you meet them. In a fight you see each enemy's move after next too, and what a Wraith is about to do, and enemies miss you ${pct(PATH_DODGE)} more often. You can only take it once.`},
   ambusher: {name: 'Ambusher', rarity: 'uncommon',
     brief: k => 'Your first hit in each fight hits harder.',
     card: k => `Ambush +${pct(ambushBonus(k))}`,
@@ -1225,7 +1227,7 @@ const GIANT_TYPES = ['Orc', 'Troll', 'Minotaur', 'Wyvern', 'Ogre King'];
 const isBig = t => GIANT_TYPES.includes(t.name);
 const PURITY_DRAIN = [0.25, 0.50, 0.75]; // share of Wraith drain each Purity item blocks
 const PURITY_ARMOR = [0.20, 0.30, 0.40]; // chance each Purity item gives to shrug off an armor loss (acid, Sunder)
-const FORT_POTION = [1, 2, 3];           // each Fortitude item also makes potions heal this much more
+const FORT_POTION = [2, 3, 4];           // each Fortitude item also makes potions heal this much more
 const FLEET_EVADE = [0.05, 0.08, 0.10];  // Fleetfoot also makes enemies miss you this much more often
 // vals = strength at Minor / Good / Major
 const ENCHANTS = {
@@ -1713,11 +1715,14 @@ const pick = z => {
 // so a fight costs about the same but each blow lands harder and fights are shorter), floor 2's far half eased 10%,
 // floor 3 hit 10% harder, and floors 2-5 were scaled x0.9 (bots: average 8.4%, elite 14.5%). Then the Ogre King's HP
 // went x0.7 (475 -> 333: he killed 67% of the runs that reached him, now about 53%) and floor 4 and floor 5's
-// gauntlet hit 8% harder to keep the overall rate (bots: average 9.0%, elite 16.2%)
+// gauntlet hit 8% harder to keep the overall rate (bots: average 9.0%, elite 16.2%). On 2026-11-21 floor 2's far half
+// and guard hit 15% softer and all of floor 3 15% harder: floor 2's far half had cost more per fight than floor 3
+// (24-26% of max HP against 14-16%), now 19-21% against 15-19% (with the Pathfinder dodge and Fortitude potions of
+// that day, bots: average 9.9%, elite 17.9%)
 const STRETCH = [
   [[1, 0.67, 0], [1, 0.737, 0], [1.2, 0.737, 0]],                  // floor 1: a sting in its far half and its guard
-  [[1.05, 0.487, 0], [1.2, 0.454, 0], [1.3, 0.454, 0]],               // floor 2: its far half has no trios, so each Orc there is tougher
-  [[0.664, 0.47, -0.05], [0.679, 0.475, -0.08], [0.893, 0.528, 0]],   // floor 3: eased in front of the campfire (you only get one visit)
+  [[1.05, 0.487, 0], [1.2, 0.386, 0], [1.3, 0.386, 0]],               // floor 2: its far half has no trios, so each Orc there is tougher
+  [[0.664, 0.54, -0.05], [0.679, 0.546, -0.08], [0.893, 0.607, 0]],   // floor 3: fewer in a group in front of the campfire (you only get one visit)
   [[0.625, 0.669, -0.03], [0.631, 0.69, -0.02], [0.812, 0.74, 0]],     // floor 4: its near half no longer goes soft
   [[0.611, 0.957, 0], [0.572, 0.929, 0.04], [0.7, 0.62, 0]]                 // floor 5: no breather before the gauntlet past the campfire (the King has his own numbers)
 ];
@@ -8160,7 +8165,7 @@ function foeStrike(f, mult, blocking = false, move = 'attack') {
   const crush = move === 'crush', big = !!M.big;
   if (crush) f.crushAt = f.swings;   // (the Ogre King's next one is a few swings away, see CRUSH_GAP)
   // a big move (the Crushing Blow, the Charge, a Dive...) always lands, and never crits
-  const result = big ? 'hit' : swingResult(FOE_MISS + fleetEvade(), FOE_CRIT);   // (Fleetfoot dodges plain blows, not big moves)
+  const result = big ? 'hit' : swingResult(FOE_MISS + fleetEvade() + pathDodge(), FOE_CRIT);   // (Fleetfoot and Pathfinder dodge plain blows, not big moves)
   f.landed = result !== 'miss';
   after(turnOpen() && turn.beats.length ? TURN.gap - TURN.foeSwing : 0);  // each enemy steps in after the last
   cue('foeSwing', {who: f});
