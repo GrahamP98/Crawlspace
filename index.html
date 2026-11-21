@@ -277,7 +277,7 @@
         <li><b>Pathfinder</b> (rare, once): see 1 more tile around you, and enemies within sight show on the map, with their gear and group size, before you meet them. In a fight you also see each enemy's move after next (dimmed, beside its badge), and what a Wraith is about to do.</li>
         <li><b>Ambusher</b>: your first hit in every fight is an <b>Ambush</b> for +35% damage (a miss doesn't use it up). More picks raise it to +47%, +52% and so on. Running away and coming back doesn't give you a second ambush on the same group.</li>
         <li><b>Executioner</b>: +40% damage to enemies below half health. More picks raise it to +53%, +60% and so on.</li>
-        <li><b>Antidote</b>: potions heal 10 more, and poison is weaker and shorter.</li>
+        <li><b>Antidote</b>: potions heal 8 more (10 with a second pick, 11 with a third), and poison is weaker and shorter.</li>
         <li><b>Shield Bash</b>: when you Block, you also bash your target for 3 damage, and the stun chance rises to 15%. More picks raise both (5 damage and 18% at two).</li>
         <li><b>Second Wind</b> (rare, once): the first blow that would kill you leaves you at 30% of your max health instead. It saves you one time.</li>
         <li><b>Tight Purse</b>: Goblins can't steal from you, you find 30% more gold, and you deal +1 damage for every 80 coins you carry (up to +2). Spending your gold lowers the damage bonus, so you choose between buying now and hitting harder.</li>
@@ -1132,7 +1132,7 @@ const VITALITY_HP = 20, VITALITY_MEND = 1;           // Vitality: +20 max HP; he
 const FOCUS_CRIT = 0.04, FOCUS_MISS_KEEP = 0.90;     // Focus: +4% crit, miss chance x0.90
 const AMBUSH_TOP = 0.7;                              // Ambusher: your first hit in each fight +35%, 47%, 52%...
 const EXEC_THRESHOLD = 0.50, EXEC_TOP = 0.8;         // Executioner: +40%, 53%, 60%... vs enemies under 50% HP
-const ANTIDOTE_HEAL_TOP = 20;                        // Antidote: potions heal +10, 13, 15...
+const ANTIDOTE_HEAL_TOP = 15;                        // Antidote: potions heal +8, 10, 11... (20 until 2026-11-20: Tank builds won 18.5%)
 const BASH_TOP = 0.16, BASH_DMG_TOP = 10;            // Shield Bash: stun 15%, 18%, 20%...; bash 3, 5, 6...
 const PURSE_TOP = 0.60;                              // Tight Purse: gold +30% (it can only be taken once)
 const PURSE_DMG_COINS = 80, PURSE_DMG_MAX = 2;       // Tight Purse: also +1 damage per 80 coins you carry, up to +2
