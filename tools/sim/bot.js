@@ -169,6 +169,8 @@
   const capMe = () => typeof armorCapNow === 'function' ? armorCapNow() : undefined;
   const missMe = () => typeof foeMiss === 'function' ? foeMiss() : FOE_MISS + (typeof fleetEvade === 'function' ? fleetEvade() : 0);
   const wMiss = () => typeof weaponMiss === 'function' ? weaponMiss() : 0;
+  // your hit on an enemy after its armor: its points, and its light or heavy pieces' share and cap (2026-11-22)
+  const foeArmor = (raw, t) => Math.max(1, typeof armorCut === 'function' ? raw * (1 - armorCut(t.def || 0, ARMOR_CAP + (t.cap || 0), t.cut || 0)) : raw - (t.def || 0));
   function foeHit(f) {
     if (!strikes(f)) return 0;
     const raw = f.dmg[1] + f.bonus + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0) + cryBonus(f);
@@ -186,11 +188,11 @@
   }
   const shieldKeep = t => t.shield !== undefined ? 1 - FOE_SHIELD_BLOCK[t.shield] * (1 - FOE_SHIELD_KEEP) : 1;
   function myAvg(t, heavy) {
-    let d = afterArmor(11 + power('weapon') + bonusDmg, t.def || 0);
+    let d = foeArmor(11 + power('weapon') + bonusDmg, t);
     if (heavy) d *= HM();
     if (bigT(t)) d *= 1 + enchSum('giantslayer');
     if (perkN('executioner') && t.hp < t.max * EXEC_THRESHOLD) d *= 1 + execBonus();
-    const miss = Math.max(0, (t.evasion ?? PLAYER_MISS) + (heavy ? HEAVY_MISS : 0) + wMiss()) * missKeep() * (heavy ? 1 - enchSum('balanced') : 1);
+    const miss = Math.max(0, (t.evasion ?? PLAYER_MISS) + (heavy ? HEAVY_MISS : 0) + wMiss() + (t.dodge || 0)) * missKeep() * (heavy ? 1 - enchSum('balanced') : 1);
     const hit = 1 - miss;
     return d * (hit + critChance() * (PLAYER_CRIT_MULT - 1)) * shieldKeep(t) * (1 + enchSum('swift')) + hit * enchSum('flaming');
   }
@@ -259,12 +261,12 @@
   const rnd = (a, b) => a + Math.floor(R() * (b - a + 1));
   // what one of your swings at t does: {dmg, crit, hit}
   function swingAt(t, heavy, hp) {
-    const base = Math.max(0, (t.next === 'flit' ? FLIT_EVADE : t.evasion ?? PLAYER_MISS) + (heavy ? HEAVY_MISS : 0) + wMiss());
+    const base = Math.max(0, (t.next === 'flit' ? FLIT_EVADE : t.evasion ?? PLAYER_MISS) + (heavy ? HEAVY_MISS : 0) + wMiss() + (t.dodge || 0));
     const miss = t.off ? 0 : Math.min(0.95, base * missKeep() * (heavy ? 1 - enchSum('balanced') : 1));
     const r = R();
     if (r < miss) return {dmg: 0, crit: false, hit: false};
     const crit = r < miss + critChance();
-    let d = Math.round(afterArmor(rnd(8, 14) + power('weapon') + bonusDmg + purseDmg(), t.def));
+    let d = Math.round(foeArmor(rnd(8, 14) + power('weapon') + bonusDmg + purseDmg(), t));
     if (heavy) d = Math.round(d * HM());
     if (perkN('executioner') && hp < t.max * EXEC_THRESHOLD) d = Math.round(d * (1 + execBonus()));
     if (current && current.ambushReady) d = Math.round(d * (1 + ambushBonus()));
@@ -279,9 +281,9 @@
   function blowAt(f, mult, move, cry) {
     const M = (move && MOVES[move]) || MOVES.attack, big = !!M.big;
     const r = R();
-    const fm = missMe();
+    const fm = Math.max(0, missMe() + (f.wMiss || 0));
     if (!big && r < fm) return 0;
-    const crit = !big && r < fm + FOE_CRIT;
+    const crit = !big && r < fm + Math.max(0, FOE_CRIT + (f.wCrit || 0));
     let d = Math.round(afterArmor(rnd(f.dmg[0], f.dmg[1]) + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0) + cry, move === 'crush' ? 0 : armorNow(), capMe()));
     if (crit) d = Math.round(d * FOE_CRIT_MULT);
     if (big && move !== 'crush') d *= M.big;

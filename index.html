@@ -200,7 +200,7 @@
     <details>
       <summary>Fighting</summary>
       <p>Walk into an enemy to start a fight. The view switches to the <b>combat screen</b>: you stand on the left, facing the enemies on the right, each drawn as its own creature with its name and a green health bar over its head. Every floor has its own room, and the Ogre King fights you in his own hall. Enemies can come in pairs, and from floor 3 in groups of 3 (the enemy guarding the stairs never brings more than one other); a group stands spread out in depth, the ones further back smaller. A <b>*</b> after a name means that enemy carries gear, so it hits harder or has armor. A red <b>V</b> after a name, and a red glow round it, mark a <b>veteran</b> (see below).</p>
-      <p>Enemies wear the gear they carry, just like you. A sword in hand means it hits harder; a helmet, body armor, bracers or greaves mean it takes less damage. An enemy with a shield sometimes catches your hit on it and takes only half (a wooden one 15% of the time, iron 20%, steel 25%). Leather is brown, iron is grey and steel shines silver. Only Goblins, Skeletons, Orcs and Dark Knights carry gear. Their gear is never better than the floor allows: leather on floors 1 and 2, up to iron on floor 3, and steel only from floor 4. Every other enemy fights with teeth, claws and fists.</p>
+      <p>Enemies wear the gear they carry, just like you. A weapon in hand means it hits harder; a helmet, body armor, bracers or greaves mean it takes less damage. Its gear can be light or heavy too, and works on you the way yours works on it: an enemy with a <b>Dagger</b> crits you more and misses you less, one with a <b>Mace</b> hits harder but crits less and misses more; light armor on it cuts your hits less but makes you miss it more, heavy armor the other way. An enemy with a shield sometimes catches your hit on it and takes only half (a wooden one 15% of the time, iron 20%, steel 25%). Leather is brown, iron is grey and steel shines silver. Only Goblins, Skeletons, Orcs and Dark Knights carry gear. Their gear is never better than the floor allows: leather on floors 1 and 2, up to iron on floor 3, and steel only from floor 4. Every other enemy fights with teeth, claws and fists.</p>
       <p><b>Tap an enemy to target it.</b> A yellow ring under an enemy shows your target, and your attacks go to it. When your target falls, the next enemy is targeted for you.</p>
       <p>Damage rises over the one who took it as a <b style="color:#f44">red</b> number, healing as a <b style="color:#4e4">green</b> one. <b>MISS</b> appears over whoever an attack was aimed at, <b style="color:#6df">STUNNED</b> over a stunned enemy, and <b style="color:#fc3">SECOND WIND</b> over you when that perk saves your life.</p>
       <p>You first choose <b>Fight</b> or <b>Flee</b>. Fleeing works 25% of the time (up to 35% with Fleetfoot greaves) and puts you back one step. If it fails, the enemies get a free attack. You can never flee the Ogre King.</p>
@@ -218,7 +218,7 @@
 
     <details>
       <summary>Enemies and their tricks</summary>
-      <p>Every enemy has a special ability, and most have a move or two besides their attack. They <b>choose</b> their moves as the fight goes, so you can't count turns, but each has its habits: what it tends to do when it is hurt, or when you have just swung a Heavy at it. A special move can't come back straight away, and the big ones always come round again before long. The badge over each enemy shows its next move, and a move it shows always happens (only a stun stops it). With Pathfinder you also see the move after it. Some moves need gear: only an enemy with a shield can Brace, Guard or Cower, and only a Dark Knight with a steel sword can Sunder. The message log tells you when anything happens.</p>
+      <p>Every enemy has a special ability, and most have a move or two besides their attack. They <b>choose</b> their moves as the fight goes, so you can't count turns, but each has its habits: what it tends to do when it is hurt, or when you have just swung a Heavy at it. A special move can't come back straight away, and the big ones always come round again before long. The badge over each enemy shows its next move, and a move it shows always happens (only a stun stops it). With Pathfinder you also see the move after it. Some moves need gear: only an enemy with a shield can Brace, Guard or Cower, and only a Dark Knight with a steel weapon can Sunder. The message log tells you when anything happens.</p>
       <p>Each floor has its own kinds in its first half and tougher ones past the merchant or campfire. Some groups in the far half are led by a <b>veteran</b> of the first half's kinds: the same enemy, with more health and a harder hit. A veteran has a red <b>V</b> after its name and glows red in the fight. The enemy guarding the stairs is always one of the floor's tougher kind.</p>
       <p><b>Sundered</b>: acid and a Sundering blow take 1 off your Defense each (2 at most, so your armor cuts up to 7% less) until the fight ends. <b>Shaken</b>: after a Wail your next attack does 30% less. Both show under your health in a fight.</p>
       <h4>Floors <span class="num">1-2</span></h4>
@@ -239,7 +239,7 @@
       </ul>
       <h4>Floors <span class="num">4-5</span></h4>
       <ul>
-        <li><span class="sw" style="background:#668"></span><b>Dark Knight</b>: often well armored. Whenever you miss it, it counterattacks for free, so a Heavy miss is costly. With a shield it sometimes holds its <b>Guard</b> (shield with a red cross), above all after you swing a Heavy at it: it strikes back at every attack, hit or miss, so Block, drink, or hit another enemy. With a steel sword it brings down a <b>Sundering</b> blow (a big move) that dents your armor, every few turns and more readily against heavy armor.</li>
+        <li><span class="sw" style="background:#668"></span><b>Dark Knight</b>: often well armored. Whenever you miss it, it counterattacks for free, so a Heavy miss is costly. With a shield it sometimes holds its <b>Guard</b> (shield with a red cross), above all after you swing a Heavy at it: it strikes back at every attack, hit or miss, so Block, drink, or hit another enemy. With a steel weapon it brings down a <b>Sundering</b> blow (a big move) that dents your armor, every few turns and more readily against heavy armor.</li>
         <li><span class="sw" style="background:#d4a"></span><b>Wyvern</b>: each hit has a 35% chance to poison you: 3 damage every turn and every step for 4 turns. A potion cures poison. Your health bar turns purple while you are poisoned. Every few turns, more often when it is hurt, it <b>Takes wing</b> (up arrow), out of reach, then always <b>Dives</b> (down arrow) for double damage. Block the dive, then Heavy it while it is Off balance.</li>
       </ul>
       <h4>Floor <span class="num">5</span></h4>
@@ -1596,7 +1596,7 @@ const MOVES = {
   attack:  {name: 'Attack', hit: true},
   acid:    {name: 'Acid spit', hit: true},          // Slime: and your armor is Sundered
   snatch:  {name: 'Snatch', hit: true},             // Goblin: steals coins, unless you Block
-  sunder:  {name: 'Sunder', hit: true, big: 1.4},   // Dark Knight with a steel sword: and your armor is Sundered
+  sunder:  {name: 'Sunder', hit: true, big: 1.4},   // Dark Knight with a steel weapon: and your armor is Sundered
   charge:  {name: 'Charge', hit: true, big: 2},     // Minotaur
   boulder: {name: 'Boulder', hit: true, big: 1.6},  // Troll
   dive:    {name: 'Dive', hit: true, big: 2},       // Wyvern, after taking wing
@@ -1681,7 +1681,7 @@ function planMove(f, n, prev, ahead = false) {
     case 'Wraith':   // wails to shake you, more when you are healthy or have just swung heavy at it (never as its first move)
       return n > 0 && ready('wail') ? choose(['wail', 0.2 + (p.hp > p.max * 0.6 ? 0.15 : 0) + (heavyAtMe ? 0.15 : 0)]) : 'attack';
     case 'Dark Knight': {
-      const steel = f.gear && f.gear.weapon === 2;
+      const steel = f.gear && f.gear.weapon === 2;   // (any steel weapon: a sword, a dagger or a mace)
       if (steel && due('sunder') && n > 0) return 'sunder';
       return choose(
         // raises its guard after a heavy swing at it
@@ -1802,22 +1802,32 @@ function groupSize(zone, bias = 0) {
 const FOE_GEAR_FLOOR_TIER = [0, 0, 1, 2, 2];
 const foeGearMax = t => Math.min(t.gearTier, FOE_GEAR_FLOOR_TIER[Math.min(floor, FLOORS - 1)]);
 
-// f.gear remembers each item's tier by slot (0 Rusty/Leather, 1 Iron, 2 Steel) so it can be drawn on the enemy
+// f.gear remembers each item's tier by slot (0 Rusty/Leather, 1 Iron, 2 Steel) so it can be drawn on the enemy, and
+// (2026-11-22) its weights the way yours are kept: gear.wkind 'dagger' or 'mace', gear.wt {slot: 'light' or 'heavy'}.
+// Light and heavy gear works for an enemy as it does for you, turned around (see WEIGHTS): its Dagger crits you more and
+// misses you less (f.wCrit, f.wMiss), its Mace the other way; each light piece cuts your hits less and makes you miss it
+// more (f.cut, f.dodge), each heavy piece the other way and raises its armor cap (f.cap)
 function equipFoe(f, t) {
   if (Math.random() < FOE_GEAR_CHANCE) {
-    const tier = roll(0, foeGearMax(t)), [name, pow] = slots.weapon.items[tier];
-    f.items.push(name);
+    const tier = roll(0, foeGearMax(t)), g = gearOf('weapon', tier, rollWeight('weapon'));
+    f.items.push(g.name);
     f.gear.weapon = tier;
-    f.bonus = Math.ceil(pow / 2);
+    f.bonus = Math.ceil(g.power / 2);
+    if (g.wt) { const W = WEIGHTS[g.wt].weapon; f.gear.wkind = g.wt === 'light' ? 'dagger' : 'mace'; f.wCrit = W.crit; f.wMiss = W.miss; }
   }
   const free = [...armor];
   for (let n = 0; n < (t.armorMax || 1); n++) {
     if (Math.random() >= FOE_GEAR_CHANCE) continue;
     const k = free.splice(roll(0, free.length - 1), 1)[0];
-    const tier = roll(0, foeGearMax(t)), [name, pow] = slots[k].items[tier];
-    f.items.push(name);
+    const tier = roll(0, foeGearMax(t)), g = gearOf(k, tier, rollWeight(k));
+    f.items.push(g.name);
     f.gear[k] = tier;
-    f.def += pow;
+    f.def += g.power;
+    if (g.wt) {
+      const W = WEIGHTS[g.wt];
+      (f.gear.wt || (f.gear.wt = {}))[k] = g.wt;
+      f.cut = (f.cut || 0) + W.cut; f.dodge = (f.dodge || 0) + W.dodge; f.cap = (f.cap || 0) + W.cap;
+    }
   }
   // a shield, under the same floor limit as the rest of its gear: it may catch your hit (see FOE_SHIELD_BLOCK)
   if (Math.random() < FOE_GEAR_CHANCE) {
@@ -8645,7 +8655,8 @@ function foeStrike(f, mult, blocking = false, move = 'attack') {
   const crush = move === 'crush', big = !!M.big;
   if (crush) f.crushAt = f.swings;   // (the Ogre King's next one is a few swings away, see CRUSH_GAP)
   // a big move (the Crushing Blow, the Charge, a Dive...) always lands, and never crits
-  const result = big ? 'hit' : swingResult(foeMiss(), FOE_CRIT);   // (Fleetfoot, Pathfinder and light armor dodge plain blows, not big moves)
+  // (Fleetfoot, Pathfinder and light armor dodge plain blows, not big moves; an enemy's Dagger or Mace moves its miss and crit)
+  const result = big ? 'hit' : swingResult(Math.max(0, foeMiss() + (f.wMiss || 0)), Math.max(0, FOE_CRIT + (f.wCrit || 0)));
   f.landed = result !== 'miss';
   after(turnOpen() && turn.beats.length ? TURN.gap - TURN.foeSwing : 0);  // each enemy steps in after the last
   cue('foeSwing', {who: f});
@@ -8934,7 +8945,7 @@ function damageFoe(t, amount, crit) {
 function strike(t, heavy, label) {
   // Focus shrinks every miss chance (normal, Heavy and Bat evasion alike); Balanced shrinks Heavy's.
   // A flitting Bat is much harder to hit; an enemy Off balance can't dodge at all
-  const base = Math.max(0, (t.next === 'flit' ? FLIT_EVADE : t.evasion ?? PLAYER_MISS) + (heavy ? HEAVY_MISS : 0) + weaponMiss());   // (a Dagger misses less, a Mace more)
+  const base = Math.max(0, (t.next === 'flit' ? FLIT_EVADE : t.evasion ?? PLAYER_MISS) + (heavy ? HEAVY_MISS : 0) + weaponMiss() + (t.dodge || 0));   // (a Dagger misses less, a Mace more; its light armor makes you miss more, heavy less)
   const missChance = t.off ? 0 : Math.min(0.95, base * missKeep() * (heavy ? 1 - enchSum('balanced') : 1));
   const result = swingResult(missChance, critChance());
   const shaken = weak;               // a Wail weakens your next attack, hit or miss
@@ -8948,7 +8959,7 @@ function strike(t, heavy, label) {
     msg.textContent += label + (heavy ? `Your heavy swing misses the ${t.name}.` : `You swing at ${t.name} and miss.`);
     return result;
   }
-  let dmg = throughArmor(roll(8, 14) + power('weapon') + bonusDmg + purseDmg(), t.def);
+  let dmg = throughArmor(roll(8, 14) + power('weapon') + bonusDmg + purseDmg(), t.def, ARMOR_CAP + (t.cap || 0), t.cut || 0);
   if (heavy) dmg = Math.round(dmg * heavyMult());
   const finisher = perkN('executioner') && t.hp < t.max * EXEC_THRESHOLD;
   if (finisher) dmg = Math.round(dmg * (1 + execBonus()));
