@@ -1768,11 +1768,13 @@ const pick = z => {
 // gauntlet hit 8% harder to keep the overall rate (bots: average 9.0%, elite 16.2%). On 2026-11-21 floor 2's far half
 // and guard hit 15% softer and all of floor 3 15% harder: floor 2's far half had cost more per fight than floor 3
 // (24-26% of max HP against 14-16%), now 19-21% against 15-19% (with the Pathfinder dodge and Fortitude potions of
-// that day, bots: average 9.9%, elite 17.9%)
+// that day, bots: average 9.9%, elite 17.9%). On 2026-11-22 (play journal 4: floor 3's far half was the user's easiest
+// stretch, 10% of max HP a fight against 17% on floor 2) floor 3's far half hit 15% harder and floor 2's guard 10% softer
+// (standard bots: average 13.8% -> 12.4%, elite 18.9% -> 17.2%)
 const STRETCH = [
   [[1, 0.67, 0], [1, 0.737, 0], [1.2, 0.737, 0]],                  // floor 1: a sting in its far half and its guard
-  [[1.05, 0.487, 0], [1.2, 0.386, 0], [1.3, 0.386, 0]],               // floor 2: its far half has no trios, so each Orc there is tougher
-  [[0.664, 0.54, -0.05], [0.679, 0.546, -0.08], [0.893, 0.607, 0]],   // floor 3: fewer in a group in front of the campfire (you only get one visit)
+  [[1.05, 0.487, 0], [1.2, 0.386, 0], [1.3, 0.347, 0]],               // floor 2: its far half has no trios, so each Orc there is tougher
+  [[0.664, 0.54, -0.05], [0.679, 0.628, -0.08], [0.893, 0.607, 0]],   // floor 3: fewer in a group in front of the campfire (you only get one visit)
   [[0.625, 0.669, -0.03], [0.631, 0.69, -0.02], [0.812, 0.74, 0]],     // floor 4: its near half no longer goes soft
   [[0.611, 0.957, 0], [0.572, 0.929, 0.04], [0.7, 0.62, 0]]                 // floor 5: no breather before the gauntlet past the campfire (the King has his own numbers)
 ];
@@ -9684,6 +9686,7 @@ const showVault = on => {
 // ---- the play journal: a record of your last runs, to study how the game really plays (Settings > Save play journal) ----
 // Each run is a list of events, each one an array starting with its kind and the seconds into the run:
 //   F floor arrived [floor, hp, max, potions, coins, level, gear, perks]   B a fight began [stretch, foes, hp, max, potions]
+//   (B's foes also list each enemy's gear by name, e.g. 'Iron Mace' or 'Steel Kettle Hat', since 2026-11-22)
 //   T a turn [move, target, foes before (name, hp, max, intent), hp before, hp after, damage dealt, damage taken, blows]
 //   R a flee attempt [got away, blows]   W a fight won [hp, max]   P a potion [in a fight?, hp before, hp after, blows]
 //   blows: every enemy blow at you in that turn, [enemy, its move, damage, kind ('' a hit, 'c' a critical, 'b' a big move,
@@ -9727,7 +9730,7 @@ function journalFile() {
 }
 const gearNote = () => Object.keys(slots).map(k => worn[k] ? `${k}:${worn[k].tier}${worn[k].ench ? '/' + worn[k].ench.id + worn[k].ench.t : ''}` : `${k}:-`).join(' ');
 const perkNote = () => Object.keys(PERKS).filter(perkN).map(id => `${id}${perkN(id)}`).join(' ');
-const foeNote = () => foes.map(f => [f.name, f.hp, f.max, f.next || '']);
+const foeNote = gear => foes.map(f => gear ? [f.name, f.hp, f.max, f.next || '', f.items || []] : [f.name, f.hp, f.max, f.next || '']);
 const itemNote = it => it ? `${it.name}${it.ench ? ' of ' + it.ench.id + it.ench.t : ''}` : '-';
 // the enemy blows of the turn being played (foeStrike notes each one); a turn, flee or potion takes them for its event
 let journalBlows = [];
@@ -9762,7 +9765,7 @@ if (!window.__SIM) {
   journalWrap(() => loadFloor, f => { loadFloor = f; }, null,
     () => journal('F', floor + 1, p.hp, p.max, potions, coins, level, gearNote(), perkNote()));
   const stretch = () => !current ? '?' : current.boss ? 'B' : current.guard ? 'G' : current.hard ? 'F' : 'N';
-  const fightBegins = () => { if (phase === 'choice') journal('B', `${floor + 1}${stretch()}`, foeNote(), p.hp, p.max, potions); };
+  const fightBegins = () => { if (phase === 'choice') journal('B', `${floor + 1}${stretch()}`, foeNote(true), p.hp, p.max, potions); };
   journalWrap(() => startFight, f => { startFight = f; }, fightBegins, () => {});
   journalWrap(() => tryFlee, f => { tryFlee = f; }, () => { const was = phase === 'choice'; fightBegins(); takeBlows(); return was; },
     was => { if (was) journal('R', phase === 'explore', takeBlows()); });
