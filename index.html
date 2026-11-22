@@ -288,11 +288,12 @@
       <summary>Gear and armor</summary>
       <p>You have six slots: weapon, shield, helmet, chest, bracers and greaves. Gear comes in three materials:</p>
       <ul>
-        <li><b>Basic</b>: Rusty Sword, Wooden Buckler, Leather Cap, Leather Vest, Cloth Wraps, Leather Boots</li>
+        <li><b>Basic</b>: Rusty Sword, Wooden Buckler, Leather Cap, Leather Vest, Leather Bracers, Leather Boots</li>
         <li><b>Iron</b>: Iron Sword, Iron Shield, Iron Helm, Chainmail, Iron Bracers, Iron Greaves</li>
         <li><b>Steel</b>: Steel Sword, Steel Kite Shield, Steel Helm, Steel Plate, Steel Bracers, Steel Greaves</li>
       </ul>
       <p>A weapon adds its number to your damage. Armor numbers add up to your <b>Defense</b>, and each point cuts 3.5% off every enemy hit, 45% at most: full Leather (5) cuts 18%, full Iron (9) 32%, and full Steel (13) the full 45%. The Hero tab shows how much yours cuts. What you find depends on the floor: floor 1 is mostly leather with the odd iron piece (but no Chainmail yet), floor 2 is half leather and half iron, Steel first turns up on floor 3, and floor 5 holds only iron and steel. A <b>shield</b> adds nothing to Defense; it makes <b>Block</b> stronger instead: each point stops 10% more of a blocked hit and adds 4% to the stun chance (with no shield Block stops 45%; a Steel Kite Shield, +3, takes it to 70%, the most it can be, and the stun chance from 10% to 22%). Gear drops from fights and chests, and merchants sell it (price = 5 coins per point). Better material also lets you use stronger enchantments.</p>
+      <p><b>Light and heavy gear.</b> Every piece but the shield also comes light or heavy (about a quarter of what you find or see for sale is each), and a light or heavy piece has its own look. The badge on the loot card shows a <b>Trade-off</b> when the weight changes. Weapons: a <b>Dagger</b> (light) has a smaller number but crits 8% more often and misses 5% less; a <b>Mace</b> (heavy) has a bigger number but crits 5% less often and misses 6% more. Armor: each <b>light</b> piece has a point less Defense, but enemies miss you 1.5% more often; each <b>heavy</b> piece has a point more and raises the most your armor can cut by 2.5%, but enemies miss you 1.5% less often. However light you go, enemies miss you at most 30% of the time (Fleetfoot and Pathfinder count toward it). The light pieces: Cloth Hood, Iron Skullcap, Steel Kettle Hat; Padded Gambeson, Brigandine, Steel Breastplate; Cloth Wraps, Iron Splint Bracers, Steel Wristguards; Cloth Foot Wraps, Iron Splint Greaves, Steel Shin Guards. The heavy ones: Leather Helm, Iron Bascinet, Steel Great Bascinet; Leather Cuirass, Iron Scale Mail, Steel Harness; Studded Gauntlets, Iron Gauntlets, Steel Gauntlets; Hobnailed Jackboots, Iron Sabatons, Steel Sabatons. The Hero tab shows what yours add up to.</p>
       <p>Everything you wear shows on your character in fights, from a rusty sword to a steel great helm. You start out in a prisoner's rags: a torn tunic, a bandaged arm and bare feet. Wear all four armor pieces (helmet, chest, bracers and greaves) with a steel helm, and a knight's blue plume streams from it. A full set of Steel adds gold trim, and enchanted gear glows in its enchantment's color. Enemies show their gear the same way (see Fighting).</p>
       <p>Tap <b>Hero</b> to see yourself in everything you wear, with your six slots around you. Each slot shows its piece's symbol, shaped and colored by its material (a rusty sword, an iron sword, a gold-guarded steel sword, and so on), and its number. An enchanted piece glows and shows its enchantment's symbol, with one, two or three dots for Minor, Good or Major. Below are your stats, each with its symbol (the damage range of your hits, Defense, Max HP, how much Block stops, stun, critical hit, miss and flee chances) and your perks. Tap any piece of gear or perk to read what it does. The <b>Bag</b> tab holds your scrolls.</p>
     </details>
@@ -1148,12 +1149,14 @@ const pct = x => `${Math.round(x * 100)}%`;
 const BLOCK_BASE = 0.45, SHIELD_BLOCK = 0.10, BLOCK_CAP = 0.70, SHIELD_STUN = 0.04;
 const blockStops = () => Math.min(BLOCK_CAP, BLOCK_BASE + SHIELD_BLOCK * power('shield'));
 const blockMult = () => 1 - blockStops();   // the share of a hit that still gets through your Block
-const critChance = (k = perkN('focus')) => PLAYER_CRIT + FOCUS_CRIT * k;
+const critChance = (k = perkN('focus')) => Math.max(0, PLAYER_CRIT + FOCUS_CRIT * k + weaponCrit());   // (a Dagger crits more, a Mace less)
 const missKeep = (k = perkN('focus')) => FOCUS_MISS_KEEP ** k;
 const attackBonus = (k = perkN('attack')) => Math.round(curve(ATTACK_TOP, 4, k));
 const sight = (k = perkN('pathfinder')) => 1 + k;
 const PATH_DODGE = 0.04;   // Pathfinder reads your foes, so their plain blows miss you this much more often (2026-11-21)
 const pathDodge = (k = perkN('pathfinder')) => k > 0 ? PATH_DODGE : 0;
+// how often an enemy's plain blow misses you: light armor, Fleetfoot and Pathfinder raise it, heavy armor lowers it
+const foeMiss = () => Math.min(FOE_MISS_CAP, Math.max(0, FOE_MISS + fleetEvade() + pathDodge() + armorDodge()));
 const execBonus = (k = perkN('executioner')) => curve(EXEC_TOP, 1, k);
 const poisonScale = (k = perkN('antidote')) => 2 / (k + 2);
 const poisonDmg = (k = perkN('antidote')) => Math.max(1, Math.round(POISON_DMG * poisonScale(k)));
@@ -1429,7 +1432,7 @@ const slots = {
   shield:  {label: 'Shield',  items: [['Wooden Buckler', 1], ['Iron Shield', 2], ['Steel Kite Shield', 3]]},
   helmet:  {label: 'Helmet',  items: [['Leather Cap', 1], ['Iron Helm', 2], ['Steel Helm', 3]]},
   chest:   {label: 'Chest',   items: [['Leather Vest', 2], ['Chainmail', 3], ['Steel Plate', 4]]},
-  bracers: {label: 'Bracers', items: [['Cloth Wraps', 1], ['Iron Bracers', 2], ['Steel Bracers', 3]]},
+  bracers: {label: 'Bracers', items: [['Leather Bracers', 1], ['Iron Bracers', 2], ['Steel Bracers', 3]]},   // (Cloth Wraps are light now: see WEIGHTS)
   greaves: {label: 'Greaves', items: [['Leather Boots', 1], ['Iron Greaves', 2], ['Steel Greaves', 3]]}
 };
 const armor = ['helmet', 'chest', 'bracers', 'greaves'];
@@ -1444,6 +1447,54 @@ const campHeal = () => Math.round(p.max * CAMP_HEAL_SHARE);
 const perks = {};          // perk id -> times taken
 let hand = [], redraws = 0, secondWinds = 0;
 const defense = () => armor.reduce((sum, k) => sum + power(k), 0);
+
+// ---- gear weights (branch gear-weights, 2026-11-21): every slot but the shield also comes light or heavy. Weapons: the
+// Dagger (light: a smaller number, but it crits more and misses less) and the Mace (heavy: a bigger number, but it crits
+// less and misses more). Armor: each light piece gives a point less Defense, but enemies miss you more; each heavy piece
+// a point more, and raises the most armor can cut (ARMOR_CAP), but enemies miss you less. However light you go, enemies
+// miss you at most FOE_MISS_CAP of the time. All starting numbers, to be tuned in the sims ----
+const WEIGHTS = {
+  light: {weapon: {names: ['Rusty Dagger', 'Iron Dagger', 'Steel Dagger'], power: [1, 3, 4], crit: 0.08, miss: -0.05},
+          armor: {helmet: ['Cloth Hood', 'Iron Skullcap', 'Steel Kettle Hat'], chest: ['Padded Gambeson', 'Brigandine', 'Steel Breastplate'],
+                  bracers: ['Cloth Wraps', 'Iron Splint Bracers', 'Steel Wristguards'], greaves: ['Cloth Foot Wraps', 'Iron Splint Greaves', 'Steel Shin Guards']},
+          def: -1, dodge: 0.015, cap: 0},
+  heavy: {weapon: {names: ['Rusty Mace', 'Iron Mace', 'Steel Mace'], power: [3, 5, 8], crit: -0.05, miss: 0.06},
+          armor: {helmet: ['Leather Helm', 'Iron Bascinet', 'Steel Great Bascinet'], chest: ['Leather Cuirass', 'Iron Scale Mail', 'Steel Harness'],
+                  bracers: ['Studded Gauntlets', 'Iron Gauntlets', 'Steel Gauntlets'], greaves: ['Hobnailed Jackboots', 'Iron Sabatons', 'Steel Sabatons']},
+          def: 1, dodge: -0.015, cap: 0.025}
+};
+const WEIGHT_CHANCE = 0.25;     // a piece of gear found or on sale is light this often, and heavy this often
+const FOE_MISS_CAP = 0.30;
+// a piece of gear: slot k, tier, and wt 'light', 'heavy' or none (standard)
+function gearOf(k, tier, wt) {
+  const [name, pow] = slots[k].items[tier];
+  if (!wt || k === 'shield') return {name, power: pow, tier};
+  const W = WEIGHTS[wt];
+  if (k === 'weapon') return {name: W.weapon.names[tier], power: W.weapon.power[tier], tier, wt};
+  return {name: W.armor[k][tier], power: Math.max(0, pow + W.def), tier, wt};
+}
+const rollWeight = k => { if (k === 'shield') return undefined; const r = Math.random(); return r < WEIGHT_CHANCE ? 'light' : r < 2 * WEIGHT_CHANCE ? 'heavy' : undefined; };
+const wtOf = k => worn[k] && worn[k].wt;
+const weaponCrit = () => wtOf('weapon') ? WEIGHTS[wtOf('weapon')].weapon.crit : 0;
+const weaponMiss = () => wtOf('weapon') ? WEIGHTS[wtOf('weapon')].weapon.miss : 0;
+const armorDodge = () => armor.reduce((sum, k) => sum + (wtOf(k) ? WEIGHTS[wtOf(k)].dodge : 0), 0);
+const armorCapNow = () => ARMOR_CAP + armor.reduce((sum, k) => sum + (wtOf(k) ? WEIGHTS[wtOf(k)].cap : 0), 0);
+const gearPrice = it => Math.max(1, it.power) * 5;
+const signed = v => (v > 0 ? '+' : '\u2212') + (Math.round(Math.abs(v) * 1000) / 10) + '%';
+// what a light or heavy piece does, in a few words (the loot card) or a sentence (the Hero panel)
+function weightShort(it) {
+  if (!it || !it.wt) return '';
+  const W = WEIGHTS[it.wt];
+  if (it.slot === 'weapon') return `Crit ${signed(W.weapon.crit)}, miss ${signed(W.weapon.miss)}`;
+  return `Dodge ${signed(W.dodge)}` + (W.cap ? `, cap ${signed(W.cap)}` : '');
+}
+function weightText(k, it) {
+  if (!it || !it.wt) return '';
+  const W = WEIGHTS[it.wt], light = it.wt === 'light';
+  if (k === 'weapon') return ` ${light ? 'Light' : 'Heavy'}: crit ${signed(W.weapon.crit)}, miss ${signed(W.weapon.miss)}.`;
+  return ` ${light ? 'Light' : 'Heavy'}: enemies miss you ${(Math.abs(W.dodge) * 100).toFixed(1)}% ${light ? 'more' : 'less'} (now ${pct(foeMiss())})` +
+    (W.cap ? `, armor cuts up to ${pct(armorCapNow())}.` : '.');
+}
 
 const shops = {
   M: {title: 'Iron Merchant', tier: 1},
@@ -1460,8 +1511,8 @@ const makeStock = tier => [
   ...BAGS.filter(b => b.tier <= tier),
   {type: 'satchel', name: 'Scroll Satchel', price: SATCHEL_PRICE},
   ...Object.keys(slots).map(k => {
-    const [name, pow] = slots[k].items[tier];
-    return {type: 'gear', slot: k, name, power: pow, price: pow * 5, tier};
+    const g = gearOf(k, tier, rollWeight(k));   // (each slot's piece may be light or heavy)
+    return {type: 'gear', slot: k, ...g, price: gearPrice(g)};
   })
 ];
 let shopStock = [], shopTitle = '';
@@ -1471,7 +1522,7 @@ let shopStock = [], shopTitle = '';
 // enchantment is worth (TIER_PRICE); a scroll is worth what its enchantment is
 const POTION_PRICE = 15, SELL_SHARE = 0.25;
 const sellValue = price => Math.max(1, Math.round(price * SELL_SHARE));
-const gearRetail = it => it.power * 5 + (it.ench ? TIER_PRICE[it.ench.t] : 0);
+const gearRetail = it => gearPrice(it) + (it.ench ? TIER_PRICE[it.ench.t] : 0);
 // buying gear for a slot you already fill sells the old piece to the merchant; what it fetches counts toward the price
 const tradeIn = it => it.type === 'gear' && worn[it.slot] ? sellValue(gearRetail(worn[it.slot])) : 0;
 const coinWord = n => `${n} coin${n === 1 ? '' : 's'}`;
@@ -1575,8 +1626,9 @@ const armorNow = () => Math.max(0, defense() - sunder);
 // full Iron 9 = 32%, full Steel 13 = 45%). Enemies' armor cuts your hits the same way. (Until 2026-11-20 armor took its
 // points off each hit, which left most hits on the middle floors at 1-2 damage.) A hit always does at least 1
 const ARMOR_PER_POINT = 0.035, ARMOR_CAP = 0.45;
-const armorCut = pts => Math.min(ARMOR_CAP, Math.max(0, pts) * ARMOR_PER_POINT);
-const throughArmor = (raw, pts) => Math.max(1, Math.round(raw * (1 - armorCut(pts))));
+// (cap: yours rises with heavy armor, see armorCapNow)
+const armorCut = (pts, cap = ARMOR_CAP) => Math.min(cap, Math.max(0, pts) * ARMOR_PER_POINT);
+const throughArmor = (raw, pts, cap) => Math.max(1, Math.round(raw * (1 - armorCut(pts, cap))));
 const isHidden = f => !!(f.next && MOVES[f.next] && MOVES[f.next].hide);
 const reachable = f => f.hp > 0 && !isHidden(f);
 const warcry = f => foes.some(o => o !== f && o.cry && o.hp > 0) ? WARCRY_BONUS : 0;   // the bonus f hits with
@@ -1697,7 +1749,7 @@ function intentDmg(f, m) {
   const M = MOVES[m];
   if (!M || !M.hit) return null;
   const lust = f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0;
-  let d = ((f.dmg[0] + f.dmg[1]) / 2 + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + lust + warcry(f)) * (1 - (m === 'crush' ? 0 : armorCut(armorNow())));
+  let d = ((f.dmg[0] + f.dmg[1]) / 2 + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + lust + warcry(f)) * (1 - (m === 'crush' ? 0 : armorCut(armorNow(), armorCapNow())));
   d = Math.max(1, d);
   if (M.big && m !== 'crush') d *= M.big;
   return Math.max(1, Math.round(d));
@@ -1915,7 +1967,7 @@ function refresh() {
 function shopNote(it) {
   if (it.type === 'gear') {
     const cur = worn[it.slot];
-    return `+${it.power}` + (cur ? (cur.ench ? `, you lose ${enchLabel(cur.ench)}` : '') +
+    return `+${it.power}` + (it.wt ? `, ${weightShort(it).toLowerCase()}` : '') + (cur ? (cur.ench ? `, you lose ${enchLabel(cur.ench)}` : '') +
       `, trade-in ${tradeIn(it)}, yours is ${cur.name} +${cur.power}` : ', slot empty');
   }
   if (it.type === 'bag') return `carry ${it.to} potions` + (maxPotions >= it.to ? ', owned'
@@ -1951,8 +2003,7 @@ function lootTier(slot) {
 function loot() {
   const keys = Object.keys(slots), k = keys[roll(0, keys.length - 1)];
   const tier = lootTier(k);
-  const [name, pow] = slots[k].items[tier];
-  pending = {slot: k, name, power: pow, tier};
+  pending = {slot: k, ...gearOf(k, tier, rollWeight(k))};   // (it may be light or heavy)
   if (Math.random() < ENCHANT_DROP_CHANCE)
     pending.ench = {id: randomEnchant(k), t: Math.min(tier, floorTier())};
   phase = 'loot';
@@ -2241,7 +2292,8 @@ const spotOf = who => {
 // what you look like: the tier you wear in each slot, the glow of each enchanted piece, your weapon's enchantment
 function heroLook() {
   const gear = {}, glows = {};
-  for (const k of Object.keys(slots)) if (worn[k]) { gear[k] = worn[k].tier; if (worn[k].ench) glows[k] = ENCH_GLOW[worn[k].ench.id]; }
+  for (const k of Object.keys(slots)) if (worn[k]) { gear[k] = worn[k].tier; if (worn[k].ench) glows[k] = ENCH_GLOW[worn[k].ench.id]; if (worn[k].wt && armor.includes(k)) (gear.wt || (gear.wt = {}))[k] = worn[k].wt; }
+  if (wtOf('weapon')) gear.wkind = wtOf('weapon') === 'light' ? 'dagger' : 'mace';   // (light and heavy pieces look their own way)
   return {gear, glows, weapon: worn.weapon ? {tier: worn.weapon.tier, ench: worn.weapon.ench && worn.weapon.ench.id} : {}};
 }
 
@@ -2639,6 +2691,234 @@ function tube(a, b, wa, wb) {
     [b[0] - nx * wb / 2, b[1] - ny * wb / 2], [a[0] - nx * wa / 2, a[1] - ny * wa / 2],
     [a[0] - ux * wa * 0.38 - nx * wa * 0.22, a[1] - uy * wa * 0.38 - ny * wa * 0.22], [a[0] - ux * wa * 0.38 + nx * wa * 0.22, a[1] - uy * wa * 0.38 + ny * wa * 0.22]];
 }
+// a dagger or a mace in hand at h along unit direction d (s scales it to the one holding it), tier t.
+// Daggers: 0 a crude rusty knife with no guard, 1 an iron quillon dagger with a cross guard, 2 a steel rondel dagger
+// (a disc for a guard and another for a pommel, trimmed in gold). Maces: 0 a cudgel bound in rusty iron, 1 an iron
+// flanged mace, 2 a steel morning star on a gold collar, its dark oak haft bound in gold
+// (a dagger is about 3/5 as long as the sword of its tier, pommel to tip)
+function heldWeapon(add, line, h, d, s, t, kind) {
+  const n = [-d[1], d[0]], at = (k, o = 0) => [h[0] + (d[0] * k + n[0] * o) * s, h[1] + (d[1] * k + n[1] * o) * s];
+  const disc = (k, o, ra, rb, mat, sharp, m = 10) => { const pts = []; for (let i = 0; i < m; i++) { const a = i / m * Math.PI * 2; pts.push(at(k + Math.cos(a) * ra, o + Math.sin(a) * rb)); } add(pts, mat, 0, sharp); };
+  if (kind === 'dagger') {
+    if (t === 0) {
+      add(tube(at(-5), at(2.5), 3 * s, 3 * s), 'leather');
+      add([at(2.5, 2.2), at(18.3, 2.3), at(22.8, 0.4), at(13.8, -3.4), at(2.5, -2.6)], 'rust', 0, 1);     // straight back, bellied edge
+      for (const k of [7.4, 12.8]) disc(k, 0.3, 1.1, 1.1, 'rustDk', 1, 6);
+      add([at(9.6, -3.3), at(11.3, -1.4), at(12.8, -3.3)], 'void', 0, 1);                         // a notch in the edge
+      disc(-6, 0, 2, 2, 'hilt', 0, 8);
+    } else if (t === 1) {
+      add(tube(at(-5.5), at(2.5), 2.8 * s, 2.8 * s), 'leather');
+      add([at(2.4, 7.6), at(4.6, 8), at(4.6, -8), at(2.4, -7.6)], 'ironDk');                     // the cross guard
+      add([at(4.6, 3), at(25.6, 0), at(4.6, -3)], 'iron', 0, 1);
+      line([at(6), at(20.3)], 0.8 * s, [70, 74, 84]);                                              // the fuller
+      disc(-6.8, 0, 2.3, 2.3, 'ironDk', 0, 8);
+    } else {
+      add(tube(at(-5.5), at(2.4), 2.6 * s, 2.6 * s), 'leather');
+      disc(3.4, 0, 1.4, 5, 'gold');                                                              // the rondel guard
+      add([at(4.6, 2.3), at(28.2, 0), at(4.6, -2.3)], 'steel', 0, 1);                              // a long needle of a blade
+      line([at(5.5), at(24.8)], 0.7 * s, [250, 252, 255]);                                         // its ridge, catching the light
+      disc(-6.6, 0, 1.4, 3.8, 'gold');                                                           // the rondel pommel
+    }
+  } else {
+    if (t === 0) {
+      add([at(-6, 2), at(30, 4.6), at(36, 4.8), at(39, 2.6), at(39, -2.6), at(36, -4.8), at(30, -4.6), at(-6, -2)], 'wood');   // a club, thick at the head
+      for (const k of [26, 33]) add([at(k, 4.8), at(k + 2.6, 5), at(k + 2.6, -5), at(k, -4.8)], 'rust', 0, 1);   // rusty iron bands
+      for (const [k, o] of [[30.5, 2.6], [30.5, -2.6], [37, 0]]) disc(k, o, 1, 1, 'rustDk', 1, 6);   // nail heads
+      add(tube(at(-6), at(3), 3.6 * s, 3.6 * s), 'leather');
+    } else if (t === 1) {
+      add(tube(at(-6), at(30), 3.8 * s, 3.8 * s), 'woodDk');                                     // an oak haft
+      add(tube(at(-6), at(3), 4 * s, 4 * s), 'leather');
+      add([at(28, 3.2), at(40, 3), at(40, -3), at(28, -3.2)], 'iron');                           // the head
+      for (const o of [1, -1]) add([at(28.5, 3.2 * o), at(31, 8 * o), at(39, 7.8 * o), at(40, 3 * o)], 'iron', 0, 1);   // two flanges, side on
+      line([at(28.5), at(40)], 1.2 * s, [60, 64, 74]);                                           // a third, edge on
+      disc(41.6, 0, 1.8, 1.8, 'ironDk', 0, 8);
+      disc(-7.2, 0, 2.2, 2.2, 'ironDk', 0, 8);
+    } else {
+      add(tube(at(-6), at(31), 3.6 * s, 3.6 * s), 'woodDk');                                    // a dark oak haft
+      for (const k of [11, 20]) add([at(k, 2.2), at(k + 1.8, 2.2), at(k + 1.8, -2.2), at(k, -2.2)], 'gold', 0, 1);   // bound in gold
+      add(tube(at(-6), at(3), 4 * s, 4 * s), 'leather');
+      add([at(29, 4), at(32, 4), at(32, -4), at(29, -4)], 'gold');                               // the collar
+      for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2 + 0.2, q = 0.42, c = 38.5;
+        add([at(c + Math.cos(a - q) * 5.8, Math.sin(a - q) * 5.8), at(c + Math.cos(a) * 10.6, Math.sin(a) * 10.6), at(c + Math.cos(a + q) * 5.8, Math.sin(a + q) * 5.8)], 'steel', 0, 1); }   // spikes
+      disc(38.5, 0, 6.4, 6.4, 'steel', 0, 12);                                                   // the ball
+      disc(-7.4, 0, 2.4, 2.4, 'gold', 0, 8);
+    }
+  }
+  return true;
+}
+// light and heavy armor on a body: slot is helmet, chest (with its sleeve and pauldron parts), bracers or greaves,
+// t the tier (0 leather / cloth, 1 iron, 2 steel), wv 'light' or 'heavy'; a = what the standard piece is given
+//   light:  Cloth Hood, Iron Skullcap, Steel Kettle Hat | Padded Gambeson, Brigandine, Steel Breastplate |
+//           Cloth Wraps, Iron Splint Bracers, Steel Wristguards | Cloth Foot Wraps, Iron Splint Greaves, Steel Shin Guards
+//   heavy:  Leather Helm, Iron Bascinet, Steel Great Bascinet | Leather Cuirass, Iron Scale Mail, Steel Harness |
+//           Studded Gauntlets, Iron Gauntlets, Steel Gauntlets | Hobnailed Jackboots, Iron Sabatons, Steel Sabatons
+function armorV(add, line, part, t, wv, a) {
+  const L = wv === 'light';
+  const along = (p, q, ks, w, col, lw) => {          // lines running along a limb from p to q, at offsets ks across it (w wide)
+    const len = Math.hypot(q[0] - p[0], q[1] - p[1]) || 1, n = [-(q[1] - p[1]) / len * w / 2, (q[0] - p[0]) / len * w / 2];
+    for (const k of ks) line([[p[0] + n[0] * k, p[1] + n[1] * k], [q[0] + n[0] * k, q[1] + n[1] * k]], lw, col);
+  };
+  const across = (p, q, qs, w, col, lw, lean = 0) => {   // bands across a limb at fractions qs of the way from p to q
+    const len = Math.hypot(q[0] - p[0], q[1] - p[1]) || 1, u = [(q[0] - p[0]) / len, (q[1] - p[1]) / len], n = [-u[1] * w / 2, u[0] * w / 2];
+    for (const f of qs) { const c = mid(p, q, f); line([[c[0] - n[0] - u[0] * lean, c[1] - n[1] - u[1] * lean], [c[0] + n[0] + u[0] * lean, c[1] + n[1] + u[1] * lean]], lw, col); }
+  };
+  const dot = (c, r, mat) => add(ellipsePts(c[0], c[1], r, r, 6), mat, 0, 1);
+  if (part === 'helmet') {
+    const {hc, r, eyes, P} = a, k = r / 10, S = pts => pts.map(([x, y]) => [hc[0] + x * k, hc[1] + y * k]);
+    if (L && t === 0) {                                  // Cloth Hood: over the head and down to the shoulders, the face left open
+      add(S([[-11.8, 11], [-12, -3], [-8.4, -10.8], [0.4, -13], [7.2, -11.2], [10.8, -5.8], [9.6, -4.2], [4, -4.4], [3, 2], [5.8, 7.4], [2.4, 11.6], [-6, 12.4]]), 'wraps');
+      line(S([[9.6, -4.2], [4, -4.4], [3, 2], [5.8, 7.4]]), 0.9 * k, GEAR.wrapsDk);
+      line(S([[-9, -6], [-10, 4], [-8, 10]]), 0.6 * k, GEAR.wrapsDk);
+    } else if (L && t === 1) {                           // Iron Skullcap: a shallow cap, two straps crossing over it
+      add(S([[-9.8, -1.4], [-10.4, -6], [-6.8, -10.8], [0.4, -12.2], [6.8, -10.4], [9.8, -6], [10.2, -3.4], [4, -3.6], [-2, -2.6]]), 'iron');
+      line(S([[-9.6, -1.8], [-2, -2.8], [4, -3.8], [10.2, -3.4]]), 1 * k, GEAR.ironDk);
+      line(S([[-7.4, -9.6], [1, -8], [8.6, -7.4]]), 0.8 * k, GEAR.ironDk);
+      line(S([[0.4, -12], [0.8, -3.4]]), 0.8 * k, GEAR.ironDk);
+    } else if (L) {                                      // Steel Kettle Hat: a steel dome with a wide brim, the face left open
+      add(S([[-9.4, -3], [-9.6, -7.4], [-6.2, -11.4], [0.4, -12.8], [6.8, -11.2], [9.8, -7.4], [9.8, -3]]), 'steel');
+      add(S([[-16, -1], [-10.4, -4.2], [10.4, -4.2], [16.4, -1.2], [15.6, 0.2], [10.2, -2.4], [-10.2, -2.4], [-15.4, 0.4]]), 'steel', 0, 1);   // the brim
+      line(S([[-9.4, -4.4], [9.8, -4.4]]), 1 * k, GEAR.steelDk);
+      line(S([[-6.6, -10.2], [0.4, -12.2], [6.6, -10.6]]), 0.8 * k, [255, 255, 255]);
+      line(S([[6.4, -2.4], [4.6, 8]]), 0.7 * k, GEAR.leatherDk);                                    // the chin strap
+    } else if (t === 0) {                                // Leather Helm: boiled leather, a deep cap with cheek guards and a neck guard
+      add(S([[-11.2, 6.4], [-11, -4], [-7, -11], [0.4, -12.8], [7, -11], [10.4, -6], [10.8, -2.8], [7.2, -3.2], [7.6, 5.8], [3.6, 7.8], [2.6, -2.4], [-3, -2], [-6.2, 2], [-6.8, 6.6]]), 'leatherDk');
+      line(S([[-10.6, -2.6], [-3, -2.6], [3, -3.4], [10.6, -3.2]]), 1.2 * k, GEAR.leather);
+      for (const [x, y] of [[-5, -7.6], [0.6, -10], [5.6, -8], [5.4, 2]]) dot(S([[x, y]])[0], 0.8 * k, 'iron');
+    } else if (t === 1) {                                // Iron Bascinet: a pointed helm, a mail curtain round the neck and chin
+      add(S([[-11.6, 3], [-12.4, 12], [-4, 15.4], [7, 14], [11.2, 9], [10.8, 4], [6, 6.4], [0, 7.4], [-6, 6]]), 'mail');
+      for (const y of [8.6, 11.4]) line(S([[-11, y], [-2, y + 2.6], [9.6, y - 0.6]]), 0.45 * k, [64, 68, 78]);
+      add(S([[-10.8, 4], [-11.2, -4], [-7.6, -11], [-1, -17.4], [4, -13.2], [9, -8.6], [10.8, -3], [11, 1], [7.6, -2.6], [3, -3], [-2, -2], [-5.4, 2.4]]), 'iron');
+      line(S([[-10, -1], [-4, -3.2], [3, -3.6], [10.8, -2.8]]), 1 * k, GEAR.ironDk);
+      for (const [x, y] of [[-7, -7], [-1.6, -12], [5, -8.6]]) dot(S([[x, y]])[0], 0.7 * k, 'steel');
+    } else {                                             // Steel Great Bascinet: a tall pointed dome, a full visor, a steel collar
+      add(S([[-12.6, 6.4], [-12.4, 13], [-4, 15.8], [8, 14.6], [12.6, 10.2], [11.6, 6.4], [6, 8.8], [-4, 9.2]]), 'steel');   // the collar
+      line(S([[-12.2, 12.6], [-4, 15.2], [8, 14], [12.2, 9.8]]), 1 * k, GEAR.gold);
+      add(S([[-10.8, 7], [-11.6, -4], [-8.6, -11.6], [-2.4, -19.4], [3.4, -14.2], [8.6, -9], [11.6, -4], [12.8, 1], [11.8, 6], [7, 8.8], [-4, 9]]), 'steel');
+      add(S([[2, -4.2], [12.2, -3.2], [12.4, -1.6], [2, -2.6]]), 'slit', 0, 1);
+      for (const [x, y] of [[8, 2], [10.2, 2], [9.1, 4]]) add(S(ellipsePts(x, y, 0.6, 0.6, 6)), 'slit', 0, 1);
+      line(S([[-2.4, -18.4], [3.6, -13.2], [9, -8]]), 0.8 * k, [255, 255, 255]);             // the ridge catching the light
+      add(S(ellipsePts(-1.6, -3, 1.4, 1.4, 8)), 'gold', 0, 1);                                // the visor's pivot
+      if (eyes) for (const e of eyes) P.push({...e, eye: [e.eye[0], hc[1] - 1.2 * k], r: e.r * 0.8});
+    }
+    return true;
+  }
+  if (part === 'chest') {
+    const {torso, front, skirt} = a, [x0, y0, x1, y1] = bbox(torso);
+    if (L && t === 0) {                                  // Padded Gambeson: quilted cloth, stitched in long rows
+      add(torso, 'wraps');
+      for (let x = x0 + 3.4; x < x1 - 1.5; x += 3.6) line([[x, y0 + 3], [x + 0.4, y1 - 2]], 0.45, GEAR.wrapsDk);
+    } else if (L && t === 1) {                           // Brigandine: a red cloth coat riveted over hidden iron plates
+      add(torso, 'blood');
+      for (let y = y0 + 5, row = 0; y < y1 - 2; y += 4.4, row++) for (let x = x0 + 3 + (row % 2) * 1.8; x < x1 - 2; x += 3.6) dot([x, y], 0.6, 'iron');
+    } else if (L) {                                      // Steel Breastplate: plate over the chest only, no skirt, no sleeves
+      add(torso.map(([x, y]) => [x, Math.min(y, lerp(y0, y1, 0.82))]), 'steel');
+      line([front[0], mid(front[0], front[1], 0.78)], 0.9, [255, 255, 255]);
+      line([[x0 + 2, lerp(y0, y1, 0.8)], [x1 - 2, lerp(y0, y1, 0.8) + 0.4]], 0.8, GEAR.steelDk);
+    } else if (t === 0) {                                // Leather Cuirass: hardened, boiled leather in bands, a skirt of strips
+      if (skirt) add(skirt, 'leather');
+      add(torso, 'leatherDk');
+      for (const f of [0.46, 0.62, 0.78]) line([[x0 + 2, lerp(y0, y1, f)], [x1 - 2, lerp(y0, y1, f) + 0.5]], 0.8, GEAR.leather);
+      for (const f of [0.46, 0.62, 0.78]) { dot([x0 + 3, lerp(y0, y1, f)], 0.6, 'iron'); dot([x1 - 3, lerp(y0, y1, f) + 0.5], 0.6, 'iron'); }
+    } else if (t === 1) {                                // Iron Scale Mail: small iron scales overlapping like a fish's
+      if (skirt) add(skirt, 'iron');
+      add(torso, 'iron');
+      for (let y = y0 + 4, row = 0; y < y1 - 2; y += 3.2, row++) for (let x = x0 + 2.6 + (row % 2) * 1.7; x < x1 - 2; x += 3.4) line([[x - 1.4, y], [x, y + 1.3], [x + 1.4, y]], 0.4, [70, 74, 84]);
+    } else {                                             // Steel Harness: fluted steel fanning up from the waist, trimmed in gold
+      if (skirt) add(skirt, 'steel');
+      add(torso, 'steel');
+      const w = [(x0 + x1) / 2, lerp(y0, y1, 0.86)];
+      for (const f of [0.18, 0.36, 0.64, 0.82]) line([w, [lerp(x0, x1, f), y0 + 4]], 0.6, f < 0.5 ? [255, 255, 255] : [110, 120, 140]);
+      line([[x0 + 2, lerp(y0, y1, 0.88)], [x1 - 2, lerp(y0, y1, 0.88) + 0.5]], 1, GEAR.gold);
+      if (skirt) { const [sx0, sy0, sx1, sy1] = bbox(skirt); for (const f of [0.35, 0.7]) line([[sx0 + 1.5, lerp(sy0, sy1, f)], [sx1 - 1.5, lerp(sy0, sy1, f)]], 0.6, GEAR.steelDk); }
+    }
+    return true;
+  }
+  if (part === 'sleeve') {                               // only the gambeson, the scale mail and the gothic plate have sleeves
+    const {sh, el, w, far} = a;
+    if (L && t !== 0) return false;
+    if (!L && t === 0) return false;
+    add(limb(sh, mid(sh, el, 1.06), w + 1.4, w + 1.8, w + 1.2), L ? 'wraps' : t === 1 ? 'iron' : 'steel', far);
+    return true;
+  }
+  if (part === 'pauldron') {                             // no light chest piece has pauldrons; the heavy ones do, the gothic ones big
+    const {s, near} = a;
+    if (L || (t === 0 && !near)) return false;
+    const big = t === 2 ? 1.3 : 1;
+    add(ellipsePts(s[0], s[1], s[2] * 1.15 * big, s[2] * 0.92 * big, 12), ['leather', 'iron', 'steel'][t], !near);
+    if (t === 2) line([[s[0] - s[2] * 1.2, s[1] + s[2] * 0.5], [s[0] + s[2] * 1.3, s[1] + s[2] * 0.3]], 0.9, GEAR.gold);
+    return true;
+  }
+  if (part === 'bracers') {
+    const {el, hd, w, far} = a, b0 = mid(el, hd, 0.12), b1 = mid(el, hd, 0.84);
+    if (L && t === 0) {                                  // Cloth Wraps: cloth wound round the forearm
+      add(limb(b0, b1, w + 1.4, w + 1.7, w + 1.2), 'wraps', far);
+      across(b0, b1, [0.2, 0.5, 0.8], w + 1.7, GEAR.wrapsDk, 0.6, 1.4);
+    } else if (L && t === 1) {                           // Iron Splint Bracers: iron strips laced onto leather
+      add(limb(b0, b1, w + 0.8, w + 1, w + 0.7), 'leather', far);
+      along(b0, b1, [-0.5, 0, 0.5], w + 1, GEAR.iron, 0.9);
+    } else if (L) {                                      // Steel Wristguards: a short steel cuff
+      const p = mid(el, hd, 0.48);
+      add(limb(p, b1, w + 1.4, w + 1.6, w + 1.3), 'steel', far);
+      across(p, b1, [0.04], w + 1.6, GEAR.steelDk, 0.8);
+    } else if (t === 0) {                                // Studded Gauntlets: thick leather, iron studs, a flared cuff
+      add(limb(b0, b1, w + 1.8, w + 2.2, w + 1.6), 'leatherDk', far);
+      add(limb(mid(el, hd, 0.06), mid(el, hd, 0.24), w + 3, w + 3.2, w + 2.6), 'leather', far);
+      if (!far) for (const f of [0.36, 0.54, 0.72]) dot(mid(el, hd, f), 0.7, 'iron');
+    } else if (t === 1) {                                // Iron Gauntlets: plate to the knuckles, a flared cuff
+      add(limb(b0, b1, w + 1.8, w + 2.2, w + 1.6), 'iron', far);
+      add(limb(mid(el, hd, 0.7), mid(el, hd, 0.9), w + 2.6, w + 3.4, w + 3.6), 'ironDk', far);
+      across(b0, b1, [0.04], w + 2.2, GEAR.ironDk, 0.8);
+    } else {                                             // Steel Gauntlets: fluted steel, a spike at the elbow, gold at the wrist
+      add(limb(b0, b1, w + 1.8, w + 2.2, w + 1.6), 'steel', far);
+      const len = Math.hypot(hd[0] - el[0], hd[1] - el[1]) || 1, u = [(hd[0] - el[0]) / len, (hd[1] - el[1]) / len], n = [-u[1], u[0]], hw = (w + 2.2) / 2;
+      add([[b0[0] + n[0] * hw, b0[1] + n[1] * hw], [el[0] - u[0] * 4, el[1] - u[1] * 4], [b0[0] - n[0] * hw, b0[1] - n[1] * hw]], 'steel', far, 1);
+      along(b0, b1, [0], w + 2.2, [255, 255, 255], 0.6);
+      across(b0, b1, [0.95], w + 2.2, GEAR.gold, 1);
+    }
+    return true;
+  }
+  if (part === 'greaves') {
+    const {kn, an, foot, w, far} = a;
+    if (L && t === 0) {                                  // Cloth Foot Wraps: cloth wound round the foot and ankle
+      add(foot, 'wraps', far);
+      const p = mid(kn, an, 0.7);
+      add(limb(p, an, w + 1, w + 1, w + 0.9), 'wraps', far);
+      across(p, an, [0.3, 0.65], w + 1, GEAR.wrapsDk, 0.6, 1.2);
+    } else if (L && t === 1) {                           // Iron Splint Greaves: strips down the shin, plain shoes
+      add(foot, 'leatherDk', far);
+      const p = mid(kn, an, 0.15), q = mid(kn, an, 0.92);
+      add(limb(p, q, w + 0.8, w + 1, w + 0.8), 'leather', far);
+      along(p, q, [-0.5, 0, 0.5], w + 1, GEAR.iron, 0.9);
+    } else if (L) {                                      // Steel Shin Guards: one plate down the front of the shin
+      add(foot, 'leatherDk', far);
+      add(limb(mid(kn, an, 0.24), mid(kn, an, 0.9), w + 1.2, w + 1.4, w + 1.1), 'steel', far);
+    } else if (t === 0) {                                // Hobnailed Jackboots: to above the knee, a wide cuff
+      add(foot, 'leatherDk', far);
+      add(limb(kn, an, w + 1.8, w + 1.8, w + 1.5), 'leatherDk', far);
+      add(limb(mid(kn, an, -0.14), mid(kn, an, 0.12), w + 3.2, w + 3.2, w + 3), 'leather', far);
+      across(kn, an, [0.55], w + 1.8, GEAR.leather, 0.7);
+    } else if (t === 1) {                                // Iron Sabatons: iron from the knee to the toes
+      add(foot, 'iron', far);
+      add(limb(kn, an, w + 1.6, w + 1.9, w + 1.4), 'iron', far);
+      add(ellipsePts(kn[0], kn[1], (w + 2.2) * 0.56, (w + 2.2) * 0.48, 10), 'ironDk', far);
+      const toe = foot.reduce((b, p) => p[0] > b[0] ? p : b), heel = foot.reduce((b, p) => p[0] < b[0] ? p : b);
+      for (const f of [0.45, 0.62, 0.79]) { const x = lerp(heel[0], toe[0], f); line([[x, toe[1] - 7], [x + 1, toe[1]]], 0.5, GEAR.ironDk); }
+    } else {                                             // Steel Sabatons: long pointed toes, a fanned knee guard
+      const toe = foot.reduce((b, p) => p[0] > b[0] ? p : b);
+      add(foot.map(p => p === toe ? [p[0] + 7, p[1]] : p), 'steel', far, 1);
+      add(limb(kn, an, w + 1.6, w + 1.9, w + 1.4), 'steel', far);
+      add([[kn[0] - (w + 2) * 0.4, kn[1] - 1], [kn[0] - (w + 2) * 1.1, kn[1] + 1.6], [kn[0] - (w + 2) * 0.3, kn[1] + 3]], 'steel', far, 1);   // the fan
+      add(ellipsePts(kn[0], kn[1], (w + 2.4) * 0.58, (w + 2.4) * 0.5, 10), 'steel', far);
+      along(kn, an, [0], w + 1.9, [255, 255, 255], 0.6);
+      across(kn, an, [0.1], w + 1.9, GEAR.gold, 0.9);
+    }
+    return true;
+  }
+  return false;
+}
+// the hand at the end of an arm: bare unless heavy gauntlets (or Steel Bracers) cover it
+const handMat = gear => { const wv = (gear.wt || {}).bracers;
+  return wv === 'heavy' ? ['leatherDk', 'ironDk', 'steelDk'][gear.bracers] : wv ? 'skin' : gear.bracers === 2 ? 'steelDk' : 'skin'; };
 // a sword in hand at h along unit direction d
 function sword(add, h, d, len, w, bladeMat, hiltMat) {
   const n = [-d[1], d[0]], at = k => [h[0] + d[0] * k, h[1] + d[1] * k];
@@ -3938,7 +4218,7 @@ const SCENES = [
 // Each is turned three-quarters toward the viewer, facing right with the LEFT foot forward; enemies
 // are mirrored to face you, so they lead with the RIGHT foot. Feet are at (0, 0), up is negative.
 // Gear comes from what each one actually has: gear = {weapon, helmet, chest, bracers, greaves}, each
-// a tier (0 = Rusty Sword / Leather / Cloth Wraps, 1 = Iron, 2 = Steel) or missing. Only what is
+// a tier (0 = Rusty Sword / Leather, 1 = Iron, 2 = Steel) or missing. Only what is
 // worn is drawn; without a weapon an enemy fights with what it was born with.
 // ======================================================================
 const GEAR = {leather: [122, 80, 46], leatherDk: [74, 48, 28], rust: [150, 90, 54], rustDk: [92, 50, 28], iron: [146, 152, 162], ironDk: [86, 90, 100],
@@ -3966,6 +4246,7 @@ function kit(add, P, gear = {}) {
     // the sword in hand h, pointing along unit direction d; s scales it to the one holding it
     sword(h, d, s = 1) {
       const t = T('weapon'); if (t === undefined) return false;
+      if (gear.wkind) return heldWeapon(add, line, h, d, s, t, gear.wkind);   // a Dagger or a Mace
       const len = [36, 42, 46][t] * s, w = [1.8, 2, 2.2][t] * s, n = [-d[1], d[0]], at = k => [h[0] + d[0] * k, h[1] + d[1] * k];
       sword(add, h, d, len, w, ['rust', 'iron', 'steel'][t], ['hilt', 'ironDk', 'gold'][t]);
       if (t === 0) {                                                       // Rusty Sword: rust spots and a notch bitten out of the edge
@@ -3978,6 +4259,7 @@ function kit(add, P, gear = {}) {
     // a helmet on a head centred at hc, r its size (10 for you). eyes: glowing eyes to show through a great helm's visor
     helm(hc, r, eyes) {
       const t = T('helmet'); if (t === undefined) return false;
+      const wv = (gear.wt || {})['helmet']; if (wv && t !== undefined) return armorV(add, line, 'helmet', t, wv, {hc, r, eyes, P});   // a light or heavy helmet
       const S = pts => pts.map(([x, y]) => [hc[0] + x * r / 10, hc[1] + y * r / 10]);
       if (t === 0) {                                                       // Leather Cap: a stitched seam and a short peak
         add(S([[-10.4, 0.6], [-10.2, -6], [-6.4, -10.8], [0.4, -12], [6.6, -10.2], [9.8, -5.8], [10.6, -3.6], [15.4, -2.6], [14.8, -1.2], [9, -1.6], [4, -2.6], [-1, -2.6], [-6, -1.2]]), 'leather');
@@ -4000,6 +4282,7 @@ function kit(add, P, gear = {}) {
     // belt (mail or plates); vest: [far panel, near panel] of a Leather Vest, open down the front
     chest({torso, front, skirt, vest}) {
       const t = T('chest'); if (t === undefined) return false;
+      const wv = (gear.wt || {})['chest']; if (wv && t !== undefined) return armorV(add, line, 'chest', t, wv, {torso, front, skirt});
       if (t === 0) {                                                       // Leather Vest: two panels, laced
         for (const [i, v] of (vest || [torso]).entries()) add(v, 'leather', vest && i === 0);
         for (const q of [0.2, 0.42, 0.64]) { const c = mid(front[0], front[1], q); add(ellipsePts(c[0], c[1], 0.9, 0.9, 6), 'wraps', 0, 1); }
@@ -4017,24 +4300,25 @@ function kit(add, P, gear = {}) {
     },
     // a mail or steel sleeve over the upper arm (sh to el, w wide), from the chest piece
     sleeve(sh, el, w, far) {
-      const t = T('chest'); if (t === undefined || t === 0) return false;
+      const t = T('chest'); const wv = (gear.wt || {})['chest']; if (wv && t !== undefined) return armorV(add, line, 'sleeve', t, wv, {sh, el, w, far}); if (t === undefined || t === 0) return false;
       add(limb(sh, mid(sh, el, 1.06), w + 1.4, w + 1.8, w + 1.2), t === 1 ? 'mail' : 'steel', far);
       return true;
     },
     // a pauldron over a shoulder at s = [x, y, r]: Iron on the near shoulder only, Steel on both
     pauldron(s, near) {
-      const t = T('chest'); if (!t || (t === 1 && !near)) return false;
+      const t = T('chest'); const wv = (gear.wt || {})['chest']; if (wv && t !== undefined) return armorV(add, line, 'pauldron', t, wv, {s, near}); if (!t || (t === 1 && !near)) return false;
       add(ellipsePts(s[0], s[1], s[2] * 1.15, s[2] * 0.92, 12), t === 1 ? 'iron' : 'steel', !near);
       return true;
     },
     // bracers on the forearm from elbow el to hand hd, an arm w thick
     bracer(el, hd, w, far) {
       const t = T('bracers'); if (t === undefined) return false;
+      const wv = (gear.wt || {})['bracers']; if (wv && t !== undefined) return armorV(add, line, 'bracers', t, wv, {el, hd, w, far});
       const a = mid(el, hd, 0.12), b = mid(el, hd, 0.84);
-      add(limb(a, b, w + 1.4, w + 1.7, w + 1.2), ['wraps', 'iron', 'steel'][t], far);
+      add(limb(a, b, w + 1.4, w + 1.7, w + 1.2), ['leather', 'iron', 'steel'][t], far);
       const L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1, u = [(b[0] - a[0]) / L, (b[1] - a[1]) / L], hw = (w + 1.7) / 2, n = [-u[1] * hw, u[0] * hw];
       const across = (q, lean, col, lw) => { const c = mid(a, b, q); line([[c[0] - n[0] - u[0] * lean, c[1] - n[1] - u[1] * lean], [c[0] + n[0] + u[0] * lean, c[1] + n[1] + u[1] * lean]], lw, col); };
-      if (t === 0) for (const q of [0.2, 0.5, 0.8]) across(q, 1.4, GEAR.wrapsDk, 0.6);   // the wraps wind round
+      if (t === 0) { across(0.05, 0, GEAR.leatherDk, 0.8); across(0.95, 0, GEAR.leatherDk, 0.8); for (const q of [0.32, 0.62]) { across(q, 1.6, GEAR.wraps, 0.5); across(q, -1.6, GEAR.wraps, 0.5); } }   // Leather Bracers: laced up
       else { across(0.05, 0, GEAR.ironDk, 0.8); across(0.95, 0, GEAR.ironDk, 0.8); }     // rims at both ends
       return true;
     },
@@ -4066,6 +4350,7 @@ function kit(add, P, gear = {}) {
     // greaves (or boots) on the shin from knee kn to ankle an, a leg w thick; foot = its outline, toe toward +x
     greave(kn, an, foot, w, far) {
       const t = T('greaves'); if (t === undefined) return false;
+      const wv = (gear.wt || {})['greaves']; if (wv && t !== undefined) return armorV(add, line, 'greaves', t, wv, {kn, an, foot, w, far});
       if (t === 0) {                                                       // Leather Boots with a folded cuff
         add(limb(mid(kn, an, 0.36), an, w + 1.4, w + 1.4, w + 1.2), 'leather', far);
         add(limb(mid(kn, an, 0.34), mid(kn, an, 0.5), w + 2.4, w + 2.4, w + 2.2), 'leatherDk', far);
@@ -4129,7 +4414,7 @@ const heroOf = (gear = {}, look = LOOK, rest = false, pose = null) => being({...
       if (!far) { const c = mid(el, hd, 0.5); add(ellipsePts(c[0] + 0.6, c[1], 1.3, 1.1, 6), 'blood', 0, 1); }
     }
     if (inHand) inHand();
-    fist(add, hd, 3.2, gear.bracers === 2 ? 'steelDk' : 'skin', far);
+    fist(add, hd, 3.2, handMat(gear), far);
   };
   const leg = (hip, kn, an, foot, far) => {
     add(member(hip, kn, an, [11, 11.8, 8.8, 8.2, 6.4]), 'pants', far);    // trousers
@@ -4182,11 +4467,11 @@ const heroOf = (gear = {}, look = LOOK, rest = false, pose = null) => being({...
   line(off([[-0.6, -2.6], [2.8, -2.4]], hc), 0.8, [52, 34, 24]); line(off([[5.8, -2.6], [8.2, -2.8]], hc), 0.7, [52, 34, 24]);
   line(off([[2.6, 6], [6.4, 5.8]], hc), 0.6, [120, 62, 52]);
   G.helm(hc, 10);
-  if (knight && gear.helmet === 2) {                                       // the knight's plume, streaming back
+  if (knight && gear.helmet === 2 && !(gear.wt || {}).helmet) {                                       // the knight's plume, streaming back
     add(off([[0, -13], [-6, -20], [-16, -22], [-24, -16], [-17, -15.6], [-9, -13], [-2, -10.6]], hc), 'plume');
     add(off([[-1, -13.4], [-7, -18.6], [-15, -20.2], [-10, -16.4], [-3, -12.2]], hc), 'plumeLt', 0, 1);
   }
-  if (shining && gear.helmet === 2) line(off([[-10, 9.4], [11, 8.6]], hc), 1, GEAR.gold);
+  if (shining && gear.helmet === 2 && !(gear.wt || {}).helmet) line(off([[-10, 9.4], [11, 8.6]], hc), 1, GEAR.gold);
   if (rest) {
     for (let i = trunk0; i < P.length; i++) P[i] = movePart(P[i], i >= head0 ? R.head : R.body);
     leg(R.hipN, R.kneeN, R.ankN, R.footN, 0);                              // the near leg, knee up, in front of the body
@@ -6758,6 +7043,7 @@ const VERDICTS = {1: {word: 'Better', col: '#5ee25e'}, '-1': {word: 'Worse', col
 // (none < Minor < Good < Major; two different ones of the same tier count as even)
 function lootVerdict(it, cur) {
   if (!cur) return 1;
+  if ((it.wt || '') !== (cur.wt || '')) return 2;      // light, standard and heavy each give something up
   const worth = e => e ? 1 + e.t : 0, dp = it.power - cur.power, de = worth(it.ench) - worth(cur.ench);
   if (dp === 0 && de === 0) return it.ench && cur.ench && it.ench.id !== cur.ench.id ? 2 : 0;
   if (dp >= 0 && de >= 0) return 1;
@@ -6776,12 +7062,12 @@ function lootSide(it, slot, ax, y, label, right) {
     return;
   }
   const col = TIER_EDGE[it.tier];
-  drawSlotIcon(slot, ix, iy, 13, it.tier);
+  drawSlotIcon(slot, ix, iy, 13, it.tier, null, it.wt);
   ctx.textAlign = align;
   ctx.font = textFont(26); ctx.fillStyle = '#f4ead4';
   ctx.fillText(`+${it.power}`, ax + dir * 33, iy + 8);
-  ctx.font = textFont(10, 400); ctx.fillStyle = '#9a9080';
-  ctx.fillText(statWord(slot), ax + dir * 34, iy + 20);
+  if (it.wt) drawWeightBits(it, slot, ax, iy + 21, right);   // a light or heavy piece: what it gives and takes, as symbols
+  else { ctx.font = textFont(10, 400); ctx.fillStyle = '#9a9080'; ctx.fillText(statWord(slot), ax + dir * 34, iy + 20); }
   ctx.font = textFont(12); ctx.fillStyle = col;
   ctx.fillText(fitText(it.name, 100), ax, y + 75);
   if (it.ench) {                                                           // its enchantment: the symbol and a few words, in its glow
@@ -6793,6 +7079,22 @@ function lootSide(it, slot, ax, y, label, right) {
     ctx.font = textFont(11, 400); ctx.fillStyle = '#5e5864';
     ctx.fillText('no enchantment', ax, y + 93);
   }
+}
+// under a light or heavy piece's number: crit and miss for a weapon, dodge (and the armor cap) for armor, each a symbol
+// and a signed share, in light blue for light and amber for heavy; x0 is where they start (or end, on the right)
+function drawWeightBits(it, slot, x0, y, right) {
+  const W = WEIGHTS[it.wt], col = it.wt === 'light' ? '#8ad8ff' : '#e0a868';
+  const bits = slot === 'weapon' ? [['crit', W.weapon.crit], ['miss', W.weapon.miss]] : [['dodge', W.dodge], ...(W.cap ? [['defense', W.cap]] : [])];
+  ctx.font = textFont(11);
+  const ws = bits.map(([, v]) => 13 + ctx.measureText(signed(v)).width + 5);
+  let x = right ? x0 - ws.reduce((a, b) => a + b, 0) : x0;
+  bits.forEach(([id, v], i) => {
+    if (id === 'dodge') drawEnchIcon('fleetfoot', x + 5, y - 4, 6, ENCH_GLOW.fleetfoot);
+    else drawStatIcon(id, x + 5, y - 4, 6);
+    ctx.font = textFont(11); ctx.textAlign = 'left'; ctx.fillStyle = col;
+    ctx.fillText(signed(v), x + 13, y);
+    x += ws[i];
+  });
 }
 function drawVerdict(v, x, y, r) { pixelIcon('verdict:' + v, r, g => verdictGlyph(g, v), x, y); }
 function verdictGlyph(g, v) { GLYPHS.verdict(g, v); }
@@ -7211,7 +7513,195 @@ const ICON_DARK = 'rgba(10,8,14,0.6)';
 // trimmed in gold). tint draws the iron shape in one flat color instead (an empty slot, a stat)
 const GEAR_MATS = [{base: '#a8743c', dark: '#4e321a', trim: '#d0a060'}, {base: '#8e96a2', dark: '#3a4048', trim: '#c4ccd6'},
                    {base: '#e6eef8', dark: '#5a6676', trim: '#e8b84a'}];
-function drawSlotIcon(slot, x, y, r, tier, tint) { pixelIcon(`slot:${slot}:${tier}:${tint || ''}`, r, g => slotGlyph(g, slot, tier, tint), x, y); }
+// wt: a light or heavy piece's own symbol (a Dagger or a Mace for a weapon)
+// a dagger's or a mace's symbol, drawn upright and turned to lie corner to corner like the swords
+function weaponGlyph(ctx, kind, t, tint) {
+  const M = tint ? {base: tint, dark: shade(tint, 0.5), trim: tint, leather: tint, wood: tint, hilt: shade(tint, 0.7), rust: tint}
+                 : {...GEAR_MATS[t], leather: GEAR_MATS[0].base, wood: '#9a6a3a', hilt: '#5a3a1e', rust: '#a08470'};
+  const poly = (c, pts) => { ctx.fillStyle = c; ctx.beginPath(); pts.forEach(([a, b], i) => i ? ctx.lineTo(a, b) : ctx.moveTo(a, b)); ctx.closePath(); ctx.fill(); };
+  const line = (c, w, pts) => { ctx.strokeStyle = c; ctx.lineWidth = w; ctx.beginPath(); pts.forEach(([a, b], i) => i ? ctx.lineTo(a, b) : ctx.moveTo(a, b)); ctx.stroke(); };
+  const disc = (c, cx, cy, r) => { ctx.fillStyle = c; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill(); };
+  const box = (c, bx, by, w, h) => { ctx.fillStyle = c; ctx.fillRect(bx, by, w, h); };
+  ctx.save(); ctx.lineCap = ctx.lineJoin = 'round'; ctx.rotate(Math.PI / 4);
+  if (kind === 'dagger') {
+    if (t === 0) {                                                           // a crude rusty knife, no guard
+      box(M.leather, -1.4, 2.6, 2.8, 6.4); disc(M.hilt, 0, 9.8, 1.7);
+      poly(M.rust, [[1.7, 2.8], [1.7, -6.6], [0.4, -9.8], [-2.8, -3.6], [-2, 2.8]]);
+      if (!tint) { box('#c8642a', -0.6, -1.4, 1.8, 1.8); box('#c8642a', 0, -5.4, 1.4, 1.4); }
+      poly(tint ? shade(tint, 0.5) : 'rgb(20,16,22)', [[-2.9, -2.2], [-1.4, -1.2], [-2.6, 0.2]]);   // a notch
+    } else if (t === 1) {                                                    // an iron quillon dagger with a cross guard
+      poly(M.base, [[-2.4, 2], [0, -11], [2.4, 2]]);
+      line(M.dark, 0.9, [[0, 0.6], [0, -7.6]]);
+      box(M.dark, -5.6, 2, 11.2, 2.2);
+      box(M.hilt, -1.2, 4.2, 2.4, 5); disc(M.dark, 0, 10.2, 1.9);
+    } else {                                                                 // a steel rondel dagger, discs trimmed in gold
+      poly(M.base, [[-1.8, 1.4], [0, -12.4], [1.8, 1.4]]);
+      line(M.dark, 0.7, [[0, 0.4], [0, -9]]);
+      disc(M.trim, 0, 2.4, 3.3); disc(M.dark, 0, 2.4, 1.1);
+      box(M.hilt, -1.1, 4.6, 2.2, 4.4); disc(M.trim, 0, 10.2, 2.4);
+    }
+  } else {
+    ctx.translate(0, 1.4); ctx.scale(0.92, 0.92);                          // (the heads are wide: keep them inside the frame)
+    if (t === 0) {                                                           // a cudgel bound in rusty iron and nailed
+      poly(M.wood, [[-1.4, 10.4], [1.4, 10.4], [3.8, -7.6], [2.6, -10.4], [-2.6, -10.4], [-3.8, -7.6]]);
+      box(M.rust, -3.7, -7, 7.4, 1.8); box(M.rust, -3.2, -2.4, 6.4, 1.6);
+      if (!tint) for (const [x, y] of [[-1.6, -9], [1.6, -9], [0, -4.6]]) disc('#4e321a', x, y, 0.8);
+      box(M.leather, -1.7, 5.4, 3.4, 5);
+    } else if (t === 1) {                                                    // an iron flanged mace
+      box(M.dark, -1.1, -4, 2.2, 14); box(M.leather, -1.6, 5, 3.2, 5.4);
+      poly(M.base, [[-2.6, -3.4], [-6.2, -5.4], [-6.2, -9.4], [-2.6, -11.4], [2.6, -11.4], [6.2, -9.4], [6.2, -5.4], [2.6, -3.4]]);
+      line(M.dark, 1.1, [[0, -11], [0, -3.8]]); line(M.dark, 0.8, [[-2.6, -10.8], [-2.6, -4]]); line(M.dark, 0.8, [[2.6, -10.8], [2.6, -4]]);
+      disc(M.dark, 0, -12.2, 1.3); disc(M.dark, 0, 10.8, 1.6);
+    } else {                                                                 // a steel morning star on a gold collar
+      box(tint ? M.dark : '#4a2e18', -1.1, -2, 2.2, 12); box(M.trim, -1.5, 0.4, 3, 1.1); box(M.trim, -1.5, 3, 3, 1.1); box(M.hilt, -1.6, 5, 3.2, 5.4);   // a dark oak haft bound in gold
+      for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2 + Math.PI / 8, q = 0.42;
+        poly(M.base, [[Math.cos(a - q) * 3.6, -7.4 + Math.sin(a - q) * 3.6], [Math.cos(a) * 7.4, -7.4 + Math.sin(a) * 7.4], [Math.cos(a + q) * 3.6, -7.4 + Math.sin(a + q) * 3.6]]); }
+      disc(M.base, 0, -7.4, 4.4); disc(M.dark, 0, -7.4, 1.2);
+      box(M.trim, -2.4, -3.2, 4.8, 1.8); disc(M.trim, 0, 10.8, 1.7);
+    }
+  }
+  ctx.restore();
+}
+// a light or heavy armor piece's symbol, on the same frames as the standard pieces (see slotGlyph)
+function armorGlyph(ctx, slot, t, wv, tint) {
+  const M = tint ? {base: tint, dark: shade(tint, 0.5), trim: tint, leather: tint, leatherDk: shade(tint, 0.7), cloth: tint, clothDk: shade(tint, 0.6), face: shade(tint, 0.3)}
+                 : {...GEAR_MATS[t], leather: GEAR_MATS[0].base, leatherDk: '#6a4424', cloth: '#cdb894', clothDk: '#8a7656', face: 'rgb(26,22,32)'};
+  const poly = (c, pts) => { ctx.fillStyle = c; ctx.beginPath(); pts.forEach(([a, b], i) => i ? ctx.lineTo(a, b) : ctx.moveTo(a, b)); ctx.closePath(); ctx.fill(); };
+  const line = (c, w, pts) => { ctx.strokeStyle = c; ctx.lineWidth = w; ctx.beginPath(); pts.forEach(([a, b], i) => i ? ctx.lineTo(a, b) : ctx.moveTo(a, b)); ctx.stroke(); };
+  const disc = (c, cx, cy, r) => { ctx.fillStyle = c; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill(); };
+  const box = (c, bx, by, w, h) => { ctx.fillStyle = c; ctx.fillRect(bx, by, w, h); };
+  const inside = (pts, draw) => { ctx.save(); ctx.beginPath(); pts.forEach(([a, b], i) => i ? ctx.lineTo(a, b) : ctx.moveTo(a, b)); ctx.closePath(); ctx.clip(); draw(); ctx.restore(); };
+  const L = wv === 'light';
+  ctx.save(); ctx.lineCap = ctx.lineJoin = 'round';
+  if (slot === 'helmet') {
+    if (L && t === 0) {                                                      // a cloth hood, the face in shadow
+      poly(M.cloth, [[-8.4, 9.4], [-8.8, -1], [-6, -7.8], [0, -9.6], [6, -7.8], [8.8, -1], [8.4, 9.4]]);
+      poly(M.face, [[-4.4, 9.4], [-4.6, 0], [-2.6, -3.8], [2.6, -3.8], [4.6, 0], [4.4, 9.4]]);
+      line(M.clothDk, 1.1, [[-4.6, 0], [-2.6, -3.8], [2.6, -3.8], [4.6, 0]]);
+    } else if (L && t === 1) {                                               // a shallow iron skullcap, two straps crossing over it
+      ctx.fillStyle = M.base; ctx.beginPath(); ctx.moveTo(-8.4, 3); ctx.quadraticCurveTo(-8.4, -8, 0, -8); ctx.quadraticCurveTo(8.4, -8, 8.4, 3); ctx.closePath(); ctx.fill();
+      box(M.dark, -9, 2, 18, 2.6);
+      line(M.dark, 1.4, [[0, -7.6], [0, 2]]); line(M.dark, 1.2, [[-7.4, -2.4], [0, -4.4], [7.4, -2.4]]);
+      if (!tint) { disc(M.trim, 0, -4.4, 1); }
+    } else if (L) {                                                          // a steel kettle hat: a dome and a wide brim, the face open
+      ctx.fillStyle = M.base; ctx.beginPath(); ctx.moveTo(-6.4, 1); ctx.quadraticCurveTo(-6.6, -9, 0, -9); ctx.quadraticCurveTo(6.6, -9, 6.4, 1); ctx.closePath(); ctx.fill();
+      poly(M.base, [[-10.4, 4.6], [-6.8, 0.4], [6.8, 0.4], [10.4, 4.6], [9.4, 5.6], [5.8, 2.6], [-5.8, 2.6], [-9.4, 5.6]]);
+      box(M.trim, -6.6, -0.8, 13.2, 1.8);
+      poly(M.face, [[-4.6, 2.6], [4.6, 2.6], [4, 8.4], [-4, 8.4]]);
+    } else if (t === 0) {                                                    // a boiled leather helm    } else if (t === 0) {                                                    // a boiled leather helm with cheek guards
+      ctx.fillStyle = M.leatherDk; ctx.beginPath(); ctx.moveTo(-8.2, 8.4); ctx.lineTo(-8.2, -1); ctx.quadraticCurveTo(-8.2, -9.2, 0, -9.2); ctx.quadraticCurveTo(8.2, -9.2, 8.2, -1); ctx.lineTo(8.2, 8.4); ctx.closePath(); ctx.fill();
+      poly(M.face, [[-3.6, 0.6], [3.6, 0.6], [4.4, 8.4], [-4.4, 8.4]]);
+      box(M.base, -8.6, -2.4, 17.2, 2.4);
+      if (!tint) for (const [x, y] of [[-6.2, 4], [6.2, 4], [0, -6.2]]) disc(GEAR_MATS[1].base, x, y, 1);
+    } else if (t === 1) {                                                    // a pointed iron bascinet over a mail curtain
+      poly(M.base, [[-8.8, 0], [-4.6, 0], [-4.6, 5], [4.6, 5], [4.6, 0], [8.8, 0], [9.2, 9.6], [-9.2, 9.6]]);
+      if (!tint) inside([[-8.8, 0], [-4.6, 0], [-4.6, 5], [4.6, 5], [4.6, 0], [8.8, 0], [9.2, 9.6], [-9.2, 9.6]], () => { for (let r = 0; r < 4; r++) for (let c = 0; c < 8; c++) box(M.dark, -9 + c * 2.6 + (r % 2) * 1.3, 0.6 + r * 2.4, 1.2, 1.2); });
+      ctx.fillStyle = M.base; ctx.beginPath(); ctx.moveTo(-7.6, 1); ctx.quadraticCurveTo(-7.8, -6, 0, -11.2); ctx.quadraticCurveTo(7.8, -6, 7.6, 1); ctx.closePath(); ctx.fill();
+      poly(M.face, [[-4.4, 0.4], [4.4, 0.4], [4.4, 4.6], [-4.4, 4.6]]);
+      line(M.dark, 1.2, [[-7.4, 0.6], [7.4, 0.6]]);
+    } else {                                                                 // a steel great bascinet: a pointed dome, a full visor, a collar
+      poly(M.base, [[-9.6, 3], [9.6, 3], [8.8, 9.6], [-8.8, 9.6]]);
+      line(M.trim, 1.6, [[-8.6, 8.8], [8.6, 8.8]]);
+      ctx.fillStyle = M.base; ctx.beginPath(); ctx.moveTo(-7.4, 4.4); ctx.lineTo(-7.6, -2); ctx.quadraticCurveTo(-7, -8, 0, -11.8); ctx.quadraticCurveTo(7, -8, 7.6, -2); ctx.lineTo(7.4, 4.4); ctx.closePath(); ctx.fill();
+      line(M.dark, 0.9, [[0, -10.6], [0, 4]]);
+      box(M.face, -5.8, -2.6, 11.6, 1.8);
+      for (const [x, y] of [[-2, 1.4], [2, 1.4], [0, 3]]) box(M.face, x - 0.6, y - 0.6, 1.2, 1.2);
+      for (const s of [-1, 1]) disc(M.trim, s * 6.4, -0.8, 1.1);
+    }
+  } else if (slot === 'chest') {
+    const torso = [[-8.5, -6.5], [-4.2, -8.5], [-2.6, -5.8], [0, -5], [2.6, -5.8], [4.2, -8.5], [8.5, -6.5], [6.6, -1], [6.2, 7.6], [0, 9.2], [-6.2, 7.6], [-6.6, -1]];
+    if (L && t === 0) {                                                      // a padded gambeson, quilted in rows
+      poly(M.cloth, torso);
+      if (!tint) inside(torso, () => { for (const x of [-4.6, -1.6, 1.6, 4.6]) line(M.clothDk, 1, [[x, -8], [x, 9]]); });
+      poly(M.face, [[-2.6, -5.8], [0, -5], [2.6, -5.8], [0, -3.4]]);
+    } else if (L && t === 1) {                                               // a brigandine: red cloth, rows of rivets
+      poly(tint ? M.leatherDk : '#7a2620', torso);   // red cloth
+      if (!tint) inside(torso, () => { for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) box(M.base, -7 + c * 3.4 + (r % 2) * 1.7, -4.6 + r * 3, 1.3, 1.3); });
+    } else if (L) {                                                          // a steel breastplate alone, on leather straps
+      line(M.leather, 1.8, [[-4.4, -8.4], [-3.6, -4.4]]); line(M.leather, 1.8, [[4.4, -8.4], [3.6, -4.4]]);
+      poly(M.base, [[-6.4, -4.4], [-2.6, -5.4], [0, -4.6], [2.6, -5.4], [6.4, -4.4], [6.4, 2.6], [0, 5.8], [-6.4, 2.6]]);
+      line(M.dark, 1, [[0, -3.4], [0, 4.6]]); line(M.trim, 1.4, [[-6, 2.4], [0, 5.4], [6, 2.4]]);
+    } else if (t === 0) {                                                    // a hardened leather cuirass in bands, with shoulder pads
+      poly(M.leatherDk, torso);
+      for (const y of [0.6, 3.6, 6.4]) line(M.base, 1.2, [[-6.6, y], [6.6, y]]);
+      disc(M.base, -8.2, -6.6, 2.8); disc(M.base, 8.2, -6.6, 2.8);
+    } else if (t === 1) {                                                    // iron scale mail, with pauldrons
+      poly(M.base, torso);
+      if (!tint) inside(torso, () => { ctx.strokeStyle = M.dark; ctx.lineWidth = 1; for (let r = 0; r < 6; r++) for (let c = 0; c < 5; c++) { const x = -8 + c * 4 + (r % 2) * 2, y = -7.4 + r * 3.2; ctx.beginPath(); ctx.arc(x, y, 2, 0.15, Math.PI - 0.15); ctx.stroke(); } });   // big overlapping scales
+      disc(M.base, -8.4, -6.6, 3); disc(M.base, 8.4, -6.6, 3); disc(M.dark, -8.4, -6.6, 1); disc(M.dark, 8.4, -6.6, 1);
+    } else {                                                                 // gothic plate: fluted steel, big gold-rimmed pauldrons
+      poly(M.base, torso);
+      for (const x of [-5.6, -2.6, 2.6, 5.6]) line(M.dark, 0.9, [[0, 7.6], [x, -4.6]]);
+      line(M.trim, 1.8, [[-6.2, 7.2], [0, 8.8], [6.2, 7.2]]);
+      disc(M.trim, -8.4, -6.6, 3.9); disc(M.base, -8.4, -6.6, 2.8); disc(M.trim, 8.4, -6.6, 3.9); disc(M.base, 8.4, -6.6, 2.8);
+    }
+  } else if (slot === 'bracers') {
+    const arm = [[-5, -8.5], [5, -8.5], [3.8, 8.5], [-3.8, 8.5]];
+    if (L && t === 0) {                                                      // cloth wrapped round the forearm
+      poly(M.cloth, arm);
+      if (!tint) inside(arm, () => { for (const wy of [-6.4, -2, 2.4, 6.8]) line(M.clothDk, 1.4, [[-5.4, wy + 1.8], [5.4, wy - 1.8]]); });
+    } else if (L && t === 1) {                                               // leather with iron splints laced on
+      poly(M.leather, arm);
+      for (const x of [-2.6, 0, 2.6]) poly(M.base, [[x - 0.8, -8], [x + 0.8, -8], [x * 0.8 + 0.7, 8], [x * 0.8 - 0.7, 8]]);
+      line(M.leatherDk, 1, [[-4.8, -3], [4.8, -3]]); line(M.leatherDk, 1, [[-4.2, 4], [4.2, 4]]);
+    } else if (L) {                                                          // a short steel wristguard, gold-rimmed
+      poly(M.base, [[-4.6, -1.6], [4.6, -1.6], [3.8, 8.5], [-3.8, 8.5]]);
+      box(M.trim, -4.8, -2.4, 9.6, 2.4); line(M.dark, 1, [[0, 1], [0, 7.4]]);
+    } else if (t === 0) {                                                    // a studded leather gauntlet with a flared cuff
+      poly(M.leather, [[-6.2, -9.4], [6.2, -9.4], [5, -5], [-5, -5]]);
+      poly(M.leatherDk, [[-5, -5], [5, -5], [4.2, 4.4], [-4.2, 4.4]]);
+      poly(M.leatherDk, [[-4.2, 4.4], [4.2, 4.4], [4.8, 9.6], [-4.8, 9.6]]);
+      if (!tint) for (const [x, y] of [[-2, -2], [2, -2], [-2, 1.8], [2, 1.8]]) disc(GEAR_MATS[1].trim, x, y, 0.9);
+      line(M.face, 0.8, [[-1.6, 5.4], [-1.6, 9.4]]); line(M.face, 0.8, [[1.6, 5.4], [1.6, 9.4]]);
+    } else if (t === 1) {                                                    // an iron gauntlet: plate to the knuckles, a flared cuff
+      poly(M.base, [[-5, -8.5], [5, -8.5], [4, 2.4], [-4, 2.4]]);
+      poly(M.dark, [[-5.4, 2], [5.4, 2], [6.2, 5.6], [-6.2, 5.6]]);
+      poly(M.base, [[-4.4, 5.6], [4.4, 5.6], [4.8, 10], [-4.8, 10]]);
+      for (const x of [-1.6, 1.6]) line(M.dark, 0.8, [[x, 6.2], [x, 9.6]]);
+    } else {                                                                 // a gothic gauntlet: fluted, a spike at the elbow, gold at the wrist
+      poly(M.base, [[-5.2, -6], [0, -10.8], [5.2, -6], [4, 3], [-4, 3]]);
+      for (const x of [-2, 0, 2]) line(M.dark, 0.8, [[x * 1.2, -6], [x, 2.6]]);
+      box(M.trim, -4.6, 2.6, 9.2, 2.4);
+      poly(M.base, [[-4.4, 5], [4.4, 5], [5.2, 8.4], [0, 10.4], [-5.2, 8.4]]);
+    }
+  } else {
+    const boot = [[-4.5, -9], [3, -9], [3, 3], [7.5, 4.4], [8.6, 8.8], [-4.5, 8.8]];
+    if (L && t === 0) {                                                      // cloth wound round the foot and the ankle
+      poly(M.cloth, [[-4.5, -2.4], [3, -2.4], [3, 3], [7.5, 4.4], [8.6, 8.8], [-4.5, 8.8]]);
+      if (!tint) for (const y of [-0.4, 2.6, 5.6]) line(M.clothDk, 1.1, [[-4.6, y + 1.4], [3.4, y - 1.4]]);
+    } else if (L && t === 1) {                                               // iron splints down a leather shin
+      poly(M.leather, boot);
+      for (const x of [-2.6, -0.4, 1.8]) box(M.base, x - 0.7, -8.6, 1.4, 11);
+      line(M.leatherDk, 1, [[-4.6, -4.6], [3.2, -4.6]]);
+    } else if (L) {                                                          // one slim steel plate down the front of the shin
+      poly(M.leather, boot);
+      poly(M.base, [[-1.6, -9.8], [1.4, -10.8], [4.2, -9.2], [3.6, 2.6], [-1.6, 2.6]]);
+      if (!tint) disc(M.trim, 1.2, -7.6, 1);
+    } else if (t === 0) {                                                    // a tall hobnailed jackboot with a wide cuff
+      poly(M.leatherDk, boot);
+      poly(M.base, [[-6, -10.4], [4.6, -10.4], [4, -5.6], [-5.4, -5.6]]);
+      line(M.base, 1.2, [[-4.4, 0], [3, 0]]);
+      if (!tint) for (const x of [-2.6, 0.6, 3.8, 6.8]) disc(GEAR_MATS[1].trim, x, 8.4, 0.7);
+    } else if (t === 1) {                                                    // iron from the knee to the toes, in plates
+      poly(M.base, boot);
+      for (const y of [-4, 0]) line(M.dark, 1.2, [[-4.4, y], [3, y]]);
+      for (const x of [3.8, 6]) line(M.dark, 1, [[x, 4.2], [x + 0.6, 8.6]]);
+      disc(M.dark, -0.8, -6.6, 3.2); disc(M.base, -0.8, -6.6, 2.2);
+    } else {                                                                 // a gothic sabaton: a long pointed toe, a fanned knee guard
+      ctx.translate(-1, 0);
+      poly(M.base, [[-4.5, -9], [3, -9], [3, 3], [7.5, 4.6], [11, 8.6], [-4.5, 8.8]]);
+      line(M.dark, 0.9, [[-0.8, -5], [-0.8, 7.6]]);
+      poly(M.base, [[-1.2, -9.6], [-7.2, -5.8], [-2, -3.6]]);
+      disc(M.trim, -0.8, -6.6, 3.8); disc(M.base, -0.8, -6.6, 2.5);
+    }
+  }
+  ctx.restore();
+}
+function drawSlotIcon(slot, x, y, r, tier, tint, wt) {
+  const paint = !wt || slot === 'shield' ? g => slotGlyph(g, slot, tier, tint)
+    : slot === 'weapon' ? g => weaponGlyph(g, wt === 'light' ? 'dagger' : 'mace', tier, tint) : g => armorGlyph(g, slot, tier, wt, tint);
+  pixelIcon(`slot:${slot}:${tier}:${tint || ''}:${wt || ''}`, r, paint, x, y);
+}
 function slotGlyph(ctx, slot, t, tint) {                                       // (ctx: the icon's own canvas)
   const M = tint ? {base: tint, dark: shade(tint, 0.5), trim: tint, leather: tint, wood: tint, cloth: tint, hilt: shade(tint, 0.7), blade: tint}
                  : {...GEAR_MATS[t], leather: GEAR_MATS[0].base, wood: '#9a6a3a', cloth: '#cdb894', hilt: '#5a3a1e', blade: '#a08470'};
@@ -7277,9 +7767,9 @@ function slotGlyph(ctx, slot, t, tint) {                                       /
     }
   } else if (slot === 'bracers') {
     const arm = [[-5, -8.5], [5, -8.5], [3.8, 8.5], [-3.8, 8.5]];
-    if (t === 0) {                                                           // cloth wrapped round the forearm
-      poly(M.cloth, arm);
-      if (!tint) inside(arm, () => { for (const wy of [-6.4, -2, 2.4, 6.8]) line('#8a7656', 1.4, [[-5.4, wy + 1.8], [5.4, wy - 1.8]]); });
+    if (t === 0) {                                                           // a leather bracer, rimmed and laced
+      poly(M.base, arm); box(M.dark, -5.2, -8.6, 10.4, 1.8); box(M.dark, -4.2, 6.8, 8.4, 1.8);
+      if (!tint) for (const wy of [-4, 1.4]) { line(M.trim, 1, [[-2.2, wy - 2], [2.2, wy + 2]]); line(M.trim, 1, [[2.2, wy - 2], [-2.2, wy + 2]]); }
     } else if (t === 1) {                                                    // an iron bracer with two bands
       poly(M.base, arm); line(M.dark, 1.9, [[-4.6, -3.5], [4.6, -3.5]]); line(M.dark, 1.9, [[-4.2, 3.5], [4.2, 3.5]]);
     } else {                                                                 // a plated steel bracer, gold at both ends
@@ -7334,7 +7824,7 @@ function paintSlot(b) {
   chamfer(b.x, b.y, b.w, b.h, 5);
   ctx.stroke();
   if (it) { ctx.save(); ctx.globalAlpha = 0.35; ctx.lineWidth = 0.8; chamfer(b.x + 3, b.y + 3, b.w - 6, b.h - 6, 3); ctx.stroke(); ctx.restore(); }
-  drawSlotIcon(b.slot, b.x + 16, b.y + b.h / 2, 11, it ? it.tier : 1, it ? null : '#4a4452');
+  drawSlotIcon(b.slot, b.x + 16, b.y + b.h / 2, 11, it ? it.tier : 1, it ? null : '#4a4452', it && it.wt);
   ctx.textAlign = 'left';
   if (!it) { ctx.font = textFont(16); ctx.fillStyle = '#4e4856'; ctx.fillText('\u2014', b.x + 33, b.y + b.h / 2 + 5); return; }
   ctx.font = textFont(19);
@@ -7389,10 +7879,10 @@ function heroDetail(pick) {
   if (pick && pick.startsWith('slot:')) {
     const k = pick.slice(5), it = worn[k];
     if (!it) return `${slots[k].label}: nothing worn.`;
-    return `${itemName(it)} +${it.power}` + (it.ench ? `: ${enchText(it.ench)}.` : '.') +
+    return `${itemName(it)} +${it.power}` + (it.ench ? `: ${enchText(it.ench)}.` : '.') + weightText(k, it) +
       (k === 'weapon' ? ' Its number adds to every hit.'
         : k === 'shield' ? ` When you Block, Block stops ${pct(blockStops())} of each hit (${pct(BLOCK_BASE)} without a shield), and the chance to stun the attacker rises by ${pct(SHIELD_STUN * it.power)}.`
-        : ` Each point cuts ${(ARMOR_PER_POINT * 100).toFixed(1)}% off enemy hits (${pct(ARMOR_CAP)} at most).`);
+        : it.wt ? '' : ` Each point cuts ${(ARMOR_PER_POINT * 100).toFixed(1)}% off enemy hits (${pct(armorCapNow())} at most).`);
   }
   if (pick && pick.startsWith('perk:')) {
     const id = pick.slice(5), n = perkN(id);
@@ -7700,7 +8190,7 @@ function paintShopHeader(P) {
 }
 // the symbols on the merchant's rows (gear uses its slot symbol)
 function shopGlyph(g, type, tier) { GLYPHS.shop(g, type, tier); }
-const shopIcon = it => it.type === 'gear' ? (ix, iy) => drawSlotIcon(it.slot, ix, iy, 11, it.tier)
+const shopIcon = it => it.type === 'gear' ? (ix, iy) => drawSlotIcon(it.slot, ix, iy, 11, it.tier, null, it.wt)
   : (ix, iy) => pixelIcon(`shop:${it.type}:${it.tier || 0}`, 11, g => shopGlyph(g, it.type, it.tier || 0), ix, iy);
 
 // ---- under the play area, on a tall screen: a strip of the floor you are on, drawn like its rooms (see ART.drawStrip) ----
@@ -7860,7 +8350,7 @@ function shopScreen(L, add, menu) {
       price: sellValue(POTION_PRICE), enabled: potions > 0, act: sellPotion}];
     for (const k of Object.keys(slots)) {
       const it = worn[k], id = 'sell:' + k;
-      rows.push({id, icon: (ix, iy) => drawSlotIcon(k, ix, iy, 11, it ? it.tier : 1, it ? null : '#4a4452'),
+      rows.push({id, icon: (ix, iy) => drawSlotIcon(k, ix, iy, 11, it ? it.tier : 1, it ? null : '#4a4452', it && it.wt),
         text: `${slots[k].label}: ${it ? itemName(it) : 'empty'}`, enabled: !!it, armed: saleArmed(id),
         note: !it ? 'nothing worn' : saleArmed(id) ? 'Tap again to sell it' : `+${it.power}` + (it.ench ? `, ${enchText(it.ench)}` : ''),
         price: it ? sellValue(gearRetail(it)) : undefined, edge: it ? TIER_EDGE[it.tier] : null, act: () => sellGear(k)});
@@ -7948,7 +8438,7 @@ function scrollScreen(L, add, menu) {
       id: 'scroll:' + k, text: it ? `${it.name} +${it.power}` : `${slots[k].label}: empty`, enabled: ok, armed: ok && saleArmed('scroll:' + k),
       note: !it ? 'nothing worn' : !ok ? `needs ${TIER_NEED[s.t]}` : saleArmed('scroll:' + k) ? (it.ench ? `Tap again: replaces ${enchLabel(it.ench)}` : 'Tap again to enchant')
         : it.ench ? `replaces ${enchLabel(it.ench)}` : 'no enchantment yet',
-      icon: (ix, iy) => drawSlotIcon(k, ix, iy, 10, it ? it.tier : 1, it ? null : '#4a4452'),
+      icon: (ix, iy) => drawSlotIcon(k, ix, iy, 10, it ? it.tier : 1, it ? null : '#4a4452', it && it.wt),
       edge: it ? TIER_EDGE[it.tier] : null, act: () => scrollChoice(k)};
   }));
   const rowsEnd = top + enchSlots(s.id).length * 50, room = end - rowsEnd - 16;   // under the choices: the scroll itself, sealed
@@ -7997,8 +8487,8 @@ function heroScreen(L, add, menu) {
     paragraph(heroDetail(o.pick), P.x + 14, dy + 14, P.w - 28, 14, 2);
   }});
   const sy = dy + 42, dmg = power('weapon') + bonusDmg + purseDmg(), stats = [
-    ['hit', 'Hit', `${8 + dmg}-${14 + dmg}`], ['defense', 'Defense', pct(armorCut(defense()))], ['maxhp', 'Max HP', p.max], ['block', 'Block', pct(1 - blockMult())],
-    ['stun', 'Stun', pct(stunChance())], ['crit', 'Crit', pct(critChance())], ['miss', 'Miss', pct(PLAYER_MISS * missKeep())], ['flee', 'Flee', pct(fleeChance())]];
+    ['hit', 'Hit', `${8 + dmg}-${14 + dmg}`], ['defense', 'Defense', pct(armorCut(defense(), armorCapNow()))], ['maxhp', 'Max HP', p.max], ['block', 'Block', pct(1 - blockMult())],
+    ['stun', 'Stun', pct(stunChance())], ['crit', 'Crit', pct(critChance())], ['miss', 'Miss', pct(Math.max(0, PLAYER_MISS + weaponMiss()) * missKeep())], ['flee', 'Flee', pct(fleeChance())]];
   add({draw: () => stats.forEach(([id, label, value], i) => {               // each stat: its symbol, its number, its name under it
     const cw = (P.w - 16) / 4, x = P.x + 8 + (i % 4) * cw, y = sy + Math.floor(i / 4) * 33;
     drawStatIcon(id, x + 11, y + 13, 9);
@@ -8165,7 +8655,7 @@ function foeStrike(f, mult, blocking = false, move = 'attack') {
   const crush = move === 'crush', big = !!M.big;
   if (crush) f.crushAt = f.swings;   // (the Ogre King's next one is a few swings away, see CRUSH_GAP)
   // a big move (the Crushing Blow, the Charge, a Dive...) always lands, and never crits
-  const result = big ? 'hit' : swingResult(FOE_MISS + fleetEvade() + pathDodge(), FOE_CRIT);   // (Fleetfoot and Pathfinder dodge plain blows, not big moves)
+  const result = big ? 'hit' : swingResult(foeMiss(), FOE_CRIT);   // (Fleetfoot, Pathfinder and light armor dodge plain blows, not big moves)
   f.landed = result !== 'miss';
   after(turnOpen() && turn.beats.length ? TURN.gap - TURN.foeSwing : 0);  // each enemy steps in after the last
   cue('foeSwing', {who: f});
@@ -8177,7 +8667,7 @@ function foeStrike(f, mult, blocking = false, move = 'attack') {
     journalBlow(f, move, 'm', 0, blocking);
   } else {
     const lust = f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0;
-    let hurt = throughArmor(roll(f.dmg[0], f.dmg[1]) + f.bonus + rage + lust + warcry(f), crush ? 0 : armorNow());
+    let hurt = throughArmor(roll(f.dmg[0], f.dmg[1]) + f.bonus + rage + lust + warcry(f), crush ? 0 : armorNow(), armorCapNow());
     if (result === 'crit') hurt = Math.round(hurt * FOE_CRIT_MULT);
     if (big && !crush) hurt *= M.big;
     hurt = Math.max(1, Math.round(hurt * mult));
@@ -8454,7 +8944,7 @@ function damageFoe(t, amount, crit) {
 function strike(t, heavy, label) {
   // Focus shrinks every miss chance (normal, Heavy and Bat evasion alike); Balanced shrinks Heavy's.
   // A flitting Bat is much harder to hit; an enemy Off balance can't dodge at all
-  const base = (t.next === 'flit' ? FLIT_EVADE : t.evasion ?? PLAYER_MISS) + (heavy ? HEAVY_MISS : 0);
+  const base = Math.max(0, (t.next === 'flit' ? FLIT_EVADE : t.evasion ?? PLAYER_MISS) + (heavy ? HEAVY_MISS : 0) + weaponMiss());   // (a Dagger misses less, a Mace more)
   const missChance = t.off ? 0 : Math.min(0.95, base * missKeep() * (heavy ? 1 - enchSum('balanced') : 1));
   const result = swingResult(missChance, critChance());
   const shaken = weak;               // a Wail weakens your next attack, hit or miss
@@ -8676,7 +9166,7 @@ function buyNow(it) {
     bagSlots++;
     msg.textContent = `Bought the ${it.name}. You can now carry ${bagSlots} scrolls.`;
   } else {
-    worn[it.slot] = {name: it.name, power: it.power, tier: it.tier};
+    worn[it.slot] = {name: it.name, power: it.power, tier: it.tier, ...(it.wt ? {wt: it.wt} : {})};
     refreshMax();
     msg.textContent = `Bought and equipped ${it.name}.` + (old ? ` Your ${itemName(old)} sold for ${coinWord(refund)}.` : '');
   }
