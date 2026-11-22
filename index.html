@@ -213,7 +213,7 @@
         <li><b>Block</b>: you don't attack, but you take less damage. Without a shield Block stops 45% of each hit; a shield raises that (Wooden Buckler 55%, Iron Shield 65%, Steel Kite Shield 70%, the most it can be). Each hit you block has a 10% chance to stun that enemy so it skips its next attack. A shield raises the stun chance. Stuns don't chain: an enemy that was just stunned can't be stunned by its very next attack (another enemy in the group still can). Thorns doesn't cut enemies on a turn you Block.</li>
       </ul>
       <p>Enemies miss 10% of the time too, and 10% of their hits are critical hits for 1.5 times the damage. Your armor cuts a share off every hit (3.5% for each point of Defense, 45% at most), and enemy armor cuts your hits the same way. A hit always does at least 1.</p>
-      <p>When a fight ends you get coins and XP for each enemy, and the group drops a piece of gear. A card shows what you found (<b>Found</b>, on the left) next to what you have in that slot (<b>Equipped</b>, on the right): each piece's symbol (its shape and color show the material: brown leather, grey iron, bright steel trimmed in gold), its number (damage for a weapon, defense for armor, block for a shield), and its enchantment as a symbol and a few words. Between them a badge tells you at a glance: a green arrow up for <b>Better</b>, a red arrow down for <b>Worse</b>, = for <b>Same</b>, or a yellow <b>Trade-off</b> when it is better one way and worse another (say, a bigger number but no enchantment). You can <b>Equip</b> it or <b>Leave</b> it, and either one takes you back to the map. The two buttons fade in for a moment before they work, so a tap meant for the fight can't grab the item, and both take two taps: tap Equip (or Leave), then tap it again to confirm.</p>
+      <p>When a fight ends you get coins and XP for each enemy, and the group drops a piece of gear. A card shows what you found (<b>Found</b>, on the left) next to what you have in that slot (<b>Equipped</b>, on the right): each piece's symbol (its shape and color show the material: brown leather, grey iron, bright steel trimmed in gold), its number (damage for a weapon, defense for armor, block for a shield), and its enchantment as its symbol, its name and its condition in brackets (for example Vampiric (Fair)). Between them a badge tells you at a glance: a green arrow up for <b>Better</b>, a red arrow down for <b>Worse</b>, = for <b>Same</b>, or a yellow <b>Trade-off</b> when it is better one way and worse another (say, a bigger number but no enchantment). You can <b>Equip</b> it or <b>Leave</b> it, and either one takes you back to the map. The two buttons fade in for a moment before they work, so a tap meant for the fight can't grab the item, and both take two taps: tap Equip (or Leave), then tap it again to confirm.</p>
     </details>
 
     <details>
@@ -1264,11 +1264,6 @@ const ENCHANTS = {
 const enchSlots = id => ENCHANTS[id].slots || (ENCHANTS[id].slot === 'weapon' ? ['weapon'] : [...armor, 'shield']);
 const enchLabel = e => `${ENCHANTS[e.id].name} (${TIERS[e.t]})`;
 const enchText = e => ENCHANTS[e.id].text(ENCHANTS[e.id].vals[e.t]);
-// an enchantment in a few words, next to its symbol (enchText is the whole sentence)
-const ENCH_SHORT = {flaming: v => `Burn ${v}`, vampiric: v => `Leech ${pct(v)}`, balanced: v => `Heavy miss \u2212${pct(v)}`,
-  giantslayer: v => `Big foes +${pct(v)}`, swift: v => `Double hit ${pct(v)}`, thorns: v => `Thorns ${v}`, mending: v => `Mend ${v}`,
-  fortitude: v => `+${v} max HP`, purity: v => `Poison \u2212${v}`, fleetfoot: v => `Dodge +${pct(FLEET_EVADE[ENCHANTS.fleetfoot.vals.indexOf(v)])}`, fortune: v => `Gold +${pct(v)}`};
-const enchShort = e => ENCH_SHORT[e.id](ENCHANTS[e.id].vals[e.t]);
 const statWord = slot => slot === 'weapon' ? 'damage' : slot === 'shield' ? 'block' : 'defense';
 const itemName = it => it.ench ? `${it.name} of ${ENCHANTS[it.ench.id].name} (${TIERS[it.ench.t]})` : it.name;
 // total strength of an enchantment across everything you wear
@@ -2069,7 +2064,7 @@ function scrollChoice(k) {
     it.ench = {id: s.id, t: s.t};
     refreshMax();
     SND.fx('enchant');
-    closeScroll(`You read the scroll. Your ${itemName(it)} glows: ${enchText(it.ench)}.`);
+    closeScroll(`You read the scroll. Your ${itemName(it)} glows.`);
   });
 }
 
@@ -2093,7 +2088,7 @@ function enchanterClick(command) {
     it.ench = {id: ench.id, t};
     refreshMax();
     SND.fx('enchant');
-    msg.textContent = `Runes flare across your gear. Your ${itemName(it)}: ${enchText(it.ench)}.`;
+    msg.textContent = `Runes flare across your gear. Your ${itemName(it)} glows.`;
     ench = {};
   }
   refresh();
@@ -7087,8 +7082,10 @@ function lootSide(it, slot, ax, y, label, right) {
   if (it.ench) {                                                           // its enchantment, under the number: the symbol and a few words, in its glow
     const g = ENCH_GLOW[it.ench.id];
     drawEnchIcon(it.ench.id, ax + dir * 7, y + 69, 8, g);
+    const lbl = enchLabel(it.ench);                                       // its name and condition, smaller if it is a long one
     ctx.textAlign = align; ctx.font = textFont(12); ctx.fillStyle = g;
-    ctx.fillText(fitText(enchShort(it.ench), 84), ax + dir * 18, y + 73);
+    if (ctx.measureText(lbl).width > 112) ctx.font = textFont(10);
+    ctx.fillText(fitText(lbl, 112), ax + dir * 18, y + 73);
   } else {
     ctx.font = textFont(11, 400); ctx.fillStyle = '#5e5864';
     ctx.fillText('no enchantment', ax, y + 73);
@@ -7879,7 +7876,7 @@ function heroDetail(pick) {
   if (pick && pick.startsWith('slot:')) {
     const k = pick.slice(5), it = worn[k];
     if (!it) return `${slots[k].label}: nothing worn.`;
-    return `${itemName(it)} +${it.power}` + (it.ench ? `: ${enchText(it.ench)}.` : '.') + weightText(k, it) +
+    return `${itemName(it)} +${it.power}` + (it.ench ? `: ${ENCHANTS[it.ench.id].desc}.` : '.') + weightText(k, it) +
       (k === 'weapon' ? ' Its number adds to every hit.'
         : k === 'shield' ? ` When you Block, Block stops ${pct(blockStops())} of each hit (${pct(BLOCK_BASE)} without a shield), and the chance to stun the attacker rises by ${pct(SHIELD_STUN * it.power)}.`
         : it.wt ? '' : ` Each point cuts ${(ARMOR_PER_POINT * 100).toFixed(1)}% off enemy hits (${pct(armorCapNow())} at most).`);
@@ -8352,12 +8349,12 @@ function shopScreen(L, add, menu) {
       const it = worn[k], id = 'sell:' + k;
       rows.push({id, icon: (ix, iy) => drawSlotIcon(k, ix, iy, 11, it ? it.tier : 1, it ? null : '#4a4452', it && it.wt),
         text: `${slots[k].label}: ${it ? itemName(it) : 'empty'}`, enabled: !!it, armed: saleArmed(id),
-        note: !it ? 'nothing worn' : saleArmed(id) ? 'Tap again to sell it' : `+${it.power}` + (it.ench ? `, ${enchText(it.ench)}` : ''),
+        note: !it ? 'nothing worn' : saleArmed(id) ? 'Tap again to sell it' : `+${it.power}` + (it.ench ? `, ${enchLabel(it.ench)}` : ''),
         price: it ? sellValue(gearRetail(it)) : undefined, edge: it ? TIER_EDGE[it.tier] : null, act: () => sellGear(k)});
     }
     scrolls.forEach((s, i) => {
       const id = 'sell:scroll:' + i;
-      rows.push({id, icon: (ix, iy) => drawEnchIcon(s.id, ix, iy, 10, ENCH_GLOW[s.id]), text: `Scroll of ${enchLabel(s)}`, armed: saleArmed(id), note: saleArmed(id) ? 'Tap again to sell it' : enchText(s),
+      rows.push({id, icon: (ix, iy) => drawEnchIcon(s.id, ix, iy, 10, ENCH_GLOW[s.id]), text: `Scroll of ${enchLabel(s)}`, armed: saleArmed(id), note: saleArmed(id) ? 'Tap again to sell it' : ENCHANTS[s.id].desc,
         price: sellValue(TIER_PRICE[s.t]), edge: ENCH_GLOW[s.id], act: () => sellScroll(i)});
     });
     return rowStack(add, P.x + 8, top, end, P.w - 16, rows);
@@ -8395,7 +8392,7 @@ function enchanterScreen(L, add, menu) {
     prompt = `Sell a scroll? The Enchanter pays ${pct(SELL_SHARE)} of what that enchantment costs here.`;
     rows = scrolls.map((s, i) => {
       const id = 'ench:sell:' + i;
-      return {id, text: `Scroll of ${enchLabel(s)}`, note: saleArmed(id) ? 'Tap again to sell it' : `${enchText(s)} (${TIER_NEED[s.t]})`,
+      return {id, text: `Scroll of ${enchLabel(s)}`, note: saleArmed(id) ? 'Tap again to sell it' : `${ENCHANTS[s.id].desc} (${TIER_NEED[s.t]})`,
         price: sellValue(TIER_PRICE[s.t]), edge: ENCH_GLOW[s.id], act: () => sellScroll(i)};
     });
     if (!rows.length) prompt = 'You have no scrolls left to sell.';
@@ -8405,7 +8402,7 @@ function enchanterScreen(L, add, menu) {
     sellBtn = true;
     rows = Object.keys(slots).map(k => ({
       id: 'ench:slot:' + k, text: `${slots[k].label}: ${worn[k] ? itemName(worn[k]) : 'empty'}`,
-      note: !worn[k] ? 'nothing worn' : worn[k].ench ? `now: ${enchText(worn[k].ench)}` : 'no enchantment yet',
+      note: !worn[k] ? 'nothing worn' : worn[k].ench ? `now: ${enchLabel(worn[k].ench)}` : 'no enchantment yet',
       enabled: !!worn[k], edge: worn[k] ? TIER_EDGE[worn[k].tier] : null, act: () => enchanterClick('slot:' + k)}));
   } else if (!ench.id) {
     prompt = `${itemName(it)}: which enchantment?`;
@@ -8427,7 +8424,7 @@ function enchanterScreen(L, add, menu) {
 function scrollScreen(L, add, menu) {
   const P = L.panel, s = scrollNow;
   menu(`Scroll of ${ENCHANTS[s.id].name}`);
-  const top = menuPrompt(add, P, `${TIERS[s.t]}: ${enchShort(s)} \u00b7 fits ${TIER_FITS[s.t]}. Put it on:`);
+  const top = menuPrompt(add, P, `${enchLabel(s)} \u00b7 fits ${TIER_FITS[s.t]}. Put it on:`);
   const end = menuFooter(L, add, s.fromBag === null
     ? [{id: 'scroll:keep', label: `Keep ${scrolls.length}/${bagSlots}`, sub: 'in your bag', enabled: scrolls.length < bagSlots, act: () => scrollChoice('keep')},
        {id: 'scroll:discard', label: saleArmed('scroll:discard') ? 'Throw away?' : 'Throw away', sub: saleArmed('scroll:discard') ? 'tap again' : undefined, act: () => scrollChoice('discard')}]
@@ -8521,7 +8518,7 @@ function bagTab(L, add) {
       P.x + 14, top + 4, P.w - 28, 16, 3);
   }});
   rowStack(add, P.x + 8, top + 40, P.y + P.h - 10, P.w - 16, scrolls.map((s, i) => ({
-    id: 'bagUse:' + i, text: enchLabel(s), note: `${enchShort(s)} \u00b7 ${TIER_FITS[s.t]}`, tag: 'Use',
+    id: 'bagUse:' + i, text: enchLabel(s), note: `${ENCHANTS[s.id].desc} \u00b7 ${TIER_FITS[s.t]}`, tag: 'Use',
     icon: (ix, iy) => drawEnchIcon(s.id, ix, iy, 10, ENCH_GLOW[s.id]),
     enabled: phase === 'explore', edge: ENCH_GLOW[s.id], act: () => useBagScroll(i)})).concat(
     Array.from({length: Math.max(0, bagSlots - scrolls.length)}, (_, i) => ({id: 'bagEmpty:' + i, text: 'Empty', note: 'room for a scroll', enabled: false,
