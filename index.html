@@ -349,7 +349,7 @@
     <details>
       <summary>The Vault</summary>
       <p>Escape, and every coin you still carry goes into the <b>Vault</b> (tap <b>Vault</b> on the title screen, or on the screen at the end of a run). Die, and your coins are lost with you. So at the last merchant there is a choice: spend to get stronger, or save for the Vault.</p>
-      <p>The Vault sells looks: the color of your torch's flame (Ghostfire, Witchfire or Soulfire), your hair, a beard, the dye of your prisoner's rags, and the plume you wear in full armor with the Steel Helm. Your torch is the one you carry on the map, raised on the side you face; the knight's torch before the gate burns in your flame too. They change nothing but how you look. Tap a look to try it on, tap it again to buy it, and tap one you own to wear it.</p>
+      <p>The Vault sells looks: the color of your torch's flame (Ghostfire, Witchfire or Soulfire), your hair, a beard, the dye of your prisoner's rags, and the plume you wear in full armor with the Steel Helm. Your torch is the one you carry on the map (held up in your shield hand there, with the shield slung on your back); the knight's torch before the gate burns in your flame too. They change nothing but how you look. Tap a look to try it on, tap it again to buy it, and tap one you own to wear it.</p>
     </details>
 
     <details>
@@ -4419,7 +4419,8 @@ const flameOf = (look = LOOK) => lookOf('flame', look);
 const HERO_POSE = {
   wind:   {elR: [-15, -103], hdR: [-6, -117], blade: [-0.62, -0.78]},
   strike: {elR: [11, -87], hdR: [28, -83], blade: [0.95, 0.3]},
-  guard:  {elL: [27, -92], hdL: [34, -89], elR: [-7, -72], hdR: [6, -70], blade: [0.42, -0.9]}
+  guard:  {elL: [27, -92], hdL: [34, -89], elR: [-7, -72], hdR: [6, -70], blade: [0.42, -0.9]},
+  torch:  {elL: [24, -90], hdL: [31, -98]}                                // on the map: a torch held up in the shield hand
 };
 const heroOf = (gear = {}, look = LOOK, rest = false, pose = null) => being({...HERO_PAL, hair: lookOf('hair', look), tunic: lookOf('rags', look)[0], tunicDk: lookOf('rags', look)[1],
                                                   plume: lookOf('plume', look)[0], plumeLt: lookOf('plume', look)[1]}, (add, P) => {
@@ -4455,8 +4456,15 @@ const heroOf = (gear = {}, look = LOOK, rest = false, pose = null) => being({...
     arm(R.shF, R.elF, R.hdF, 1);
     G.pauldron([...R.shF, 5.2], false);
   } else {
-    arm(shL, elL, hdL, 1);                                                 // the far arm, in a guard
-    G.shield(hdL, 1.05);                                                   // ...holding the shield up toward them
+    const torch = pose === 'torch';
+    if (torch) G.shield([-19, -86], 0.9);                                  // on the map the shield is slung on your back...
+    arm(shL, elL, hdL, 1, torch ? () => {                                  // ...and that hand holds up your torch: a wooden haft and an
+      const [x, y] = hdL;                                                  // iron cup; its flame burns live on the map, at the tip
+      add([[x - 2.6, y + 7], [x + 1.6, y + 8], [x + 5.6, y - 20], [x + 1.6, y - 21]], 'woodDk');
+      add([[x + 0.6, y - 19], [x + 7, y - 18], [x + 7.4, y - 23], [x + 0.2, y - 24]], 'iron');
+      P.push({eye: [x + 3.8, y - 24], r: 0, col: [0, 0, 0], hole: true, tip: true});
+    } : undefined);                                                        // the far arm, in a guard
+    if (!torch) G.shield(hdL, 1.05);                                       // ...holding the shield up toward them
     G.pauldron([11, -95, 5.2], false);
     leg(hipL, kneeL, ankL, footL, 1);                                      // the left leg, stepping forward
     leg(hipR, kneeR, ankR, footR, 0);                                      // the right leg, planted behind, nearer you
@@ -5927,9 +5935,10 @@ function figureSprite(key, build, flip, maxH = 25, maxW = 28) {
   const parts = build(), b = boxOf(parts), s = Math.min(maxH / Math.max(1, b.y1 - b.y0), maxW / Math.max(1, b.x1 - b.x0));
   const cv = mapCanvas(40, 40), g = cv.getContext('2d'), f = flip ? -1 : 1, cx = 20 - (b.x0 + b.x1) / 2 * s * f;
   ACTIVE_LIGHTS = [[cx - 14, 6, 70, 1.15], [cx + 10, 30, 40, 0.3]];
-  place(parts, cx, 37 - b.y1 * s, flip, s).forEach((q, k) => partLow(g, q, k));
+  const placed = place(parts, cx, 37 - b.y1 * s, flip, s), tip = placed.find(q => q.tip);
+  placed.forEach((q, k) => partLow(g, q, k));
   ACTIVE_LIGHTS = null;
-  const out = {cv: finishSprite(cv), ax: 20, ay: 37};
+  const out = {cv: finishSprite(cv), ax: 20, ay: 37, tip: tip && tip.eye};   // tip: where a held torch burns
   if (mapSprites.size > 40) mapSprites.clear();
   mapSprites.set(key, out);
   return out;
@@ -6018,14 +6027,10 @@ function drawMapScene(g, spec) {
   }
   const H0 = spec.hero, hx = H0.x * MT + 16, hy = H0.y * MT + 28;
   g.fillStyle = 'rgba(0,0,0,0.5)'; g.beginPath(); g.ellipse(hx, hy, 8, 2.6, 0, 0, Math.PI * 2); g.fill();
-  const HS = figureSprite(`hero:${JSON.stringify(H0.gear)}:${H0.face}`, () => heroParts(H0.gear), H0.face < 0, 25, 26);
-  g.drawImage(HS.cv, Math.round(hx - HS.ax), Math.round(hy - HS.ay));
-  const tx = hx + 8 * H0.face, ty = hy - 20;                                                     // the torch, raised on the side you face
-  g.lineCap = 'round';
-  g.strokeStyle = '#120c0a'; g.lineWidth = 3; g.beginPath(); g.moveTo(tx - 1.5 * H0.face, hy - 11); g.lineTo(tx, ty + 1); g.stroke();   // its handle
-  g.strokeStyle = '#7a5230'; g.lineWidth = 1.4; g.beginPath(); g.moveTo(tx - 1.5 * H0.face, hy - 11.5); g.lineTo(tx, ty + 1); g.stroke();
-  g.fillStyle = '#3a3440'; g.fillRect(Math.round(tx - 1.5), Math.round(ty), 3, 2);                // the iron cup the flame burns in
-  g.lineCap = 'butt';
+  const HS = figureSprite(`hero:${JSON.stringify(H0.gear)}:${H0.face}:torch`, () => heroParts(H0.gear, false, 'torch'), H0.face < 0, 25, 26);
+  const sx = Math.round(hx - HS.ax), sy = Math.round(hy - HS.ay);
+  g.drawImage(HS.cv, sx, sy);
+  const tx = HS.tip ? sx + HS.tip[0] : hx, ty = HS.tip ? sy + HS.tip[1] : hy - 20;                 // your torch, held up in your shield hand
   // the light: your torch, the wall torches and the glows, only where you can see; then the dim memory of where you've walked
   const L = M.light, lg = L.getContext('2d');
   lg.globalCompositeOperation = 'source-over'; lg.fillStyle = '#000'; lg.fillRect(0, 0, MAP_W, MAP_H);
