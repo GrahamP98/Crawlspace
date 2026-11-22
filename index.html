@@ -294,7 +294,7 @@
       </ul>
       <p>A weapon adds its number to your damage. Armor numbers add up to your <b>Defense</b>, and each point cuts 3.5% off every enemy hit, 45% at most: full Leather (5) cuts 18%, full Iron (9) 32%, and full Steel (13) the full 45%. The Hero tab shows how much yours cuts. What you find depends on the floor: floor 1 is mostly leather with the odd iron piece (but no Chainmail yet), floor 2 is half leather and half iron, Steel first turns up on floor 3, and floor 5 holds only iron and steel. A <b>shield</b> adds nothing to Defense; it makes <b>Block</b> stronger instead: each point stops 10% more of a blocked hit and adds 4% to the stun chance (with no shield Block stops 45%; a Steel Kite Shield, +3, takes it to 70%, the most it can be, and the stun chance from 10% to 22%). Gear drops from fights and chests, and merchants sell it (price = 5 coins per point). Better material also lets you use stronger enchantments.</p>
       <p><b>Light and heavy gear.</b> Every piece but the shield also comes light or heavy (about a quarter of what you find or see for sale is each), and a light or heavy piece has its own look. The loot card and the shop tag each weapon and armor piece <b>Light</b>, <b>Standard</b> or <b>Heavy</b>, and the badge shows a <b>Trade-off</b> when the weight changes; tap a slot in the Hero tab to see what yours does. Weapons: a <b>Dagger</b> (light) has a smaller number but crits 5% more often and misses 4% less; a <b>Mace</b> (heavy) has a bigger number but crits 5% less often and misses 5% more. Armor pieces keep the same number as the standard piece of their material. Each <b>light</b> piece makes your armor cut 1% less of every hit, but enemies miss you 1.75% more often. Each <b>heavy</b> piece makes it cut 1% more, and raises the most it can cut by 1.5% (to 51% with all four), but enemies miss you 1.5% less often. The light pieces: Cloth Hood, Iron Skullcap, Steel Kettle Hat; Padded Gambeson, Brigandine, Steel Breastplate; Cloth Wraps, Iron Splint Bracers, Steel Wristguards; Cloth Foot Wraps, Iron Splint Greaves, Steel Shin Guards. The heavy ones: Leather Helm, Iron Bascinet, Steel Great Bascinet; Leather Cuirass, Iron Scale Mail, Steel Harness; Studded Gauntlets, Iron Gauntlets, Steel Gauntlets; Hobnailed Jackboots, Iron Sabatons, Steel Sabatons. The Hero tab shows what yours add up to.</p>
-      <p>Everything you wear shows on your character in fights, from a rusty sword to a steel great helm. You start out in a prisoner's rags: a torn tunic, a bandaged arm and bare feet. Wear all four armor pieces (helmet, chest, bracers and greaves) with a steel helm, and a knight's blue plume streams from it. A full set of Steel adds gold trim, and enchanted gear glows in its enchantment's color. Enemies show their gear the same way (see Fighting).</p>
+      <p>Everything you wear shows on your character in fights, from a rusty sword to a steel great helm. You start out in a prisoner's rags: a torn tunic, a bandaged arm and bare feet. Wear all four armor pieces (helmet, chest, bracers and greaves) with the Steel Helm (not the Kettle Hat or the Great Bascinet), and a knight's blue plume streams from it; a beard hides under the closed Steel Helm and Great Bascinet. A full set of Steel adds gold trim, and enchanted gear glows in its enchantment's color. Enemies show their gear the same way (see Fighting).</p>
       <p>Tap <b>Hero</b> to see yourself in everything you wear, with your six slots around you. Each slot shows its piece's symbol, shaped and colored by its material (a rusty sword, an iron sword, a gold-guarded steel sword, and so on), and its number. An enchanted piece glows and shows its enchantment's symbol, with one, two or three dots for Poor, Fair or Superior. Below are your stats, each with its symbol (the damage range of your hits, Defense, Max HP, how much Block stops, stun, critical hit, miss and flee chances) and your perks. Tap any piece of gear or perk to read what it does. The <b>Bag</b> tab holds your scrolls.</p>
     </details>
 
@@ -349,7 +349,7 @@
     <details>
       <summary>The Vault</summary>
       <p>Escape, and every coin you still carry goes into the <b>Vault</b> (tap <b>Vault</b> on the title screen, or on the screen at the end of a run). Die, and your coins are lost with you. So at the last merchant there is a choice: spend to get stronger, or save for the Vault.</p>
-      <p>The Vault sells looks: the color of your torch's flame (Ghostfire, Witchfire or Soulfire), your hair, a beard, the dye of your prisoner's rags, and the plume you wear in full armor with a Steel helm. They change nothing but how you look. Tap a look to try it on, tap it again to buy it, and tap one you own to wear it.</p>
+      <p>The Vault sells looks: the color of your torch's flame (Ghostfire, Witchfire or Soulfire), your hair, a beard, the dye of your prisoner's rags, and the plume you wear in full armor with the Steel Helm. Your torch is the one you carry on the map, raised on the side you face; the knight's torch before the gate burns in your flame too. They change nothing but how you look. Tap a look to try it on, tap it again to buy it, and tap one you own to wear it.</p>
     </details>
 
     <details>
@@ -2808,7 +2808,7 @@ function armorV(add, line, part, t, wv, a) {
       for (const [x, y] of [[8, 2], [10.2, 2], [9.1, 4]]) add(S(ellipsePts(x, y, 0.6, 0.6, 6)), 'slit', 0, 1);
       line(S([[-2.4, -18.4], [3.6, -13.2], [9, -8]]), 0.8 * k, [255, 255, 255]);             // the ridge catching the light
       add(S(ellipsePts(-1.6, -3, 1.4, 1.4, 8)), 'gold', 0, 1);                                // the visor's pivot
-      if (eyes) for (const e of eyes) P.push({...e, eye: [e.eye[0], hc[1] - 1.2 * k], r: e.r * 0.8});
+      if (eyes) for (const e of eyes) P.push({...e, eye: [clamp(e.eye[0], hc[0] + 3 * k, hc[0] + 11.6 * k), hc[1] - 3.2 * k], r: e.r * 0.8});
     }
     return true;
   }
@@ -2818,7 +2818,7 @@ function armorV(add, line, part, t, wv, a) {
       add(torso, 'wraps');
       for (let x = x0 + 3.4; x < x1 - 1.5; x += 3.6) line([[x, y0 + 3], [x + 0.4, y1 - 2]], 0.45, GEAR.wrapsDk);
     } else if (L && t === 1) {                           // Brigandine: a red cloth coat riveted over hidden iron plates
-      add(torso, 'blood');
+      add(torso, 'brig');
       for (let y = y0 + 5, row = 0; y < y1 - 2; y += 4.4, row++) for (let x = x0 + 3 + (row % 2) * 1.8; x < x1 - 2; x += 3.6) dot([x, y], 0.6, 'iron');
     } else if (L) {                                      // Steel Breastplate: plate over the chest only, no skirt, no sleeves
       add(torso.map(([x, y]) => [x, Math.min(y, lerp(y0, y1, 0.82))]), 'steel');
@@ -3033,6 +3033,7 @@ function facets(g, pts, C, metal, seed) {
 }
 function partLow(g, q, i) {
   if (q.eye) {
+    if (q.hid) return;                                                     // under a helmet
     const [x, y] = q.eye, rr = q.r * 1.3;
     if (!q.hole) { g.save(); g.globalCompositeOperation = 'lighter'; path(g, [[x - rr * 3, y], [x, y - rr * 2], [x + rr * 3, y], [x, y + rr * 2]]); g.fillStyle = rgb(q.col, 1, 0.25); g.fill(); g.restore(); }
     path(g, [[x - rr, y], [x, y - rr * 0.7], [x + rr, y], [x, y + rr * 0.7]]); g.fillStyle = q.hole ? rgb(q.col) : rgb(mixc(q.col, [255, 255, 230], 0.5)); g.fill();
@@ -3091,6 +3092,8 @@ const HORIZON = 162, VP = [144, -40];                                     // whe
 const fpx = (c, y) => VP[0] + (c - VP[0]) * (y - VP[1]) / (H - VP[1]);   // the floor line through c (on the bottom edge), at height y
 const PALETTE2 = PALETTE.concat(['#1a2a4a', '#2a7a80', '#5ad8d0', '#4a2a6a', '#8a50c8', '#c890ff', '#5a1010', '#e8c050', '#204030']
   .map(h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]));
+// the figures' palette: the rooms' and two royal blues (a blue plume), which no room uses
+const PALETTE_FIG = PALETTE2.concat([[44, 72, 168], [90, 130, 224]]);
 const litK = (x, y, k = 1, base = 0.2) => (base + 1.0 * light(x, y)) * k;
 const tri = (g, pts, C, k) => { path(g, pts); g.fillStyle = rgb(C, k); g.fill(); g.strokeStyle = g.fillStyle; g.lineWidth = 0.3; g.stroke(); };
 
@@ -4233,7 +4236,8 @@ const SCENES = [
 // ======================================================================
 const GEAR = {leather: [122, 80, 46], leatherDk: [74, 48, 28], rust: [150, 90, 54], rustDk: [92, 50, 28], iron: [146, 152, 162], ironDk: [86, 90, 100],
   mail: [116, 120, 130], steel: [214, 222, 234], steelDk: [134, 144, 162], wraps: [196, 182, 146], wrapsDk: [128, 112, 82], hilt: [80, 54, 30],
-  gold: [214, 172, 64], slit: [8, 8, 12], void: [10, 8, 10], wood: [150, 104, 60], woodDk: [92, 60, 34]};
+  gold: [214, 172, 64], slit: [8, 8, 12], void: [10, 8, 10], wood: [150, 104, 60], woodDk: [92, 60, 34],
+  brig: [140, 28, 28]};   // the Brigandine's red cloth (a GEAR color, so an enemy can wear it too)
 const SHINY = {ironDk: 'iron', steelDk: 'steel', gold: 'iron'};          // dark metals still shine like metal
 const ARMOR = ['helmet', 'chest', 'bracers', 'greaves'];
 function being(pal, build) {
@@ -4243,6 +4247,10 @@ function being(pal, build) {
   return P;
 }
 const lineOf = P => (pts, w, col) => P.push({line: pts, w, col});
+// is the point inside the polygon?
+const inPoly = ([x, y], pts) => { let c = false; for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) { const [xi, yi] = pts[i], [xj, yj] = pts[j]; if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) c = !c; } return c; };
+// the eyes drawn before P[n0] that a part from P[n0] on (a helmet) covers: hidden, so their glow doesn't shine through it
+const coverEyes = (P, n0) => { for (let i = 0; i < n0; i++) { const q = P[i]; if (q.eye && !q.hole && P.slice(n0).some(o => o.pts && inPoly(q.eye, o.pts))) q.hid = true; } };
 // a character drawn at another size: k scales it about the point (cx, cy) of its own frame
 function resize(P, k, cx = 0, cy = 0) {
   const T = ([x, y]) => [cx + (x - cx) * k, cy + (y - cy) * k];
@@ -4267,9 +4275,11 @@ function kit(add, P, gear = {}) {
       return true;
     },
     // a helmet on a head centred at hc, r its size (10 for you). eyes: glowing eyes to show through a great helm's visor
+    // Any eye the helmet covers stops glowing (coverEyes); a closed helm shows the eyes in its visor slit instead
     helm(hc, r, eyes) {
       const t = T('helmet'); if (t === undefined) return false;
-      const wv = (gear.wt || {})['helmet']; if (wv && t !== undefined) return armorV(add, line, 'helmet', t, wv, {hc, r, eyes, P});   // a light or heavy helmet
+      const n0 = P.length;
+      const wv = (gear.wt || {})['helmet']; if (wv && t !== undefined) { armorV(add, line, 'helmet', t, wv, {hc, r, eyes, P}); coverEyes(P, n0); return true; }   // a light or heavy helmet
       const S = pts => pts.map(([x, y]) => [hc[0] + x * r / 10, hc[1] + y * r / 10]);
       if (t === 0) {                                                       // Leather Cap: a stitched seam and a short peak
         add(S([[-10.4, 0.6], [-10.2, -6], [-6.4, -10.8], [0.4, -12], [6.6, -10.2], [9.8, -5.8], [10.6, -3.6], [15.4, -2.6], [14.8, -1.2], [9, -1.6], [4, -2.6], [-1, -2.6], [-6, -1.2]]), 'leather');
@@ -4284,8 +4294,9 @@ function kit(add, P, gear = {}) {
         add(S([[-0.6, -2.6], [11.8, -2], [11.8, 0.2], [-0.6, -0.2]]), 'slit', 0, 1);   // the visor slit
         for (const [x, y] of [[5, 4.4], [7.4, 4.2], [6.2, 6.2]]) add(S(ellipsePts(x, y, 0.7, 0.7, 6)), 'slit', 0, 1);   // breathing holes
         line(S([[-6.4, -10.2], [0, -12.8], [6.8, -11]]), 0.8 * r / 10, [255, 255, 255]);   // the ridge catching the light
-        if (eyes) for (const e of eyes) P.push({...e, eye: [e.eye[0], hc[1] - 1.2 * r / 10], r: e.r * 0.8});
+        if (eyes) for (const e of eyes) P.push({...e, eye: [clamp(e.eye[0], hc[0] + 0.4 * r / 10, hc[0] + 11 * r / 10), hc[1] - 1.2 * r / 10], r: e.r * 0.8});
       }
+      coverEyes(P, n0);
       return true;
     },
     // body armor. torso: its outline; front: [top, bottom] of the chest's front; skirt: what hangs below the
@@ -4386,16 +4397,18 @@ const HERO_PAL = {skin: [206, 154, 118], hair: [74, 48, 30], tunic: [88, 114, 14
   patch: [106, 80, 46], bandage: [214, 206, 182], blood: [140, 28, 28], plume: [44, 84, 176], plumeLt: [72, 120, 214], dark: [36, 26, 22]};
 // ---- your look, from the Vault: it changes nothing but how you look ----
 const LOOKS = {
-  flame: {ember: {c: ['#e0501c', '#ff9a2a', '#fff0b0'], light: '255,216,168', glow: '255,170,80', title: '255,160,80', pool: '255,150,70'},
-          ghost: {c: ['#2850c8', '#5aa8ff', '#e2f4ff'], light: '200,216,255', glow: '110,170,255', title: '120,170,255', pool: '110,160,255'},
-          witch: {c: ['#2a8430', '#5ed464', '#e8ffd0'], light: '206,240,198', glow: '110,220,110', title: '120,220,120', pool: '110,210,110'},
-          soul:  {c: ['#6a30c0', '#a878ff', '#f2e4ff'], light: '224,206,255', glow: '170,120,255', title: '170,130,255', pool: '160,120,240'}},
-  hair: {brown: [74, 48, 30], black: [34, 28, 30], ginger: [150, 66, 34], blond: [196, 158, 92], grey: [150, 146, 150]},
+  // c: the flame's colors, outside in (bright all through, so a colored flame still reads as fire); light: what it casts on
+  // the map (a tint, not a dye); spark: the sparks rising from it before the gate, [glow, core]
+  flame: {ember: {c: ['#e0501c', '#ff9a2a', '#fff0b0'], light: '255,216,168', glow: '255,170,80', title: '255,160,80', pool: '255,150,70', spark: ['255,150,60', '255,220,150']},
+          ghost: {c: ['#3a78f0', '#7cc4ff', '#f0faff'], light: '217,216,229', glow: '110,170,255', title: '120,170,255', pool: '110,160,255', spark: ['110,170,255', '220,236,255']},
+          witch: {c: ['#3cb040', '#86f08a', '#f2ffe0'], light: '220,232,190', glow: '110,220,110', title: '120,220,120', pool: '110,210,110', spark: ['110,220,110', '226,255,214']},
+          soul:  {c: ['#8a4ae8', '#c49cff', '#faf2ff'], light: '235,211,229', glow: '170,120,255', title: '170,130,255', pool: '160,120,240', spark: ['170,120,255', '236,224,255']}},
+  hair: {brown: [74, 48, 30], black: [34, 28, 30], ginger: [150, 66, 34], blond: [226, 188, 80], grey: [150, 146, 150]},
   beard: {none: 0, short: 1, long: 2},
   rags: {blue: [[88, 114, 140], [58, 78, 100]], red: [[122, 40, 34], [84, 26, 22]], green: [[78, 98, 46], [52, 66, 30]],
-         ochre: [[160, 118, 60], [116, 82, 40]], black: [[56, 50, 60], [36, 32, 40]], purple: [[96, 58, 130], [64, 38, 90]]},
-  plume: {blue: [[44, 84, 176], [72, 120, 214]], crimson: [[140, 28, 30], [192, 52, 44]], gold: [[196, 146, 46], [240, 196, 90]],
-          white: [[196, 192, 202], [238, 238, 246]], black: [[36, 32, 40], [72, 66, 80]]}
+         ochre: [[240, 196, 50], [180, 140, 30]], black: [[56, 50, 60], [36, 32, 40]], purple: [[96, 58, 130], [64, 38, 90]]},
+  plume: {blue: [[44, 72, 168], [90, 130, 224]], crimson: [[140, 28, 30], [192, 52, 44]], gold: [[196, 146, 46], [240, 196, 90]],
+          white: [[196, 192, 202], [238, 238, 246]], black: [[40, 36, 46], [200, 200, 214]]}   // (black: a bright steel streak, so it shows in the dark)
 };
 let LOOK = {flame: 'ember', hair: 'brown', beard: 'none', rags: 'blue', plume: 'blue'};
 const lookOf = (slot, look = LOOK) => LOOKS[slot][look[slot]] ?? Object.values(LOOKS[slot])[0];
@@ -4466,11 +4479,13 @@ const heroOf = (gear = {}, look = LOOK, rest = false, pose = null) => being({...
   add(off([[-7, -2], [-6.5, -7], [-3, -10.5], [2, -11.2], [6, -9.5], [8.2, -6], [8.6, -2.5], [9.6, 0.5], [8.4, 2], [8.6, 4.5], [7, 7.5], [3.5, 9.6], [-0.5, 9.2], [-4.5, 6.5], [-6.8, 2.5]], hc), 'skin');
   if (!G.has('helmet'))                                                    // messy, matted hair
     add(off([[-8.4, 3], [-8.8, -5], [-6, -10.6], [-1.6, -13.4], [3, -12.4], [6, -13.6], [8.6, -10.4], [9.4, -6.4], [6.6, -7.6], [3.4, -6.4], [0, -7.8], [-2.4, -5.4], [-4.6, -1.4], [-6.6, 4.4]], hc), 'hair');
-  const beard = lookOf('beard', look);
-  if (beard) {                                                             // a beard (from the Vault), in your hair color
+  const beard = lookOf('beard', look), wtH = (gear.wt || {}).helmet;
+  if (beard && !(gear.helmet === 2 && wtH !== 'light')) {                 // (hidden under a closed Steel Helm or Great Bascinet)                                                             // a beard (from the Vault), in your hair color
     add(off(beard > 1 ? [[-6.4, 1.4], [-3, 5], [0.6, 6.8], [4.6, 7], [8, 5], [9.2, 2.4], [9.4, 7.2], [7.8, 12.4], [4.6, 17], [1, 18.6], [-1.8, 15.4], [-4.8, 10.8], [-6.8, 6]]
                       : [[-5.6, 3], [-3, 5.6], [0.6, 7.2], [4.6, 7.4], [7.8, 5.4], [8.8, 3.6], [8.6, 6.6], [6.8, 9.6], [3.4, 11.4], [-0.4, 11], [-4, 8.2]], hc), 'hair');
     add(off([[2, 4.8], [4.4, 3.9], [7.4, 4.4], [8, 5.8], [4.8, 5.1], [2.2, 6]], hc), 'hair', 0, 1);   // and a moustache
+    line(off(beard > 1 ? [[-6.4, 1.4], [-6.8, 6], [-4.8, 10.8], [-1.8, 15.4], [1, 18.6], [4.6, 17], [7.8, 12.4], [9.4, 7.2]]
+                       : [[-5.6, 3], [-4, 8.2], [-0.4, 11], [3.4, 11.4], [6.8, 9.6], [8.6, 6.6]], hc), 1.2, lookOf('hair', look).map(v => v * 0.5));   // its edge, darker, so it shows against the face
   }
   P.push({eye: [hc[0] + 1.4, hc[1] - 0.4], r: 0.95, col: [24, 16, 12]});
   P.push({eye: [hc[0] + 7.2, hc[1] - 0.6], r: 0.75, col: [24, 16, 12]});
@@ -4540,11 +4555,11 @@ const goblinOf = (gear = {}) => being({skin: [158, 154, 66], cloth: [76, 56, 38]
   add(off([[-4, -3], [-22, -11], [-15, -3], [-3, 1]], hc), 'skin', 0, 1); // near ear, swept back
   add(off([[-7, -2], [-6, -6.5], [-2, -8.6], [3, -8.6], [7, -6.6], [8.6, -3], [9, -0.8], [16.5, 3.5], [13.6, 4.6], [9, 3.6], [9.2, 5.6], [6.6, 8], [1, 8.2], [-3.8, 6], [-6.6, 2.5]], hc), 'skin');
   add(off([[-1, -4.6], [9, -3.4], [8.6, -2], [-0.6, -3]], hc), 'dark');   // heavy brow
-  P.push({eye: [hc[0] + 1, hc[1] - 1.4], r: 1.35, col: [255, 150, 30]});
-  P.push({eye: [hc[0] + 6.6, hc[1] - 1.6], r: 1.1, col: [255, 150, 30]});
+  const eyes = [{eye: [hc[0] + 1, hc[1] - 1.4], r: 1.35, col: [255, 150, 30]}, {eye: [hc[0] + 6.6, hc[1] - 1.6], r: 1.1, col: [255, 150, 30]}];
+  P.push(...eyes);
   line(off([[2, 5], [10, 4.2]], hc), 0.85, [30, 10, 6]);                  // a wide grin
   add(off([[3.5, 5], [4.4, 6.8], [5.3, 5]], hc), 'bone', 0, 1); add(off([[7, 4.7], [7.8, 6.4], [8.6, 4.6]], hc), 'bone', 0, 1);
-  G.helm([hc[0] + 1, hc[1] - 0.4], 8.4);
+  G.helm([hc[0] + 1, hc[1] - 0.4], 8.4, eyes);
   const shR = [-6, -52], elR = [-5, -40], hdR = [6, -38];                  // the near arm, low and grasping
   add(member(shR, elR, hdR, [5.4, 5.4, 4.6, 4.4, 3.8]), 'skin'); G.bracer(elR, hdR, 4.4, 0);
   const armed = G.sword(hdR, [0.62, -0.78], 0.62);
@@ -4621,13 +4636,13 @@ const orcOf = (gear = {}) => being({skin: [148, 68, 52], hide: [86, 58, 38], bon
   add(off([[-8, -6], [-20, -14], [-14, -5], [-7, -2]], hc), 'skin', 0, 1); // near ear
   add(off([[-10, -2], [-9, -8], [-4, -11.5], [3, -12.5], [9, -11], [12.5, -7], [13.5, -3], [14.5, 1], [13, 4], [13.5, 8.5], [9, 12], [2, 12.5], [-4, 11], [-8.5, 7], [-10.5, 2]], hc), 'skin');
   add(off([[-6.5, -6.6], [12.5, -6], [12.5, -3.4], [-6.5, -3.7]], hc), 'dark');   // heavy brow
-  P.push({eye: [hc[0] - 1.4, hc[1] - 2.3], r: 1.5, col: [255, 196, 40]});
-  P.push({eye: [hc[0] + 8.4, hc[1] - 2.4], r: 1.25, col: [255, 196, 40]});
+  const eyes = [{eye: [hc[0] - 1.4, hc[1] - 2.3], r: 1.5, col: [255, 196, 40]}, {eye: [hc[0] + 8.4, hc[1] - 2.4], r: 1.25, col: [255, 196, 40]}];
+  P.push(...eyes);
   add(off([[3.4, 0.4], [6.6, 0.4], [5.6, 3.2], [4.4, 3.2]], hc), 'dark');  // a flat, broad nose
   line(off([[-1, 5.8], [11, 6]], hc), 1.1, [30, 8, 6]);
   add(off([[0, 6.8], [1.6, -0.6], [3.2, 6.8]], hc), 'bone', 0, 1);        // a tusk each side
   add(off([[7.4, 6.8], [8.8, 0.2], [10.2, 6.8]], hc), 'bone', 0, 1);
-  G.helm([hc[0] + 1.6, hc[1] - 1.2], 12.4);
+  G.helm([hc[0] + 1.6, hc[1] - 1.2], 12.4, eyes);
   const shR = [-22, -98], elR = [-24, -78], hdR = [-8, -86];              // the near arm, raised: a sword, or just a big fist
   add(ellipsePts(shR[0] + 1, shR[1], 9.5, 8.5, 12), 'skin');
   add(member(shR, elR, hdR, [15, 17.5, 12.6, 13.4, 9.8]), 'skin'); G.sleeve(shR, elR, 14, 0); G.bracer(elR, hdR, 12, 0);
@@ -5323,10 +5338,10 @@ function quantizeSolid(d, w) {
     if (best === 255) {
       const o = (BAYER[bi] / 16 - 0.5) * 20, R = (r5 << 3) + 4 + o, G = (g5 << 3) + 4 + o, B = (b5 << 3) + 4 + o;
       let bd = Infinity; best = 0;
-      for (let k = 0; k < PALETTE2.length; k++) { const P = PALETTE2[k], dr = R - P[0], dg = G - P[1], db = B - P[2], dd = dr * dr * 0.3 + dg * dg * 0.59 + db * db * 0.11; if (dd < bd) { bd = dd; best = k; } }
+      for (let k = 0; k < PALETTE_FIG.length; k++) { const P = PALETTE_FIG[k], dr = R - P[0], dg = G - P[1], db = B - P[2], dd = dr * dr * 0.3 + dg * dg * 0.59 + db * db * 0.11; if (dd < bd) { bd = dd; best = k; } }
       QCACHE[key] = best;
     }
-    const P = PALETTE2[best]; d[i] = P[0]; d[i + 1] = P[1]; d[i + 2] = P[2];
+    const P = PALETTE_FIG[best]; d[i] = P[0]; d[i + 1] = P[1]; d[i + 2] = P[2];
   }
 }
 // the anchor points of your gear on your figure (feet at 0,0, facing right), where an enchanted piece glows
@@ -5364,9 +5379,10 @@ function driftMotes(g, room, ts, k = 1) {                                 // k: 
     const L = m.L, q = (ts * m.speed + m.ph) % 1;
     const ex = Math.round((L.x + m.dx + (L.fire ? Math.sin(ts * 2 + m.ph * 9) * 3 : Math.sin(ts * 0.7 + m.ph * 9) * 8)) / PIX) * PIX;
     const ey = Math.round((L.fire ? L.y - 16 - q * 60 : L.y - 40 + m.dy * 80 + Math.cos(ts * 0.6 + m.ph * 7) * 6) / PIX) * PIX;
-    const col = L.fire ? '255,150,60' : L.spores, a = L.fire ? Math.sin(q * Math.PI) : 1;
+    const sp = L.spark || ['255,150,60', '255,220,150'];                    // (your torch's sparks take its color)
+    const col = L.fire ? sp[0] : L.spores, a = L.fire ? Math.sin(q * Math.PI) : 1;
     g.globalAlpha = a * k; stamp(g, col, 0.5, ex + 1, ey + 1, 5);
-    g.fillStyle = L.fire ? 'rgba(255,220,150,0.9)' : `rgba(${col},0.95)`; g.fillRect(ex, ey, PIX, PIX);
+    g.fillStyle = L.fire ? `rgba(${sp[1]},0.9)` : `rgba(${col},0.95)`; g.fillRect(ex, ey, PIX, PIX);
   }
   g.globalAlpha = 1;
 }
@@ -5397,7 +5413,7 @@ function rasterOf(holder, key, build, x, fade, lights, flash) {
   if (fade > 0) for (let i = 0; i < w * h; i++) if (BAYER[((i / w | 0) & 3) * 4 + (i % w & 3)] / 16 < fade) d[i * 4 + 3] = 0;   // dissolving: its pixels drop out in a dither pattern
   const F = flash && FLASH[flash];
   if (F) for (let i = 0; i < d.length; i += 4) if (d[i + 3]) for (let c = 0; c < 3; c++) d[i + c] += (F[c] - d[i + c]) * F[3];
-  const r = {d, box: boxOf(parts), eyes: parts.filter(q => q.eye && !q.hole)};
+  const r = {d, box: boxOf(parts), eyes: parts.filter(q => q.eye && !q.hole && !q.hid)};
   if (cache.size > 12) cache.clear();
   cache.set(key, r);
   return r;
@@ -6004,7 +6020,12 @@ function drawMapScene(g, spec) {
   g.fillStyle = 'rgba(0,0,0,0.5)'; g.beginPath(); g.ellipse(hx, hy, 8, 2.6, 0, 0, Math.PI * 2); g.fill();
   const HS = figureSprite(`hero:${JSON.stringify(H0.gear)}:${H0.face}`, () => heroParts(H0.gear), H0.face < 0, 25, 26);
   g.drawImage(HS.cv, Math.round(hx - HS.ax), Math.round(hy - HS.ay));
-  const tx = hx - 7 * H0.face, ty = hy - 17;                                                     // the torch in your other hand
+  const tx = hx + 8 * H0.face, ty = hy - 20;                                                     // the torch, raised on the side you face
+  g.lineCap = 'round';
+  g.strokeStyle = '#120c0a'; g.lineWidth = 3; g.beginPath(); g.moveTo(tx - 1.5 * H0.face, hy - 11); g.lineTo(tx, ty + 1); g.stroke();   // its handle
+  g.strokeStyle = '#7a5230'; g.lineWidth = 1.4; g.beginPath(); g.moveTo(tx - 1.5 * H0.face, hy - 11.5); g.lineTo(tx, ty + 1); g.stroke();
+  g.fillStyle = '#3a3440'; g.fillRect(Math.round(tx - 1.5), Math.round(ty), 3, 2);                // the iron cup the flame burns in
+  g.lineCap = 'butt';
   // the light: your torch, the wall torches and the glows, only where you can see; then the dim memory of where you've walked
   const L = M.light, lg = L.getContext('2d');
   lg.globalCompositeOperation = 'source-over'; lg.fillStyle = '#000'; lg.fillRect(0, 0, MAP_W, MAP_H);
@@ -6061,7 +6082,7 @@ function setLook(look) {
   heroCache.clear(); dolls.clear(); mapSprites.clear();
   if (heroHolder.rasters) heroHolder.rasters.clear();
   const sc = SCENES.find(s => s.key === 'title'), F = flameOf();
-  if (sc) { sc.lights[0].c = F.title; sc.lights[1].c = F.pool; }
+  if (sc) { sc.lights[0].c = F.title; sc.lights[0].spark = F.spark; sc.lights[1].c = F.pool; }
 }
 // a torch flame in a look (the Vault's preview)
 const drawFlame = (g, x, y, s, t, look) => liveFlame(g, x, y, s, t, 3, flameOf({...LOOK, ...look}).c);
@@ -6801,7 +6822,7 @@ const ribbonOrn = (w, h) => ornament(`ribbon:${w}:${h}`, w, h, g => {
   for (let x = 14; x <= w - 14; x += 2) g.lineTo(x, top + wave(x));
   for (let x = w - 14; x >= 14; x -= 2) g.lineTo(x, bot + wave(x));
   g.closePath(); g.fillStyle = '#dcc79c'; g.fill();
-  g.fillStyle = 'rgba(150,120,70,0.5)'; for (const x of [w * 0.25, w * 0.5, w * 0.75]) g.fillRect(x, top + 2, 1, bot - top - 4);   // its folds
+  g.fillStyle = 'rgba(150,120,70,0.5)'; for (const x of [w * 0.25, w * 0.5, w * 0.75]) { g.fillRect(x, top + wave(x) + 1, 1, 3); g.fillRect(x, bot + wave(x) - 4, 1, 3); }   // its folds, notched at the edges (clear of the name)
 });
 // a rose window: a ring of eight cusped lobes round a quatrefoil, the tracery of a cathedral's round window
 const roseOrn = (s, m = 'gold') => ornament(`rose:${s}:${m}`, s, s, g => {
@@ -9446,7 +9467,7 @@ const COSMETICS = {
   beard: {label: 'Beard', note: 'In your hair color.', items: [['none', 'None', 0], ['short', 'Short', 100], ['long', 'Long', 150]]},
   rags:  {label: "Prisoner's rags", note: 'Shows until you find chest armor.',
           items: [['blue', 'Faded blue', 0], ['red', 'Oxblood', 120], ['green', 'Moss', 120], ['ochre', 'Ochre', 120], ['black', 'Soot', 120], ['purple', 'Plum', 120]]},
-  plume: {label: "Knight's plume", note: 'Shows in a full suit of armor with a Steel helm.',
+  plume: {label: "Knight's plume", note: 'Shows in a full suit of armor with the Steel Helm.',
           items: [['blue', 'Blue', 0], ['crimson', 'Crimson', 200], ['gold', 'Gold', 200], ['white', 'White', 200], ['black', 'Black', 200]]}
 };
 const lookItem = (slot, id) => COSMETICS[slot] && COSMETICS[slot].items.find(it => it[0] === id);
