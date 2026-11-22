@@ -293,7 +293,7 @@
         <li><b>Steel</b>: Steel Sword, Steel Kite Shield, Steel Helm, Steel Plate, Steel Bracers, Steel Greaves</li>
       </ul>
       <p>A weapon adds its number to your damage. Armor numbers add up to your <b>Defense</b>, and each point cuts 3.5% off every enemy hit, 45% at most: full Leather (5) cuts 18%, full Iron (9) 32%, and full Steel (13) the full 45%. The Hero tab shows how much yours cuts. What you find depends on the floor: floor 1 is mostly leather with the odd iron piece (but no Chainmail yet), floor 2 is half leather and half iron, Steel first turns up on floor 3, and floor 5 holds only iron and steel. A <b>shield</b> adds nothing to Defense; it makes <b>Block</b> stronger instead: each point stops 10% more of a blocked hit and adds 4% to the stun chance (with no shield Block stops 45%; a Steel Kite Shield, +3, takes it to 70%, the most it can be, and the stun chance from 10% to 22%). Gear drops from fights and chests, and merchants sell it (price = 5 coins per point). Better material also lets you use stronger enchantments.</p>
-      <p><b>Light and heavy gear.</b> Every piece but the shield also comes light or heavy (about a quarter of what you find or see for sale is each), and a light or heavy piece has its own look. The badge on the loot card shows a <b>Trade-off</b> when the weight changes. Weapons: a <b>Dagger</b> (light) has a smaller number but crits 8% more often and misses 5% less; a <b>Mace</b> (heavy) has a bigger number but crits 5% less often and misses 6% more. Armor: each <b>light</b> piece has a point less Defense, but enemies miss you 1.5% more often; each <b>heavy</b> piece has a point more and raises the most your armor can cut by 2.5%, but enemies miss you 1.5% less often. However light you go, enemies miss you at most 30% of the time (Fleetfoot and Pathfinder count toward it). The light pieces: Cloth Hood, Iron Skullcap, Steel Kettle Hat; Padded Gambeson, Brigandine, Steel Breastplate; Cloth Wraps, Iron Splint Bracers, Steel Wristguards; Cloth Foot Wraps, Iron Splint Greaves, Steel Shin Guards. The heavy ones: Leather Helm, Iron Bascinet, Steel Great Bascinet; Leather Cuirass, Iron Scale Mail, Steel Harness; Studded Gauntlets, Iron Gauntlets, Steel Gauntlets; Hobnailed Jackboots, Iron Sabatons, Steel Sabatons. The Hero tab shows what yours add up to.</p>
+      <p><b>Light and heavy gear.</b> Every piece but the shield also comes light or heavy (about a quarter of what you find or see for sale is each), and a light or heavy piece has its own look. The loot card and the shop tag each weapon and armor piece <b>Light</b>, <b>Standard</b> or <b>Heavy</b>, and the badge shows a <b>Trade-off</b> when the weight changes; tap a slot in the Hero tab to see what yours does. Weapons: a <b>Dagger</b> (light) has a smaller number but crits 5% more often and misses 4% less; a <b>Mace</b> (heavy) has a bigger number but crits 5% less often and misses 5% more. Armor pieces keep the same number as the standard piece of their material. Each <b>light</b> piece makes your armor cut 1% less of every hit, but enemies miss you 1.75% more often. Each <b>heavy</b> piece makes it cut 1% more, and raises the most it can cut by 1.5% (to 51% with all four), but enemies miss you 1.5% less often. However light you go, enemies miss you at most 30% of the time (Fleetfoot and Pathfinder count toward it). The light pieces: Cloth Hood, Iron Skullcap, Steel Kettle Hat; Padded Gambeson, Brigandine, Steel Breastplate; Cloth Wraps, Iron Splint Bracers, Steel Wristguards; Cloth Foot Wraps, Iron Splint Greaves, Steel Shin Guards. The heavy ones: Leather Helm, Iron Bascinet, Steel Great Bascinet; Leather Cuirass, Iron Scale Mail, Steel Harness; Studded Gauntlets, Iron Gauntlets, Steel Gauntlets; Hobnailed Jackboots, Iron Sabatons, Steel Sabatons. The Hero tab shows what yours add up to.</p>
       <p>Everything you wear shows on your character in fights, from a rusty sword to a steel great helm. You start out in a prisoner's rags: a torn tunic, a bandaged arm and bare feet. Wear all four armor pieces (helmet, chest, bracers and greaves) with a steel helm, and a knight's blue plume streams from it. A full set of Steel adds gold trim, and enchanted gear glows in its enchantment's color. Enemies show their gear the same way (see Fighting).</p>
       <p>Tap <b>Hero</b> to see yourself in everything you wear, with your six slots around you. Each slot shows its piece's symbol, shaped and colored by its material (a rusty sword, an iron sword, a gold-guarded steel sword, and so on), and its number. An enchanted piece glows and shows its enchantment's symbol, with one, two or three dots for Minor, Good or Major. Below are your stats, each with its symbol (the damage range of your hits, Defense, Max HP, how much Block stops, stun, critical hit, miss and flee chances) and your perks. Tap any piece of gear or perk to read what it does. The <b>Bag</b> tab holds your scrolls.</p>
     </details>
@@ -1450,18 +1450,21 @@ const defense = () => armor.reduce((sum, k) => sum + power(k), 0);
 
 // ---- gear weights (branch gear-weights, 2026-11-21): every slot but the shield also comes light or heavy. Weapons: the
 // Dagger (light: a smaller number, but it crits more and misses less) and the Mace (heavy: a bigger number, but it crits
-// less and misses more). Armor: each light piece gives a point less Defense, but enemies miss you more; each heavy piece
-// a point more, and raises the most armor can cut (ARMOR_CAP), but enemies miss you less. However light you go, enemies
-// miss you at most FOE_MISS_CAP of the time. All starting numbers, to be tuned in the sims ----
+// less and misses more). Armor keeps the standard piece's number: each light piece makes your armor cut a little less of
+// every hit (cut) but enemies miss you more (dodge); each heavy piece makes it cut a little more and raises the most it
+// can cut (cap, on ARMOR_CAP), but enemies miss you less. However light you go, enemies miss you at most FOE_MISS_CAP of
+// the time. Tuned on 2026-11-22 so a world of only one weight wins about as often as one with none (bots 10.2%): light
+// armor 7.6% at dodge 1.5%, 12.6% at 2%; heavy 10.5%; daggers 10.1%; maces 9.6%. (A point of Defense a piece made heavy
+// 42.8% and light 2.1%: armor now moves by a share instead.) All weights mixed: average 9.4-9.8%, elite 16.9% ----
 const WEIGHTS = {
-  light: {weapon: {names: ['Rusty Dagger', 'Iron Dagger', 'Steel Dagger'], power: [1, 3, 4], crit: 0.08, miss: -0.05},
+  light: {weapon: {names: ['Rusty Dagger', 'Iron Dagger', 'Steel Dagger'], power: [1, 3, 4], crit: 0.05, miss: -0.04},
           armor: {helmet: ['Cloth Hood', 'Iron Skullcap', 'Steel Kettle Hat'], chest: ['Padded Gambeson', 'Brigandine', 'Steel Breastplate'],
                   bracers: ['Cloth Wraps', 'Iron Splint Bracers', 'Steel Wristguards'], greaves: ['Cloth Foot Wraps', 'Iron Splint Greaves', 'Steel Shin Guards']},
-          def: -1, dodge: 0.015, cap: 0},
-  heavy: {weapon: {names: ['Rusty Mace', 'Iron Mace', 'Steel Mace'], power: [3, 5, 8], crit: -0.05, miss: 0.06},
+          dodge: 0.0175, cut: -0.01, cap: 0},
+  heavy: {weapon: {names: ['Rusty Mace', 'Iron Mace', 'Steel Mace'], power: [4, 6, 8], crit: -0.05, miss: 0.05},
           armor: {helmet: ['Leather Helm', 'Iron Bascinet', 'Steel Great Bascinet'], chest: ['Leather Cuirass', 'Iron Scale Mail', 'Steel Harness'],
                   bracers: ['Studded Gauntlets', 'Iron Gauntlets', 'Steel Gauntlets'], greaves: ['Hobnailed Jackboots', 'Iron Sabatons', 'Steel Sabatons']},
-          def: 1, dodge: -0.015, cap: 0.025}
+          dodge: -0.015, cut: 0.01, cap: 0.015}
 };
 const WEIGHT_CHANCE = 0.25;     // a piece of gear found or on sale is light this often, and heavy this often
 const FOE_MISS_CAP = 0.30;
@@ -1471,7 +1474,7 @@ function gearOf(k, tier, wt) {
   if (!wt || k === 'shield') return {name, power: pow, tier};
   const W = WEIGHTS[wt];
   if (k === 'weapon') return {name: W.weapon.names[tier], power: W.weapon.power[tier], tier, wt};
-  return {name: W.armor[k][tier], power: Math.max(0, pow + W.def), tier, wt};
+  return {name: W.armor[k][tier], power: pow, tier, wt};
 }
 const rollWeight = k => { if (k === 'shield') return undefined; const r = Math.random(); return r < WEIGHT_CHANCE ? 'light' : r < 2 * WEIGHT_CHANCE ? 'heavy' : undefined; };
 const wtOf = k => worn[k] && worn[k].wt;
@@ -1479,21 +1482,20 @@ const weaponCrit = () => wtOf('weapon') ? WEIGHTS[wtOf('weapon')].weapon.crit : 
 const weaponMiss = () => wtOf('weapon') ? WEIGHTS[wtOf('weapon')].weapon.miss : 0;
 const armorDodge = () => armor.reduce((sum, k) => sum + (wtOf(k) ? WEIGHTS[wtOf(k)].dodge : 0), 0);
 const armorCapNow = () => ARMOR_CAP + armor.reduce((sum, k) => sum + (wtOf(k) ? WEIGHTS[wtOf(k)].cap : 0), 0);
+const armorExtra = () => armor.reduce((sum, k) => sum + (wtOf(k) ? WEIGHTS[wtOf(k)].cut : 0), 0);   // light and heavy armor's share, on top of Defense
 const gearPrice = it => Math.max(1, it.power) * 5;
-const signed = v => (v > 0 ? '+' : '\u2212') + (Math.round(Math.abs(v) * 1000) / 10) + '%';
-// what a light or heavy piece does, in a few words (the loot card) or a sentence (the Hero panel)
-function weightShort(it) {
-  if (!it || !it.wt) return '';
-  const W = WEIGHTS[it.wt];
-  if (it.slot === 'weapon') return `Crit ${signed(W.weapon.crit)}, miss ${signed(W.weapon.miss)}`;
-  return `Dodge ${signed(W.dodge)}` + (W.cap ? `, cap ${signed(W.cap)}` : '');
-}
+const share = v => +(Math.abs(v) * 100).toFixed(2) + '%';               // 0.0175 -> 1.75%, 0.015 -> 1.5%
+const signed = v => (v > 0 ? '+' : '\u2212') + share(v);
+// a weapon's or armor piece's weight as one word, and its color (the loot card and the shop); the Hero panel says what it does
+const WEIGHT_TAG = {light: {word: 'Light', col: '#8ad8ff'}, std: {word: 'Standard', col: '#9a9080'}, heavy: {word: 'Heavy', col: '#e0a868'}};
+const weightTag = it => WEIGHT_TAG[it && it.wt || 'std'];
+// what a light or heavy piece does, in a sentence (the Hero panel)
 function weightText(k, it) {
   if (!it || !it.wt) return '';
   const W = WEIGHTS[it.wt], light = it.wt === 'light';
   if (k === 'weapon') return ` ${light ? 'Light' : 'Heavy'}: crit ${signed(W.weapon.crit)}, miss ${signed(W.weapon.miss)}.`;
-  return ` ${light ? 'Light' : 'Heavy'}: enemies miss you ${(Math.abs(W.dodge) * 100).toFixed(1)}% ${light ? 'more' : 'less'} (now ${pct(foeMiss())})` +
-    (W.cap ? `, armor cuts up to ${pct(armorCapNow())}.` : '.');
+  return ` ${light ? 'Light' : 'Heavy'}: cuts ${share(W.cut)} ${light ? 'less' : 'more'}, enemies miss you ${share(W.dodge)} ${light ? 'more' : 'less'}` +
+    ` (now ${pct(foeMiss())})` + (W.cap ? `, cap ${pct(armorCapNow())}.` : '.');
 }
 
 const shops = {
@@ -1627,8 +1629,9 @@ const armorNow = () => Math.max(0, defense() - sunder);
 // points off each hit, which left most hits on the middle floors at 1-2 damage.) A hit always does at least 1
 const ARMOR_PER_POINT = 0.035, ARMOR_CAP = 0.45;
 // (cap: yours rises with heavy armor, see armorCapNow)
-const armorCut = (pts, cap = ARMOR_CAP) => Math.min(cap, Math.max(0, pts) * ARMOR_PER_POINT);
-const throughArmor = (raw, pts, cap) => Math.max(1, Math.round(raw * (1 - armorCut(pts, cap))));
+// extra: light and heavy armor's share (armorExtra), on top of the points
+const armorCut = (pts, cap = ARMOR_CAP, extra = 0) => Math.max(0, Math.min(cap, Math.max(0, pts) * ARMOR_PER_POINT + extra));
+const throughArmor = (raw, pts, cap, extra) => Math.max(1, Math.round(raw * (1 - armorCut(pts, cap, extra))));
 const isHidden = f => !!(f.next && MOVES[f.next] && MOVES[f.next].hide);
 const reachable = f => f.hp > 0 && !isHidden(f);
 const warcry = f => foes.some(o => o !== f && o.cry && o.hp > 0) ? WARCRY_BONUS : 0;   // the bonus f hits with
@@ -1749,7 +1752,7 @@ function intentDmg(f, m) {
   const M = MOVES[m];
   if (!M || !M.hit) return null;
   const lust = f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0;
-  let d = ((f.dmg[0] + f.dmg[1]) / 2 + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + lust + warcry(f)) * (1 - (m === 'crush' ? 0 : armorCut(armorNow(), armorCapNow())));
+  let d = ((f.dmg[0] + f.dmg[1]) / 2 + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + lust + warcry(f)) * (1 - (m === 'crush' ? 0 : armorCut(armorNow(), armorCapNow(), armorExtra())));
   d = Math.max(1, d);
   if (M.big && m !== 'crush') d *= M.big;
   return Math.max(1, Math.round(d));
@@ -1967,7 +1970,7 @@ function refresh() {
 function shopNote(it) {
   if (it.type === 'gear') {
     const cur = worn[it.slot];
-    return `+${it.power}` + (it.wt ? `, ${weightShort(it).toLowerCase()}` : '') + (cur ? (cur.ench ? `, you lose ${enchLabel(cur.ench)}` : '') +
+    return `+${it.power}` + (it.slot !== 'shield' ? ` ${weightTag(it).word.toLowerCase()}` : '') + (cur ? (cur.ench ? `, you lose ${enchLabel(cur.ench)}` : '') +
       `, trade-in ${tradeIn(it)}, yours is ${cur.name} +${cur.power}` : ', slot empty');
   }
   if (it.type === 'bag') return `carry ${it.to} potions` + (maxPotions >= it.to ? ', owned'
@@ -7050,8 +7053,10 @@ function lootVerdict(it, cur) {
   if (dp <= 0 && de <= 0) return -1;
   return 2;
 }
+// top to bottom: FOUND or EQUIPPED, the piece's weight (Light, Standard or Heavy), its symbol and number, its enchantment,
+// and its name at the foot
 function lootSide(it, slot, ax, y, label, right) {
-  const dir = right ? -1 : 1, align = right ? 'right' : 'left', ix = ax + dir * 14, iy = y + 38;
+  const dir = right ? -1 : 1, align = right ? 'right' : 'left', ix = ax + dir * 14, iy = y + 44;
   ctx.textAlign = align;
   ctx.font = textFont(10, 400); ctx.fillStyle = '#8a8070';
   ctx.fillText(label.toUpperCase(), ax, y + 14);
@@ -7062,39 +7067,24 @@ function lootSide(it, slot, ax, y, label, right) {
     return;
   }
   const col = TIER_EDGE[it.tier];
+  ctx.font = textFont(11);                                                 // its weight over the number (a shield says what its number does)
+  ctx.fillStyle = slot === 'shield' ? '#9a9080' : weightTag(it).col;
+  ctx.fillText(slot === 'shield' ? statWord(slot) : weightTag(it).word, ax + dir * 34, y + 29);
   drawSlotIcon(slot, ix, iy, 13, it.tier, null, it.wt);
   ctx.textAlign = align;
   ctx.font = textFont(26); ctx.fillStyle = '#f4ead4';
   ctx.fillText(`+${it.power}`, ax + dir * 33, iy + 8);
-  if (it.wt) drawWeightBits(it, slot, ax, iy + 21, right);   // a light or heavy piece: what it gives and takes, as symbols
-  else { ctx.font = textFont(10, 400); ctx.fillStyle = '#9a9080'; ctx.fillText(statWord(slot), ax + dir * 34, iy + 20); }
-  ctx.font = textFont(12); ctx.fillStyle = col;
-  ctx.fillText(fitText(it.name, 100), ax, y + 75);
-  if (it.ench) {                                                           // its enchantment: the symbol and a few words, in its glow
+  if (it.ench) {                                                           // its enchantment, under the number: the symbol and a few words, in its glow
     const g = ENCH_GLOW[it.ench.id];
-    drawEnchIcon(it.ench.id, ax + dir * 7, y + 89, 8, g);
+    drawEnchIcon(it.ench.id, ax + dir * 7, y + 69, 8, g);
     ctx.textAlign = align; ctx.font = textFont(12); ctx.fillStyle = g;
-    ctx.fillText(fitText(enchShort(it.ench), 84), ax + dir * 18, y + 93);
+    ctx.fillText(fitText(enchShort(it.ench), 84), ax + dir * 18, y + 73);
   } else {
     ctx.font = textFont(11, 400); ctx.fillStyle = '#5e5864';
-    ctx.fillText('no enchantment', ax, y + 93);
+    ctx.fillText('no enchantment', ax, y + 73);
   }
-}
-// under a light or heavy piece's number: crit and miss for a weapon, dodge (and the armor cap) for armor, each a symbol
-// and a signed share, in light blue for light and amber for heavy; x0 is where they start (or end, on the right)
-function drawWeightBits(it, slot, x0, y, right) {
-  const W = WEIGHTS[it.wt], col = it.wt === 'light' ? '#8ad8ff' : '#e0a868';
-  const bits = slot === 'weapon' ? [['crit', W.weapon.crit], ['miss', W.weapon.miss]] : [['dodge', W.dodge], ...(W.cap ? [['defense', W.cap]] : [])];
-  ctx.font = textFont(11);
-  const ws = bits.map(([, v]) => 13 + ctx.measureText(signed(v)).width + 5);
-  let x = right ? x0 - ws.reduce((a, b) => a + b, 0) : x0;
-  bits.forEach(([id, v], i) => {
-    if (id === 'dodge') drawEnchIcon('fleetfoot', x + 5, y - 4, 6, ENCH_GLOW.fleetfoot);
-    else drawStatIcon(id, x + 5, y - 4, 6);
-    ctx.font = textFont(11); ctx.textAlign = 'left'; ctx.fillStyle = col;
-    ctx.fillText(signed(v), x + 13, y);
-    x += ws[i];
-  });
+  ctx.textAlign = align; ctx.font = textFont(12); ctx.fillStyle = col;
+  ctx.fillText(fitText(it.name, 100), ax, y + 93);
 }
 function drawVerdict(v, x, y, r) { pixelIcon('verdict:' + v, r, g => verdictGlyph(g, v), x, y); }
 function verdictGlyph(g, v) { GLYPHS.verdict(g, v); }
@@ -8487,7 +8477,7 @@ function heroScreen(L, add, menu) {
     paragraph(heroDetail(o.pick), P.x + 14, dy + 14, P.w - 28, 14, 2);
   }});
   const sy = dy + 42, dmg = power('weapon') + bonusDmg + purseDmg(), stats = [
-    ['hit', 'Hit', `${8 + dmg}-${14 + dmg}`], ['defense', 'Defense', pct(armorCut(defense(), armorCapNow()))], ['maxhp', 'Max HP', p.max], ['block', 'Block', pct(1 - blockMult())],
+    ['hit', 'Hit', `${8 + dmg}-${14 + dmg}`], ['defense', 'Defense', pct(armorCut(defense(), armorCapNow(), armorExtra()))], ['maxhp', 'Max HP', p.max], ['block', 'Block', pct(1 - blockMult())],
     ['stun', 'Stun', pct(stunChance())], ['crit', 'Crit', pct(critChance())], ['miss', 'Miss', pct(Math.max(0, PLAYER_MISS + weaponMiss()) * missKeep())], ['flee', 'Flee', pct(fleeChance())]];
   add({draw: () => stats.forEach(([id, label, value], i) => {               // each stat: its symbol, its number, its name under it
     const cw = (P.w - 16) / 4, x = P.x + 8 + (i % 4) * cw, y = sy + Math.floor(i / 4) * 33;
@@ -8667,7 +8657,7 @@ function foeStrike(f, mult, blocking = false, move = 'attack') {
     journalBlow(f, move, 'm', 0, blocking);
   } else {
     const lust = f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0;
-    let hurt = throughArmor(roll(f.dmg[0], f.dmg[1]) + f.bonus + rage + lust + warcry(f), crush ? 0 : armorNow(), armorCapNow());
+    let hurt = throughArmor(roll(f.dmg[0], f.dmg[1]) + f.bonus + rage + lust + warcry(f), crush ? 0 : armorNow(), armorCapNow(), armorExtra());
     if (result === 'crit') hurt = Math.round(hurt * FOE_CRIT_MULT);
     if (big && !crush) hurt *= M.big;
     hurt = Math.max(1, Math.round(hurt * mult));

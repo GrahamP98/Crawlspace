@@ -115,7 +115,7 @@
     for (const it of Object.values(worn)) if (it && it.ench) ench[it.ench.id + it.ench.t] = (ench[it.ench.id + it.ench.t] || 0) + 1;
     return {
       won: runSummary.won, floor: floor + 1, killer: ST.killer, deathFoes: ST.deathFoes, level, maxHp: p.max, def: defense(),
-      weapon: power('weapon'), shield: power('shield'), perks: {...perks}, ench, gold: run.gold, coins, potions, drunk: run.potions,
+      weapon: power('weapon'), shield: power('shield'), wts: Object.fromEntries(Object.keys(worn).filter(k => worn[k] && worn[k].wt).map(k => [k, worn[k].wt])), perks: {...perks}, ench, gold: run.gold, coins, potions, drunk: run.potions,
       steps: run.steps, kills: Object.values(run.kills).reduce((a, b) => a + b, 0), taken: run.taken, dealt: run.dealt,
       fights: ST.fights, fled: ST.fled, fleeTry: ST.fleeTry, turns: ST.turns, heavy: ST.heavy, block: ST.block, normal: ST.normal,
       potFight: ST.potFight, potExplore: ST.potExplore, bought: ST.bought, enchBought: ST.enchBought, sold: ST.sold, redraws: ST.redraws,
@@ -161,11 +161,18 @@
   const armorVs = f => f.next === 'crush' ? 0 : (typeof armorNow === 'function' ? armorNow() : defense());
   const cryBonus = f => typeof warcry === 'function' ? warcry(f) : 0;
   // raw damage after pts of armor: a share cut (the game's armorCut, 2026-11-20), or points off in older copies of the game
-  const afterArmor = (raw, pts) => Math.max(1, typeof armorCut === 'function' ? raw * (1 - armorCut(pts)) : raw - pts);
+  // (a cap is passed only for blows at you: then heavy armor's flat cut, armorExtra, counts too)
+  const afterArmor = (raw, pts, cap) => Math.max(1, typeof armorCut === 'function'
+    ? raw * (1 - armorCut(pts, cap, cap !== undefined && typeof armorExtra === 'function' ? armorExtra() : 0)) : raw - pts);
+  // light and heavy gear (branch gear-weights, 2026-11-22): your armor's cap, how often enemies miss you, your weapon's miss
+  // (each falls back to the old rule in copies of the game without weights)
+  const capMe = () => typeof armorCapNow === 'function' ? armorCapNow() : undefined;
+  const missMe = () => typeof foeMiss === 'function' ? foeMiss() : FOE_MISS + (typeof fleetEvade === 'function' ? fleetEvade() : 0);
+  const wMiss = () => typeof weaponMiss === 'function' ? weaponMiss() : 0;
   function foeHit(f) {
     if (!strikes(f)) return 0;
     const raw = f.dmg[1] + f.bonus + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0) + cryBonus(f);
-    return afterArmor(raw, armorVs(f)) * bigMult(f);
+    return afterArmor(raw, armorVs(f), capMe()) * bigMult(f);
   }
   const incoming = (mult = 1) => foes.filter(f => f.hp > 0 && !f.stunned && strikes(f))
     .reduce((s, f) => s + Math.max(1, Math.round(foeHit(f) * mult)), 0) + (poison ? poisonDmg() : 0);
@@ -174,8 +181,8 @@
     if (spike && !strikes(f)) return 0;
     const big = spike && moveOf(f) && moveOf(f).big;
     const raw = (f.dmg[0] + f.dmg[1]) / 2 + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0) + cryBonus(f);
-    const h = afterArmor(raw, big ? armorVs(f) : defense()) * (big ? bigMult(f) : 1);
-    return big ? h : h * (1 - FOE_MISS) * (1 + FOE_CRIT * (FOE_CRIT_MULT - 1));
+    const h = afterArmor(raw, big ? armorVs(f) : defense(), capMe()) * (big ? bigMult(f) : 1);
+    return big ? h : h * (1 - missMe()) * (1 + FOE_CRIT * (FOE_CRIT_MULT - 1));
   }
   const shieldKeep = t => t.shield !== undefined ? 1 - FOE_SHIELD_BLOCK[t.shield] * (1 - FOE_SHIELD_KEEP) : 1;
   function myAvg(t, heavy) {
@@ -183,7 +190,7 @@
     if (heavy) d *= HM();
     if (bigT(t)) d *= 1 + enchSum('giantslayer');
     if (perkN('executioner') && t.hp < t.max * EXEC_THRESHOLD) d *= 1 + execBonus();
-    const miss = ((t.evasion ?? PLAYER_MISS) + (heavy ? HEAVY_MISS : 0)) * missKeep() * (heavy ? 1 - enchSum('balanced') : 1);
+    const miss = Math.max(0, (t.evasion ?? PLAYER_MISS) + (heavy ? HEAVY_MISS : 0) + wMiss()) * missKeep() * (heavy ? 1 - enchSum('balanced') : 1);
     const hit = 1 - miss;
     return d * (hit + critChance() * (PLAYER_CRIT_MULT - 1)) * shieldKeep(t) * (1 + enchSum('swift')) + hit * enchSum('flaming');
   }
@@ -252,7 +259,7 @@
   const rnd = (a, b) => a + Math.floor(R() * (b - a + 1));
   // what one of your swings at t does: {dmg, crit, hit}
   function swingAt(t, heavy, hp) {
-    const base = (t.next === 'flit' ? FLIT_EVADE : t.evasion ?? PLAYER_MISS) + (heavy ? HEAVY_MISS : 0);
+    const base = Math.max(0, (t.next === 'flit' ? FLIT_EVADE : t.evasion ?? PLAYER_MISS) + (heavy ? HEAVY_MISS : 0) + wMiss());
     const miss = t.off ? 0 : Math.min(0.95, base * missKeep() * (heavy ? 1 - enchSum('balanced') : 1));
     const r = R();
     if (r < miss) return {dmg: 0, crit: false, hit: false};
@@ -272,10 +279,10 @@
   function blowAt(f, mult, move, cry) {
     const M = (move && MOVES[move]) || MOVES.attack, big = !!M.big;
     const r = R();
-    const fm = FOE_MISS + (typeof fleetEvade === 'function' ? fleetEvade() : 0);
+    const fm = missMe();
     if (!big && r < fm) return 0;
     const crit = !big && r < fm + FOE_CRIT;
-    let d = Math.round(afterArmor(rnd(f.dmg[0], f.dmg[1]) + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0) + cry, move === 'crush' ? 0 : armorNow()));
+    let d = Math.round(afterArmor(rnd(f.dmg[0], f.dmg[1]) + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0) + cry, move === 'crush' ? 0 : armorNow(), capMe()));
     if (crit) d = Math.round(d * FOE_CRIT_MULT);
     if (big && move !== 'crush') d *= M.big;
     return Math.max(1, Math.round(d * mult));
@@ -288,10 +295,10 @@
     const per = s => { const f = s.f;
       const cry = crier && !f.cry ? WARCRY_BONUS : 0;
       const raw = (f.dmg[0] + f.dmg[1]) / 2 + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0) + cry;
-      return afterArmor(raw, armorNow()) * (1 - FOE_MISS) * (1 + FOE_CRIT * (FOE_CRIT_MULT - 1)) * (f.boss ? 1.12 : 1); };
+      return afterArmor(raw, armorNow(), capMe()) * (1 - missMe()) * (1 + FOE_CRIT * (FOE_CRIT_MULT - 1)) * (f.boss ? 1.12 : 1); };
     // (Flaming keeps a Troll burning from your next hit on, so it stops regenerating; Thorns cuts every enemy that swings at you;
     //  a Wraith's drain heals it by a share of what it hits you for)
-    const thornsEach = enchSum('thorns') * (1 - FOE_MISS);
+    const thornsEach = enchSum('thorns') * (1 - missMe());
     const eff = s => { const f = s.f;
       const regen = f.regen && !(f.burn > 0) && !enchSum('flaming') ? f.regen * 0.8 : 0;
       const drain = f.drain ? per(s) * f.drain * purityKeep() : 0;
@@ -306,7 +313,7 @@
   function nextTurn(state) {
     const alive = state.filter(s => s.hp > 0), crier = alive.some(s => s.f.cry);
     return alive.reduce((a, s) => { const f = s.f, cry = crier && !f.cry ? WARCRY_BONUS : 0;
-      return a + afterArmor((f.dmg[0] + f.dmg[1]) / 2 + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust ? f.bloodlust : 0) + cry, armorNow()) * (1 - FOE_MISS); }, 0);
+      return a + afterArmor((f.dmg[0] + f.dmg[1]) / 2 + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust ? f.bloodlust : 0) + cry, armorNow(), capMe()) * (1 - missMe()); }, 0);
   }
   // play one option out once; returns its cost in HP
   function playOut(opt, live) {
@@ -413,7 +420,7 @@
     else if (P.block === 'ev' && blockPays(live)) kind = 'block';
     else if (P.heavy === 'always' && !target.riposte) kind = 'heavy';
     else if (P.heavy === 'ev') {
-      const base = target.evasion ?? PLAYER_MISS;
+      const base = Math.max(0, (target.evasion ?? PLAYER_MISS) + wMiss());
       const normalEV = 1 - base * missKeep();
       const heavyEV = (1 - (base + HEAVY_MISS) * missKeep() * (1 - enchSum('balanced'))) * HM();
       if (!target.riposte && heavyEV > normalEV * 1.15 && p.hp > incoming(HEAVY_EXPOSED) * 3) kind = 'heavy';
@@ -460,11 +467,22 @@
     const pref = P.enchPref[e.id] || 0;
     return 1.5 + e.t + pref * (1 + e.t);
   };
-  const gearScore = it => it ? it.power * (it.slot === 'shield' || it === worn.shield ? P.shieldWeight * 1.4 : 1) + enchVal(it.ench) : -1;
+  // what a light or heavy piece is worth, in points of its slot's number: a weapon's crit and miss against an average hit;
+  // armor's dodge against what a point of Defense cuts, and the cap only while your armor is at it. P.wtPref adds a
+  // policy's own lean ({light: x, heavy: y, dagger: x, mace: y}), for the forced-weight studies
+  function wtVal(it, slot) {
+    if (!it || !it.wt || typeof WEIGHTS === 'undefined') return 0;
+    const W = WEIGHTS[it.wt], pref = P.wtPref || {};
+    if (slot === 'weapon') return (11 + it.power + bonusDmg) * (W.weapon.crit * (PLAYER_CRIT_MULT - 1) - W.weapon.miss) + (pref[it.wt === 'light' ? 'dagger' : 'mace'] || 0);
+    const atCap = defense() * ARMOR_PER_POINT >= ARMOR_CAP - 0.02;
+    return W.dodge / ARMOR_PER_POINT / (1 - FOE_MISS) + (W.cap && atCap ? W.cap / ARMOR_PER_POINT : 0) + (W.cut ? W.cut / ARMOR_PER_POINT : 0) + (pref[it.wt] || 0);
+  }
+  const gearVal = (it, slot) => it ? it.power * (slot === 'shield' ? P.shieldWeight * 1.4 : 1) + wtVal(it, slot) : -1;
+  const gearScore = it => it ? gearVal(it, it.slot || Object.keys(worn).find(k => worn[k] === it)) + enchVal(it.ench) : -1;
   function lootChoice() {
     const cur = worn[pending.slot];
-    const a = pending.power * (pending.slot === 'shield' ? P.shieldWeight * 1.4 : 1) + enchVal(pending.ench);
-    const b = cur ? cur.power * (pending.slot === 'shield' ? P.shieldWeight * 1.4 : 1) + enchVal(cur.ench) : -1;
+    const a = gearVal(pending, pending.slot) + enchVal(pending.ench);
+    const b = cur ? gearVal(cur, pending.slot) + enchVal(cur.ench) : -1;
     return a > b ? (equipItem(), equipItem()) : (leaveItem(), leaveItem());   // each takes two taps
   }
   const scrollTarget = s => {
@@ -504,8 +522,8 @@
       if (!done) {
         const trade = s => worn[s.slot] ? sellValue(gearRetail(worn[s.slot])) : 0;
         const ups = shopStock.map((s, i) => ({s, i}))
-          .filter(({s}) => s.type === 'gear' && !(worn[s.slot] && worn[s.slot].power >= s.power) && coins + trade(s) >= s.price)
-          .map(({s, i}) => ({s, i, gain: (s.power - (worn[s.slot] ? worn[s.slot].power : 0)) * (s.slot === 'shield' ? P.shieldWeight : 1)
+          .filter(({s}) => s.type === 'gear' && !(worn[s.slot] && gearVal(worn[s.slot], s.slot) >= gearVal(s, s.slot)) && coins + trade(s) >= s.price)
+          .map(({s, i}) => ({s, i, gain: (gearVal(s, s.slot) - (worn[s.slot] ? gearVal(worn[s.slot], s.slot) : 0)) * (s.slot === 'shield' ? P.shieldWeight / (P.shieldWeight * 1.4) : 1)
             - (worn[s.slot] && worn[s.slot].ench ? enchVal(worn[s.slot].ench) : 0) + (s.slot === 'weapon' ? 0.5 : 0)}))
           .filter(u => u.gain > 0).sort((a, b) => b.gain - a.gain);
         if (ups.length) { sellWorn(ups[0].s.slot); done = buy(ups[0].i); }
