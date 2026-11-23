@@ -120,7 +120,7 @@
       fights: ST.fights, fled: ST.fled, fleeTry: ST.fleeTry, turns: ST.turns, heavy: ST.heavy, block: ST.block, normal: ST.normal,
       potFight: ST.potFight, potExplore: ST.potExplore, bought: ST.bought, enchBought: ST.enchBought, sold: ST.sold, redraws: ST.redraws,
       arrive: ST.arrive, hpLost: ST.hpLostFloor, coinsEnd: ST.coinsEnd, skipped: ST.skipped, maxPotions, sw: secondWinds,
-      segs: ST.segs, deathSeg: ST.deathSeg, foe: ST.foe, spent: ST.bought.length, camp: ST.camp || null
+      segs: ST.segs, deathSeg: ST.deathSeg, foe: ST.foe, spent: ST.bought.length, camp: ST.camp || null, tac: ST.tac || {}
     };
   }
   function arrive() { ST.arrive[floor] = [p.hp, p.max, potions, level, coins, defense(), power('weapon'), power('shield')]; }
@@ -379,6 +379,21 @@
     cost += rest + (rest > hp + avail ? (rest - hp - avail) * 2 : 0);    // a fight you can't finish costs more
     return cost;
   }
+  // what it chose in the situations a good player should answer a certain way (ST.tac: 'situation:choice' -> turns)
+  function tally(live, best) {
+    const T = ST.tac || (ST.tac = {}), k = best.kind === 'heavy' || best.kind === 'normal' ? best.kind + (best.t && best.t.off ? '@off' : '') : best.kind;
+    const add = sit => { T[sit + ':' + k] = (T[sit + ':' + k] || 0) + 1; };
+    if (live.some(f => f.off && reachable(f))) add('offBalance');
+    const big = live.find(f => !f.stunned && f.next && MOVES[f.next] && MOVES[f.next].big);
+    if (big) add(big.next === 'crush' ? 'crushing' : 'bigMove');
+    if (live.some(f => !f.stunned && f.next === 'paw')) add('paw');
+    if (live.some(f => f.next === 'guard') && best.t && best.t.next === 'guard') add('swingAtGuard');
+    if (best.t && best.t.next === 'brace') add('swingAtBrace');
+    if (best.t && best.t.next === 'flit') add('swingAtFlit');
+    if (weak) add('shaken');
+    if (live.some(f => !f.stunned && f.next === 'snatch')) add('snatch');
+    add('all');
+  }
   function expertTurn() {
     const live = foes.filter(f => f.hp > 0), reach = live.filter(f => reachable(f));
     const opts = [{kind: 'block'}];
@@ -395,6 +410,7 @@
       const c = costOf(o) + (o.kind === 'potion' ? 2 : 0);                 // (a small bias toward keeping potions for later)
       if (c < bestCost && c < plain - MARGIN) { bestCost = c; best = o; }
     }
+    tally(live, best);
     if (best.kind === 'potion') { ST.potFight++; return drinkPotion(); }
     ST.turns++; ST[best.kind]++;
     if (best.t) target = best.t;

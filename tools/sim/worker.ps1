@@ -1,5 +1,5 @@
 # One sim worker: its own headless Edge (own port + profile), plays N runs of the bot with a policy, writes results JSON.
-param([int]$Port, [int]$N, [string]$PolFile, [string]$Game, [string]$Out, [string]$Tag = 'w')
+param([int]$Port, [int]$N, [string]$PolFile, [string]$Game, [string]$Out, [string]$Tag = 'w', [string]$Script = 'bot.js', [string]$Var = '__SIM')
 $ErrorActionPreference = 'Stop'
 $Here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Edge = @("${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe", "$env:ProgramFiles\Microsoft\Edge\Application\msedge.exe") |
@@ -49,7 +49,7 @@ try {
   Send-Cdp 'Page.enable' | Out-Null
   $runId = "$Tag$Port" + (Get-Date -Format 'HHmmssfff')
   $pol = [IO.File]::ReadAllText($PolFile)
-  $bot = "window.__SIM = {n: $N, id: '$runId', pol: $pol};`n" + [IO.File]::ReadAllText((Join-Path $Here 'bot.js'))
+  $bot = "window.$Var = {n: $N, id: '$runId', pol: $pol};`n" + [IO.File]::ReadAllText((Join-Path $Here $Script))   # (fuzz.js: -Script fuzz.js -Var __FUZZ)
   Send-Cdp 'Page.addScriptToEvaluateOnNewDocument' @{source = $bot} | Out-Null
   Send-Cdp 'Page.navigate' @{url = $Game} | Out-Null
   $t = Get-Date

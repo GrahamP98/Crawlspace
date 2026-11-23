@@ -23,6 +23,7 @@ Everything a run makes goes to `%LOCALAPPDATA%\CrawlspaceSim`, outside OneDrive:
 - `curve.ps1`: the difficulty curve of a batch, with every policy pooled. For each stretch of the run (floor + `N` near half, `F` far half, `G` stairs guard, `B` the Ogre King) it shows how many runs got there, the share that died there, the number of fights, and how much max HP a fight there cost. Then where the gold went. Tune the curve with `STRETCH` in `index.html` (the difficulty director: enemy HP and damage multipliers and a group-size bias for each stretch).
 - `foes.ps1`: each enemy kind on each floor, every policy pooled: fights per run, what one of its blows does (in HP and as a share of max HP, misses counted as 0), what a whole fight with it costs, and how many runs it ended. The bot records these in each run's `foe` field (`"Orc@2"`: blows, HP lost, share of max HP, fights, share of max HP those fights cost).
 - `policies\`: one JSON file per playstyle.
+- `fuzz.js` and `fuzz.ps1`: the bug fuzzer (see below). `worker.ps1` takes `-Script fuzz.js -Var __FUZZ` to run it instead of the bot.
 - `patches\package-B.txt`: the optional Ogre King change from the 2026-11-13 study. It is not applied to the game.
 
 ## Policies
@@ -59,3 +60,17 @@ Everything a run makes goes to `%LOCALAPPDATA%\CrawlspaceSim`, outside OneDrive:
 On 2026-11-13, with no head start the bot won 7.7%. With a head start: Attack 24.3%, Vitality 26.7%, Focus 27.8%, Executioner 23.5%, Antidote 27.3%, Shield Bash 22.2%, Tight Purse 26.0%, Ambusher 26.3%, Pathfinder 8.5%, Second Wind 10.7%.
 
 The win-rate target is 7.5–10%.
+
+## Bug fuzzer
+
+The bots press only sensible buttons and switch drawing off, so they can't find drawing crashes or odd taps. The fuzzer plays like a careless player instead: it taps random buttons, map spots and enemies through the same path as a real tap, with the game drawing normally and its clock running 6x faster. Some runs start on a later floor with random gear and enchantments, some resume the last saved run through Continue, and some taps are doubled or made while a turn is still playing out.
+
+After every tap it checks: no uncaught error and nothing fails to draw; health, max health, coins, potions, XP, level and floor are real numbers; health never above max (or at 0 while alive); coins never below 0; potions within the bag; you never stand in a wall; no enemy above its max health; no fight with every enemy down; gear tiers valid; a double tap never pays out twice. Now and then it saves the run and restores it, and the run must come back exactly the same. 400 taps in a row that change nothing count as a soft lock.
+
+```powershell
+.\fuzz.ps1 -W 6 -N 10 -Steps 1500 -Label fuzz1     # 6 browsers x 10 runs x 1,500 taps
+```
+
+Results go to `res\<Label>\fuzz-<w>.json`, one record per run: `viol` lists every broken rule with the first time it happened (the phase, floor and the last taps before it), and `econ` the most coins any one kind of tap gave. On 2026-11-22: 60 runs, 14,515 taps, nothing broken.
+
+The bot also records what it chose in the situations a good player answers a certain way (`tac` in each run, `situation:choice` -> turns): an enemy Off balance, a big move or Crushing Blow shown, Paw the ground, Shaken, a Snatch, and swings at a guarding, bracing or flitting enemy.
