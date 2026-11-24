@@ -150,6 +150,11 @@
   #vault h4::after { content: ''; flex: 1; height: 12px; background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 12'><g fill='none' stroke='%23d9a441' stroke-width='1' stroke-linecap='round'><path d='M10 6H98M122 6H210' opacity='0.55'/><path d='M10 6c-3 0-4-3-2-4.4' /><path d='M210 6c3 0 4-3 2-4.4'/></g><g fill='%23d9a441'><circle cx='104' cy='6' r='2.6'/><circle cx='116' cy='6' r='2.6'/><circle cx='110' cy='2.6' r='2.6'/><circle cx='110' cy='9.4' r='2.6'/><circle cx='92' cy='6' r='1.2'/><circle cx='128' cy='6' r='1.2'/></g><circle cx='110' cy='6' r='1.7' fill='%23c8303a'/></svg>") left center / 220px 12px no-repeat; opacity: 0.7; }
   #vault .vgrid button { background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><path d='M4 0.5L7.5 4L4 7.5L0.5 4Z' fill='%23d9a441'/></svg>") 4px 4px / 7px 7px no-repeat, url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><path d='M4 0.5L7.5 4L4 7.5L0.5 4Z' fill='%23d9a441'/></svg>") calc(100% - 4px) 4px / 7px 7px no-repeat, url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><path d='M4 0.5L7.5 4L4 7.5L0.5 4Z' fill='%23d9a441'/></svg>") 4px calc(100% - 4px) / 7px 7px no-repeat, url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><path d='M4 0.5L7.5 4L4 7.5L0.5 4Z' fill='%23d9a441'/></svg>") calc(100% - 4px) calc(100% - 4px) / 7px 7px no-repeat, linear-gradient(#1c1519, #0d0a0f); border-radius: 3px; }
   #vaultArt { background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 200' preserveAspectRatio='none'><defs><radialGradient id='g' cx='50%' cy='62%' r='60%'><stop offset='0' stop-color='%23ffaa5a' stop-opacity='0.16'/><stop offset='1' stop-color='%23000' stop-opacity='0'/></radialGradient></defs><path d='M6 200V70Q6 22 60 4Q114 22 114 70V200Z' fill='%2312101a' stroke='%23060508' stroke-width='5'/><path d='M6 200V70Q6 22 60 4Q114 22 114 70V200Z' fill='url(%23g)'/><path d='M10 200V71Q10 27 60 9Q110 27 110 71V200' fill='none' stroke='rgba(217,164,65,0.35)' stroke-width='1.2'/></svg>") 54px 0 / 112px 200px no-repeat; }
+  /* choosing a class before a run: a card each, its figure on the left */
+  #classList { display: grid; gap: 10px; margin: 4px 0 14px; }
+  #classList button.cpick { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 0 12px; align-items: center; text-align: left; padding: 8px 12px; font-size: 26px; }
+  #classList button.cpick canvas { grid-row: span 2; width: 76px; height: auto; image-rendering: pixelated; }
+  #classList button.cpick small { display: block; font: 15px var(--text-font); color: #b8a684; line-height: 1.3; letter-spacing: 0; }
 </style>
 <div id="title">
   <canvas id="titleArt" aria-hidden="true"></canvas>
@@ -178,10 +183,20 @@
     </details>
 
     <details>
+      <summary>Classes</summary>
+      <p>You choose a class before every run. Each finds only its own gear: a Knight finds swords and shields, a Warlock staffs and robes, a Ranger bows, quivers and leathers. While the game is being playtested, all three are open.</p>
+      <p><b>Knight</b>: the class you know. <b>Normal</b>, <b>Heavy</b> and <b>Block</b> in a fight, a shield for blocking, and the heaviest armor.</p>
+      <p><b>Warlock</b>: a staff and spells, robes instead of armor, and no shield, so no Block. His bar holds up to four spells. He always has <b>Siphon</b> (a bolt for 85% of a hit that heals him 30% of the damage) and starts with <b>Hex</b> (an enemy hits softer and takes damage every turn for 3 turns). <b>Spellbooks</b> turn up where a Knight would find a shield, and merchants sell one, teaching <b>Blood Pact</b> (pay 10% of your max HP for a sure double hit through armor), <b>Bone Ward</b> (soaks the next blows), <b>Dread</b> (an enemy loses its next move), <b>Pestilence</b> (damage every turn to every enemy) and <b>Corpse Burst</b> (a fallen enemy explodes, hurting the rest). Spells can't be blocked by shields or struck back at.</p>
+      <p><b>Ranger</b>: a bow from the first fight (an Ash Shortbow, the worst there is), a quiver in place of a shield, leather armor, and no Block. He always has <b>Shoot</b> (a hit, with 5% more chance to crit) and starts with <b>Aimed Shot</b> (spend a turn aiming: the next arrow can't miss and does double). <b>Arrow and trap kits</b> teach <b>Fire Arrow</b>, <b>Pinning Shot</b> (an enemy loses its next move), <b>Volley</b> (every enemy at once), <b>Snare</b> (catches an enemy's next melee blow) and <b>Smoke Bomb</b> (blows at you miss half the time this turn). Arrows reach a Wyvern on the wing. A merchant won't buy his only bow; he can trade it in for a better one.</p>
+      <p>A spellbook or kit can be <b>Poor</b>, <b>Fair</b> or <b>Superior</b>, like gear, and the rank makes some actions stronger (Hex, Bone Ward, Pestilence and Fire Arrow). Finding a better copy of one you know raises it. With a full bar, learning a new one means forgetting one (never Siphon or Shoot).</p>
+      <p>In a fight, tap a Warlock's or Ranger's action once to read what it will do to your target, in numbers, and again to use it. You can turn that off in Settings. The buttons show numbers too: "≈14" is about how much a hit should do.</p>
+    </details>
+
+    <details>
       <summary>Moving and the map</summary>
       <p>Tap the side of the map you want to step toward: top, bottom, left or right of the middle. Small gold arrows at the edges of the map show which ways are open. Your torch lights the tiles right around you, and the path you have already walked stays on the map, dim. Everything else stays dark, including chests, shops and enemies, so explore to find them. Each floor has its own look, and its name shows under the map.</p>
       <p>The bar along the top of the screen shows your level and floor, your health (the number sits on the bar) and the thin gold XP bar under it, your gold next to the coin, and your potions next to the flask. On a phone the game fills the screen; hold it upright. On a computer it plays in a phone-shaped column in the middle of the window. A bigger phone shows the same map, just larger.</p>
-      <p>Your buttons sit at the bottom of the screen, within reach of your thumb. They change with the moment: <b>Fight</b> and <b>Flee</b> when you meet enemies, <b>Normal</b>, <b>Heavy</b> and <b>Block</b> in a fight, <b>Equip</b> and <b>Leave</b> when you find gear. <b>Hero</b> and <b>Bag</b> are always there. A list too long for the screen, like a merchant's wares on a short screen, scrolls: drag it, or turn the mouse wheel over it.</p>
+      <p>Your buttons sit at the bottom of the screen, within reach of your thumb. They change with the moment: <b>Fight</b> and <b>Flee</b> when you meet enemies, your class's actions in a fight (for the Knight, <b>Normal</b>, <b>Heavy</b> and <b>Block</b>), <b>Equip</b> and <b>Leave</b> when you find gear. <b>Hero</b> and <b>Bag</b> are always there. A list too long for the screen, like a merchant's wares on a short screen, scrolls: drag it, or turn the mouse wheel over it.</p>
       <p>The line just under the map is the <b>message log</b>. It shows what just happened, one message at a time (the dots on its right show how many there were). Tap it to read the whole history; <b>Older</b> and <b>Newer</b> page through it.</p>
       <ul>
         <li><b>You</b>: a small figure with a torch, wearing your gear</li>
@@ -370,11 +385,18 @@
     <div id="vaultList"></div>
     <button id="vaultBack">Back</button>
   </div>
+  <div class="inner" id="classPick" hidden>
+    <h2>Choose your class</h2>
+    <p class="lead">Each class finds only its own gear. While the game is being playtested, all three are open.</p>
+    <div id="classList"></div>
+    <button id="classBack">Back</button>
+  </div>
   <div class="inner" id="settings" hidden>
     <h2>Settings</h2>
     <p class="lead">Each is kept for next time.</p>
     <button id="musicBtn" aria-pressed="true">Music: On</button>
     <button id="sfxBtn" aria-pressed="true">Sounds: On</button>
+    <button id="explainBtn" aria-pressed="true">Explain actions: On</button>
     <button id="setBack">Back</button>
   </div>
 </div>
@@ -1261,10 +1283,10 @@ const ENCHANTS = {
                 text: v => `+${pct(v)} gold from kills and chests`}
 };
 // armor enchantments go on any armor piece or the shield, unless the enchantment names its own slots
-const enchSlots = id => ENCHANTS[id].slots || (ENCHANTS[id].slot === 'weapon' ? ['weapon'] : [...armor, 'shield']);
+const enchSlots = id => ENCHANTS[id].slots || (ENCHANTS[id].slot === 'weapon' ? ['weapon'] : cls === 'warlock' ? [...armor] : [...armor, 'shield']);
 const enchLabel = e => `${ENCHANTS[e.id].name} (${TIERS[e.t]})`;
 const enchText = e => ENCHANTS[e.id].text(ENCHANTS[e.id].vals[e.t]);
-const statWord = slot => slot === 'weapon' ? 'damage' : slot === 'shield' ? 'block' : 'defense';
+const statWord = slot => slot === 'weapon' ? 'damage' : slot === 'shield' ? (cls === 'ranger' ? 'volley' : 'block') : 'defense';
 const itemName = it => it.ench ? `${it.name} of ${ENCHANTS[it.ench.id].name} (${TIERS[it.ench.t]})` : it.name;
 // total strength of an enchantment across everything you wear
 const enchSum = id => Object.values(worn).reduce((s, it) =>
@@ -1282,7 +1304,7 @@ const purityArmor = () => 1 - Object.values(worn).reduce((m, it) =>
 // highest tier drops and scrolls can have on this floor
 const floorTier = () => TIER_FLOOR.filter(f => floor + 1 >= f).length - 1;
 const randomEnchant = slotKey => {
-  const ids = Object.keys(ENCHANTS).filter(id => !slotKey || enchSlots(id).includes(slotKey));
+  const ids = Object.keys(ENCHANTS).filter(id => (!slotKey || enchSlots(id).includes(slotKey)) && (id !== 'balanced' || cls === 'knight'));   // (Balanced is for Heavy swings)
   return ids[roll(0, ids.length - 1)];
 };
 // S = where you arrive, D = stairs down, E = dungeon exit (last floor only)
@@ -1434,6 +1456,85 @@ const slots = {
 const armor = ['helmet', 'chest', 'bracers', 'greaves'];
 const worn = {};
 const power = k => worn[k] ? worn[k].power : 0;
+
+// ======================================================================
+// CLASSES: the Knight (sword, shield and Block), the Warlock and the Ranger. You pick one before a run, and every piece
+// of gear you find or buy in it is your class's own. The Warlock and the Ranger fight with a bar of up to four actions
+// instead of Normal, Heavy and Block: one each class always has (Siphon, Shoot), one it starts with (Hex, Aimed Shot),
+// and the rest learned in the run from spellbooks (the Warlock) or arrow and trap kits (the Ranger), found like gear or
+// bought from the merchants. While the game is in playtesting every class is open; a lock comes before it is published
+// ======================================================================
+const CLASS_IDS = ['knight', 'warlock', 'ranger'];
+const CLASS_NAME = {knight: 'Knight', warlock: 'Warlock', ranger: 'Ranger'};
+const SPELL = {
+  siphon: {share: 0.85, heal: 0.30},                          // a bolt for 85% of a hit; you heal 30% of what it does
+  hex:    {turns: 3, cut: [0.20, 0.25, 0.30], doom: [3, 4, 5]},   // by rank: Poor, Fair, Superior
+  pact:   {cost: 0.10, mult: 2},                              // pay 10% of max HP: a sure hit for double, through armor
+  ward:   {soak: [12, 16, 20]},
+  dread:  {},
+  plague: {turns: 3, doom: [2, 3, 4]},
+  burst:  {share: 0.5}
+};
+const SHOT = {
+  fire:  {share: 0.7, burn: [3, 4, 5], turns: 3},             // 70% of a hit, then it burns
+  pin:   {share: 0.5},                                         // half a hit, and it loses its next move
+  aim:   {mult: 2},                                            // the next single arrow: sure, and double
+  smoke: {miss: 0.5}                                           // blows at you this turn: half of them miss
+};
+const RANGER = {crit: 0.05, flit: 0.35, volley: 0.40, perQuiver: 0.05, guardKeep: 0.5};
+const SNARE_CATCH = ['attack', 'charge', 'dive', 'crush', 'sunder', 'snatch'];   // blows a snare can catch (thrown and shouted moves pass it)
+const ACTION = {   // name: its full name; label: on its button
+  siphon: {name: 'Siphon', label: 'Siphon'}, hex: {name: 'Hex', label: 'Hex'}, pact: {name: 'Blood Pact', label: 'Pact'},
+  ward: {name: 'Bone Ward', label: 'Ward'}, dread: {name: 'Dread', label: 'Dread'}, plague: {name: 'Pestilence', label: 'Plague'},
+  burst: {name: 'Corpse Burst', label: 'Burst'},
+  shoot: {name: 'Shoot', label: 'Shoot'}, fire: {name: 'Fire Arrow', label: 'Fire'}, pin: {name: 'Pinning Shot', label: 'Pin'},
+  aim: {name: 'Aimed Shot', label: 'Aim'}, volley: {name: 'Volley', label: 'Volley'}, snare: {name: 'Snare', label: 'Snare'},
+  smoke: {name: 'Smoke Bomb', label: 'Smoke'}
+};
+const BASE_ACTION = {warlock: 'siphon', ranger: 'shoot'};
+const STARTER = {warlock: 'hex', ranger: 'aim'};
+const OPTIONS = {warlock: ['hex', 'pact', 'ward', 'dread', 'plague', 'burst'], ranger: ['fire', 'pin', 'aim', 'volley', 'snare', 'smoke']};
+const SHORT = {   // one line each
+  siphon: 'A bolt that heals you for part of the damage.', shoot: 'A plain arrow at one enemy.',
+  hex: 'Curse one enemy: it hits softer and takes damage every turn.', pact: 'Pay some of your HP for a sure hit that does double, through armor.',
+  ward: 'A ward that soaks up the next blows aimed at you.', dread: 'One enemy loses its next move.',
+  plague: 'Every enemy takes a little damage every turn.', burst: 'Blow up a fallen enemy to hurt all the others.',
+  fire: 'A hit that sets the enemy burning for three turns.', pin: 'A light hit that makes the enemy lose its next move.',
+  aim: 'Spend a turn aiming: your next arrow can\'t miss and does double.', volley: 'Arrows rain down on every enemy at once.',
+  snare: 'Catch the enemy\'s next melee blow before it lands.', smoke: 'Blows at you this turn miss half the time.'
+};
+const BAR_SIZE = 4;
+const RANKED = ['hex', 'ward', 'plague', 'fire'];   // the actions a book's rank makes stronger (the rest get their strength from your weapon)
+const BOOK_PRICE = [20, 35, 55];                 // a spellbook or a kit at a merchant, by rank
+const bookNoun = () => cls === 'ranger' ? 'Kit' : 'Spellbook';
+const bookName = b => `${bookNoun()} of ${ACTION[b.id].name}` + (RANKED.includes(b.id) ? ` (${TIERS[b.t]})` : '');
+// each class's gear: names by tier (Poor, Fair, Superior) and what each piece is worth (the Knight's are the slots below)
+const CLASS_GEAR = {
+  warlock: {weapon: ['Gnarled Staff', 'Ebony Staff', 'Obsidian Staff'],
+            helmet: ['Sackcloth Hood', 'Velvet Cowl', 'Deathmask Cowl'], chest: ['Sackcloth Robe', 'Velvet Robe', 'Shadowsilk Robe'],
+            bracers: ['Cloth Wraps', 'Bone Bracers', 'Silver Vambraces'], greaves: ['Rag Wraps', 'Soft Boots', 'Shadowsilk Boots'],
+            power: {weapon: [2, 4, 6], helmet: [0, 1, 2], chest: [1, 2, 3], bracers: [0, 1, 2], greaves: [0, 1, 1]}},
+  ranger:  {weapon: ['Ash Shortbow', 'Yew Longbow', 'Blackwood Warbow'], shield: ['Rawhide Quiver', 'Leather Quiver', 'Black Quiver'],
+            helmet: ['Hide Cap', "Hunter's Hood", 'Wolf Pelt'], chest: ['Hide Jerkin', 'Leather Jack', 'Shadow Coat'],
+            bracers: ['Rawhide Wraps', "Archer's Bracers", 'Horn Vambraces'], greaves: ['Hide Boots', 'Riding Boots', 'Stalker Boots'],
+            power: {weapon: [2, 4, 6], shield: [1, 2, 3], helmet: [1, 1, 2], chest: [1, 2, 3], bracers: [1, 1, 2], greaves: [1, 2, 2]}}
+};
+// what a run starts with: the Knight and the Warlock nothing at all; the Ranger the worst bow there is, so he can shoot
+const CLASS_START = {knight: {}, warlock: {}, ranger: {weapon: 0}};
+// you, as a class: which it is, its bar of actions and the rank of each (0 Poor, 1 Fair, 2 Superior), and what a Warlock
+// or a Ranger has going in the fight on now (the Bone Ward, a snare laid, the last trick, an arrow aimed, bodies fallen)
+let cls = 'knight', classBar = [], ranks = {};
+let ward = 0, wardMax = 0, snareOn = null, snareLast = false, smoke = false, smokeLast = false, aimed = false, bodies = 0;
+let armed = null;                                 // the action tapped once: its card is up, a second tap uses it
+const EXPLAIN_KEY = 'crawlspace:explain';
+let explainFirst = (() => { try { return localStorage.getItem(EXPLAIN_KEY) !== 'off'; } catch (e) { return true; } })();
+const setExplain = on => { explainFirst = on; armed = null; try { localStorage.setItem(EXPLAIN_KEY, on ? 'on' : 'off'); } catch (e) {} };
+// is class c open to you? While the game is in playtesting every class is; the lock for publishing goes here
+const classUnlocked = c => true;
+// the gear slots your class fills (a Warlock has no shield: he reads his spellbooks instead; a Ranger's is his quiver)
+const classSlots = () => cls === 'warlock' ? Object.keys(slots).filter(k => k !== 'shield') : Object.keys(slots);
+const rankOf = id => ranks[id] || 0;
+
 let level = 1, xp = 0, levelUps = 0, bonusDmg = 0;
 // the campfire at the last camp, halfway through floor 5: it lasts for one thing, either a rest (heal a share of
 // your max HP) or a night of drills (a flat lump of XP). Walk away from it and it goes out: one visit only
@@ -1465,13 +1566,14 @@ const WEIGHTS = {
 const WEIGHT_CHANCE = 0.25;     // a piece of gear found or on sale is light this often, and heavy this often
 // a piece of gear: slot k, tier, and wt 'light', 'heavy' or none (standard)
 function gearOf(k, tier, wt) {
+  if (cls !== 'knight' && CLASS_GEAR[cls][k]) return {name: CLASS_GEAR[cls][k][tier], power: CLASS_GEAR[cls].power[k][tier], tier};   // (no light or heavy class gear yet)
   const [name, pow] = slots[k].items[tier];
   if (!wt || k === 'shield') return {name, power: pow, tier};
   const W = WEIGHTS[wt];
   if (k === 'weapon') return {name: W.weapon.names[tier], power: W.weapon.power[tier], tier, wt};
   return {name: W.armor[k][tier], power: pow, tier, wt};
 }
-const rollWeight = k => { if (k === 'shield') return undefined; const r = Math.random(); return r < WEIGHT_CHANCE ? 'light' : r < 2 * WEIGHT_CHANCE ? 'heavy' : undefined; };
+const rollWeight = k => { if (k === 'shield' || cls !== 'knight') return undefined; const r = Math.random(); return r < WEIGHT_CHANCE ? 'light' : r < 2 * WEIGHT_CHANCE ? 'heavy' : undefined; };
 const wtOf = k => worn[k] && worn[k].wt;
 const weaponCrit = () => wtOf('weapon') ? WEIGHTS[wtOf('weapon')].weapon.crit : 0;
 const weaponMiss = () => wtOf('weapon') ? WEIGHTS[wtOf('weapon')].weapon.miss : 0;
@@ -1507,10 +1609,14 @@ const makeStock = tier => [
   {type: 'potion', name: 'Health Potion', price: POTION_PRICE},
   ...BAGS.filter(b => b.tier <= tier),
   {type: 'satchel', name: 'Scroll Satchel', price: SATCHEL_PRICE},
-  ...Object.keys(slots).map(k => {
+  ...classSlots().map(k => {
     const g = gearOf(k, tier, rollWeight(k));   // (each slot's piece may be light or heavy)
     return {type: 'gear', slot: k, ...g, price: gearPrice(g)};
-  })
+  }),
+  ...(cls === 'knight' ? [] : [(() => {                                  // a Warlock's merchant has a spellbook; a Ranger's, a kit
+    const id = OPTIONS[cls][roll(0, OPTIONS[cls].length - 1)], b = {id, t: tier};
+    return {type: 'book', id, t: tier, tier, name: bookName(b), price: BOOK_PRICE[tier]};
+  })()])
 ];
 let shopStock = [], shopTitle = '';
 
@@ -1628,7 +1734,7 @@ const ARMOR_PER_POINT = 0.035, ARMOR_CAP = 0.45;
 const armorCut = (pts, cap = ARMOR_CAP, extra = 0) => Math.max(0, Math.min(cap, Math.max(0, pts) * ARMOR_PER_POINT + extra));
 const throughArmor = (raw, pts, cap, extra) => Math.max(1, Math.round(raw * (1 - armorCut(pts, cap, extra))));
 const isHidden = f => !!(f.next && MOVES[f.next] && MOVES[f.next].hide);
-const reachable = f => f.hp > 0 && !isHidden(f);
+const reachable = f => f.hp > 0 && (!isHidden(f) || (cls === 'ranger' && f.next === 'wing'));   // (arrows reach a Wyvern on the wing)
 const warcry = f => foes.some(o => o !== f && o.cry && o.hp > 0) ? WARCRY_BONUS : 0;   // the bonus f hits with
 // ---- how enemies choose (2026-11-21; they used to follow fixed turn counts, which players learned to count) ----
 // MOVE_CD: after making a move, an enemy waits at least this many of its own actions before it can make it again.
@@ -1737,6 +1843,7 @@ function setIntent(f) {
 // a new fight (or the same group met again after you fled): every enemy starts its pattern over
 function startIntents() {
   sunder = 0; weak = false;
+  classFightStart();
   const live = foes.filter(f => f.hp > 0);
   lastAct = null;
   for (const f of live) { f.acts = 0; f.next = f.then = null; f.off = false; f.cry = false; f.used = {}; f.crushAt = 0; f.swings = 0; }
@@ -1750,6 +1857,7 @@ function intentDmg(f, m) {
   let d = ((f.dmg[0] + f.dmg[1]) / 2 + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + lust + warcry(f)) * (1 - (m === 'crush' ? 0 : armorCut(armorNow(), armorCapNow(), armorExtra())));
   d = Math.max(1, d);
   if (M.big && m !== 'crush') d *= M.big;
+  if (f.hex && f.hex.cut) d *= 1 - f.hex.cut;                              // (a hexed enemy hits softer)
   return Math.max(1, Math.round(d));
 }
 // minFloor keeps an enemy off the floors above it (floor numbers start at 1)
@@ -1898,6 +2006,7 @@ function endRun(won, killer) {
   const killList = Object.entries(run.kills).sort((a, b) => b[1] - a[1])
     .map(([name, n]) => `${name} ${TIMES}${n}`).join(', ');
   const rows = [
+    ['Class', CLASS_NAME[cls]],
     ['Floor reached', `${floor + 1} / ${FLOORS}`],
     ['Level', level],
     ['Enemies defeated', total],
@@ -1975,6 +2084,7 @@ function refresh() {
 
 // the small print under an item in the merchant's list
 function shopNote(it) {
+  if (it.type === 'book') { const f = bookFit(it); return SHORT[it.id] + (f === 'known' ? ' You know it already' : f === 'full' ? ' Your bar is full' : f === 'rank' ? ` Raises yours to ${TIERS[it.t]}` : ''); }
   if (it.type === 'gear') {
     const cur = worn[it.slot];
     return `+${it.power}` + (it.slot !== 'shield' ? ` ${weightTag(it).word.toLowerCase()}` : '') + (cur ? (cur.ench ? `, you lose ${enchLabel(cur.ench)}` : '') +
@@ -1991,6 +2101,7 @@ function canBuy(it) {
   if (it.type === 'potion') return shopPotionsLeft > 0 && potions < maxPotions;
   if (it.type === 'bag') return maxPotions === it.from;
   if (it.type === 'satchel') return bagSlots === BAG_SLOTS;
+  if (it.type === 'book') return bookFit(it) === 'learn' || bookFit(it) === 'rank';
   return !(worn[it.slot] && worn[it.slot].power >= it.power);
 }
 
@@ -2011,7 +2122,9 @@ function lootTier(slot) {
   return floor === 0 && slot === 'chest' ? Math.min(tier, FLOOR1_CHEST_TIER) : tier;
 }
 function loot() {
-  const keys = Object.keys(slots), k = keys[roll(0, keys.length - 1)];
+  // a Warlock finds spellbooks where a Knight would find a shield; a Ranger finds arrow and trap kits besides his own gear
+  const keys = cls === 'warlock' ? [...classSlots(), 'book'] : cls === 'ranger' ? [...classSlots(), 'book'] : Object.keys(slots), k = keys[roll(0, keys.length - 1)];
+  if (k === 'book') return bookLoot();
   const tier = lootTier(k);
   pending = {slot: k, ...gearOf(k, tier, rollWeight(k))};   // (it may be light or heavy)
   if (Math.random() < ENCHANT_DROP_CHANCE)
@@ -2147,7 +2260,7 @@ function gainXp(amount) {
 // deal a hand: one random basic, then cards drawn by rarity (no duplicates in a hand)
 function dealHand() {
   const basic = BASICS[roll(0, BASICS.length - 1)];
-  const pool = Object.keys(PERKS).filter(id => id !== basic && !(PERKS[id].once && perkN(id)));
+  const pool = Object.keys(PERKS).filter(id => id !== basic && !(PERKS[id].once && perkN(id)) && (id !== 'shieldbash' || cls === 'knight'));   // (Shield Bash needs a shield and Block)
   hand = [basic];
   while (hand.length < HAND_SIZE && pool.length) {
     const weights = pool.map(id => RARITY_WEIGHT[PERKS[id].rarity] *
@@ -2263,7 +2376,7 @@ function bar(x, y, w, h, hp, max, kind = 'hp', key = null) {
 }
 // ---- combat screen: you on the left, the enemies on the right, floating numbers over everyone ----
 const POP_MS = 1000;                 // how long a floating number stays up
-const POP_COLORS = {dmg: '#f44', heal: '#4e4', miss: '#ddd', stun: '#6df', gold: '#fc3'}; // stun = lightning blue
+const POP_COLORS = {dmg: '#f44', heal: '#4e4', miss: '#ddd', stun: '#6df', gold: '#fc3', hex: '#c99cff'};   // (hex: a Warlock's curse) // stun = lightning blue
 const PLAYER_SPOT = {x: 70, y: 222};  // on the combat screen you stand at x 70 with your feet at y 298; numbers float up from your chest
 let combatView = false;              // true from walking into an enemy until the loot is handled
 let sceneFoes = [];                  // the whole group, dead ones too, so nobody jumps around mid-fight
@@ -2304,6 +2417,7 @@ function heroLook() {
   const gear = {}, glows = {};
   for (const k of Object.keys(slots)) if (worn[k]) { gear[k] = worn[k].tier; if (worn[k].ench) glows[k] = ENCH_GLOW[worn[k].ench.id]; if (worn[k].wt && armor.includes(k)) (gear.wt || (gear.wt = {}))[k] = worn[k].wt; }
   if (wtOf('weapon')) gear.wkind = wtOf('weapon') === 'light' ? 'dagger' : 'mace';   // (light and heavy pieces look their own way)
+  if (cls !== 'knight') { gear.cls = cls; if (cls === 'ranger' && gear.shield !== undefined) gear.offhand = gear.shield; delete gear.shield; delete gear.wt; delete gear.wkind; }
   return {gear, glows, weapon: worn.weapon ? {tier: worn.weapon.tier, ench: worn.weapon.ench && worn.weapon.ench.id} : {}};
 }
 
@@ -2330,7 +2444,7 @@ const turnBusy = () => !!turn && performance.now() < turn.t0 + turn.end * 1000;
 const turnTime = () => turn ? (performance.now() - turn.t0) / 1000 : Infinity;
 function beginTurn() {
   if (turnBusy()) finishTurnNow();
-  turn = {t0: performance.now(), at: 0, beats: [], hp: new Map([['player', p.hp], ...sceneFoes.map(f => [f, f.hp])]),
+  turn = {t0: performance.now(), at: 0, ward0: ward, beats: [], hp: new Map([['player', p.hp], ...sceneFoes.map(f => [f, f.hp])]),
           intents: new Map(sceneFoes.map(f => [f, f.next])), end: 0, open: true, id: ++turnSeq};
   SND.tag('turn' + turn.id);
 }
@@ -2422,6 +2536,7 @@ function beatSound(b, at) {
     case 'stumble': SND.fx('stumble', {pan: -0.45}, at); break;
     case 'gold': SND.fx('coins', {pan: o.pan, n: 3}, at + 0.35); break;
     case 'flee': SND.fx('flee', {pan: 0.5}, at); break;
+    default: classSound(b, at, o);
   }
 }
 
@@ -2431,7 +2546,7 @@ let shake = {t0: 0, amp: 0};          // the screen shaking from a big blow
 function shakeAt(t0, amp) { if (amp > shake.amp * Math.max(0, 1 - (performance.now() - shake.t0) / 260)) shake = {t0, amp}; }
 // where each figure is and how it stands at this moment of the turn: {hero: {dx, pose, flash, fall}, foes: Map(f -> {dx, dy, flash})}
 function turnMotion() {
-  const hero = {dx: 0, pose: null, flash: null, fall: 0}, foes = new Map();
+  const hero = {dx: 0, pose: cls === 'ranger' && aimed ? 'shoot' : null, flash: null, fall: 0}, foes = new Map();   // (an aimed Ranger holds his draw)
   if (!turn || !turnBusy()) return {hero, foes};
   const e = turnTime(), ease = k => k * k * (3 - 2 * k), M = f => foes.get(f) || (foes.set(f, {dx: 0, dy: 0, flash: null}), foes.get(f));
   for (const b of turn.beats) {
@@ -2444,6 +2559,7 @@ function turnMotion() {
       else if (u < hit + 0.12) { hero.dx += reach; hero.pose = 'strike'; }
       else hero.dx += reach * (1 - ease(Math.min(1, (u - hit - 0.12) / 0.2)));
     }
+    classMotion(b, u, hero);
     if (b.kind === 'guard' && u >= 0) hero.pose = 'guard';
     if (b.kind === 'drink' && u >= 0 && u < 0.6) hero.pose = 'drink';
     if (b.kind === 'struck' && u >= 0 && u < 0.3) { hero.dx -= (b.blocking ? 3 : 7) * (1 - u / 0.3); if (u < 0.09) hero.flash = b.blocking ? 'white' : 'red'; }
@@ -2476,7 +2592,7 @@ function fireBeats() {
     const at = box ? {x: (box.x0 + box.x1) / 2, y: box.y0 + (box.y1 - box.y0) * 0.38, w: box.x1 - box.x0, h: box.y1 - box.y0} : null;
     if (b.kind === 'hit' && at) {
       const ench = worn.weapon && worn.weapon.ench ? ENCH_GLOW[worn.weapon.ench.id] : null;
-      fx.push({kind: 'slash', t0, x: at.x, y: at.y, r: Math.max(18, Math.min(46, at.h * 0.42)), heavy: b.heavy, crit: b.crit, col: ench});
+      if (!b.ranged) fx.push({kind: 'slash', t0, x: at.x, y: at.y, r: Math.max(18, Math.min(46, at.h * 0.42)), heavy: b.heavy, crit: b.crit, col: ench});
       burst(t0, at.x, at.y, matOf(foe), b.crit ? 18 : b.heavy ? 14 : 9, foe);
       if (armorOf(foe) || b.caught) burst(t0, at.x - 4, at.y, 'spark', 8);
       if (b.crit) { fx.push({kind: 'flash', t0, col: '255,236,170', a: 0.2, ms: 120}); shakeAt(t0, 5); }
@@ -2503,6 +2619,7 @@ function fireBeats() {
     if (b.kind === 'stance' && at && (b.move === 'brace' || b.move === 'guard')) burst(t0, at.x - 10, at.y, 'spark', 6);
     if (b.kind === 'stance' && at && b.move === 'paw' && box) burst(t0, at.x, box.y1 - 4, 'bone', 8, foe, true);
     if (b.kind === 'youDie') { fx.push({kind: 'flash', t0, col: '120,0,0', a: 0.45, ms: 900}); shakeAt(t0, 6); }
+    classBeat(b, t0, foe, box, at, hb);
   }
 }
 // things flying off a blow: what depends on what was hit
@@ -2517,7 +2634,9 @@ const BITS = {
   ember:  {cols: ['#ff8a20', '#ffd060', '#ff4a10'], speed: 50, grav: -120, life: 700, size: 2},
   life:   {cols: ['#7cf07a', '#c8ffb0', '#3cc060'], speed: 40, grav: -110, life: 800, size: 2},
   venom:  {cols: ['#b060ff', '#7a30c0', '#e0b0ff'], speed: 35, grav: -90, life: 700, size: 2},
-  gold:   {cols: ['#ffd860', '#fff2b0', '#e0a020'], speed: 90, grav: -40, life: 900, size: 2}
+  gold:   {cols: ['#ffd860', '#fff2b0', '#e0a020'], speed: 90, grav: -40, life: 900, size: 2},
+  doom:   {cols: ['#b070ff', '#6a2ac0', '#e2c4ff'], speed: 30, grav: -70, life: 900, size: 2},
+  smoke:  {cols: ['#8a8692', '#6e6a76', '#b0acb8'], speed: 45, grav: -30, life: 1400, size: 3}
 };
 function burst(t0, x, y, kind, n, foe, ground = false) {
   const B = BITS[kind] || BITS.flesh, cols = B.cols || [foe && foe.color ? foe.color : '#6c6', '#b8f08a', '#3a7a2a'];
@@ -2535,6 +2654,7 @@ function drawFx(now) {
     const u = (now - e.t0) / 1000;
     if (u < 0) continue;
     const k = Math.min(1, (now - e.t0) / (e.ms || 400));
+    if (e.kind.startsWith('cls')) { drawClassFx(e, u, k); ctx.globalAlpha = 1; continue; }
     if (e.kind === 'bit') {                                                // a fleck, in pixels, falling (or rising) and settling on the floor
       let x = e.x + e.vx * u, y = e.y + e.vy * u + 0.5 * e.g * u * u;
       if (e.floor !== null && y > e.floor) y = e.floor;
@@ -2591,6 +2711,7 @@ function statusFx(now) {
     const b = fightBoxes.boxes.get(f);
     if (!b || shownHp(f) <= 0) continue;
     if (f.burn > 0) burst(now, b.x0 + Math.random() * (b.x1 - b.x0), b.y0 + (b.y1 - b.y0) * (0.3 + Math.random() * 0.6), 'ember', 1);
+    if (f.hex && Math.random() < 0.7) burst(now, b.x0 + Math.random() * (b.x1 - b.x0), b.y0 + (b.y1 - b.y0) * (0.2 + Math.random() * 0.6), 'doom', 1);
     if (f.stunned && !fx.some(e => e.kind === 'stars' && e.f === f && now - e.t0 < 700)) fx.push({kind: 'stars', f, t0: now, x: (b.x0 + b.x1) / 2, y: b.y0 - 4, ms: 900});
   }
   const hb = fightBoxes.hero;
@@ -3807,18 +3928,40 @@ const knightShapes = () => [KN_BODY, KN_PLUME,
   tube([40.6, -112], [43, -136], 3, 3.6), tube([42.3, -131], [43.2, -138], 5, 5.4),                                             // the torch
   tube([-25, -92], [-30, -72], 10, 9), tube([-30, -72], [-31, -58], 9, 8), ellipsePts(-31, -57, 4.6, 4.4, 10),                  // the sword arm
   [[-37, -55], [-25, -55], [-25, -52.5], [-37, -52.5]], KN_BLADE];                                                              // its guard and blade
-// the silhouette at the title's pixel size: black, its edges lit gold where they face your torch (brighter the nearer
-// they are), and a faint cold edge elsewhere so the shape still reads in the dark
+// the classes you have unlocked, as silhouettes from behind a step back on either side of you: the Warlock on your left,
+// his staff out at his side and its crystal glowing violet; the Ranger on your right, his bow low, his quiver on his back
+const T_SIDES = {warlock: {x: 92, y: 328, s: 0.9}, ranger: {x: 197, y: 328, s: 0.9}};
+let T_SHOWN = [];                                     // (set from the game: the classes unlocked)
+const WT_BODY = [[-18, 0], [-9, 1], [0, 0], [9, 1], [18, 0], [15, -22], [13, -50], [12, -66], [15, -80], [19, -90], [17, -97], [11, -101], [9, -108],
+  [10, -117], [7, -125], [1, -131], [-5, -131], [-10, -125], [-12, -116], [-11, -108], [-12, -101], [-17, -97], [-19, -90], [-15, -80], [-12, -66], [-13, -50], [-15, -22]];
+const WT_CRYSTAL = [[-26, -161], [-21.5, -150], [-26, -141], [-30.5, -150]];
+const warlockShapes = () => [WT_BODY, tube([-16, -92], [-24, -82], 8, 7), tube([-24, -82], [-27, -98], 7, 6), ellipsePts(-27, -100, 4, 4.2, 10),
+  tube([-29, 0], [-26, -146], 3, 2.6), [[-29, -142], [-23, -142], [-21, -148], [-31, -148]], WT_CRYSTAL];
+const RT_BODY = [[-15, 0], [-6, 0], [-5, -28], [-2, -34], [2, -34], [5, -28], [6, 0], [15, 0], [12, -30], [14, -46], [15, -70], [18, -88], [14, -98], [9, -102],
+  [10, -112], [7, -122], [1, -126], [-5, -125], [-9, -118], [-10, -108], [-9, -102], [-14, -98], [-18, -88], [-15, -70], [-14, -46], [-12, -30]];
+const RT_STRING = tube([25, -110], [25, -14], 0.9, 0.9);
+const rangerShapes = () => [RT_BODY, tube([12, -68], [-15, -104], 6.5, 7), [[-13, -104], [-24, -110], [-16, -100]], [[-15, -101], [-26, -103], [-17, -97]], [[-11, -106], [-20, -115], [-13, -103]],
+  tube([15, -92], [24, -76], 8, 7), tube([24, -76], [28, -62], 7, 6), ellipsePts(29, -61, 4.2, 4, 10),
+  tube([25, -110], [31, -86], 2.6, 2.8), tube([31, -86], [32, -62], 2.8, 3), tube([32, -62], [31, -38], 3, 2.8), tube([31, -38], [25, -14], 2.8, 2.6), RT_STRING];
 function titleKnight(b, low, pix) {
-  const cv = lowCanvas(pix), g = cv.getContext('2d'), {x, y, s} = T_KNIGHT, T = p => [x + p[0] * s, y + p[1] * s];
+  for (const c of ['warlock', 'ranger']) if (T_SHOWN.includes(c))
+    titleFigure(b, pix, T_SIDES[c], c === 'warlock' ? warlockShapes() : rangerShapes(), c === 'warlock' ? [[WT_CRYSTAL, 'violet']] : [[RT_STRING, 'pale']], 22);
+  titleFigure(b, pix, T_KNIGHT, knightShapes(), [[KN_BLADE, 'steel']], 26);
+}
+// a silhouette at the title's pixel size: black, its edges lit gold where they face your torch (brighter the nearer
+// they are), and a faint cold edge elsewhere so the shape still reads in the dark. marks: parts painted on their own
+// (the knight's blade like steel, the Warlock's crystal violet, the Ranger's bowstring pale)
+function titleFigure(b, pix, spot, shapes, marks, shadow) {
+  const cv = lowCanvas(pix), g = cv.getContext('2d'), {x, y, s} = spot, T = p => [x + p[0] * s, y + p[1] * s];
   g.scale(1 / pix, 1 / pix);
   g.fillStyle = '#fff';
-  for (const pts of knightShapes()) { path(g, pts.map(T)); g.fill(); }
-  g.fillStyle = '#f00';                                                  // the blade, marked so it can shine like steel
-  path(g, KN_BLADE.map(T)); g.fill();
+  for (const pts of shapes) { path(g, pts.map(T)); g.fill(); }
+  const MARK = {steel: '#f00', violet: '#00f', pale: '#0f0'};
+  for (const [pts, kind] of marks) { g.fillStyle = MARK[kind]; path(g, pts.map(T)); g.fill(); }
   const w = cv.width, h = cv.height, img = g.getImageData(0, 0, w, h), d = img.data;
   const at = (px, py) => px >= 0 && py >= 0 && px < w && py < h && d[(py * w + px) * 4 + 3] >= 128;
-  const blade = (px, py) => d[(py * w + px) * 4 + 1] < 100;
+  const blade = (px, py) => d[(py * w + px) * 4 + 1] < 100 && d[(py * w + px) * 4] > 128 && d[(py * w + px) * 4 + 2] < 100;
+  const violet = (px, py) => d[(py * w + px) * 4] < 100 && d[(py * w + px) * 4 + 2] > 128, pale = (px, py) => d[(py * w + px) * 4] < 100 && d[(py * w + px) * 4 + 1] > 128 && d[(py * w + px) * 4 + 2] < 100;
   const [tx, ty] = T_KTORCH, paint = [];
   for (let py = 0; py < h; py++) for (let px = 0; px < w; px++) {
     if (!at(px, py)) continue;
@@ -3827,12 +3970,14 @@ function titleKnight(b, low, pix) {
     for (const [nx, ny] of [[1, 0], [-1, 0], [0, -1], [0, 1], [1, -1], [-1, -1]]) if (!at(px + nx, py + ny)) { edge = true; face = Math.max(face, (nx * dx + ny * dy) / (Math.hypot(nx, ny) * dist)); }
     const v = face * Math.max(0, 1 - dist / 160);
     if (blade(px, py)) { paint.push([px, py, !at(px + 1, py) ? PALETTE[7] : PALETTE[5]]); continue; }   // cold steel, its edge bright
+    if (violet(px, py)) { paint.push([px, py, edge ? [200, 144, 255] : [138, 80, 200]]); continue; }       // the Warlock's crystal
+    if (pale(px, py)) { paint.push([px, py, [150, 140, 120]]); continue; }                              // the Ranger's bowstring
     paint.push([px, py, !edge ? [11, 9, 13] : v > 0.42 ? PALETTE[20] : v > 0.2 ? PALETTE[19] : v > 0.06 ? PALETTE[11] : !at(px, py - 1) ? PALETTE[4] : PALETTE[3]]);
   }
   d.fill(0);
   for (const [px, py, c] of paint) { const i = (py * w + px) * 4; d[i] = c[0]; d[i + 1] = c[1]; d[i + 2] = c[2]; d[i + 3] = 255; }
   g.putImageData(img, 0, 0);
-  shadowLow(b, x, y, 26);
+  shadowLow(b, x, y, shadow);
   b.save(); b.setTransform(1, 0, 0, 1, 0, 0); b.drawImage(cv, 0, 0); b.restore();
 }
 
@@ -5359,7 +5504,10 @@ const BLADE_UP = [0.5, -0.866];
 const heroCache = new Map();
 function heroParts(gear, rest = false, pose = null) {
   const k = JSON.stringify(gear) + (rest ? '|rest' : '') + (pose ? '|' + pose : '');
-  if (!heroCache.has(k)) { if (heroCache.size > 12) heroCache.clear(); heroCache.set(k, heroOf(gear, LOOK, rest, pose)); }
+  if (!heroCache.has(k)) {
+    if (heroCache.size > 12) heroCache.clear();
+    heroCache.set(k, gear.cls === 'warlock' ? warlockOf(gear, LOOK, pose) : gear.cls === 'ranger' ? rangerOf(gear, LOOK, pose) : heroOf(gear, LOOK, rest, pose));
+  }
   return heroCache.get(k);
 }
 // enchanted gear glows in its enchantment's color; the weapon's enchantment also shows along the blade
@@ -5550,6 +5698,12 @@ const dolls = new Map();
 function doll(gear, look = LOOK) {
   const k = JSON.stringify([gear, look]);
   if (dolls.has(k)) return dolls.get(k);
+  if (gear.cls === 'warlock' || gear.cls === 'ranger') {                 // (a class figure a little smaller, so the staff fits)
+    const c = classDoll(gear, null, 46, 78, 34, look, 0.96).cv;
+    if (dolls.size > 8) dolls.clear();
+    dolls.set(k, c);
+    return c;
+  }
   const cv = document.createElement('canvas'); cv.width = 46; cv.height = 78;   // 92 x 156 units
   const cg = cv.getContext('2d'), w = cv.width, h = cv.height;
   cg.scale(1 / PIX, 1 / PIX);
@@ -6093,7 +6247,553 @@ function setLook(look) {
 const drawFlame = (g, x, y, s, t, look) => liveFlame(g, x, y, s, t, 3, flameOf({...LOOK, ...look}).c);
 // the merchant's wagon, big, for the shop menu (x, y: the middle of the ground under it)
 const drawWagon = (g, x, y, s) => { g.save(); g.translate(x, y); g.scale(s, s); merchantWagon(g, -16, -29, [120, 80, 172]); g.restore(); };
-return {drawFight, drawDoll, drawMap: drawMapScene, drawTitle, roomTitle, roomFor, ROOM_OF_FLOOR, KINDS, LOOKS, setLook, drawFlame, drawCamp, drawWagon, drawStrip};
+// ======================================================================
+// CLASSES: the Warlock and the Ranger, built the way you are
+// (feet at 0,0, facing right, the left foot forward, the far side dimmed). gear = {cls, weapon, offhand, helmet,
+// chest, bracers, greaves}, each a tier 0..2; a missing slot is not worn
+// ======================================================================
+const CLS_EYE = [176, 118, 238], CLS_GLOW = [212, 156, 255];
+const FACE = [[-7, -2], [-6.5, -7], [-3, -10.5], [2, -11.2], [6, -9.5], [8.2, -6], [8.6, -2.5], [9.6, 0.5], [8.4, 2], [8.6, 4.5], [7, 7.5], [3.5, 9.6], [-0.5, 9.2], [-4.5, 6.5], [-6.8, 2.5]];
+const HIP = {L: [5, -61], R: [-5, -59]}, KNEE = {L: [16, -35], R: [-9, -32]}, ANK = {L: [20, -7], R: [-15, -6]};
+const FOOT = {L: [[16, -10], [24, -10], [29, -5], [32, -2], [32, 0], [15, 0]], R: [[-20, -10], [-11, -10], [-7, -5], [-4, -1.5], [-4, 0], [-21, 0]]};
+const TORSO = [[-11, -56], [11, -57], [12.5, -68], [14, -84], [12, -95], [6, -100], [-6, -100], [-13, -96], [-15, -84], [-13, -68]];
+const SH = {L: [11, -95], R: [-11, -93]};
+const HC = [3, -114];
+const unit = (a, b) => { const dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1; return [dx / l, dy / l]; };
+const toward = (p, d, k) => [p[0] + d[0] * k, p[1] + d[1] * k];
+
+// a face, three-quarters, at hc; eyeCol lights the eyes from within when it is bright
+function faceAt(add, P, line, hc, eyeCol, sly = false) {
+  add(off(FACE, hc), 'skin');
+  P.push({eye: [hc[0] + 1.4, hc[1] - 0.4], r: 0.95, col: eyeCol});
+  P.push({eye: [hc[0] + 7.2, hc[1] - 0.6], r: 0.75, col: eyeCol});
+  if (sly) { line(off([[-0.8, -3.4], [3, -1.9]], hc), 0.9, [40, 26, 20]); line(off([[5.6, -1.9], [8.4, -3.4]], hc), 0.8, [40, 26, 20]); }   // brows drawn down
+  else { line(off([[-0.6, -2.6], [2.8, -2.4]], hc), 0.8, [52, 34, 24]); line(off([[5.8, -2.6], [8.2, -2.8]], hc), 0.7, [52, 34, 24]); }
+  line(off([[2.6, 6], [6.4, 5.8]], hc), 0.6, [120, 62, 52]);
+}
+function beardAt(add, line, hc, look) {
+  const beard = lookOf('beard', look);
+  if (!beard) return;
+  add(off(beard > 1 ? [[-6.4, 1.4], [-3, 5], [0.6, 6.8], [4.6, 7], [8, 5], [9.2, 2.4], [9.4, 7.2], [7.8, 12.4], [4.6, 17], [1, 18.6], [-1.8, 15.4], [-4.8, 10.8], [-6.8, 6]]
+                    : [[-5.6, 3], [-3, 5.6], [0.6, 7.2], [4.6, 7.4], [7.8, 5.4], [8.8, 3.6], [8.6, 6.6], [6.8, 9.6], [3.4, 11.4], [-0.4, 11], [-4, 8.2]], hc), 'hair');
+  add(off([[2, 4.8], [4.4, 3.9], [7.4, 4.4], [8, 5.8], [4.8, 5.1], [2.2, 6]], hc), 'hair', 0, 1);
+}
+// short lines across a curved part (a horn's ridges), at each inner point
+function ridges(line, pts, ws, col, from = 1) {
+  for (let i = from; i < pts.length - 1; i++) {
+    const u = unit(pts[i - 1], pts[i + 1]), n = [-u[1] * ws[i] / 2, u[0] * ws[i] / 2];
+    line([[pts[i][0] - n[0], pts[i][1] - n[1]], [pts[i][0] + n[0], pts[i][1] + n[1]]], 0.55, col);
+  }
+}
+// a torch held in hand h: a wooden haft and an iron cup; its flame burns live on the map, at the tip
+function heldTorch(add, P, h) {
+  const [x, y] = h;
+  add([[x - 2.6, y + 7], [x + 1.6, y + 8], [x + 5.6, y - 20], [x + 1.6, y - 21]], 'woodDk');
+  add([[x + 0.6, y - 19], [x + 7, y - 18], [x + 7.4, y - 23], [x + 0.2, y - 24]], 'iron');
+  P.push({eye: [x + 3.8, y - 24], r: 0, col: [0, 0, 0], hole: true, tip: true});
+}
+// an open hand at h, its fingers spread along unit direction d, the thumb on the upper side
+function openHand(add, h, d, mat, far) {
+  const n = [-d[1], d[0]], at = (k, o) => [h[0] + d[0] * k + n[0] * o, h[1] + d[1] * k + n[1] * o];
+  add(ellipsePts(h[0], h[1], 3.1, 2.8, 10), mat, far);
+  for (const [o, len] of [[-2.1, 5], [-0.7, 6], [0.8, 5.8], [2.2, 4.6]]) add(tube(at(1.6, o), at(1.6 + len, o * 1.4), 1.6, 1.15), mat, far);
+  add(tube(at(-0.6, -2.6), at(2.2, -5.4), 1.8, 1.3), mat, far);
+}
+// the torn prisoner's tunic (everyone starts in it), and its short sleeve
+const tunicTorso = (add) => {
+  add([[-13, -60], [13, -60], [14.5, -47], [10.5, -51], [7, -45.5], [3, -50], [-1, -45], [-5, -49.5], [-9, -45], [-14.5, -50]], 'tunicDk');
+  add(TORSO, 'tunic');
+  add([[-9, -86], [-3, -86.4], [-3, -80], [-9, -79.6]], 'patch', 0, 1);
+  add([[2, -100], [7, -100], [4.6, -94]], 'skin', 0, 1);
+};
+const ropeBelt = (add) => { add([[-13, -61.4], [13, -61.8], [13, -58.4], [-13, -58]], 'rope'); add([[9, -59], [11, -59], [12.5, -50], [10.5, -50]], 'rope'); };
+// bare shins and feet below torn trousers
+function bareShin(add, kn, an, foot, far) {
+  const m = mid(kn, an, 0.52);
+  add(limb(m, an, 7, 6.8, 6.2), 'skin', far);
+  add(foot, 'skin', far);
+  add([[m[0] - 5, m[1] - 1], [m[0] - 3, m[1] + 2.4], [m[0] - 1, m[1] + 0.2], [m[0] + 1.4, m[1] + 2.6], [m[0] + 5, m[1] - 1]], 'pants', far);
+}
+const acrossAt = (line, a, b, f, w, col, lw, lean = 0) => {
+  const u = unit(a, b), c = mid(a, b, f), n = [-u[1] * w / 2, u[0] * w / 2];
+  line([[c[0] - n[0] - u[0] * lean, c[1] - n[1] - u[1] * lean], [c[0] + n[0] + u[0] * lean, c[1] + n[1] + u[1] * lean]], lw, col);
+};
+const alongAt = (line, a, b, ks, w, col, lw) => {
+  const u = unit(a, b), n = [-u[1] * w / 2, u[0] * w / 2];
+  for (const k of ks) line([[a[0] + n[0] * k, a[1] + n[1] * k], [b[0] + n[0] * k, b[1] + n[1] * k]], lw, col);
+};
+// boots on the shin kn..an: style 'wrap' (rags wound round), 'soft' (to mid shin, a turned cuff, pointed toe),
+// 'tall' (to the knee, buckled), 'fur' (low hide boots with a fur cuff), 'riding' (to below the knee, a wide cuff)
+function bootOn(add, line, kn, an, foot, w, far, style, mat, cuff, trim) {
+  const toe = foot.reduce((b, p) => p[0] > b[0] ? p : b);
+  if (style === 'wrap') {
+    add(foot, mat, far);
+    const p = mid(kn, an, 0.62);
+    add(limb(p, an, w + 1.2, w + 1.3, w + 1), mat, far);
+    for (const f of [0.15, 0.45, 0.75]) acrossAt(line, p, an, f, w + 1.3, trim, 0.6, 1.4);
+    line([[foot[0][0] + 1, foot[0][1] + 3], [toe[0] - 4, toe[1] - 3]], 0.5, trim);
+  } else if (style === 'soft') {
+    add(foot.map(p => p === toe ? [p[0] + 3.4, p[1] - 0.6] : p), mat, far, 1);
+    add(limb(mid(kn, an, 0.42), an, w + 1.4, w + 1.5, w + 1.2), mat, far);
+    add(limb(mid(kn, an, 0.36), mid(kn, an, 0.52), w + 2.6, w + 2.6, w + 2.4), cuff, far);
+  } else if (style === 'tall') {
+    add(foot.map(p => p === toe ? [p[0] + 4.6, p[1] - 0.8] : p), mat, far, 1);
+    add(limb(mid(kn, an, -0.06), an, w + 1.9, w + 1.9, w + 1.4), mat, far);
+    add([[kn[0] - (w + 2) * 0.55, kn[1] + 1], [kn[0] + (w + 2) * 0.2, kn[1] - 5.4], [kn[0] + (w + 2) * 0.7, kn[1] + 1.4]], mat, far, 1);   // the pointed knee flap
+    for (const f of [0.38, 0.7]) acrossAt(line, kn, an, f, w + 2, trim, 0.9);
+  } else if (style === 'fur') {
+    add(foot, mat, far);
+    add(limb(mid(kn, an, 0.6), an, w + 1.6, w + 1.6, w + 1.3), mat, far);
+    const c0 = mid(kn, an, 0.52), c1 = mid(kn, an, 0.7);
+    add(limb(c0, c1, w + 3.2, w + 3.4, w + 3), cuff, far);
+    line([[foot[0][0] + 1, foot[0][1] + 4], [toe[0] - 5, toe[1] - 4]], 0.6, trim);
+    for (const f of [0.8, 0.95]) acrossAt(line, kn, an, f, w + 1.6, trim, 0.6, 1.2);
+  } else {   // riding
+    add(foot, mat, far);
+    add(limb(mid(kn, an, 0.12), an, w + 1.7, w + 1.8, w + 1.4), mat, far);
+    add(limb(mid(kn, an, 0.04), mid(kn, an, 0.24), w + 3.2, w + 3.4, w + 3), cuff, far);
+    if (trim) acrossAt(line, kn, an, 0.6, w + 1.8, trim, 0.7);
+  }
+}
+
+// ---------------------------------------------------------------- the Warlock
+const WL_PAL = {skin: [200, 164, 140], pants: [48, 42, 54], rope: [150, 126, 86], void: [10, 8, 14],
+  sack: [130, 112, 90], sackDk: [90, 76, 60], patchW: [108, 90, 64],
+  velvet: [100, 56, 136], velvetDk: [64, 34, 92],
+  silk: [52, 46, 62], silkDk: [30, 26, 38], lining: [142, 28, 40],
+  bone: [228, 216, 188], boneDk: [160, 144, 116], horn: [206, 190, 160], hornDk: [128, 112, 90],
+  gnarl: [130, 96, 64], gnarlDk: [86, 62, 42], ebony: [62, 50, 60], obsid: [44, 38, 56],
+  tome: [108, 62, 44], tomeBk: [36, 30, 42], page: [220, 206, 170],
+  boot: [86, 60, 48], bootDk: [58, 40, 32], bootBk: [40, 36, 46], wrapW: [182, 170, 142], wrapWDk: [124, 110, 86],
+  crystal: [184, 120, 250], sigil: [156, 96, 228]};
+const ROBES = [['sack', 'sackDk'], ['velvet', 'velvetDk'], ['silk', 'silkDk']];
+// ready: the casting hand raised toward them, a spark over the palm; cast: the arm thrust out, the spell leaving the palm
+const WL_POSE = {ready: {elL: [25, -84], hdL: [34, -96], fing: [0.36, -0.93]}, cast: {elL: [28, -93], hdL: [45, -97], fing: [0.97, -0.24]},
+                 torch: {elL: [24, -90], hdL: [31, -98], fing: [0, -1], torch: true}};   // torch: on the map, a torch held up in the far hand
+const STAFF_B = [-26, 0], STAFF_T = [-19, -146];
+const staffX = y => STAFF_B[0] + (STAFF_T[0] - STAFF_B[0]) * (-y / -STAFF_T[1]);
+
+const warlockOf = (gear = {}, look = LOOK, pose = null) => being({...WL_PAL, hair: lookOf('hair', look), tunic: lookOf('rags', look)[0], tunicDk: lookOf('rags', look)[1],
+                                                                  patch: [106, 80, 46]}, (add, P) => {
+  const line = lineOf(P), T = k => gear[k], has = k => T(k) !== undefined;
+  const PO = WL_POSE[pose] || WL_POSE.ready;
+  const robe = has('chest') ? ROBES[T('chest')] : null, trim = T('chest') >= 1 ? GEAR.gold : null;
+  const elL = PO.elL, hdL = PO.hdL, shL = SH.L, shR = SH.R, elR = [-21, -77], hdR = [staffX(-95), -95];
+
+  // ---- the legs: dark hose, and whatever is on the feet
+  const leg = (s, far) => {
+    const kn = KNEE[s], an = ANK[s], foot = FOOT[s];
+    add(member(HIP[s], kn, an, [11, 11.8, 8.8, 8.2, 6.4]), 'pants', far);
+    const t = T('greaves');
+    if (t === undefined) return bareShin(add, kn, an, foot, far);
+    if (t === 0) bootOn(add, line, kn, an, foot, 8.2, far, 'wrap', 'wrapW', null, GEAR.wrapsDk);
+    else if (t === 1) bootOn(add, line, kn, an, foot, 8.2, far, 'soft', 'boot', 'bootDk', null);
+    else bootOn(add, line, kn, an, foot, 8.2, far, 'tall', 'bootBk', null, GEAR.steel);
+  };
+  // ---- the forearm below a sleeve: bracers, or bare skin painted with sigils
+  const forearm = (el, hd, q0, far) => {
+    const a = mid(el, hd, q0), b = mid(el, hd, 0.93), t = T('bracers'), w = 6.4;
+    if (t === undefined) {
+      if (!far || true) for (const f of [0.3, 0.62]) { const c = mid(a, b, f), u = unit(a, b), n = [-u[1], u[0]];
+        line([[c[0] - n[0] * 2.4 - u[0], c[1] - n[1] * 2.4 - u[1]], [c[0] + u[0] * 1.4, c[1] + u[1] * 1.4], [c[0] + n[0] * 2.4 - u[0], c[1] + n[1] * 2.4 - u[1]]], 0.6, WL_PAL.sigil); }
+      return;
+    }
+    if (t === 0) { add(limb(a, b, w + 1.4, w + 1.7, w + 1.2), 'wrapW', far); for (const f of [0.2, 0.5, 0.8]) acrossAt(line, a, b, f, w + 1.7, GEAR.wrapsDk, 0.6, 1.4); }
+    else if (t === 1) { add(limb(a, b, w + 1.2, w + 1.5, w + 1.1), 'leatherDk', far); alongAt(line, a, b, [-0.55, 0, 0.55], w + 1.5, WL_PAL.bone, 1); acrossAt(line, a, b, 0.5, w + 1.5, GEAR.leather, 0.5); }
+    else {
+      add(limb(a, b, w + 1.6, w + 2, w + 1.5), 'steel', far);
+      acrossAt(line, a, b, 0.04, w + 2, GEAR.gold, 0.9); acrossAt(line, a, b, 0.96, w + 2, GEAR.gold, 0.9);
+      if (!far) P.push({eye: mid(a, b, 0.5), r: 0.7, col: CLS_GLOW});      // a rune burning in the silver
+      else line([mid(a, b, 0.35), mid(a, b, 0.65)], 0.7, CLS_GLOW);
+    }
+  };
+  // ---- a wide robe sleeve over the arm: snug on the upper arm, opening like a bell on the forearm, its loose side hanging
+  const sleeve = (sh, el, hd, far, q) => {
+    if (!robe) { add(limb(sh, mid(sh, el, 0.5), 9.4, 9.6, 8.8), 'tunic', far); return 0; }
+    add(limb(sh, el, 10.4, 11, 10), robe[0], far);
+    const b = mid(el, hd, q), u = unit(el, b);
+    let n = [-u[1], u[0]]; if (n[1] < 0) n = [-n[0], -n[1]];
+    const sag = 3 + 7 * Math.abs(u[0]);
+    const pts = [toward(el, n, -5.4), toward(b, n, -6.2), [b[0] + n[0] * 6.4 + u[0] * 1.6, b[1] + n[1] * 6.4 + sag], [lerp(el[0], b[0], 0.45) + n[0] * 6, lerp(el[1], b[1], 0.45) + n[1] * 6 + sag * 0.8], toward(el, n, 5.6)];
+    add(pts, robe[0], far);
+    add([pts[1], pts[2], mid(pts[1], pts[2], 0.5).map((v, i) => v - u[i] * 1.4)], robe[1], far, 1);   // the dark inside of the opening
+    if (trim) line([pts[1], pts[2]], 1, trim);
+    return q;
+  };
+
+  // ---- the far side: the casting arm, the forward leg
+  add(member(shL, elL, hdL, [7.6, 8.2, 6.6, 6.4, 5]), 'skin', 1);
+  const qL = sleeve(shL, elL, hdL, 1, 0.66);
+  forearm(elL, hdL, qL || 0.2, 1);
+  if (PO.torch) { heldTorch(add, P, hdL); fist(add, hdL, 3.2, 'skin', 1); }
+  else { openHand(add, hdL, PO.fing, 'skin', 1); P.push({eye: toward(hdL, PO.fing, pose === 'cast' ? 9 : 8), r: pose === 'cast' ? 2.2 : 1.5, col: CLS_GLOW, spell: true}); }   // the spell over the palm
+  leg('L', 1);
+  leg('R', 0);
+
+  // ---- the robe: skirt, body, belt, the spellbook on its chain
+  if (robe) {
+    const t = T('chest'), y0 = t === 2 ? -10.6 : t === 1 ? -12.4 : -13.6, jag = t === 0 ? 1.7 : 0;
+    const hem = Array.from({length: 13}, (_, i) => { const f = i / 12; return [lerp(25.4, -21.4, f), lerp(y0 - 1.2, y0, f) + (jag ? (i % 2 ? -jag : jag * 0.5) : 0)]; });
+    const skirt = [[-13, -60], [13, -60], [16.4, -48], [21, -34], [24.8, -20], ...hem, [-20.8, -26], [-18, -40], [-15, -52]];
+    add(skirt, robe[0]);
+    if (t === 2) {                                                         // the front opening, lined in crimson
+      add([[9.6, -58.6], [12.2, -58.6], [24.4, y0 - 1.6], [15, y0 - 0.6]], 'lining');
+      line([[9.6, -58.6], [15, y0 - 0.6]], 0.9, GEAR.gold); line([[12.2, -58.6], [24.4, y0 - 1.6]], 0.9, GEAR.gold);
+    }
+    for (const [a, b] of [[[3, -56], [5, y0 - 1]], [[11, -52], [17.6, y0 - 2]], [[-6, -55], [-11, y0]], [[-12, -50], [-18, y0 + 0.4]]]) line([a, b], 0.7, WL_PAL[robe[1]]);
+    if (trim) line(hem.map(([x, y]) => [x, y - 1.2]), 1.3, trim);
+    if (t === 0) { add([[-8, -40], [-2.6, -40.4], [-2.4, -34.6], [-7.8, -34.2]], 'patchW', 0, 1); add([[14, -30], [18.4, -30.6], [19, -25.6], [14.6, -25.2]], 'patchW', 0, 1); }
+    add(TORSO, robe[0]);
+    line([[1.4, -99], [0.8, -61]], 0.8, WL_PAL[robe[1]]);
+    if (!has('helmet')) add([[0, -100], [6.6, -100], [3.4, -92.6]], 'skin', 0, 1);
+    if (t === 2) {                                                         // a crimson stole hanging from the neck, stitched with gold runes
+      add([[1.6, -99.6], [6.4, -99.6], [7.4, -58], [9, -42], [4.6, -41.4], [3, -58]], 'lining');
+      for (let y = -94; y < -48; y += 8) line([[3.6 + (y + 94) * 0.02, y], [5.6 + (y + 94) * 0.025, y - 2.4], [4.2 + (y + 94) * 0.025, y - 4.4]], 0.6, GEAR.gold);
+    }
+    // the belt
+    if (t === 0) ropeBelt(add);
+    else if (t === 1) { add([[-13, -62], [13, -62.4], [13, -58], [-13, -57.6]], 'velvetDk'); add(ellipsePts(3, -60, 2.6, 2.6, 10), 'gold', 0, 1); P.push({eye: [3, -60], r: 0.6, col: CLS_GLOW}); }
+    else {
+      add([[-13, -62], [13, -62.4], [13, -58], [-13, -57.6]], 'tomeBk');
+      add(ellipsePts(3, -60.6, 2.6, 2.4, 10), 'bone', 0, 1); add([[1.4, -58.8], [4.6, -58.8], [4.2, -56.6], [1.8, -56.6]], 'bone', 0, 1);
+      add(ellipsePts(2.1, -60.8, 0.7, 0.7, 6), 'void', 0, 1); add(ellipsePts(4, -60.8, 0.7, 0.7, 6), 'void', 0, 1);
+    }
+    // the spellbook, chained at the hip
+    line([[-8.6, -60], [-10.6, -55], [-12.2, -50.6]], 0.8, t === 2 ? GEAR.gold : [104, 104, 112]);
+    add([[-9.2, -51.4], [-7.4, -50.8], [-6.8, -36.8], [-8.6, -37.2]], 'page', 0, 1);
+    add([[-18.4, -50.6], [-9.2, -51.4], [-8.6, -37.2], [-17.8, -36.6]], t === 0 ? 'tome' : t === 1 ? 'velvetDk' : 'tomeBk');
+    if (t === 0) { line([[-18, -44], [-8.8, -44.6]], 0.6, WL_PAL.rope); add([[-18.4, -50.6], [-15.2, -50.8], [-18.2, -47.4]], 'void', 0, 1); }
+    else {
+      for (const [x, y, s] of [[-18.1, -50.4, 1], [-9.4, -51, -1], [-8.9, -37.6, -1], [-17.6, -37, 1]]) add([[x, y], [x + 3 * s, y + 0.1], [x, y + 3 * (y < -44 ? 1 : -1)]], 'gold', 0, 1);
+      if (t === 2) { add(ellipsePts(-13.4, -45, 2.4, 2.1, 10), 'bone', 0, 1); add(ellipsePts(-14.2, -45.4, 0.6, 0.6, 6), 'void', 0, 1); add(ellipsePts(-12.6, -45.4, 0.6, 0.6, 6), 'void', 0, 1); }
+      else line([[-17, -43.6], [-10, -44]], 0.7, GEAR.gold);
+    }
+  } else {
+    tunicTorso(add);
+    ropeBelt(add);
+  }
+
+  // ---- the hood's cape over the shoulders
+  const tH = T('helmet');
+  if (tH !== undefined) {
+    const cape = tH === 0
+      ? [[-16.6, -83], [-16.4, -92], [-12, -99.5], [-6, -102.6], [4, -102.8], [10.6, -101], [15.4, -96], [17.6, -88.6], [17.4, -82.4], [13.6, -84.4], [11, -81.6], [7.4, -84.6], [3.6, -81.4], [-0.4, -84.4], [-4.6, -81.6], [-8.6, -84.6], [-12.6, -81.8]]
+      : tH === 1
+        ? [[-17, -82], [-16.8, -92], [-12.4, -100], [-6, -103], [4, -103.2], [11, -101.4], [15.8, -96.4], [18, -89], [17.8, -82], [10, -80.4], [2, -80], [-6, -80.2], [-12.6, -80.8]]
+        : [[-17.6, -80], [-17.4, -92], [-12.8, -100.6], [-6, -103.6], [4, -103.8], [11.4, -101.8], [16.4, -96.6], [18.8, -88], [18.6, -79.6], [14.6, -83], [11.4, -76.6], [7.4, -82.6], [3.2, -75.8], [-1, -82.6], [-5.4, -76.6], [-9.4, -82.6], [-13.6, -77.4]];
+    add(cape, tH === 0 ? 'sack' : tH === 1 ? 'velvet' : 'silk');
+    if (tH >= 1) line(cape.slice(tH === 1 ? 8 : 8), 1, GEAR.gold);
+    if (tH === 0) line([[-12, -93], [-4, -97], [6, -97.4]], 0.6, WL_PAL.sackDk);
+  }
+
+  // ---- neck, head
+  add(limb([1, -99], [2, -106], 7.5, 7, 6.5), 'skin');
+  const hc = HC, S = pts => off(pts, hc);
+  if (tH === undefined)                                                    // long hair, falling past the ears
+    add(S([[-8.6, 2], [-9.6, -5], [-7, -10.8], [-2, -13.4], [3.4, -13], [7.6, -11.4], [9.6, -8], [9.4, -5.6], [6, -7.4], [3, -6.4], [0, -7.4], [-2.6, -4], [-3.4, 4], [-4.4, 12], [-6.4, 16.6], [-10.6, 15.4], [-11.4, 8]]), 'hair');
+  const n0 = P.length;
+  faceAt(add, P, line, hc, CLS_EYE, true);
+  if (tH === undefined) add(S([[-8.6, 2], [-9.6, -5], [-7, -10.8], [-2, -13.4], [3.4, -13], [7.6, -11.4], [9.6, -8], [9.4, -5.6], [6, -7.6], [3, -6.6], [0, -7.8], [-2.6, -4.4], [-3.6, 3], [-5.6, 1.6]]), 'hair');
+  beardAt(add, line, hc, look);
+  if (tH === 0) {                                                          // Sackcloth Hood: peaked, the point flopped back, the face left open
+    add(S([[-12, 12.6], [-12.8, 2], [-12.8, -6], [-14.6, -12.6], [-18.6, -17.4], [-13.4, -16.4], [-8.4, -14.6], [-2, -14], [4.6, -12.6], [9.2, -9], [11.4, -4.4], [11, -2.8], [8.6, -4.8], [3.4, -5.8], [-0.4, -2.6], [-0.6, 3], [3.6, 8.8], [2.4, 12.6], [-3.6, 14.2]]), 'sack');
+    line(S([[11, -2.8], [8.6, -4.8], [3.4, -5.8], [-0.4, -2.6], [-0.6, 3], [3.6, 8.8]]), 1, WL_PAL.sackDk);
+    line(S([[-14.6, -12.6], [-9, -9], [-4, -11.4]]), 0.6, WL_PAL.sackDk);
+    add(S([[-10.6, 0], [-6.4, -0.4], [-6.2, 4.2], [-10.4, 4.6]]), 'patchW', 0, 1);
+  } else if (tH >= 1) {                                                    // Velvet Cowl / Horned Cowl: deep, the face lost in its shadow
+    const mat = tH === 1 ? 'velvet' : 'silk', k = tH === 2 ? 1.04 : 1, Sk = pts => S(pts.map(([x, y]) => [x * k, y * k]));
+    add(Sk([[-12.8, 13.4], [-13.8, 2.4], [-13.6, -5.6], [-11.4, -12.4], [-6.4, -16.6], [0.6, -17.6], [7, -16], [11.6, -12], [14, -6.2], [14.8, 0], [14.2, 6.4], [11.6, 11], [6.4, 13.8], [-2, 15]]), mat);
+    const hole = [[3.8, -10.8], [8.8, -11], [12.2, -7.4], [13, -1.2], [12.4, 5.2], [9.4, 9.6], [5.8, 10.2], [3.6, 5.2], [2.8, -2.4]];
+    add(S(hole), 'void', 0, 1);
+    line(S([...hole, hole[0]]), 0.9, tH === 1 ? GEAR.gold : WL_PAL.lining);
+    line(Sk([[-11.4, -12.4], [-4, -9], [2.6, -4]]), 0.7, WL_PAL[mat + 'Dk']);
+    if (tH === 1) {
+      P.push({eye: S([[6.6, -1.4]])[0], r: 0.95, col: CLS_GLOW}); P.push({eye: S([[10.6, -1.6]])[0], r: 0.8, col: CLS_GLOW});
+      add(S(ellipsePts(6.4, 14.6, 1.9, 1.7, 8)), 'gold', 0, 1);
+    } else {                                                               // a bone mask in the dark
+      add(S([[3.8, -10], [8.8, -10.6], [12, -7.2], [12.8, -1.4], [12, 4.4], [9.6, 8.4], [6.4, 9.2], [4, 5.2], [3, -2.6]]), 'bone');
+      add(S(ellipsePts(6.6, -2, 1.8, 1.4, 8)), 'void', 0, 1); add(S(ellipsePts(10.4, -2.2, 1.5, 1.3, 8)), 'void', 0, 1);
+      add(S([[9.2, 1.6], [10.8, 1.4], [10.2, 3.8]]), 'void', 0, 1);
+      for (const x of [5.6, 7.2, 8.8, 10.2]) line(S([[x, 5.6], [x, 7.8]]), 0.5, WL_PAL.boneDk);
+      line(S([[5, -5.4], [8.4, -4.4], [11.6, -5.2]]), 0.6, WL_PAL.boneDk);
+      P.push({eye: S([[6.6, -2]])[0], r: 0.95, col: CLS_GLOW}); P.push({eye: S([[10.4, -2.2]])[0], r: 0.8, col: CLS_GLOW});
+      add(S(ellipsePts(6.2, 15, 2, 1.8, 8)), 'gold', 0, 1);
+    }
+  }
+  coverEyes(P, n0);
+
+  // ---- the near arm, holding the staff upright beside him
+  add(member(shR, elR, hdR, [7.6, 8.2, 6.6, 6.4, 5]), 'skin');
+  if (robe) {                                                              // the sleeve slides down the raised forearm and hangs from the elbow
+    add(limb(shR, elR, 10.6, 11.2, 10.4), robe[0]);
+    const c = mid(elR, hdR, 0.3);
+    const drape = [[c[0] - 5.8, c[1] - 1], [c[0] + 5.6, c[1] - 1.6], [elR[0] + 6.8, elR[1] + 4], [elR[0] + 3, elR[1] + 11.6], [elR[0] - 2.6, elR[1] + 9], [elR[0] - 6.4, elR[1] + 3]];
+    add(drape, robe[0]);
+    add([[c[0] - 5.8, c[1] - 1], [c[0] + 5.6, c[1] - 1.6], [c[0] + 4.4, c[1] + 1.2], [c[0] - 4.6, c[1] + 1.8]], robe[1], 0, 1);
+    if (trim) line([[c[0] - 5.8, c[1] - 1], [c[0] + 5.6, c[1] - 1.6]], 1, trim);
+  } else add(limb(shR, mid(shR, elR, 0.5), 9.4, 9.6, 8.8), 'tunic');
+  forearm(elR, hdR, robe ? 0.36 : 0.1, 0);
+  const tW = T('weapon');
+  if (tW === 0) {                                                          // Gnarled Staff: a crooked branch, a bird's skull tied to its hook
+    add(chain([[-26, 0], [-25, -34], [-23.2, -70], [-21.4, -104], [-20.6, -124], [-21.6, -134]], [3.4, 3.2, 3.4, 3.2, 3.6, 3.8]), 'gnarl');
+    add(ellipsePts(-23.4, -66, 2.4, 3, 8), 'gnarlDk'); add(ellipsePts(-20.8, -116, 2.2, 2.8, 8), 'gnarlDk');
+    add(chain([[-21.6, -133], [-20, -140], [-15.6, -143.6], [-11.6, -141.4], [-11.4, -137], [-14, -135]], [3.8, 3.4, 3, 2.6, 2.2, 1.4]), 'gnarl');
+    line([[-12.4, -137], [-12, -130.6]], 0.6, WL_PAL.rope);
+    add(ellipsePts(-11.6, -127.6, 2.4, 2, 8), 'bone'); add([[-9.8, -128.2], [-6, -126.4], [-9.8, -126.2]], 'bone', 0, 1); add(ellipsePts(-11, -128, 0.7, 0.7, 6), 'void', 0, 1);
+  } else if (tW === 1) {                                                   // Ebony Staff: black wood banded in iron, a violet crystal caged in iron claws
+    add(tube([-26, 0], [staffX(-136), -136], 3.4, 3), 'ebony');
+    for (const y of [-56, -112, -132]) add(tube([staffX(y) - 0.1, y + 1.3], [staffX(y) + 0.1, y - 1.3], 4.6, 4.6), 'iron');
+    add(chain([[-21.6, -133], [-24.2, -140], [-23.6, -148], [-21.2, -152.6]], [1.8, 1.8, 1.5, 1]), 'iron');
+    add(chain([[-17.6, -133], [-15, -140], [-15.4, -148], [-17.8, -152.6]], [1.8, 1.8, 1.5, 1]), 'iron');
+    add([[-19.6, -156.4], [-16.2, -146.6], [-19.6, -138.4], [-23, -146.6]], 'crystal', 0, 1);
+    line([[-19.6, -154], [-17.4, -146.6]], 0.6, [240, 220, 255]);
+    P.push({eye: [-19.6, -147], r: 1.5, col: CLS_GLOW});
+  } else if (tW === 2) {                                                   // Obsidian Staff: gold-banded black glass, crowned with a horned skull
+    add(tube([-26, 0], [staffX(-140), -140], 3.6, 3.2), 'obsid');
+    for (const y of [-40, -116, -138]) add(tube([staffX(y) - 0.1, y + 1.4], [staffX(y) + 0.1, y - 1.4], 5, 5), 'gold');
+    add(chain([[-22.8, -153.4], [-26.8, -157.4], [-29.2, -154], [-27.6, -150.4]], [2.6, 2.2, 1.6, 0.8]), 'horn');
+    add(chain([[-15.4, -153.4], [-11.4, -157.4], [-9, -154], [-10.6, -150.4]], [2.6, 2.2, 1.6, 0.8]), 'horn');
+    add(ellipsePts(-19.1, -150.4, 5.4, 5, 12), 'bone');
+    add([[-22.6, -147.4], [-15.6, -147.6], [-15, -143], [-19.1, -141.2], [-23.2, -143.2]], 'bone');
+    add(ellipsePts(-21.1, -150.2, 1.5, 1.3, 8), 'void', 0, 1); add(ellipsePts(-17.1, -150.4, 1.5, 1.3, 8), 'void', 0, 1);
+    add([[-19.8, -147.6], [-18.4, -147.6], [-19.1, -145.6]], 'void', 0, 1);
+    for (const x of [-21.2, -19.6, -18]) line([[x, -144], [x, -142.2]], 0.5, WL_PAL.boneDk);
+    P.push({eye: [-21.1, -150.2], r: 0.85, col: CLS_GLOW}); P.push({eye: [-17.1, -150.4], r: 0.85, col: CLS_GLOW});
+    line([[-16.4, -139], [-12.8, -133], [-13.6, -127]], 0.6, GEAR.gold); add(ellipsePts(-13.6, -125.8, 1.2, 1.4, 8), 'gold', 0, 1);
+  }
+  fist(add, hdR, 3.2, 'skin', 0);
+});
+
+// ---------------------------------------------------------------- the Ranger
+const RG_PAL = {pants: [88, 74, 54], hide: [150, 118, 84], hideDk: [104, 80, 56], fur: [182, 164, 136], furDk: [120, 104, 84],
+  green: [70, 100, 58], greenDk: [46, 68, 38], jerk: [128, 86, 50], jerkDk: [84, 54, 32], coat: [62, 52, 50], coatDk: [38, 32, 32],
+  ash: [200, 174, 128], ashDk: [144, 120, 86], yew: [182, 114, 62], yewDk: [120, 72, 38], bwood: [104, 60, 50], bwoodDk: [62, 36, 30],
+  fletch: [232, 226, 212], fletchRd: [168, 36, 36], fletchBk: [48, 44, 52], shaft: [160, 120, 76],
+  wolf: [132, 126, 120], wolfDk: [84, 78, 76], wolfLt: [190, 184, 174], fang: [240, 234, 218], void: [10, 8, 10],
+  quivR: [156, 122, 86], quivL: [120, 76, 44], quivB: [46, 40, 42], strap: [100, 66, 40], brass: [196, 156, 70], string: [232, 224, 204]};
+// ready: an arrow on the string, the bow held low toward them; shoot: drawn to the jaw, aimed
+const RG_POSE = {ready: {elL: [21, -84], hdL: [30, -76], tilt: 0.42, elR: [-1, -77], hdR: [16, -84], drawn: 0.3},
+                 shoot: {elL: [26, -96], hdL: [42, -97], tilt: 0, elR: [-22, -101], hdR: [0, -106], drawn: 1},
+                 volley: {elL: [23, -108], hdL: [36, -121], tilt: -0.68, elR: [-22, -97], hdR: [0, -104], drawn: 1},
+                 loose: {elL: [26, -96], hdL: [42, -97], tilt: 0, elR: [-24, -99], hdR: [-4, -104], drawn: 0, empty: true},
+                 volleyLoose: {elL: [23, -108], hdL: [36, -121], tilt: -0.68, elR: [-24, -95], hdR: [-4, -101], drawn: 0, empty: true},
+                 torch: {elL: [24, -90], hdL: [31, -98], tilt: 0, elR: [-13, -75], hdR: [-11, -57], drawn: 0, torch: true}};   // on the map: a torch up, the bow put away   // loosed high, to fall on a group
+// a bow held at h: half length L, tilted th (radians, top toward the foe), its tips bent back toward the archer by bend
+function bowPts(h, L, th, bend, n = 10) {
+  const a = [Math.sin(th), -Math.cos(th)], bk = [-Math.cos(th), -Math.sin(th)], out = [];
+  for (let i = 0; i <= n; i++) { const f = i / n * 2 - 1; out.push([h[0] - a[0] * f * L + bk[0] * (bend * f * f - 1.2), h[1] - a[1] * f * L + bk[1] * (bend * f * f - 1.2)]); }
+  return out;
+}
+function arrowAt(add, line, nock, dir, len, fl) {
+  const tip = toward(nock, dir, len), n = [-dir[1], dir[0]];
+  line([nock, tip], 1, RG_PAL.shaft);
+  add([[tip[0] - dir[0] * 4.4 + n[0] * 1.7, tip[1] - dir[1] * 4.4 + n[1] * 1.7], toward(tip, dir, 1.4), [tip[0] - dir[0] * 4.4 - n[0] * 1.7, tip[1] - dir[1] * 4.4 - n[1] * 1.7]], 'iron', 0, 1);
+  for (const s of [1, -1]) add([toward(nock, dir, 1), [nock[0] + dir[0] * 6 + n[0] * s * 0.6, nock[1] + dir[1] * 6 + n[1] * s * 0.6],
+    [nock[0] + dir[0] * 7.6 + n[0] * s * 2.6, nock[1] + dir[1] * 7.6 + n[1] * s * 2.6], [nock[0] + dir[0] * 2.2 + n[0] * s * 2.4, nock[1] + dir[1] * 2.2 + n[1] * s * 2.4]], fl, 0, 1);
+}
+const rangerOf = (gear = {}, look = LOOK, pose = null) => being({...HERO_PAL, ...RG_PAL, hair: lookOf('hair', look), tunic: lookOf('rags', look)[0], tunicDk: lookOf('rags', look)[1]}, (add, P) => {
+  const line = lineOf(P), T = k => gear[k], has = k => T(k) !== undefined;
+  const PO = RG_POSE[pose] || RG_POSE.ready;
+  const shL = SH.L, shR = SH.R, elL = PO.elL, hdL = PO.hdL, elR = PO.elR, hdR = PO.hdR;
+  const tC = T('chest'), tH = T('helmet'), tQ = T('offhand'), tW = T('weapon');
+  const hc = HC, S = pts => off(pts, hc);
+
+  // ---- behind: the wolf's pelt down the back, the quiver
+  if (tH === 2) {
+    const pelt = [[-4, -124], [-12, -118], [-18.4, -104], [-22.4, -88], [-26, -70], [-28.6, -52], [-29.6, -38], [-27, -35.4], [-25, -39.6], [-22.4, -34.8], [-20.4, -40], [-17.6, -36.6], [-15.8, -44], [-12.6, -60], [-9.6, -80], [-4.6, -100]];
+    add(pelt, 'wolf');
+    line([[-12, -112], [-18, -96], [-22, -78], [-25, -58], [-26, -42]], 0.8, RG_PAL.wolfDk);
+    line([[-8, -106], [-12.6, -86], [-16, -64], [-18, -46]], 0.7, RG_PAL.wolfLt);
+  }
+  if (tQ !== undefined) {
+    const bot = [-26, -62], top = [-15.4, -111], u = unit(bot, top), n = [-u[1], u[0]];
+    const fl = ['fletch', 'fletch', 'fletchRd'][tQ], cnt = [3, 5, 6][tQ];
+    for (let i = 0; i < cnt; i++) {
+      const o = (i - (cnt - 1) / 2) * 1.9, base = [top[0] + n[0] * o, top[1] + n[1] * o], len = 9 + (i % 2) * 2.4;
+      line([toward(base, u, -2), toward(base, u, len - 4)], 0.9, RG_PAL.shaft);
+      const tip = toward(base, u, len), b0 = toward(base, u, len - 7);
+      add([b0, [b0[0] + n[0] * 1.5 + u[0] * 2, b0[1] + n[1] * 1.5 + u[1] * 2], tip, [b0[0] - n[0] * 1.5 + u[0] * 2, b0[1] - n[1] * 1.5 + u[1] * 2]], tQ === 2 && i % 2 ? 'fletchBk' : fl, 0, 1);
+    }
+    add(limb(bot, top, 7.2, 7.8, 8.4), ['quivR', 'quivL', 'quivB'][tQ]);
+    add(limb(mid(bot, top, 0.9), top, 9.2, 9.4, 9.2), tQ === 2 ? 'steel' : tQ === 1 ? 'jerkDk' : 'hideDk');
+    if (tQ === 1) for (const f of [0.3, 0.55]) acrossAt(line, bot, top, f, 7.8, RG_PAL.jerkDk, 0.6);
+    if (tQ === 2) { for (const f of [0.08, 0.5]) acrossAt(line, bot, top, f, 8, GEAR.steel, 1); }
+    if (tQ === 0) line([toward(mid(bot, top, 0.2), n, 2.4), toward(mid(bot, top, 0.7), n, 2.6)], 0.6, RG_PAL.hideDk);
+  }
+
+  // ---- the far side: the bow arm and the bow, the forward leg
+  const arm = (sh, el, hd, far, bow) => {
+    add(member(sh, el, hd, [7.6, 8.2, 6.6, 6.4, 5]), 'skin', far);
+    if (tC === 2) { add(limb(sh, el, 9.4, 9.8, 8.6), 'coat', far); add(limb(el, mid(el, hd, 0.7), 8.6, 8.4, 7.8), 'coat', far); }
+    else if (tC === 1) add(limb(sh, mid(sh, el, 1.02), 9.6, 9.8, 9), 'green', far);
+    else add(limb(sh, mid(sh, el, 0.5), 9.4, 9.6, 8.8), 'tunic', far);
+    const t = T('bracers'), a = mid(el, hd, 0.16), b = mid(el, hd, 0.86), w = 6.4;
+    if (t === undefined) { if (!far && tC !== 2) for (const q of [0.3, 0.52, 0.74]) { const c = mid(el, hd, q); add([[c[0] - 4.2, c[1] - 2], [c[0] - 2.6, c[1] - 3.4], [c[0] + 4.2, c[1] + 2], [c[0] + 2.6, c[1] + 3.4]], 'bandage', 0, 1); } }
+    else if (t === 0) { add(limb(a, b, w + 1.2, w + 1.5, w + 1), 'hide', far); for (const f of [0.15, 0.4, 0.65, 0.9]) acrossAt(line, a, b, f, w + 1.5, RG_PAL.hideDk, 0.6, 1.6); }
+    else if (t === 1) { add(limb(a, b, w + 1.4, w + 1.7, w + 1.2), 'jerk', far); acrossAt(line, a, b, 0.05, w + 1.7, RG_PAL.jerkDk, 0.8); acrossAt(line, a, b, 0.95, w + 1.7, RG_PAL.jerkDk, 0.8); for (const q of [0.32, 0.62]) { acrossAt(line, a, b, q, w + 1.7, GEAR.wraps, 0.5, 1.6); acrossAt(line, a, b, q, w + 1.7, GEAR.wraps, 0.5, -1.6); } }
+    else { add(limb(a, b, w + 1.6, w + 2, w + 1.5), 'coatDk', far); alongAt(line, a, b, [-0.45, 0.45], w + 2, RG_PAL.wolfLt, 1.3); for (const f of [0.2, 0.5, 0.8]) { const c = mid(a, b, f); add(ellipsePts(c[0], c[1], 0.7, 0.7, 6), 'steel', far, 1); } }
+    if (bow) bow();
+    fist(add, hd, 3.2, 'skin', far);
+  };
+  // the bow: where its string is nocked (pulled back to the drawing hand)
+  const L = [30, 46, 42][tW ?? 0], bend = 5.6 + 2.6 * PO.drawn, mat = ['ash', 'yew', 'bwood'][tW ?? 0];
+  const bp = tW === undefined || PO.torch ? null : bowPts(hdL, L, PO.tilt, bend);
+  const drawBow = () => {
+    if (!bp) return;
+    const n = bp.length - 1, ws = bp.map((_, i) => 3.8 - 2.4 * Math.abs(i / n * 2 - 1));
+    let pts = bp;
+    if (tW === 2) {                                                        // recurved tips, bent forward again
+      const fwd = [Math.cos(PO.tilt), Math.sin(PO.tilt)], up = [Math.sin(PO.tilt), -Math.cos(PO.tilt)];
+      pts = [toward(toward(bp[0], up, 2.6), fwd, 3.4), ...bp, toward(toward(bp[n], up, -2.6), fwd, 3.4)];
+      add(chain(pts, [1.2, ...ws, 1.2]), mat);
+    } else add(chain(pts, ws), mat);
+    add(tube(toward(hdL, [Math.sin(PO.tilt), -Math.cos(PO.tilt)], 4.6), toward(hdL, [Math.sin(PO.tilt), -Math.cos(PO.tilt)], -4.6), 4.4, 4.4), tW === 2 ? 'coatDk' : 'leather');
+    if (tW >= 1) for (const p of [pts[0], pts[pts.length - 1]]) add(ellipsePts(p[0], p[1], 1.3, 1.3, 6), tW === 2 ? 'steel' : 'fang', 0, 1);
+    if (tW === 2) for (const k of [7.4, -7.4]) { const p = toward(hdL, [Math.sin(PO.tilt), -Math.cos(PO.tilt)], k); add(ellipsePts(p[0], p[1], 2.4, 1.4, 8), 'steel', 0, 1); }
+  };
+  arm(shL, elL, hdL, 1, PO.torch ? () => heldTorch(add, P, hdL) : drawBow);
+  const leg = (s, far) => {
+    const kn = KNEE[s], an = ANK[s], foot = FOOT[s];
+    add(member(HIP[s], kn, an, [11, 11.8, 8.8, 8.2, 6.4]), 'pants', far);
+    const t = T('greaves');
+    if (t === undefined) return bareShin(add, kn, an, foot, far);
+    if (t === 0) bootOn(add, line, kn, an, foot, 8.2, far, 'fur', 'hide', 'fur', RG_PAL.hideDk);
+    else if (t === 1) bootOn(add, line, kn, an, foot, 8.2, far, 'riding', 'jerk', 'jerkDk', null);
+    else bootOn(add, line, kn, an, foot, 8.2, far, 'tall', 'coatDk', null, GEAR.steel);
+  };
+  leg('L', 1);
+  leg('R', 0);
+
+  // ---- the body
+  if (tC === undefined) { tunicTorso(add); ropeBelt(add); }
+  else if (tC === 0) {                                                     // Hide Jerkin: rough hide, laced, a fur collar
+    add([[-13, -60], [13, -60], [14.6, -50], [11, -48.4], [8, -50.6], [4, -47.6], [0, -50.4], [-4, -47.8], [-8, -50.6], [-11.6, -48], [-14.6, -51]], 'hideDk');
+    add(TORSO, 'hide');
+    for (let y = -94; y < -64; y += 5) line([[-1, y], [3, y + 2.6]], 0.6, RG_PAL.hideDk), line([[3, y], [-1, y + 2.6]], 0.6, RG_PAL.hideDk);
+    add([[-11.6, -98], [-6, -102], [6, -102.4], [12.4, -99], [13.6, -94.6], [10, -95.6], [7.4, -93.4], [4.4, -95.6], [1.4, -93], [-1.6, -95.4], [-4.6, -93.2], [-7.6, -95.4], [-10.6, -93.4], [-13.4, -95.4]], 'fur');
+    ropeBelt(add);
+  } else if (tC === 1) {                                                   // Leather Jack over a green tunic, its hem cut in leaves
+    const dags = []; for (let i = 0; i <= 8; i++) { const x = lerp(15.6, -16.4, i / 8); dags.push([x, i % 2 ? -41.6 : -45.6]); }
+    add([[-13, -60], [13, -60], [15.6, -46], ...dags], 'green');
+    add(TORSO, 'jerk');
+    line([[-11, -82], [-1, -84], [13, -82]], 0.6, RG_PAL.jerkDk); line([[1, -99], [1, -62]], 0.7, RG_PAL.jerkDk);
+    for (let y = -94; y < -66; y += 5) line([[-0.6, y], [2.6, y]], 0.5, GEAR.wraps);
+    add([[-13, -62], [13, -62.4], [13, -58], [-13, -57.6]], 'leatherDk'); add([[1, -62.6], [5, -62.6], [5, -57], [1, -57]], 'brass');
+    add([[-14.6, -59], [-10.6, -59.4], [-11.4, -44], [-13.4, -42.6], [-15, -44]], 'leatherDk'); add(tube([-12.6, -59], [-12.4, -66], 2.2, 2.2), 'hilt'); add([[-15.6, -59.6], [-9.6, -60], [-9.6, -58.6], [-15.6, -58.2]], 'brass');
+  } else {                                                                 // Shadow Coat: dark leather to the knees, studded in silver, split in front
+    add([[-13, -60], [13, -60], [17, -46], [21.4, -31], [22.6, -24], [15, -22.8], [10.4, -42], [5.6, -24], [-4, -22.4], [-14, -23.6], [-19, -26], [-18.4, -40], [-15.6, -52]], 'coat');
+    line([[10.4, -42], [10, -58]], 0.8, RG_PAL.coatDk); line([[-8, -54], [-12, -26]], 0.7, RG_PAL.coatDk); line([[16, -48], [19.6, -28]], 0.7, RG_PAL.coatDk);
+    add(TORSO, 'coat');
+    for (let y = -92, r = 0; y < -64; y += 5, r++) for (const x of [-8 + (r % 2) * 2, 6 + (r % 2) * 2]) add(ellipsePts(x, y, 0.65, 0.65, 6), 'steel', 0, 1);
+    add([[-9.4, -99.6], [-11.6, -108.6], [-4.6, -104], [6, -104.2], [12.4, -108.4], [10.6, -99.6]], 'coat');
+    line([[1, -99], [1, -62]], 0.7, RG_PAL.coatDk);
+    add([[-13, -62], [13, -62.4], [13, -58], [-13, -57.6]], 'coatDk'); add([[1, -62.6], [5, -62.6], [5, -57], [1, -57]], 'steel');
+    add([[-14.6, -59], [-10.6, -59.4], [-11.4, -44], [-13.4, -42.6], [-15, -44]], 'coatDk'); add(tube([-12.6, -59], [-12.4, -66], 2.2, 2.2), 'coatDk'); add([[-15.6, -59.6], [-9.6, -60], [-9.6, -58.6], [-15.6, -58.2]], 'steel');
+  }
+  if (tQ !== undefined) { line([[-10, -97.6], [12, -61]], 2.2, RG_PAL.strap); if (tQ === 2) add(ellipsePts(1.4, -79.8, 1.4, 1.4, 6), 'steel', 0, 1); }   // the quiver's strap across the chest
+
+  // ---- the hood's cape, the neck and head
+  if (tH === 1) {                                                          // a short green cape, its edge cut in leaves
+    const dags = []; for (let i = 0; i <= 9; i++) { const x = lerp(17.8, -16.8, i / 9); dags.push([x, i % 2 ? -79.4 : -85]); }
+    add([[-16.8, -92], [-12.2, -99.6], [-6, -102.8], [4, -103], [10.8, -101.2], [15.6, -96.4], [17.8, -89], ...dags], 'green');
+    line([[-12, -94], [-4, -97.6], [8, -97.6]], 0.6, RG_PAL.greenDk);
+  }
+  add(limb([1, -99], [2, -106], 7.5, 7, 6.5), 'skin');
+  if (tH === 1) add(chain(S([[-9.6, -10], [-14.6, -6], [-18.4, 2], [-20.6, 12], [-22, 22], [-22.6, 32]]), [6, 5.4, 4.6, 3.8, 3, 2]), 'greenDk');   // the hood's long tail
+  if (tH === 2) { add(S([[2.4, -16], [2, -24.4], [7, -15.8]]), 'wolf', 1); add(S([[3.2, -17], [3, -22], [5.6, -16.6]]), 'wolfDk', 1, 1); }   // the wolf's far ear
+  const n0 = P.length;
+  faceAt(add, P, line, hc, [24, 16, 12]);
+  if (tH === undefined || tH === 0) add(S([[-8.4, 3], [-8.8, -5], [-6, -10.6], [-1.6, -13.4], [3, -12.4], [6, -13.6], [8.6, -10.4], [9.4, -6.4], [6.6, -7.6], [3.4, -6.4], [0, -7.8], [-2.4, -5.4], [-4.6, -1.4], [-6.6, 4.4]]), 'hair');
+  beardAt(add, line, hc, look);
+  if (tH === 0) {                                                          // Hide Cap: fur round the brim, a flap over the ear
+    add(S([[-10.4, 1.4], [-10.6, -5.6], [-7, -10.8], [0.4, -12.4], [6.8, -10.8], [10.2, -6], [10.8, -3.6], [4, -4.2], [-2, -3.4], [-6, -1.6]]), 'hideDk');
+    line(S([[-6.6, -9.6], [0.4, -11.2], [6.6, -9.4]]), 0.5, RG_PAL.hide);
+    add(S([[-11.6, 1.2], [-11.4, -3.4], [-6, -5.2], [0, -5.6], [6, -5.6], [11.2, -4.6], [11.4, -2.2], [9, -1.4], [7.4, -2.8], [5, -1.6], [2.6, -3], [0.4, -1.6], [-2, -3], [-4.4, -1], [-6.6, -2.4], [-8.6, 0], [-10.4, -0.4]]), 'wolfLt');
+    add(S([[-9.6, -1.4], [-4.6, -1.6], [-4.4, 5.6], [-6.6, 8.8], [-9.4, 7]]), 'hideDk');
+    line(S([[-4.4, 5.6], [-6.6, 8.8], [-9.4, 7]]), 0.9, RG_PAL.wolfLt);
+  } else if (tH === 1) {                                                   // Hunter's Hood: forest green, the face open
+    add(S([[-12, 12.6], [-12.8, 2], [-12.6, -6.4], [-10, -12.6], [-4.6, -15], [2, -14.6], [7.2, -12.4], [10.6, -8], [11.8, -3.6], [10.8, -2.6], [8.6, -4.8], [3.4, -5.8], [-0.4, -2.6], [-0.6, 3], [3.6, 8.8], [2.4, 12.6], [-3.6, 14.2]]), 'green');
+    line(S([[10.8, -2.6], [8.6, -4.8], [3.4, -5.8], [-0.4, -2.6], [-0.6, 3], [3.6, 8.8]]), 1, RG_PAL.greenDk);
+    line(S([[-10, -12.6], [-6, -8], [-1, -9.6]]), 0.6, RG_PAL.greenDk);
+  } else if (tH === 2) {                                                   // Wolf Pelt: the wolf's head over his own, its paws crossed on his chest
+    add(S([[-11, 4], [-12.4, -4], [-10, -11], [-4, -15.6], [3, -16.6], [9, -14.6], [13.6, -11], [18, -8.6], [21, -7.4], [21.4, -5.4], [18.6, -4.4], [13, -4.6], [9, -3.6], [4, -4.2], [-1, -2.6], [-5, 1], [-8, 5.6]]), 'wolf');
+    add(S([[9, -11], [14, -10.2], [19.4, -8], [21, -7], [18, -6], [12, -6.6], [8.6, -8]]), 'wolfLt');
+    add(S(ellipsePts(21, -6.6, 1.3, 1.1, 8)), 'void', 0, 1);
+    for (const x of [11.6, 15.4]) add(S([[x - 0.7, -4.6], [x + 0.7, -4.6], [x, -1.6]]), 'fang', 0, 1);
+    add(S(ellipsePts(8.4, -10.4, 1.1, 0.8, 8)), 'void', 0, 1);
+    P.push({eye: S([[8.6, -10.6]])[0], r: 0.45, col: [214, 168, 80]});
+    add(S([[-4, -15], [-6.8, -23.4], [-0.6, -16.6]]), 'wolf');                 // the near ear
+    add(S([[-3.8, -16.2], [-5.6, -21.4], [-1.8, -16.8]]), 'wolfDk', 0, 1);
+    line(S([[-10, -11], [-2, -9], [6, -8.4]]), 0.7, RG_PAL.wolfDk);
+    // the forepaws hanging over the shoulders, tied at the chest
+    add(chain([[-8, -100], [-5, -92], [1, -86], [5, -84]], [5.4, 5, 4.6, 4]), 'wolf');
+    for (const k of [-1, 0, 1]) add([[4.4 + k * 0.3, -85.6 + k * 1.4], [8.4, -84 + k * 1.6], [4.6 + k * 0.3, -83.4 + k * 1.4]], 'fang', 0, 1);
+    add(chain([[9, -100], [11, -93], [12, -87]], [4.4, 4, 3.6]), 'wolfDk', 1);
+    line([[2, -86.4], [11, -88]], 0.8, RG_PAL.strap);
+  }
+  coverEyes(P, n0);
+
+  // ---- the near arm: on the string, the arrow nocked
+  const hd = hdR, nock = bp ? (PO.drawn >= 1 ? hd : [hd[0] + 2.6, hd[1] + 0.6]) : null;
+  arm(shR, elR, hdR, 0, () => {
+    if (!bp) return;
+    if (PO.empty) { line([bp[0], bp[bp.length - 1]], 0.55, RG_PAL.string); return; }
+    line([bp[0], nock, bp[bp.length - 1]], 0.55, RG_PAL.string);
+    const dir = unit(nock, hdL), len = Math.hypot(hdL[0] - nock[0], hdL[1] - nock[1]) + (PO.drawn >= 1 ? 8 : 10);
+    arrowAt(add, line, nock, dir, len, tQ === 2 ? 'fletchRd' : 'fletch');
+  });
+});
+
+// ---------------------------------------------------------------- effects drawn as figures (so they sit in the scene)
+// an iron jaw trap, sprung open on the floor; a chain to a stake
+const snareOf = () => being({}, (add, P) => {
+  const line = lineOf(P);
+  add(ellipsePts(0, -2, 15, 4.6, 18), 'iron');
+  add(ellipsePts(0, -2.2, 10.4, 2.8, 18), 'void');
+  add(ellipsePts(0, -2.2, 3.4, 1.1, 10), 'iron');
+  for (let i = 0; i < 14; i++) {
+    const a = i / 14 * Math.PI * 2, x = Math.cos(a) * 12.6, y = -2 + Math.sin(a) * 3.6, back = Math.sin(a) < 0;
+    add([[x - 1.5, y], [x, y - (back ? 6.4 : 5.2)], [x + 1.5, y]], 'steel', back ? 1 : 0, 1);
+  }
+  line([[12.6, -1.4], [16, -0.6], [19.4, -1.6], [22.6, -0.8]], 0.9, [96, 98, 108]);
+  add(tube([23.6, 0], [24.6, -6], 2.2, 1.6), 'iron');
+});
+// the same trap sprung: its jaws slammed shut and standing up
+const snareShutOf = () => being({}, (add, P) => {
+  add(ellipsePts(0, -2, 13, 3.6, 18), 'ironDk');
+  add([[-12, -3], [-9, -11], [0, -14], [9, -11], [12, -3], [8, -5], [0, -7.6], [-8, -5]], 'iron');
+  for (let i = 0; i < 7; i++) { const x = -9 + i * 3; add([[x - 1.2, -6.6], [x, -11.4 + (i % 2) * 1.6], [x + 1.2, -6.6]], 'steel', 0, 1); }
+  lineOf(P)([[12.6, -1.4], [16, -0.6], [19.4, -1.6], [22.6, -0.8]], 0.9, [96, 98, 108]);
+  add(tube([23.6, 0], [24.6, -6], 2.2, 1.6), 'iron');
+});
+KINDS.Snare = {make: () => snareOf(), rx: 12, size: 1, idle: 'still'};
+KINDS.SnareShut = {make: () => snareShutOf(), rx: 12, size: 1, idle: 'still'};
+
+// a portrait like the Hero panel's, bigger: w x h pixels, feet at (fx, fy) in units; returns the canvas and the glowing points
+function classDoll(gear, pose = null, w = 72, h = 100, fx = 58, look = LOOK, sc = 1.12) {
+  const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+  const cg = cv.getContext('2d'), fy = h * PIX - 5;
+  cg.scale(1 / PIX, 1 / PIX);
+  ACTIVE_LIGHTS = [[fx - 34, fy - 176, 250, 1.05], [fx + 60, fy - 70, 140, 0.32]];
+  const raw = !gear.cls || gear.cls === 'knight' ? heroOf(gear, look, false, pose) : gear.cls === 'warlock' ? warlockOf(gear, look, pose) : rangerOf(gear, look, pose);
+  const parts = place(raw, fx, fy, false, sc);
+  parts.forEach((q, i) => partLow(cg, q, i));
+  ACTIVE_LIGHTS = null;
+  const id = cg.getImageData(0, 0, w, h), d = id.data, solid = new Uint8Array(w * h);
+  for (let i = 0; i < w * h; i++) { solid[i] = d[i * 4 + 3] >= 110 ? 1 : 0; d[i * 4 + 3] = solid[i] ? 255 : 0; }
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x;
+    if (!solid[i] && ((x > 0 && solid[i - 1]) || (x < w - 1 && solid[i + 1]) || (y > 0 && solid[i - w]) || (y < h - 1 && solid[i + w]))) { d[i * 4] = 13; d[i * 4 + 1] = 11; d[i * 4 + 2] = 16; d[i * 4 + 3] = 255; }
+  }
+  quantizeSolid(d, w);
+  cg.putImageData(id, 0, 0);
+  return {cv, glows: parts.filter(q => q.eye && !q.hole && !q.hid && (q.col[0] + q.col[1] + q.col[2]) > 300).map(q => ({x: q.eye[0], y: q.eye[1], col: q.col, r: q.r, spell: !!q.spell}))};
+}
+window.CLASSART = {classDoll, soft};   // (the class choice before a run shows each class this way)
+
+// which classes stand behind you on the title (the unlocked ones); a change rebuilds the scene
+const setTitleClasses = list => { if (list.join() !== T_SHOWN.join()) { T_SHOWN = list.slice(); titleRoom = null; } };
+return {setTitleClasses, drawFight, drawDoll, drawMap: drawMapScene, drawTitle, roomTitle, roomFor, ROOM_OF_FLOOR, KINDS, LOOKS, setLook, drawFlame, drawCamp, drawWagon, drawStrip};
 })();
 
 
@@ -6227,10 +6927,12 @@ function drawCombat() {
     const x = Math.round((s.x + m.dx + slide + back) / 2) * 2, y = Math.round((s.y + m.dy - lift) / 2) * 2;
     return {f, x, y, s: s.s, fall: dead ? Math.min(1, (t - f.fellAt) / FALL_S) : 0, gone: !!f.fled && dead, flash: dead ? null : m.flash};
   });
+  const sn = snareFig(spots); if (sn) foeList.push(sn);                 // (a snare laid at an enemy's feet)
   fightBoxes = ART.drawFight(ctx, {room: [boss ? 'throne' : ART.ROOM_OF_FLOOR[Math.min(floor, 4)], fightSeed],
     hero: {...heroLook(), ...mo.hero}, foes: foeList, ring: phase !== 'loot' && intro >= 1 ? tgt : null, t});
   if (!over && phase !== 'loot' && phase !== 'finale') statusFx(now);
   drawFx(now);
+  drawClassMarks(now);
   drawLowHealth(now);
 
   // your health: a bar over your head, the numbers at your feet
@@ -6241,7 +6943,7 @@ function drawCombat() {
     ctx.textAlign = 'center';
     outlinedText(`${hp}/${p.max}`, hb.x, hb.y + 16, '#fff');
     // what the enemies have done to you this fight: armor eaten away, your nerve shaken by a Wail
-    const marks = [sunder ? `Armor −${sunder}` : '', weak ? 'Shaken' : ''].filter(Boolean).join(' · ');
+    const marks = [sunder ? `Armor −${sunder}` : '', weak ? 'Shaken' : '', shownWard() > 0 ? `Ward ${shownWard()}` : '', aimed ? 'Aiming' : ''].filter(Boolean).join(' · ');
     if (marks && !over) { ctx.font = `600 11px ${GAME_FONT}`; outlinedText(marks, hb.x, hb.y + 30, '#e8a070'); }
   }
   // each enemy's name over its head, with its green health bar under the name (kept on screen at the edges)
@@ -6250,7 +6952,7 @@ function drawCombat() {
     const b = fightBoxes.boxes.get(f);
     if (!b || f.bornAt > now) continue;
     const fh = shownHp(f), dead = fh <= 0, label = f.name + (f.items.length ? '*' : '') + (f.vet ? ' V' : '') + (f.burn > 0 && !dead ? ' (burning)' : '') +
-      (f.off && !dead ? ' (off balance)' : '');
+      (f.off && !dead ? ' (off balance)' : '') + (f.hex && !dead ? ` (hexed, ${f.hex.turns} turn${f.hex.turns === 1 ? '' : 's'})` : '');
     const half = ctx.measureText(label).width / 2, cx = Math.max(half + 4, Math.min(284 - half, (b.x0 + b.x1) / 2)), top = Math.max(b.y0, dead ? 26 : 44);
     if (!dead && phase !== 'loot') { drawIntent(f, Math.max(30, Math.min(258, cx)), top - 26); ctx.font = `600 11px ${GAME_FONT}`; }
     if (!dead) {                                                           // a dark plaque with a gilt edge behind the name and its bar
@@ -6268,6 +6970,7 @@ function drawCombat() {
     } else outlinedText(label, cx, top - 12, dead ? '#777' : '#fff');
   }
   ctx.textAlign = 'left';
+  drawSpellCard();                                                         // (what a tapped action will do)
   if (F) drawFinale(t);
   if (intro < 1) { ctx.fillStyle = `rgba(6,4,8,${Math.pow(1 - intro, 2) * 0.9})`; ctx.fillRect(-10, -10, CANVAS_W + 20, PLAY_H + 20); }   // out of the dark
   ctx.restore();
@@ -6383,6 +7086,7 @@ function drawMoveHints(now) {
 
 // a reminder along the bottom of the combat screen
 function drawCombatHint() {
+  if (armed) return;                                                       // (an action's card is up instead)
   if (phase !== 'fight' || sceneFoes.filter(f => f.hp > 0).length < 2) return;   // only worth saying with a choice
   const hint = 'Tap an enemy to target it';
   ctx.font = `600 12px ${GAME_FONT}`;
@@ -7016,7 +7720,9 @@ function settingsScreen(L, add, menu) {
   const m = SND.prefs.music, s = SND.prefs.sfx;
   const top = P.y + 56, rowH = 52;
   const runsKept = journalCount();
-  rowStack(add, P.x + 8, top, top + 4 * (rowH + 4), P.w - 16, [
+  rowStack(add, P.x + 8, top, top + 5 * (rowH + 4), P.w - 16, [
+    {id: 'set:explain', text: 'Explain actions', note: explainFirst ? 'On: tap a Warlock\'s or Ranger\'s action once to read it' : 'Off: one tap uses an action',
+     icon: (x, y) => drawBookIcon(x, y, 10, 1), act: () => setExplain(!explainFirst)},
     {id: 'set:music', text: 'Music', note: m ? 'On. Tap to turn it off' : 'Off. Tap to turn it on', icon: (x, y) => noteIcon(x, y, m), act: () => { SND.setMusic(!m); soundLabels(); }},
     {id: 'set:sfx', text: 'Sounds', note: s ? 'On. Tap to turn them off' : 'Off. Tap to turn them on', icon: (x, y) => speakerIcon(x, y, s), act: () => { SND.setSfx(!s); soundLabels(); if (!s) SND.fx('coin'); }},
     {id: 'set:journal', text: 'Save play journal', note: journalNote() || (runsKept ? `${runsKept} run${runsKept === 1 ? '' : 's'} recorded. Tap to save it as a file` : 'Nothing recorded yet'),
@@ -7132,6 +7838,7 @@ function paintLootCard() {
   ctx.restore(); requestFrames();
 }
 function lootCardBody() {
+  if (pending.type === 'book') return bookCardBody();
   const x = 8, w = 272, h = 100, y = view.controls - h - 6, cur = worn[pending.slot], v = lootVerdict(pending, cur), V = VERDICTS[v];
   ctx.fillStyle = 'rgba(16,13,20,0.96)';
   chamfer(x, y, w, h, 7);
@@ -7906,6 +8613,7 @@ function heroDetail(pick) {
     if (!it) return `${slots[k].label}: nothing worn.`;
     return `${itemName(it)} +${it.power}` + (it.ench ? `: ${ENCHANTS[it.ench.id].desc}.` : '.') + weightText(k, it) +
       (k === 'weapon' ? ' Its number adds to every hit.'
+        : k === 'shield' && cls === 'ranger' ? ` Each point adds ${pct(RANGER.perQuiver)} to every Volley arrow (${pct(volleyShare())} of a shot now).`
         : k === 'shield' ? ` When you Block, Block stops ${pct(blockStops())} of each hit (${pct(BLOCK_BASE)} without a shield), and the chance to stun the attacker rises by ${pct(SHIELD_STUN * it.power)}.`
         : it.wt ? '' : ` Each point cuts ${(ARMOR_PER_POINT * 100).toFixed(1)}% off enemy hits (${pct(armorCapNow())} at most).`);
   }
@@ -8022,14 +8730,15 @@ function playControls(L, add) {
     {id: 'fight', label: 'Fight', tone: 'fight', act: startFight},
     {id: 'flee', label: 'Flee', sub: canFlee() ? `${pct(fleeChance())} chance` : 'no escape',
      enabled: canFlee(), act: tryFlee}]);
-  else if (phase === 'fight') buttonRow(add, 6, L.act.y, 276, L.act.h, [
+  else if (phase === 'fight') buttonRow(add, 6, L.act.y, 276, L.act.h, cls !== 'knight' ? classButtons() : [
     {id: 'normal', label: 'Normal', sub: 'steady', act: () => act('normal')},
     {id: 'heavy', label: 'Heavy', sub: `x${+heavyMult().toFixed(2)}, risky`, tone: 'fight', act: () => act('heavy')},
     {id: 'block', label: 'Block', sub: `stops ${pct(1 - blockMult())}`, tone: 'guard', act: () => act('block')}]);
   else if (phase === 'loot') {
     add({draw: paintLootCard});
     const ready = lootReady(), eqArmed = saleArmed('equip'), lvArmed = saleArmed('leaveItem');
-    buttonRow(add, 6, L.act.y, 276, L.act.h, [
+    if (pending && pending.type === 'book') buttonRow(add, 6, L.act.y, 276, L.act.h, bookButtons());
+    else buttonRow(add, 6, L.act.y, 276, L.act.h, [
       {id: 'equip', label: eqArmed ? 'Equip?' : 'Equip', sub: eqArmed ? 'tap again' : undefined, tone: 'gold', fade: ready, enabled: ready >= 1, act: equipItem},
       {id: 'leaveItem', label: lvArmed ? 'Leave?' : 'Leave', sub: lvArmed ? 'tap again' : undefined, fade: ready, enabled: ready >= 1, act: leaveItem}]);
   } else if (phase === 'explore') {
@@ -8215,7 +8924,7 @@ function paintShopHeader(P) {
 }
 // the symbols on the merchant's rows (gear uses its slot symbol)
 function shopGlyph(g, type, tier) { GLYPHS.shop(g, type, tier); }
-const shopIcon = it => it.type === 'gear' ? (ix, iy) => drawSlotIcon(it.slot, ix, iy, 11, it.tier, null, it.wt)
+const shopIcon = it => it.type === 'book' ? (ix, iy) => drawBookIcon(ix, iy, 11, it.t) : it.type === 'gear' ? (ix, iy) => drawSlotIcon(it.slot, ix, iy, 11, it.tier, null, it.wt)
   : (ix, iy) => pixelIcon(`shop:${it.type}:${it.tier || 0}`, 11, g => shopGlyph(g, it.type, it.tier || 0), ix, iy);
 
 // ---- under the play area, on a tall screen: a strip of the floor you are on, drawn like its rooms (see ART.drawStrip) ----
@@ -8373,11 +9082,11 @@ function shopScreen(L, add, menu) {
     const top = menuPrompt(add, P, `The merchant pays ${pct(SELL_SHARE)} of what things cost. Gear you sell leaves its slot empty.`);
     const rows = [{id: 'sell:potion', icon: shopIcon({type: 'potion'}), text: `Health Potion (${potions}/${maxPotions})`, armed: saleArmed('sell:potion'), note: !potions ? 'none to sell' : saleArmed('sell:potion') ? 'Tap again to sell it' : 'sell one',
       price: sellValue(POTION_PRICE), enabled: potions > 0, act: sellPotion}];
-    for (const k of Object.keys(slots)) {
-      const it = worn[k], id = 'sell:' + k;
+    for (const k of classSlots()) {
+      const it = worn[k], id = 'sell:' + k, bow = cls === 'ranger' && k === 'weapon';
       rows.push({id, icon: (ix, iy) => drawSlotIcon(k, ix, iy, 11, it ? it.tier : 1, it ? null : '#4a4452', it && it.wt),
-        text: `${slots[k].label}: ${it ? itemName(it) : 'empty'}`, enabled: !!it, armed: saleArmed(id),
-        note: !it ? 'nothing worn' : saleArmed(id) ? 'Tap again to sell it' : `+${it.power}` + (it.ench ? `, ${enchLabel(it.ench)}` : ''),
+        text: `${slots[k].label}: ${it ? itemName(it) : 'empty'}`, enabled: !!it && !bow, armed: saleArmed(id),
+        note: !it ? 'nothing worn' : bow ? 'your only bow: only a trade-in' : saleArmed(id) ? 'Tap again to sell it' : `+${it.power}` + (it.ench ? `, ${enchLabel(it.ench)}` : ''),
         price: it ? sellValue(gearRetail(it)) : undefined, edge: it ? TIER_EDGE[it.tier] : null, act: () => sellGear(k)});
     }
     scrolls.forEach((s, i) => {
@@ -8428,13 +9137,13 @@ function enchanterScreen(L, add, menu) {
     prompt = 'Which piece of gear?';
     back = false;
     sellBtn = true;
-    rows = Object.keys(slots).map(k => ({
+    rows = classSlots().map(k => ({
       id: 'ench:slot:' + k, text: `${slots[k].label}: ${worn[k] ? itemName(worn[k]) : 'empty'}`,
       note: !worn[k] ? 'nothing worn' : worn[k].ench ? `now: ${enchLabel(worn[k].ench)}` : 'no enchantment yet',
       enabled: !!worn[k], edge: worn[k] ? TIER_EDGE[worn[k].tier] : null, act: () => enchanterClick('slot:' + k)}));
   } else if (!ench.id) {
     prompt = `${itemName(it)}: which enchantment?`;
-    rows = Object.keys(ENCHANTS).filter(id => enchSlots(id).includes(ench.slot)).map(id => ({
+    rows = Object.keys(ENCHANTS).filter(id => enchSlots(id).includes(ench.slot) && (id !== 'balanced' || cls === 'knight')).map(id => ({
       id: 'ench:id:' + id, text: ENCHANTS[id].name, note: ENCHANTS[id].desc, edge: ENCH_GLOW[id], act: () => enchanterClick('id:' + id)}));
   } else {
     const E = ENCHANTS[ench.id];
@@ -8489,7 +9198,7 @@ function heroScreen(L, add, menu) {
          act: () => { o.tab = tab; o.pick = null; }, draw: paintTab});
   add({id: 'close', x: P.x + P.w - 44, y: P.y + 6, w: 38, h: 36, act: () => { overlay = null; }, draw: paintClose});
   if (o.tab === 'bag') return bagTab(L, add);
-  const y0 = P.y + 48, rest = 40 + 70 + 88;              // detail, stats (three rows), perks below the doll
+  const y0 = P.y + 48, rest = 40 + 70 + 88 + (cls === 'knight' ? 0 : 22);   // (a Warlock's or a Ranger's bar under the stats)              // detail, stats (three rows), perks below the doll
   const dollH = Math.max(96, Math.min(240, P.y + P.h - 8 - rest - y0));
   const bw = 74, bh = 40, lx = P.x + 8, rx = P.x + P.w - 8 - bw, step = (dollH - bh) / 2;
   // armor down the right, from head to feet; weapon, shield and bracers down the left
@@ -8499,7 +9208,7 @@ function heroScreen(L, add, menu) {
     paintNiche(lx + bw + 8, y0, rx - lx - bw - 16, dollH, y0 + (dollH + h) / 2);
     ART.drawDoll(ctx, (lx + bw + rx) / 2 - 5.5 * h / 156, y0 + (dollH + h) / 2, h, L.gear, L.glows, L.weapon, performance.now() / 1000);
   }});
-  for (const k of Object.keys(slots))
+  for (const k of classSlots())
     add({id: 'slot:' + k, slot: k, x: at[k][0], y: at[k][1], w: bw, h: bh, act: () => { o.pick = 'slot:' + k; }, draw: paintSlot});
   const dy = y0 + dollH + 4;
   add({draw: () => {                                     // what you tapped
@@ -8512,8 +9221,8 @@ function heroScreen(L, add, menu) {
     paragraph(heroDetail(o.pick), P.x + 14, dy + 14, P.w - 28, 14, 2);
   }});
   const sy = dy + 42, dmg = power('weapon') + bonusDmg + purseDmg(), stats = [
-    ['hit', 'Hit', `${8 + dmg}-${14 + dmg}`], ['defense', 'Defense', pct(armorCut(defense(), armorCapNow(), armorExtra()))], ['maxhp', 'Max HP', p.max], ['block', 'Block', pct(1 - blockMult())],
-    ['stun', 'Stun', pct(stunChance())], ['crit', 'Crit', pct(critChance())], ['miss', 'Miss', pct(Math.max(0, PLAYER_MISS + weaponMiss()) * missKeep())], ['flee', 'Flee', pct(fleeChance())]];
+    ['hit', 'Hit', `${8 + dmg}-${14 + dmg}`], ['defense', 'Defense', pct(armorCut(defense(), armorCapNow(), armorExtra()))], ['maxhp', 'Max HP', p.max], ['block', 'Block', cls === 'knight' ? pct(1 - blockMult()) : '\u2014'],
+    ['stun', 'Stun', cls === 'knight' ? pct(stunChance()) : '\u2014'], ['crit', 'Crit', pct(critChance() + (cls === 'ranger' ? RANGER.crit : 0))], ['miss', 'Miss', pct(Math.max(0, PLAYER_MISS + weaponMiss()) * missKeep())], ['flee', 'Flee', pct(fleeChance())]];
   add({draw: () => stats.forEach(([id, label, value], i) => {               // each stat: its symbol, its number, its name under it
     const cw = (P.w - 16) / 4, x = P.x + 8 + (i % 4) * cw, y = sy + Math.floor(i / 4) * 33;
     drawStatIcon(id, x + 11, y + 13, 9);
@@ -8523,7 +9232,11 @@ function heroScreen(L, add, menu) {
     ctx.font = textFont(10, 400); ctx.fillStyle = '#8a8070';
     ctx.fillText(label, x + 23, y + 29);
   })});
-  const py = sy + 70, owned = Object.keys(PERKS).filter(perkN), per = Math.floor((P.w - 16) / 38);
+  const barH = cls === 'knight' ? 0 : 22, py = sy + 70 + barH, owned = Object.keys(PERKS).filter(perkN), per = Math.floor((P.w - 16) / 38);
+  if (barH) add({draw: () => {                                          // a Warlock's spells, a Ranger's tricks
+    ctx.font = textFont(12); ctx.fillStyle = '#e8d8b0'; ctx.textAlign = 'left';
+    ctx.fillText(fitText(`${cls === 'warlock' ? 'Spells' : 'Tricks'}: ${barLine()}`, P.w - 24), P.x + 12, sy + 80);
+  }});
   add({draw: () => {
     if (owned.length) { const dv = dividerOrn(Math.round(P.w - 84)); drawOrn(dv, P.x + 70, py + 2); }   // a flowered rule beside the heading
     ctx.font = `20px ${TITLE_FONT}`;
@@ -8681,7 +9394,7 @@ function foeStrike(f, mult, blocking = false, move = 'attack') {
   if (crush) f.crushAt = f.swings;   // (the Ogre King's next one is a few swings away, see CRUSH_GAP)
   // a big move (the Crushing Blow, the Charge, a Dive...) always lands, and never crits
   // (Fleetfoot, Pathfinder and light armor dodge plain blows, not big moves; an enemy's Dagger or Mace moves its miss and crit)
-  const result = big ? 'hit' : swingResult(Math.max(0, foeMiss() + (f.wMiss || 0)), Math.max(0, FOE_CRIT + (f.wCrit || 0)));
+  const result = smokeMiss() ? 'miss' : big ? 'hit' : swingResult(Math.max(0, foeMiss() + (f.wMiss || 0)), Math.max(0, FOE_CRIT + (f.wCrit || 0)));   // (lost in a Ranger's smoke)
   f.landed = result !== 'miss';
   after(turnOpen() && turn.beats.length ? TURN.gap - TURN.foeSwing : 0);  // each enemy steps in after the last
   cue('foeSwing', {who: f});
@@ -8697,11 +9410,14 @@ function foeStrike(f, mult, blocking = false, move = 'attack') {
     if (result === 'crit') hurt = Math.round(hurt * FOE_CRIT_MULT);
     if (big && !crush) hurt *= M.big;
     hurt = Math.max(1, Math.round(hurt * mult));
+    if (f.hex && f.hex.cut) hurt = Math.max(1, Math.round(hurt * (1 - f.hex.cut)));   // a hexed enemy hits softer
+    const wd = wardSoak(hurt), soaked = wd.soaked;                       // a Warlock's Bone Ward takes what it can
+    hurt = wd.hurt;
     journalBlow(f, move, result === 'crit' ? 'c' : big ? 'b' : '', hurt, blocking);
     run.taken += Math.min(hurt, p.hp);
     p.hp = Math.max(0, p.hp - hurt);
-    cue('struck', {by: f, blocking, big: big || result === 'crit' || hurt >= p.max * 0.2});
-    popup('player', hurt, 'dmg', big || result === 'crit');
+    cue('struck', {by: f, blocking: blocking || hurt === 0, big: big || result === 'crit' || hurt >= p.max * 0.2});
+    if (hurt > 0) popup('player', hurt, 'dmg', big || result === 'crit');
     const BIG_SAY = {crush: 'lands a CRUSHING BLOW through your armor', charge: 'CHARGES into you', boulder: 'hurls a BOULDER at you',
                      sunder: 'brings down a SUNDERING blow on you', dive: 'DIVES on you from above'};
     msg.textContent += big
@@ -8709,6 +9425,7 @@ function foeStrike(f, mult, blocking = false, move = 'attack') {
       : result === 'crit'
         ? ` ${f.name} lands a CRITICAL HIT for ${hurt}!`
         : ` ${f.name} ${move === 'acid' ? 'spits acid at you' : lust ? 'hits you in a bloodlust' : 'hits you'} for ${hurt}.`;
+    if (soaked) { popup('player', `WARD ${soaked}`, 'hex'); msg.textContent += ` Your ward soaks ${soaked}${ward ? '' : ' and shatters'}.`; }
     // acid and a Sundering blow eat into your armor until the fight ends
     // (Purity may shrug it off)
     const warded = (move === 'acid' || move === 'sunder') && p.hp > 0 && sunder < SUNDER_MAX && Math.random() < purityArmor();
@@ -8727,7 +9444,7 @@ function foeStrike(f, mult, blocking = false, move = 'attack') {
         msg.textContent += ` It drains ${heal} HP from you.`;
       }
     }
-    if (f.poison && p.hp > 0 && Math.random() < POISON_CHANCE) {
+    if (f.poison && hurt > 0 && p.hp > 0 && Math.random() < POISON_CHANCE) {
       poison = Math.max(1, poisonTurns() - enchSum('purity'));
       cue('poisoned');
       msg.textContent += ' You are poisoned!';
@@ -8765,6 +9482,8 @@ function foeAct(f, mult, blocking) {
   f.landed = false;
   (f.used || (f.used = {}))[m] = f.acts || 0;   // (for its cooldowns, see MOVE_CD)
   f.acts = (f.acts || 0) + 1;
+  const sn = snareCatch(f, m, mult, blocking);                          // (the Ranger's snare, if it waits for this blow)
+  if (sn !== null) { if (!sn) return false; if (f.hp > 0 && p.hp > 0) setIntent(f); return true; }
   if (M.hit) {
     if (!foeStrike(f, mult, blocking, m)) return false;
   } else {
@@ -8824,6 +9543,12 @@ function summonServant() {
 function foesAttack(mult = 1, blocking = false) {
   after(turnOpen() && turn.beats.length ? TURN.lead - (TURN.gap - TURN.foeSwing) : 0);   // a breath after your blow, then they answer
   for (const f of foes.filter(f => f.hp > 0)) {
+    if (f.hex) {                                                           // a hexed enemy: the curse eats at it before it acts
+      msg.textContent += ` The curse eats at the ${f.name} for ${Math.min(f.hex.doom, f.hp)}.`;
+      after(0.1); cue('doomTick', {who: f});
+      damageFoe(f, f.hex.doom, false, 'hex');
+      if (f.hp <= 0) continue;
+    }
     const burning = f.burn > 0;
     if (burning) {
       f.burn--;
@@ -8835,8 +9560,8 @@ function foesAttack(mult = 1, blocking = false) {
     if (f.regen) {
       if (f.noRegen) {
         f.noRegen = false;
-      } else if (burning) {
-        if (f.hp < f.max) msg.textContent += ` The flames stop the ${f.name} from regenerating.`;
+      } else if (burning || f.hex) {
+        if (f.hp < f.max) msg.textContent += burning ? ` The flames stop the ${f.name} from regenerating.` : ` The curse keeps the ${f.name}'s wounds open.`;
       } else if (f.hp < f.max) {
         const heal = Math.min(f.regen, f.max - f.hp);
         f.hp += heal;
@@ -8866,6 +9591,7 @@ function foesAttack(mult = 1, blocking = false) {
       continue;
     }
     if (!foeAct(f, mult, blocking)) return;
+    if (f.hex && --f.hex.turns <= 0) { f.hex = null; if (f.hp > 0) msg.textContent += ` The curse on the ${f.name} fades.`; }
     // a hit that lands on your raised shield may stun the attacker for its next turn (unless it was stunned just before)
     if (blocking && f.landed && f.hp > 0 && !f.stunProof && Math.random() < stunChance()) {
       f.stunned = true;
@@ -8875,11 +9601,13 @@ function foesAttack(mult = 1, blocking = false) {
     }
     f.stunProof = false;
   }
+  snareOn = null; smoke = false;                                            // (a snare or smoke lasts for one turn of theirs)
   if (!tickPoison()) return;
   if (!foes.some(f => f.hp > 0)) endFight();
 }
 
 function killFoe(t) {
+  bodies++;                                                                // (a body a Warlock can burst)
   const got = earn(roll(t.gold[0], t.gold[1]));
   const gained = Math.round(t.max / XP_DIVISOR);
   gainXp(gained);
@@ -8942,11 +9670,11 @@ function endFight() {
 
 // every source of damage to an enemy (your hits, burning, Thorns) goes through here, so
 // Skeleton reassembly, kills, splits, loot and the boss's rage work the same for all of them
-function damageFoe(t, amount, crit) {
+function damageFoe(t, amount, crit, kind = 'dmg') {
   const dealt = Math.min(amount, t.hp);
   t.hp -= dealt;
   run.dealt += dealt;
-  if (dealt > 0) popup(t, dealt, 'dmg', crit);
+  if (dealt > 0) popup(t, dealt, kind, crit);                             // (a curse's damage shows in violet)
   if (t.hp === 0 && t.reassemble && !t.rose && !crit && Math.random() < REASSEMBLE_CHANCE) {
     t.rose = true;
     cue('die', {who: t});                                                  // it falls apart... and pulls itself back together
@@ -9039,6 +9767,7 @@ function act(kind) {
   draw();
 }
 function takeTurn(kind) {
+  if (cls !== 'knight') return classTurn(kind);
   const reach = kind === 'block' || liveTarget();    // every enemy out of reach (a Wyvern on the wing...): you guard instead
   lastAct = {kind: kind === 'block' || !reach ? 'block' : kind, at: kind === 'block' || !reach ? null : liveTarget()};   // (the enemies may answer it, see planMove)
   if (kind === 'block' || !reach) {
@@ -9145,6 +9874,7 @@ function sellPotion() {
 function sellGear(k) {
   const it = worn[k];
   if (phase !== 'shop' || shopMode !== 'sell' || !it) return;
+  if (cls === 'ranger' && k === 'weapon') { msg.textContent = 'The merchant won\'t take your bow: it is the only one you have. Buy a better one and he takes it in trade.'; return; }
   const got = sellValue(gearRetail(it));
   confirmSale('sell:' + k, `Sell your ${itemName(it)} for ${got} coins? Tap it again to sell.`, () => {
     delete worn[k];
@@ -9188,6 +9918,8 @@ function buyNow(it) {
   } else if (it.type === 'bag') {
     maxPotions = it.to;
     msg.textContent = `Bought the ${it.name}. You can now carry ${it.to} potions.`;
+  } else if (it.type === 'book') {
+    msg.textContent = `Bought the ${it.name}. ` + learnBook(it);
   } else if (it.type === 'satchel') {
     bagSlots++;
     msg.textContent = `Bought the ${it.name}. You can now carry ${bagSlots} scrolls.`;
@@ -9199,10 +9931,595 @@ function buyNow(it) {
   refresh();
 }
 
+
+// ======================================================================
+// CLASSES in a run: picking one, its gear and its bar; spellbooks and kits
+// ======================================================================
+// start a run as class c: its own gear names, what it carries in, and its bar
+function setClass(c) {
+  cls = CLASS_IDS.includes(c) ? c : 'knight';
+  slots.shield.label = cls === 'ranger' ? 'Quiver' : 'Shield';
+  for (const k of Object.keys(worn)) delete worn[k];
+  for (const [k, t] of Object.entries(CLASS_START[cls])) worn[k] = gearOf(k, t);
+  classBar = cls === 'knight' ? [] : [BASE_ACTION[cls], STARTER[cls]];
+  ranks = {};
+  refreshMax();
+}
+// what a found or bought spellbook (or kit) would do for you: 'learn' (a free place on the bar), 'rank' (it raises one
+// you know), 'known' (you know it as well or better already) or 'full' (learning it means forgetting another)
+function bookFit(b) {
+  if (classBar.includes(b.id)) return RANKED.includes(b.id) && rankOf(b.id) < b.t ? 'rank' : 'known';
+  return classBar.length < BAR_SIZE ? 'learn' : 'full';
+}
+// learn a spellbook's (or a kit's) action, putting it in place of forget if the bar is full
+function learnBook(b, forget = null) {
+  if (classBar.includes(b.id)) { ranks[b.id] = Math.max(rankOf(b.id), b.t); return `Your ${ACTION[b.id].name} is ${TIERS[b.t]} now.`; }
+  if (forget) { classBar[classBar.indexOf(forget)] = b.id; delete ranks[forget]; }
+  else classBar.push(b.id);
+  ranks[b.id] = b.t;
+  return forget ? `You forget ${ACTION[forget].name} and learn ${ACTION[b.id].name}.` : `You learn ${ACTION[b.id].name}.`;
+}
+// a spellbook or a kit among your finds: one of your class's actions, ranked by the floor like gear
+function bookLoot() {
+  const fresh = OPTIONS[cls].filter(id => !classBar.includes(id) || (RANKED.includes(id) && rankOf(id) < 2));
+  const id = (fresh.length ? fresh : OPTIONS[cls])[roll(0, (fresh.length ? fresh : OPTIONS[cls]).length - 1)];
+  pending = {type: 'book', id, t: lootTier('book')};
+  phase = 'loot';
+  lootAt = performance.now();
+  saleArm = null;
+  setTimeout(refresh, LOOT_TAP_GUARD_MS + 30);
+  return `Found a ${bookName(pending)}.`;
+}
+// the loot buttons for a spellbook or kit: Learn (or Rank up) and Leave; with the bar full, which action to forget
+function bookButtons() {
+  const b = pending, fit = bookFit(b), ready = lootReady();
+  if (b.forgetting) return [
+    ...classBar.filter(id => id !== BASE_ACTION[cls]).map(id => {
+      const key = 'forget:' + id, on = saleArmed(key);
+      return {id: key, label: on ? 'Forget?' : ACTION[id].label, sub: on ? 'tap again' : 'forget it', fade: ready, enabled: ready >= 1,
+              act: () => confirmSale(key, `Tap ${ACTION[id].name} again to forget it for ${ACTION[b.id].name}.`, () => finishBook(id))};
+    }),
+    {id: 'forget:back', label: 'Keep', sub: 'all of them', fade: ready, enabled: ready >= 1, act: () => { b.forgetting = false; saleArm = null; }}];
+  const lv = saleArmed('leaveItem');
+  return [
+    {id: 'learn', label: fit === 'rank' ? 'Rank up' : 'Learn', sub: fit === 'known' ? 'known' : fit === 'full' ? 'bar is full' : undefined, tone: 'gold',
+     fade: ready, enabled: ready >= 1 && fit !== 'known', act: () => { if (fit === 'full') { b.forgetting = true; saleArm = null; } else finishBook(null); }},
+    {id: 'leaveItem', label: lv ? 'Leave?' : 'Leave', sub: lv ? 'tap again' : undefined, fade: ready, enabled: ready >= 1, act: leaveItem}];
+}
+function finishBook(forget) {
+  if (phase !== 'loot' || !pending || pending.type !== 'book') return;
+  msg.textContent = learnBook(pending, forget);
+  SND.fx('scroll');
+  closeLoot();
+}
+// the card for a spellbook or kit: what it teaches, at its rank, and what it would do to your bar
+function bookCardBody() {
+  const b = pending, x = 8, w = 272, fit = bookFit(b), y0 = view.controls;
+  const lines = [SHORT[b.id], rankLine(b.id, b.t),
+    fit === 'learn' ? 'There is room for it on your bar.' : fit === 'rank' ? `You know it at ${TIERS[rankOf(b.id)]}: this raises it to ${TIERS[b.t]}.`
+      : fit === 'known' ? `You know it already, at ${TIERS[rankOf(b.id)]}.` : b.forgetting ? `Pick an action to forget for it. ${ACTION[BASE_ACTION[cls]].name} stays.` : 'Your bar is full: learning it means forgetting one.'];
+  ctx.font = textFont(12.5);
+  const wrapped = lines.flatMap(l => sbWrap(l, w - 24)), h = 30 + wrapped.length * 15 + 8, y = y0 - h - 6;
+  ctx.save();
+  chamfer(x, y, w, h, 7); ctx.fillStyle = 'rgba(16,13,20,0.96)'; ctx.fill();
+  ctx.save(); ctx.clip(); stoneGrain(x, y, w, h, 78, 70); ctx.restore();
+  ctx.strokeStyle = '#060508'; ctx.lineWidth = 3; chamfer(x, y, w, h, 7); ctx.stroke();
+  ctx.strokeStyle = cls === 'ranger' ? '#9dbb74' : '#bb92ff'; ctx.lineWidth = 1.4; ctx.stroke();
+  drawBookIcon(x + 22, y + 18, 10, b.t);
+  titleText(`${bookNoun()}: ${ACTION[b.id].name}`, x + 38, y + 23, 18, '#ffd890', 'left', w - 90);
+  if (RANKED.includes(b.id)) centerText(TIERS[b.t], x + w - 30, y + 20, textFont(12), ['#b9a58a', '#d9d4c8', '#ffd060'][b.t]);
+  ctx.font = textFont(12.5); ctx.fillStyle = '#ece1cb'; ctx.textAlign = 'left';
+  wrapped.forEach((ln, i) => ctx.fillText(ln, x + 12, y + 44 + i * 15));
+  ctx.restore();
+}
+// what an action does at a rank, in a line (for books, the bar list and the shop)
+function rankLine(id, t) {
+  switch (id) {
+    case 'hex': return `${TIERS[t]}: its blows do ${pct(SPELL.hex.cut[t])} less, and it takes ${SPELL.hex.doom[t]} damage a turn, for ${SPELL.hex.turns} turns.`;
+    case 'ward': return `${TIERS[t]}: soaks up ${SPELL.ward.soak[t]} damage.`;
+    case 'plague': return `${TIERS[t]}: ${SPELL.plague.doom[t]} damage a turn to every enemy, for ${SPELL.plague.turns} turns.`;
+    case 'fire': return `${TIERS[t]}: it burns for ${SHOT.fire.burn[t]} a turn, for ${SHOT.fire.turns} turns.`;
+    default: return 'Its strength comes from your weapon, so every copy of it is the same.';
+  }
+}
+// a book (or a kit of arrows) as a little pixel picture: its cover, its clasp; the rank shows in the clasp's metal
+function drawBookIcon(x, y, r, t) {
+  const ranger = cls === 'ranger';
+  pixelIcon(`book:${ranger ? 'kit' : 'book'}:${t}`, r, g => {
+    const metal = ['#b07840', '#c8ccd8', '#ffd060'][t];
+    if (ranger) {                                                          // a bundle of arrows, tied
+      for (const [dx, c] of [[-3, '#9a7048'], [0, '#a87850'], [3, '#9a7048']]) { g.strokeStyle = c; g.lineWidth = 1.6; g.beginPath(); g.moveTo(dx - 4, 8); g.lineTo(dx + 4, -8); g.stroke();
+        g.fillStyle = '#e8e4dc'; g.beginPath(); g.moveTo(dx - 5, 9); g.lineTo(dx - 7, 5); g.lineTo(dx - 3, 6); g.fill();
+        g.fillStyle = '#c8ccd8'; g.beginPath(); g.moveTo(dx + 4, -8); g.lineTo(dx + 6.5, -10); g.lineTo(dx + 3, -11); g.fill(); }
+      g.fillStyle = metal; g.fillRect(-6, -1, 12, 3);
+    } else {                                                               // a grimoire: dark leather, a clasp, a sigil
+      g.fillStyle = '#3a2840'; g.fillRect(-7, -9, 14, 18);
+      g.fillStyle = '#e0d4b8'; g.fillRect(6, -8, 2, 16);
+      g.fillStyle = '#5a3c66'; g.fillRect(-6, -8, 11, 16);
+      g.fillStyle = metal; g.fillRect(4, -2, 4, 4);
+      g.strokeStyle = '#c49cff'; g.lineWidth = 1.2; g.beginPath(); g.arc(-1, 0, 3.4, 0, Math.PI * 2); g.stroke();
+    }
+  }, x, y);
+}
+// the bar, in a line, for the Hero panel: each action and its rank where the rank matters
+const barLine = () => classBar.map(id => ACTION[id].name + (RANKED.includes(id) ? ` (${TIERS[rankOf(id)]})` : '')).join(' · ') +
+  (classBar.length < BAR_SIZE ? ` · ${BAR_SIZE - classBar.length} free` : '');
+
+// ---- a fight for a Warlock or a Ranger: everything that lasts a fight starts over ----
+function classFightStart() {
+  ward = wardMax = 0; snareOn = null; snareLast = false; smoke = false; smokeLast = false; aimed = false; bodies = 0; armed = null;
+}
+const pactCost = () => Math.ceil(p.max * SPELL.pact.cost);
+const volleyShare = () => RANGER.volley + RANGER.perQuiver * power('shield');
+// what a hit should do to t, on average: a share of 8-14 + your weapon, through its armor unless it pierces
+const rawAvg = () => 11 + power('weapon') + bonusDmg + purseDmg();
+const hitOn = (t, share = 1, pierce = false) => !t ? 0 : Math.max(1, Math.round((pierce ? rawAvg() : throughArmor(rawAvg(), t.def || 0, ARMOR_CAP + (t.cap || 0), t.cut || 0)) * share));
+// the blow t shows it will make, and what it would do to you (null: its next move isn't a blow)
+const blowOf = t => t && !t.stunned && t.next && MOVES[t.next] && MOVES[t.next].hit ? {move: t.next, name: t.next === 'attack' ? 'attack' : MOVES[t.next].name, dmg: intentDmg(t, t.next)} : null;
+
+// ---- the fight buttons: what each will do, in numbers for your target ----
+function classButtons() {
+  return classBar.map(id => {
+    const d = {id, label: ACTION[id].label, ...(cls === 'ranger' ? rangerSub(id) : spellSub(id))};
+    if (explainFirst && armed === id && d.enabled !== false) return {...d, label: d.label + '?', sub: 'tap to use', tone: 'gold', act: () => tapAction(id)};
+    return {...d, act: () => tapAction(id)};
+  });
+}
+// a first tap shows what it does (unless that is turned off in Settings); a second tap does it
+function tapAction(id) {
+  if (phase !== 'fight' || over) return;
+  if (explainFirst && armed !== id) { armed = id; draw(); return; }
+  armed = null;
+  act(id);
+}
+function spellSub(id) {
+  const R = rankOf(id), t = liveTarget();
+  switch (id) {
+    case 'siphon': { const d = hitOn(t, SPELL.siphon.share); return {sub: `≈${d} +${Math.round(d * SPELL.siphon.heal)}HP`}; }
+    case 'hex': { const b = blowOf(t); return {tone: 'guard', sub: t && t.hex ? 'renew it' : b ? `hits ${b.dmg}→${Math.max(1, Math.round(b.dmg * (1 - SPELL.hex.cut[R])))}` : `−${pct(SPELL.hex.cut[R])} hits`}; }
+    case 'pact': { const c = pactCost(), ok = p.hp > c; return {tone: 'fight', enabled: ok, sub: ok ? `≈${hitOn(t, SPELL.pact.mult, true) + (t && t.hex ? t.hex.doom * t.hex.turns : 0)} for ${c}` : `need ${c + 1}HP`}; }
+    case 'ward': return {tone: 'guard', enabled: ward <= 0, sub: ward > 0 ? `holds ${ward}` : `blocks ${SPELL.ward.soak[R]}`};
+    case 'dread': { const b = blowOf(t), used = t && t.dreaded; return {enabled: !used, sub: used ? 'used on it' : b ? `stops ${b.dmg}` : 'skips move'}; }
+    case 'plague': return {sub: `${SPELL.plague.doom[R]}×3 all`};
+    case 'burst': return {enabled: bodies > 0, sub: bodies ? `≈${hitOn(t, SPELL.burst.share)} all` : 'no body'};
+  }
+  return {};
+}
+function rangerSub(id) {
+  const R = rankOf(id), t = liveTarget(), x = aimed ? SHOT.aim.mult : 1;
+  switch (id) {
+    case 'shoot': return {sub: aimed ? `≈${hitOn(t) * x} sure` : `≈${hitOn(t)}`};
+    case 'fire': return {tone: 'fight', sub: `≈${hitOn(t, SHOT.fire.share) * x} +${SHOT.fire.burn[R]}×3`};
+    case 'pin': { const used = t && t.pinned; return {enabled: !used, sub: used ? 'used on it' : `≈${hitOn(t, SHOT.pin.share) * x} +stop`}; }
+    case 'aim': return {tone: 'guard', enabled: !aimed, sub: aimed ? 'aimed' : 'next ×2'};
+    case 'volley': return {tone: 'fight', sub: `≈${hitOn(t, volleyShare())} each`};
+    case 'snare': { const b = blowOf(t), ok = b && SNARE_CATCH.includes(b.move); return {tone: 'guard', enabled: !snareLast, sub: snareLast ? 'not twice' : ok ? `stops ${b.dmg}` : 'no blow'}; }
+    case 'smoke': return {tone: 'guard', enabled: !smokeLast, sub: smokeLast ? 'not twice' : `${pct(SHOT.smoke.miss)} miss`};
+  }
+  return {};
+}
+// what an action will do, in plain words and in numbers for your target
+function explainOf(id) {
+  const R = rankOf(id), t = liveTarget(), T = t ? `the ${t.name}` : 'your target', b = blowOf(t), its = b ? ` (its ${b.name} for ${b.dmg})` : '';
+  switch (id) {
+    case 'siphon': { const d = hitOn(t, SPELL.siphon.share); return `Hit ${T} with a bolt for about ${d}, and heal ${pct(SPELL.siphon.heal)} of the damage it does (about ${Math.round(d * SPELL.siphon.heal)} HP). Shields can't block it, and nothing can strike back at it.`; }
+    case 'hex': {
+      const cut = SPELL.hex.cut[R], doom = SPELL.hex.doom[R], after = b ? Math.max(1, Math.round(b.dmg * (1 - cut))) : 0;
+      return (t && t.hex ? `Renew the curse on ${T}: its ${SPELL.hex.turns} turns start over. ` : `Curse ${T} for its next ${SPELL.hex.turns} turns. `) +
+        `Its blows do ${pct(cut)} less${b && !t.hex ? ` (its ${b.name} would do ${after} instead of ${b.dmg})` : ''}, and it takes ${doom} damage at the start of each of its turns (${doom * SPELL.hex.turns} in all). It never misses.`;
+    }
+    case 'pact': {
+      const c = pactCost(), d = hitOn(t, SPELL.pact.mult, true);
+      if (p.hp <= c) return `It costs ${c} HP and you only have ${p.hp}. Heal first.`;
+      return `Pay ${c} of your own HP, then hit ${T} for about ${d}, straight through its armor. It can't miss.` +
+        (t && t.hex ? ` ${T[0].toUpperCase() + T.slice(1)} is hexed, so the curse ends and its last ${t.hex.doom * t.hex.turns} damage lands at once too.` : ' On a hexed enemy the curse would also burst, dealing all its damage at once.');
+    }
+    case 'ward': return ward > 0 ? `Your ward still holds ${ward} damage. You can't raise another until it breaks.`
+      : `Raise a ward that soaks up the next ${SPELL.ward.soak[R]} damage from blows aimed at you. It stays up between turns until it breaks or the fight ends.`;
+    case 'dread': return t && t.dreaded ? `You have already used Dread on ${T} in this fight.` : `Terrify ${T}: it loses its next move${its}. You can do this once to each enemy in a fight.`;
+    case 'plague': { const doom = SPELL.plague.doom[R]; return `Curse every enemy at once: each takes ${doom} damage at the start of each of its turns, for ${SPELL.plague.turns} turns (${doom * SPELL.plague.turns} each in all). Unlike Hex, it doesn't soften their blows.`; }
+    case 'burst': return bodies ? `Blow up the body of an enemy that fell: every enemy still standing takes about ${hitOn(t, SPELL.burst.share)}. Bodies you can use: ${bodies}.` : 'Needs an enemy that has fallen in this fight. Kill one first.';
+    case 'shoot': return (aimed ? `Loose your aimed arrow at ${T}: it can't miss and does double, about ${hitOn(t) * SHOT.aim.mult}.` : `Shoot ${T} for about ${hitOn(t)}, with a ${pct(critChance() + RANGER.crit)} chance to crit.`) +
+      (t && t.next === 'wing' ? ' It is up in the air, but your arrows still reach it.' : '') + (t && t.next === 'flit' ? ` It is flitting about: it dodges arrows ${pct(RANGER.flit)} of the time.` : '');
+    case 'fire': { const burn = SHOT.fire.burn[R]; return `Shoot a burning arrow at ${T} for about ${hitOn(t, SHOT.fire.share) * (aimed ? 2 : 1)}${aimed ? ' (aimed: it can\'t miss)' : ''}. Then it burns for ${burn} at the start of each of its turns, for ${SHOT.fire.turns} turns (${burn * SHOT.fire.turns} in all). A burning Troll can't regenerate.`; }
+    case 'pin': return t && t.pinned ? `You have already pinned ${T} in this fight.`
+      : `Shoot ${T} for about ${hitOn(t, SHOT.pin.share) * (aimed ? 2 : 1)}. If the arrow hits, ${T} is pinned and loses its next move${its}. ${aimed ? 'You are aimed, so it can\'t miss.' : 'It can miss.'} Once per enemy in a fight.`;
+    case 'aim': return aimed ? 'You are already aiming. Use Shoot, Fire or Pin to loose the arrow.'
+      : `Spend this turn drawing and holding your aim (enemies still act). Your next Shoot, Fire Arrow or Pinning Shot can't miss and does double damage.`;
+    case 'volley': return `Shoot high so the arrows fall on every enemy you can reach: about ${hitOn(t, volleyShare())} each (${pct(volleyShare())} of a hit, more with a better quiver). Each one can miss or crit on its own.`;
+    case 'snare': {
+      if (snareLast) return 'You just laid a snare. You can\'t lay one twice in a row.';
+      const ok = b && SNARE_CATCH.includes(b.move);
+      if (!ok) return `Lay a snare at the feet of ${T}. It catches the next melee blow, but ${T} isn't about to make one${t && t.next && MOVES[t.next] ? ` (it shows ${MOVES[t.next].name})` : ''}, so it would catch nothing.`;
+      return t.boss ? `Lay a snare at the Ogre King's feet. He is too big to hold: he tears free, and his ${b.name} does half (about ${Math.round(b.dmg / 2)}).`
+        : `Lay a snare at the feet of ${T}. Its ${b.name} for ${b.dmg} would never land, and it would be left off balance, so your next hit on it can't miss.`;
+    }
+    case 'smoke': return smokeLast ? 'You just threw one. Not twice in a row.' : `Throw a smoke bomb at your feet. Every blow at you this turn has a ${pct(SHOT.smoke.miss)} chance to miss, even a Charge or a Crushing Blow.`;
+  }
+  return '';
+}
+
+// ---- one hit of a spell or an arrow on t. o: share (of a normal hit), sure (can't miss), pierce (through armor and
+// shields), spell (a shield can't catch it), arrow (a raised guard catches half), heavy, shaken, hit / miss (log words).
+// Your weapon's enchantment works as it does on a sword: Flaming sets it alight, Vampiric heals you, Giantslayer bites
+function classHit(t, o) {
+  const evade = t.next === 'flit' ? (cls === 'ranger' ? RANGER.flit : FLIT_EVADE) : (t.evasion ?? PLAYER_MISS);
+  const missChance = o.sure || t.off ? 0 : Math.min(0.95, Math.max(0, evade + weaponMiss() + (t.dodge || 0)) * missKeep());
+  const result = swingResult(missChance, critChance() + (cls === 'ranger' ? RANGER.crit : 0));
+  if (result === 'miss') {
+    run.misses++;
+    cue('miss', {who: t});
+    popup(t, 'MISS', 'miss');
+    msg.textContent += `${o.miss || 'You miss'} the ${t.name}.`;
+    return {result, dealt: 0};
+  }
+  const raw = roll(8, 14) + power('weapon') + bonusDmg + purseDmg();
+  let dmg = o.pierce ? raw : throughArmor(raw, t.def || 0, ARMOR_CAP + (t.cap || 0), t.cut || 0);
+  dmg = Math.max(1, Math.round(dmg * (o.share || 1)));
+  const finisher = perkN('executioner') && t.hp < t.max * EXEC_THRESHOLD;
+  if (finisher) dmg = Math.round(dmg * (1 + execBonus()));
+  const ambush = current && current.ambushReady;
+  if (ambush) { current.ambushReady = false; current.ambushed = true; dmg = Math.round(dmg * (1 + ambushBonus())); }
+  const giant = isBig(t) && enchSum('giantslayer') > 0;
+  if (giant) dmg = Math.round(dmg * (1 + enchSum('giantslayer')));
+  if (result === 'crit') { dmg *= PLAYER_CRIT_MULT; run.crits++; }
+  if (o.shaken) dmg = Math.max(1, Math.round(dmg * WAIL_KEEP));
+  const braced = t.next === 'brace';
+  if (braced) dmg = Math.max(1, Math.round(dmg * BRACE_KEEP));
+  const guarded = o.arrow && t.next === 'guard';
+  if (guarded) dmg = Math.max(1, Math.round(dmg * RANGER.guardKeep));
+  const caught = !o.spell && !o.pierce && !t.off && t.shield !== undefined && Math.random() < FOE_SHIELD_BLOCK[t.shield];
+  if (caught) dmg = Math.max(1, Math.round(dmg * FOE_SHIELD_KEEP));
+  run.biggest = Math.max(run.biggest, dmg);
+  msg.textContent += (result === 'crit' ? 'CRITICAL! ' : '') + `${o.hit} the ${t.name} for ${dmg}.` + (ambush ? ' (Ambush)' : '') + (finisher ? ' (Executioner)' : '') +
+    (giant ? ' (Giantslayer)' : '') + (t.off ? ' (Off balance)' : '') + (o.shaken ? ' (Shaken)' : '') +
+    (braced ? ' It takes it on its braced shield.' : '') + (guarded ? ' Its raised shield catches the arrow.' : '') + (caught ? ' It catches it on its shield.' : '');
+  if (result === 'crit' && t.regen && dmg < t.hp) { t.noRegen = true; msg.textContent += ` The ${t.name}'s wounds stop closing.`; }
+  cue('hit', {who: t, heavy: !!o.heavy, crit: result === 'crit', caught, ranged: true});   // (no sword's arc for a spell or an arrow)
+  const dealt = damageFoe(t, dmg, result === 'crit');
+  const burn = enchSum('flaming');
+  if (burn && t.hp > 0) { if (!t.burn) { msg.textContent += ` The ${t.name} catches fire!`; cue('ignite', {who: t}); } t.burn = BURN_TURNS; t.burnDmg = burn; }
+  const leech = Math.min(Math.round(dealt * enchSum('vampiric')), p.max - p.hp);
+  if (leech > 0) { p.hp += leech; popup('player', `+${leech}`, 'heal'); msg.textContent += ` You drain ${leech} HP.`; }
+  return {result, dealt};
+}
+// a Swift weapon may loose a second bolt or arrow: at the same enemy, or the next one if that fell
+function classSwift(t, first, o) {
+  if (first.result === 'miss' || !(Math.random() < enchSum('swift'))) return;
+  const next = t.hp > 0 ? t : liveTarget();
+  if (!next) return;
+  after(0.18);
+  msg.textContent += ' Swift! ';
+  classHit(next, o);
+}
+
+// ---- a Warlock's or a Ranger's turn ----
+function classTurn(kind) {
+  const t = liveTarget(), shaken = weak, R = rankOf(kind);
+  msg.textContent = '';
+  armed = null;
+  let react = 'normal', at = t;
+  if (cls === 'warlock') {
+    if (kind === 'ward') {
+      ward = wardMax = SPELL.ward.soak[R];
+      cue('cast', {len: 0.3}); after(0.22); cue('wardUp', {ward, len: 0.55});
+      msg.textContent = `You raise a ward of bone. It will soak up the next ${ward} damage.`;
+      react = 'block'; at = null;
+    } else if (kind === 'plague') {
+      cue('cast', {len: 0.3}); after(0.25);
+      for (const f of foes.filter(f => f.hp > 0)) {
+        if (f.hex) f.hex.turns = Math.max(f.hex.turns, SPELL.plague.turns);
+        else f.hex = {turns: SPELL.plague.turns, cut: 0, doom: SPELL.plague.doom[R], plague: true};
+        cue('hexOn', {who: f, len: 0.4}); after(0.05);
+      }
+      msg.textContent = `A pestilence falls on them all: ${SPELL.plague.doom[R]} damage a turn for ${SPELL.plague.turns} turns.`;
+    } else if (kind === 'burst') {
+      bodies = Math.max(0, bodies - 1);
+      cue('cast', {len: 0.3}); after(0.25); cue('burst', {len: 0.45}); after(0.12);
+      weak = false;
+      msg.textContent = 'You tear a fallen body apart. ';
+      for (const f of foes.filter(f => f.hp > 0 && reachable(f))) { classHit(f, {share: SPELL.burst.share, spell: true, shaken, hit: 'Bone shards rake', miss: 'The shards miss'}); msg.textContent += ' '; after(0.06); }
+    } else if (!t) {
+      msg.textContent = 'Nothing is in reach. You gather your power.';
+      react = 'block'; at = null;
+    } else if (kind === 'siphon') {
+      cue('cast', {len: 0.25}); after(0.16); cue('bolt', {who: t, len: 0.3}); after(0.2);
+      weak = false;
+      const o = {share: SPELL.siphon.share, spell: true, shaken, hit: 'Your Siphon tears into', miss: 'Your Siphon misses'}, first = classHit(t, o);
+      const heal = Math.min(Math.round(first.dealt * SPELL.siphon.heal), p.max - p.hp);
+      if (heal > 0) { p.hp += heal; after(0.15); cue('siphonBack', {who: t, len: 0.7}); popup('player', `+${heal}`, 'heal'); msg.textContent += ` You drink ${heal} HP from it.`; }
+      classSwift(t, first, {...o, shaken: false});
+    } else if (kind === 'hex') {
+      cue('cast', {len: 0.25}); after(0.2); cue('hexOn', {who: t, len: 0.5});
+      const renew = !!t.hex;
+      t.hex = {turns: SPELL.hex.turns, cut: SPELL.hex.cut[R], doom: SPELL.hex.doom[R]};
+      popup(t, 'HEXED', 'hex');
+      msg.textContent = `You ${renew ? 'renew the curse on' : 'curse'} the ${t.name}: for ${t.hex.turns} turns it hits ${pct(t.hex.cut)} softer and takes ${t.hex.doom} damage a turn.`;
+    } else if (kind === 'pact') {
+      const cost = pactCost();
+      p.hp = Math.max(1, p.hp - cost); run.taken += cost;
+      cue('pact', {len: 0.3}); popup('player', `−${cost}`, 'hex');
+      msg.textContent = `You pay ${cost} HP in blood. `;
+      after(0.22); cue('bolt', {who: t, heavy: true, len: 0.3}); after(0.2);
+      weak = false;
+      const doom = t.hex ? t.hex.doom * t.hex.turns : 0;
+      t.hex = null;
+      classHit(t, {share: SPELL.pact.mult, sure: true, pierce: true, spell: true, heavy: true, shaken, hit: 'The Blood Pact rips through'});
+      if (doom && t.hp > 0) { after(0.16); cue('doomBurst', {who: t, len: 0.5}); msg.textContent += ` The curse bursts: ${Math.min(doom, t.hp)} damage at once.`; damageFoe(t, doom, false, 'hex'); }
+      react = 'heavy';
+    } else if (kind === 'dread') {
+      cue('cast', {len: 0.25}); after(0.2); cue('dread', {who: t, len: 0.5});
+      t.dreaded = true; t.stunned = true;
+      popup(t, 'TERRIFIED', 'hex');
+      msg.textContent = `The ${t.name} freezes in terror. It will lose its next move.`;
+    }
+  } else {
+    // the next single arrow: aimed (can't miss, double), or as it comes
+    const single = (share, words) => {
+      const sure = aimed, x = aimed ? SHOT.aim.mult : 1;
+      if (aimed) { aimed = false; msg.textContent += 'You loose the arrow you held. '; }
+      return classHit(t, {arrow: true, share: share * x, sure, shaken, ...words});
+    };
+    const loose = (fire) => { cue('draw', {len: 0.3}); after(0.24); cue('arrow', {who: t, fire, len: 0.3}); after(0.16); weak = false; };
+    if (kind === 'aim') {
+      aimed = true;
+      cue('aim', {len: 0.4});
+      msg.textContent = 'You draw and hold your aim. Your next arrow can\'t miss and does double damage.';
+      at = null;
+    } else if (kind === 'smoke') {
+      smoke = true;
+      cue('smoke', {len: 0.6}); after(0.3);
+      msg.textContent = `You smash a smoke bomb at your feet. Every blow at you this turn has a ${pct(SHOT.smoke.miss)} chance to miss.`;
+      react = 'block'; at = null;
+    } else if (kind === 'snare') {
+      if (t) { snareOn = t; cue('snareLay', {who: t, len: 0.45}); after(0.3); msg.textContent = `You lay a snare in front of the ${t.name}.`; }
+      else msg.textContent = 'Nothing is in reach to snare.';
+      react = 'block'; at = null;
+    } else if (!t) {
+      msg.textContent = 'Nothing is in reach.';
+    } else if (kind === 'shoot') {
+      loose(false);
+      const first = single(1, {hit: 'Your arrow strikes', miss: 'Your arrow misses'});
+      classSwift(t, first, {arrow: true, hit: 'A second arrow strikes', miss: 'A second arrow misses'});
+    } else if (kind === 'fire') {
+      loose(true);
+      const r = single(SHOT.fire.share, {hit: 'Your fire arrow strikes', miss: 'Your fire arrow misses'});
+      if (r.result !== 'miss' && t.hp > 0) {
+        if (!t.burn) cue('ignite', {who: t});
+        t.burn = SHOT.fire.turns; t.burnDmg = Math.max(t.burnDmg || 0, SHOT.fire.burn[R]);
+        msg.textContent += ` It burns: ${t.burnDmg} a turn for ${t.burn} turns.`;
+      }
+    } else if (kind === 'pin') {
+      loose(false);
+      const r = single(SHOT.pin.share, {hit: 'Your pinning shot strikes', miss: 'Your pinning shot misses'});
+      if (r.result !== 'miss' && t.hp > 0) {
+        t.pinned = true; t.stunned = true;
+        cue('stun', {who: t}); popup(t, 'PINNED', 'gold');
+        msg.textContent += ' It is pinned and loses its next move.';
+      }
+    } else if (kind === 'volley') {
+      cue('drawHigh', {len: 0.3}); after(0.3);
+      weak = false;
+      for (const f of foes.filter(f => f.hp > 0 && reachable(f))) { cue('arrowRain', {who: f, len: 0.3}); after(0.12); classHit(f, {arrow: true, share: volleyShare(), shaken, hit: 'Arrows rain on', miss: 'The arrows miss'}); msg.textContent += ' '; after(0.04); }
+    }
+    snareLast = kind === 'snare';
+    smokeLast = kind === 'smoke';
+  }
+  lastAct = {kind: react, at};                                             // (enemies answer a Pact like a Heavy swing, a ward, snare or smoke like a Block)
+  if (foes.some(f => f.hp > 0)) foesAttack(1, false);
+  else endFight();
+}
+// the snare, when the enemy it waits for steps in: returns null if this move passes it, else whether you live
+function snareCatch(f, m, mult, blocking) {
+  if (snareOn !== f || !SNARE_CATCH.includes(m)) return null;
+  snareOn = null;
+  if (f.boss) {                                                            // too big to hold: half the blow gets through
+    msg.textContent += ` The ${f.name} tears free of your snare!`;
+    const ok = foeStrike(f, mult * 0.5, blocking, m);
+    cue('snap', {who: f, len: 0.5});
+    return ok;
+  }
+  after(turnOpen() && turn.beats.length ? TURN.gap - TURN.foeSwing : 0);
+  cue('foeSwing', {who: f}); after(TURN.foeSwing);
+  cue('snap', {who: f, len: 0.55});
+  f.off = true;
+  popup(f, 'SNARED', 'gold');
+  msg.textContent += ` The ${f.name} steps into your snare! Its ${MOVES[m].name.toLowerCase()} never lands, and it is off balance.`;
+  return true;
+}
+// a smoke bomb hiding you: does this blow lose you in the smoke?
+const smokeMiss = () => smoke && Math.random() < SHOT.smoke.miss;
+// the Bone Ward soaking a blow: returns what still gets through
+function wardSoak(hurt) {
+  if (ward <= 0 || hurt <= 0) return {hurt, soaked: 0};
+  const soaked = Math.min(ward, hurt);
+  ward -= soaked;
+  cue(ward > 0 ? 'wardHit' : 'wardBreak', {ward, len: 0.4});
+  return {hurt: hurt - soaked, soaked};
+}
+// what the Bone Ward holds as of this moment of a turn (like the health bars)
+function shownWard() {
+  if (!turn || !turnBusy()) return ward;
+  const e = turnTime();
+  let w = turn.ward0 ?? ward;
+  for (const b of turn.beats) if ((b.kind === 'wardUp' || b.kind === 'wardHit' || b.kind === 'wardBreak') && b.at <= e) w = b.ward;
+  return w;
+}
+
+// ---- how a Warlock or a Ranger moves, sounds and lights up ----
+function classMotion(b, u, hero) {
+  if (b.kind === 'cast' && u >= -0.05 && u < 0.6) hero.pose = 'cast';
+  else if (b.kind === 'pact' && u >= 0 && u < 0.6) { hero.pose = 'cast'; if (u < 0.12) hero.flash = 'red'; }
+  else if (b.kind === 'draw' && u >= -0.05 && u < 0.75) hero.pose = u < 0.24 ? 'shoot' : 'loose';
+  else if (b.kind === 'drawHigh' && u >= -0.05 && u < 0.85) hero.pose = u < 0.3 ? 'volley' : 'volleyLoose';
+  else if (b.kind === 'aim' && u >= -0.05) hero.pose = 'shoot';
+  else if (b.kind === 'snareLay' && u >= 0 && u < 0.45) hero.dx += 10 * Math.sin(Math.min(1, u / 0.45) * Math.PI);
+}
+function classSound(b, at, o) {
+  switch (b.kind) {
+    case 'cast': SND.fx('magic', {pan: -0.3, gain: 0.7}, at); break;
+    case 'bolt': SND.fx('swing', {pan: 0, heavy: b.heavy}, at); break;
+    case 'siphonBack': SND.fx('drain', {pan: -0.3}, at); break;
+    case 'hexOn': SND.fx('enchant', {pan: o.pan || 0.4, gain: 0.8}, at); break;
+    case 'doomTick': SND.fx('burn', o, at); break;
+    case 'doomBurst': SND.fx('ignite', o, at); break;
+    case 'pact': SND.fx('hurt', {pan: -0.45}, at); SND.fx('magic', {pan: -0.3}, at + 0.05); break;
+    case 'wardUp': SND.fx('rattle', {pan: -0.45, rise: true}, at); break;
+    case 'wardHit': SND.fx('block', {pan: -0.45}, at); break;
+    case 'wardBreak': SND.fx('rattle', {pan: -0.45}, at); break;
+    case 'dread': SND.fx('stun', o, at); break;
+    case 'burst': SND.fx('rattle', {pan: 0.2}, at); SND.fx('hit', {pan: 0.2, mat: 'bone', heavy: true}, at + 0.05); break;
+    case 'draw': SND.fx('swing', {pan: -0.35}, at + 0.22); break;
+    case 'drawHigh': SND.fx('swing', {pan: -0.35}, at + 0.28); break;
+    case 'aim': SND.fx('equip', {pan: -0.4, gain: 0.6}, at); break;
+    case 'smoke': SND.fx('flee', {pan: -0.4}, at); SND.fx('burn', {pan: -0.4, gain: 0.5}, at + 0.05); break;
+    case 'arrowRain': SND.fx('whiff', o, at); break;
+    case 'snareLay': SND.fx('equip', {pan: o.pan || 0.3}, at); break;
+    case 'snap': SND.fx('block', {pan: o.pan || 0.3, shield: 2}, at); SND.fx('hit', {...o, mat: 'metal'}, at + 0.02); break;
+  }
+}
+// where your spell leaves your hand, or your arrow leaves the bow
+const handSpot = hb => hb ? (cls === 'ranger' ? {x: hb.x + 48, y: hb.y - 109} : {x: hb.x + 60, y: hb.y - 111}) : {x: 128, y: 188};
+function classBeat(b, t0, foe, box, at, hb) {
+  const hand = handSpot(hb);
+  switch (b.kind) {
+    case 'bolt': if (at) fx.push({kind: 'clsBolt', t0, x0: hand.x, y0: hand.y, x1: at.x, y1: at.y, heavy: b.heavy, ms: 300}); break;
+    case 'siphonBack': if (at) fx.push({kind: 'drain', t0, x0: at.x, y0: at.y, x1: hand.x, y1: hand.y, ms: 700}); break;
+    case 'hexOn': if (at) { fx.push({kind: 'clsHexOn', t0, x: at.x, y: at.y, ms: 650}); burst(t0, at.x, at.y, 'doom', 12); } break;
+    case 'doomTick': if (at) burst(t0, at.x, at.y + 8, 'doom', 10); break;
+    case 'doomBurst': if (at) { burst(t0, at.x, at.y, 'doom', 26); fx.push({kind: 'flash', t0, col: '150,60,230', a: 0.25, ms: 320}); shakeAt(t0, 3); } break;
+    case 'pact': if (hb) { burst(t0, hb.x + 4, hb.y0 + 40, 'flesh', 12); fx.push({kind: 'flash', t0, col: '170,0,24', a: 0.3, ms: 320}); } break;
+    case 'wardUp': if (hb) fx.push({kind: 'clsWardUp', t0, x: hb.x + 2, y: hb.y0 + 58, ms: 550}); break;
+    case 'wardHit': if (hb) { burst(t0, hb.x + 24, hb.y0 + 52, 'bone', 8); fx.push({kind: 'ring', t0, x: hb.x + 24, y: hb.y0 + 52}); } break;
+    case 'wardBreak': if (hb) { burst(t0, hb.x + 10, hb.y0 + 52, 'bone', 24); shakeAt(t0, 2); } break;
+    case 'dread': if (at) { fx.push({kind: 'flash', t0, col: '50,10,80', a: 0.4, ms: 420}); burst(t0, at.x, at.y - 10, 'doom', 14); } break;
+    case 'burst': {
+      const body = sceneFoes.filter(f => f.hp <= 0 && fightBoxes && fightBoxes.boxes.get(f)).pop(), bb = body && fightBoxes.boxes.get(body);
+      if (bb) { burst(t0, (bb.x0 + bb.x1) / 2, bb.y1 - 12, 'bone', 30, null, true); shakeAt(t0, 4); fx.push({kind: 'flash', t0, col: '120,60,200', a: 0.2, ms: 260}); }
+      break;
+    }
+    case 'arrow': if (at) fx.push({kind: 'clsArrow', t0, x0: hand.x + 4, y0: hand.y + 1, x1: at.x - 8, y1: at.y, fire: b.fire, ms: 190}); break;
+    case 'arrowRain': if (at && box) fx.push({kind: 'clsRain', t0, x: at.x, y: at.y, top: Math.max(-20, box.y0 - 90), ms: 150}); break;
+    case 'snap': if (at && box) { burst(t0, at.x - 14, box.y1 - 4, 'spark', 16); shakeAt(t0, 4); fx.push({kind: 'clsSnap', t0, x: at.x - 18, y: box.y1, ms: 520}); } break;
+    case 'smoke': if (hb) { burst(t0, hb.x, hb.y - 30, 'smoke', 30, null, true); fx.push({kind: 'clsSmoke', t0, x: hb.x + 4, y: hb.y - 66, ms: 2400}); } break;
+  }
+}
+const clsGlow = (x, y, r, col, a) => {
+  if (!(a > 0)) return;
+  const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+  g.addColorStop(0, `rgba(${col},${a})`); g.addColorStop(1, `rgba(${col},0)`);
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r * 2, r * 2); ctx.restore();
+};
+const clsPuff = (x, y, r, col, a) => {                                   // a soft cloud (not a light: it hides what is behind it)
+  if (!(a > 0)) return;
+  const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+  g.addColorStop(0, `rgba(${col},${a})`); g.addColorStop(1, `rgba(${col},0)`);
+  ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r * 2, r * 2);
+};
+const clsPx = (x, y, col, a = 1) => { ctx.globalAlpha = Math.max(0, Math.min(1, a)); ctx.fillStyle = col; ctx.fillRect(Math.round(x / 2) * 2, Math.round(y / 2) * 2, 2, 2); ctx.globalAlpha = 1; };
+function clsArrow(x, y, ang, a = 1, fire = false) {
+  const dx = Math.cos(ang), dy = Math.sin(ang);
+  if (fire) clsGlow(x + dx * 8, y + dy * 8, 10, '255,140,40', 0.8);
+  for (let i = -9; i <= 9; i += 1.5) clsPx(x + dx * i, y + dy * i, i > 6 ? (fire ? '#ffc060' : '#e4e8f0') : i < -6 ? '#f6f0e2' : '#a07448', a);
+}
+function drawClassFx(e, u, k) {
+  if (e.kind === 'clsBolt') {                                              // a bolt of violet light (blood red for the Pact)
+    const col = e.heavy ? '235,40,70' : '190,120,255', at = q => [e.x0 + (e.x1 - e.x0) * q, e.y0 + (e.y1 - e.y0) * q - Math.sin(q * Math.PI) * 8];
+    const q = Math.min(1, k / 0.75);
+    if (k < 0.75) {
+      for (let i = 4; i >= 1; i--) { const [tx, ty] = at(Math.max(0, q - i * 0.07)); clsGlow(tx, ty, 5 + i * 1.5, col, 0.28 * (1 - i / 5)); }
+      const [x, y] = at(q);
+      clsGlow(x, y, e.heavy ? 20 : 14, col, 0.85);
+      clsPx(x - 2, y, '#ffffff'); clsPx(x, y, '#ffffff'); clsPx(x, y - 2, '#f0e0ff'); clsPx(x, y + 2, '#f0e0ff');
+    } else clsGlow(e.x1, e.y1, 30 * (1 - (k - 0.75) / 0.25) + 4, col, 0.9);
+  } else if (e.kind === 'clsHexOn') {                                      // the curse closing in round it
+    const r = 36 * (1 - k) + 6;
+    ctx.globalAlpha = 1 - k; ctx.strokeStyle = 'rgb(206,150,255)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.ellipse(e.x, e.y, r, r * 0.7, 0, 0, Math.PI * 2); ctx.stroke(); ctx.globalAlpha = 1;
+    clsGlow(e.x, e.y, 34, '170,90,240', 0.5 * (1 - k));
+  } else if (e.kind === 'clsWardUp') {                                     // shards of bone spiralling in round you
+    for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2 + k * 4, r = 46 * (1 - k) + 26; clsPx(e.x + Math.cos(a) * r, e.y + Math.sin(a) * r * 0.42, '#efe6cc', 1 - k * 0.3); }
+    clsGlow(e.x, e.y, 44, '170,110,240', 0.35 * (1 - k));
+  } else if (e.kind === 'clsArrow') {                                      // an arrow, flying flat and fast
+    const q = Math.min(1, k * 1.1);
+    if (q < 1) clsArrow(e.x0 + (e.x1 - e.x0) * q, e.y0 + (e.y1 - e.y0) * q, Math.atan2(e.y1 - e.y0, e.x1 - e.x0), 1, e.fire);
+  } else if (e.kind === 'clsRain') {                                       // an arrow dropping out of the dark onto it
+    const q = Math.min(1, k * 1.1), x = e.x - 26 * (1 - q), y = e.top + (e.y - e.top) * q;
+    if (q < 1) clsArrow(x, y, Math.atan2(e.y - e.top, 26));
+  } else if (e.kind === 'clsSnap') {                                       // the jaws slamming shut
+    const w = 14 * Math.max(0, 1 - k * 4) + 2;
+    ctx.globalAlpha = 1 - k; ctx.strokeStyle = '#eef2f8'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(e.x - 14, e.y - 5 - w); ctx.lineTo(e.x + 14, e.y - 5 - w); ctx.moveTo(e.x - 14, e.y - 5 + w * 0.3); ctx.lineTo(e.x + 14, e.y - 5 + w * 0.3); ctx.stroke();
+    ctx.globalAlpha = 1;
+  } else if (e.kind === 'clsSmoke') {                                      // a cloud of smoke round you, thinning out
+    const a = 0.7 * Math.min(1, k * 6) * (1 - Math.max(0, (k - 0.6) / 0.4));
+    for (let i = 0; i < 9; i++) { const ang = i / 9 * Math.PI * 2 + u * 0.6, r = 20 + 12 * Math.sin(u * 1.3 + i); clsPuff(e.x + Math.cos(ang) * r, e.y + Math.sin(ang) * r * 1.1 - u * 6, 26 + (i % 3) * 7, '104,100,112', a); }
+  }
+}
+// what lasts between turns: a hex burning over its victim, the Bone Ward wheeling round you
+const HEX_SIGIL = ['....#....', '...###...', '..#...#..', '.#.###.#.', '#..#.#..#', '.#.###.#.', '..#...#..', '...###...', '....#....'];
+function drawClassMarks(now) {
+  if (!fightBoxes || over || cls === 'knight') return;
+  const t = now / 1000, e = turn && turnBusy() ? turnTime() : Infinity;
+  for (const f of sceneFoes) {
+    const b = fightBoxes.boxes.get(f);
+    if (!b || shownHp(f) <= 0 || !f.hex) continue;
+    if (turn && turnBusy() && turn.beats.some(q => q.kind === 'hexOn' && q.who === f && q.at > e)) continue;   // (not cursed yet in this turn's telling)
+    const cx = Math.round((b.x0 - 6) / 2) * 2, cy = Math.round((b.y0 + (b.y1 - b.y0) * 0.28) / 2) * 2, pulse = 0.75 + 0.25 * Math.sin(t * 3 + (f.animPhase || 0));
+    clsGlow(cx + 9, cy + 9, 18, '170,90,240', 0.45 * pulse);
+    HEX_SIGIL.forEach((row, j) => [...row].forEach((c, i) => { if (c === '#') clsPx(cx + i * 2, cy + j * 2, (i + j) % 3 ? '#d8b8ff' : '#ffffff', 0.92 * pulse); }));
+    for (let n = 0; n < f.hex.turns; n++) clsPx(cx + 3 + n * 5, cy + 22, '#c49cff');      // one pip for each turn it has left
+  }
+  const w = shownWard(), hb = fightBoxes.hero;
+  if (w > 0 && hb) {
+    const cx = hb.x + 2, cy = hb.y0 + 58, k = Math.max(0.4, w / Math.max(1, wardMax));
+    clsGlow(cx, cy, 46, '160,110,230', 0.2 * k);
+    for (let i = 0; i < 8; i++) {
+      const a = t * 1.3 + i / 8 * Math.PI * 2, x = cx + Math.cos(a) * 30, y = cy + Math.sin(a) * 12, front = Math.sin(a) > 0;
+      clsPx(x, y, front ? '#efe6cc' : '#9c927c', (front ? 0.95 : 0.6) * k); clsPx(x + 2, y, front ? '#d4c8aa' : '#766e60', (front ? 0.85 : 0.5) * k);
+    }
+  }
+}
+// the card that says what an action you tapped once will do, over the bottom of the fight
+function sbWrap(text, w) {
+  const out = [];
+  let line = '';
+  for (const word of text.split(' ')) { const next = line ? line + ' ' + word : word; if (ctx.measureText(next).width > w && line) { out.push(line); line = word; } else line = next; }
+  if (line) out.push(line);
+  return out;
+}
+function drawSpellCard() {
+  if (!armed || phase !== 'fight' || over) return;
+  const text = explainOf(armed);
+  if (!text) return;
+  ctx.save();
+  ctx.font = textFont(13);
+  const lines = sbWrap(text, 252), x = 8, w = 272, h = 34 + lines.length * 16 + 20, y = PLAY_H - 6 - h;
+  chamfer(x, y, w, h, 4); ctx.fillStyle = 'rgba(12,9,14,0.94)'; ctx.fill(); ctx.strokeStyle = 'rgba(214,170,80,0.85)'; ctx.lineWidth = 1; ctx.stroke();
+  titleText(ACTION[armed].name, x + 12, y + 24, 20, '#ffd890', 'left', w - 24);
+  ctx.font = textFont(13); ctx.fillStyle = '#ece1cb'; ctx.textAlign = 'left';
+  lines.forEach((ln, i) => ctx.fillText(ln, x + 12, y + 44 + i * 16));
+  ctx.font = textFont(11, 400); ctx.fillStyle = '#c9b994';
+  ctx.fillText('Tap it again to use it, or tap another to read that.', x + 12, y + h - 9);
+  ctx.restore();
+}
+// the snare at its victim's feet, from the moment you lay it until it springs (or the turn ends)
+const SNARE_F = {name: 'Snare', animPhase: 0}, SNARE_SHUT = {name: 'SnareShut', animPhase: 0};
+function snareFig(spots) {
+  if (!turn || !turnBusy()) return null;
+  const e = turnTime(), lay = turn.beats.find(b => b.kind === 'snareLay');
+  if (!lay || e < lay.at + 0.2) return null;
+  const s = spots.get(lay.who);
+  if (!s) return null;
+  const snap = turn.beats.find(b => b.kind === 'snap' && b.who === lay.who);
+  if (snap && e > snap.at + 0.9) return null;
+  return {f: snap && e >= snap.at ? SNARE_SHUT : SNARE_F, x: Math.round((s.x - 32 * s.s) / 2) * 2, y: s.y + 6, s: s.s * 1.35, fall: 0, gone: false};
+}
+
 function startFight() {
   if (phase !== 'choice') return;
   phase = 'fight';
-  msg.textContent = 'Normal, Heavy or Block?';
+  msg.textContent = cls === 'knight' ? 'Normal, Heavy or Block?' : explainFirst ? 'Tap an action once to read what it does, and again to use it.' : 'Choose an action.';
   draw();
 }
 
@@ -9233,13 +10550,13 @@ function tryFlee() {
     beginTurn();
     lastAct = {kind: 'flee', at: null};
     try { cue('stumble', {len: 0.3}); after(0.15); foesAttack(); } finally { closeTurn(); }
-    if (!over && phase === 'fight') msg.textContent += ' Normal, Heavy or Block?';
+    if (!over && phase === 'fight') msg.textContent += cls === 'knight' ? ' Normal, Heavy or Block?' : ' Choose an action.';
   }
   draw();
 }
 
 function equipItem() {
-  if (phase !== 'loot' || !pending || lootReady() < 1) return;
+  if (phase !== 'loot' || !pending || pending.type === 'book' || lootReady() < 1) return;
   confirmSale('equip', 'Tap Equip again to put it on.', () => {
     const {slot, ...item} = pending;
     worn[slot] = item;
@@ -9253,7 +10570,7 @@ function equipItem() {
 function leaveItem() {
   if (phase !== 'loot' || !pending || lootReady() < 1) return;
   confirmSale('leaveItem', 'Tap Leave again to leave it behind.', () => {
-    msg.textContent = `Left the ${itemName(pending)} behind.`;
+    msg.textContent = `Left the ${pending.type === 'book' ? bookName(pending) : itemName(pending)} behind.`;
     closeLoot();
   });
 }
@@ -9769,7 +11086,7 @@ function journal(...ev) {
     journalFile();                                    // (a run left unfinished: it is filed as it stands)
     journalRun = journalBook.runs.find(r => r.id === run.id) || null;
     if (!journalRun) {
-      journalRun = {id: run.id, date: new Date(run.id).toISOString(), ev: []};
+      journalRun = {id: run.id, date: new Date(run.id).toISOString(), cls, ev: []};
       if (ev[0] !== 'F') journalRun.ev.push(['F', 0, floor + 1, p.hp, p.max, potions, coins, level, gearNote(), perkNote()]);
     }
   }
@@ -9865,11 +11182,12 @@ const journalCount = () => journalLoad().runs.length + (journalRun && !journalRu
 // It is written after every tap and whenever the game goes out of sight, and thrown away the moment the run ends, so
 // there is only ever one, and it always holds what has already happened: reopening the game never undoes a bad turn.
 // Continue on the title screen picks it up. Bump SAVE_V whenever what is saved changes shape: older saves are then dropped
-const SAVE_KEY = 'crawlspace:run', SAVE_V = 2;   // 2: enemy moves (each enemy's next, then, acts...), sunder and weak
+const SAVE_KEY = 'crawlspace:run', SAVE_V = 3;   // 2: enemy moves (each enemy's next, then, acts...), sunder and weak; 3: classes
 function runSnapshot() {
   return {v: SAVE_V, floor, map, opened: [...opened], visited: [...visited], enemies, p, prev, worn, perks,
     level, xp, levelUps, bonusDmg, hand, redraws, secondWinds, coins, potions, maxPotions, shopPotionsLeft, poison, sunder, weak,
     scrolls, bagSlots, scrollNow, pending, shopStock, shopTitle, shopMode, combatView, fightSeed,
+    cls, classBar, ranks, ward, wardMax, snareLast, smokeLast, aimed, bodies,
     phase: finale ? 'won' : phase,                                        // (the Ogre King is falling: the win is already yours)
     current: enemies.indexOf(current), scene: enemies.findIndex(e => e.group === sceneFoes), target: sceneFoes.indexOf(target),
     run: {...run, start: undefined, elapsed: Date.now() - run.start},     // the clock stops while the game is closed
@@ -9898,7 +11216,9 @@ function restoreRun(s) {
   for (const k of Object.keys(perks)) delete perks[k];
   Object.assign(perks, s.perks);
   ({level, xp, levelUps, bonusDmg, hand, redraws, secondWinds, coins, potions, maxPotions, shopPotionsLeft, poison, sunder, weak,
-    scrolls, bagSlots, scrollNow, pending, shopStock, shopTitle, shopMode, combatView, fightSeed, phase} = s);
+    scrolls, bagSlots, scrollNow, pending, shopStock, shopTitle, shopMode, combatView, fightSeed, phase,
+    cls, classBar, ranks, ward, wardMax, snareLast, smokeLast, aimed, bodies} = s);
+  slots.shield.label = cls === 'ranger' ? 'Quiver' : 'Shield';
   // the fight on screen: the enemy you walked into, its group, and your target (saved by position, so they are the same objects)
   current = enemies[s.current] || null;
   foes = current ? current.group : [];
@@ -9931,6 +11251,47 @@ function showSaved() {
   if (savedRun) contNote.textContent = `Floor ${savedRun.floor + 1} · Level ${savedRun.level}`;
 }
 showSaved();
+// ---- choosing a class: Play opens the choice, and a run starts the moment you pick ----
+const CLASS_BLURB = {
+  knight: 'Sword and shield: Normal, Heavy and Block, and the heaviest armor.',
+  warlock: 'A staff and spells: Siphon heals him, Hex curses. Spellbooks teach him more.',
+  ranger: 'A bow from the start: Shoot and Aimed Shot. Arrow and trap kits teach him more.'
+};
+function showClassPick(on) {
+  titleMain.hidden = on; classPick.hidden = !on; titleArt.hidden = on; title.scrollTop = 0;
+  if (on) renderClassPick(); else startTitle();
+}
+function renderClassPick() {
+  classList.innerHTML = '';
+  for (const c of CLASS_IDS) {
+    const b = document.createElement('button'), cv = document.createElement('canvas');
+    b.className = 'cpick';
+    try {
+      const gear = c === 'knight' ? {weapon: 1, shield: 1, helmet: 1, chest: 1, bracers: 1, greaves: 1} : {cls: c, weapon: 1, helmet: 1, chest: 1, bracers: 1, greaves: 1, ...(c === 'ranger' ? {offhand: 1} : {})};
+      const d = window.CLASSART.classDoll(gear, null, 72, 100, 58);
+      cv.width = d.cv.width * 2; cv.height = d.cv.height * 2;
+      const cg = cv.getContext('2d'); cg.imageSmoothingEnabled = false; cg.drawImage(d.cv, 0, 0, cv.width, cv.height);
+      cg.globalCompositeOperation = 'lighter';
+      for (const q of d.glows) { const r = (q.spell ? 15 : 6) * (q.r || 1); cg.drawImage(window.CLASSART.soft(q.col.join(','), q.spell ? 0.75 : 0.5), q.x - r, q.y - r, r * 2, r * 2); }
+    } catch (e) {}
+    const name = document.createElement('span'), note = document.createElement('small');
+    name.textContent = CLASS_NAME[c]; note.textContent = CLASS_BLURB[c];
+    b.append(cv, name, note);
+    b.disabled = !classUnlocked(c);
+    if (b.disabled) note.textContent = 'Locked.';
+    b.onclick = () => beginRun(c);
+    classList.appendChild(b);
+  }
+}
+function beginRun(c) {
+  setClass(c);
+  classPick.hidden = true; titleMain.hidden = false; titleArt.hidden = false;
+  title.hidden = true; run.start = Date.now(); requestFrames(); draw();
+}
+classBack.onclick = () => showClassPick(false);
+const explainLabel = () => { explainBtn.textContent = `Explain actions: ${explainFirst ? 'On' : 'Off'}`; explainBtn.setAttribute('aria-pressed', explainFirst); };
+explainBtn.onclick = () => { setExplain(!explainFirst); explainLabel(); };
+explainLabel();
 contBtn.onclick = () => {
   const s = readSave();
   if (!s) { savedRun = null; showSaved(); return; }
@@ -9953,7 +11314,7 @@ playBtn.onclick = () => {
     clearSave();
     savedRun = null;
   }
-  title.hidden = true; run.start = Date.now(); requestFrames();
+  showClassPick(true);                                                     // (the run starts once you pick a class)
 };
 howBtn.onclick = () => showHowTo(true);
 backBtn.onclick = () => showHowTo(false);
@@ -9963,7 +11324,8 @@ vaultBack.onclick = () => showVault(false);
 const showSettings = on => { titleMain.hidden = on; settings.hidden = !on; titleArt.hidden = on; title.scrollTop = 0; if (!on) startTitle(); };
 setBtn.onclick = () => showSettings(true);
 setBack.onclick = () => showSettings(false);
-if (location.hash === '#play') title.hidden = true;
+ART.setTitleClasses(CLASS_IDS.filter(c => c !== 'knight' && classUnlocked(c)));   // the classes you have unlocked stand behind you on the title
+if (location.hash === '#play') { skipIntro(); showClassPick(true); }     // Play again: straight to choosing a class
 else if (location.hash === '#vault') {                                     // from the end of a run: straight into the Vault
   history.replaceState(null, '', location.pathname + location.search);    // (a later reload opens the title as usual)
   skipIntro(); showVault(true);

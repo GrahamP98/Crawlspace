@@ -67,6 +67,7 @@
     LEVEL_TAP_GUARD_MS = 0;
     LOOT_TAP_GUARD_MS = 0;
     title.hidden = true;
+    if (typeof setClass === 'function') setClass(P.cls || 'knight');   // (pol.cls: knight, warlock or ranger)
     K = {known: new Set(), avoid: new Set(), shopVisits: {}, floorFights: 0};
     ST = {fights: 0, fled: 0, fleeTry: 0, turns: 0, heavy: 0, block: 0, normal: 0, potFight: 0, potExplore: 0, bought: [], enchBought: [],
           sold: 0, redraws: 0, arrive: [], hpLostFloor: [0, 0, 0, 0, 0], coinsEnd: [], deathFoes: null, killer: null, sw: 0, steps: 0,
@@ -120,7 +121,8 @@
       fights: ST.fights, fled: ST.fled, fleeTry: ST.fleeTry, turns: ST.turns, heavy: ST.heavy, block: ST.block, normal: ST.normal,
       potFight: ST.potFight, potExplore: ST.potExplore, bought: ST.bought, enchBought: ST.enchBought, sold: ST.sold, redraws: ST.redraws,
       arrive: ST.arrive, hpLost: ST.hpLostFloor, coinsEnd: ST.coinsEnd, skipped: ST.skipped, maxPotions, sw: secondWinds,
-      segs: ST.segs, deathSeg: ST.deathSeg, foe: ST.foe, spent: ST.bought.length, camp: ST.camp || null, tac: ST.tac || {}
+      segs: ST.segs, deathSeg: ST.deathSeg, foe: ST.foe, spent: ST.bought.length, camp: ST.camp || null, tac: ST.tac || {},
+      cls: typeof cls === 'string' ? cls : 'knight', bar: typeof classBar !== 'undefined' ? classBar.slice() : [], ranks: typeof ranks !== 'undefined' ? {...ranks} : {}, acts: ST.acts || {}
     };
   }
   function arrive() { ST.arrive[floor] = [p.hp, p.max, potions, level, coins, defense(), power('weapon'), power('shield')]; }
@@ -417,7 +419,184 @@
     act(best.kind);
   }
 
+
+  // ---------------------------------------------------------------- classes (2026-11-23): the Warlock and the Ranger
+  // pol.cls picks the class ('knight' by default). In a fight the bot plays every action on its bar (at every target it
+  // could take) out on the same dice, like the Knight's expert turn: its own blow, then each enemy's shown move with the
+  // class's rules (a hex softening blows and eating at its victim, the Bone Ward soaking, a snare catching a melee blow,
+  // smoke making blows miss, burning, pins and Dread costing an enemy its move), then what the rest of the fight should
+  // cost from there. pol.actVal says what each learnable action is worth when a spellbook or kit turns up
+  const isClass = () => typeof cls === 'string' && cls !== 'knight';
+  const ACT_VAL = Object.assign({hex: 6, pact: 7, ward: 8, dread: 5, plague: 4, burst: 3, fire: 6, pin: 7, aim: 5, volley: 6, snare: 7, smoke: 6}, P.actVal || {});
+  const SAMPLES_C = 120;
+  function classSwingAt(t, o, hp) {
+    const evade = t.next === 'flit' ? (cls === 'ranger' ? RANGER.flit : FLIT_EVADE) : (t.evasion ?? PLAYER_MISS);
+    const miss = o.sure || t.off ? 0 : Math.min(0.95, Math.max(0, evade + wMiss() + (t.dodge || 0)) * missKeep());
+    const r = R();
+    if (r < miss) return {dmg: 0, crit: false, hit: false};
+    const crit = r < miss + critChance() + (cls === 'ranger' ? RANGER.crit : 0);
+    const raw = rnd(8, 14) + power('weapon') + bonusDmg + purseDmg();
+    let d = Math.round(o.pierce ? raw : foeArmor(raw, t));
+    d = Math.max(1, Math.round(d * (o.share || 1)));
+    if (perkN('executioner') && hp < t.max * EXEC_THRESHOLD) d = Math.round(d * (1 + execBonus()));
+    if (current && current.ambushReady) d = Math.round(d * (1 + ambushBonus()));
+    if (bigT(t) && enchSum('giantslayer') > 0) d = Math.round(d * (1 + enchSum('giantslayer')));
+    if (crit) d *= PLAYER_CRIT_MULT;
+    if (weak) d = Math.max(1, Math.round(d * WAIL_KEEP));
+    if (t.next === 'brace') d = Math.max(1, Math.round(d * BRACE_KEEP));
+    if (o.arrow && t.next === 'guard') d = Math.max(1, Math.round(d * RANGER.guardKeep));
+    if (!o.spell && !o.pierce && !t.off && t.shield !== undefined && R() < FOE_SHIELD_BLOCK[t.shield]) d = Math.max(1, Math.round(d * FOE_SHIELD_KEEP));
+    return {dmg: d, crit, hit: true};
+  }
+  // every action on the bar this turn, at every target it could take, and a potion
+  function classOptions(live) {
+    const reach = live.filter(f => reachable(f)), opts = [], at = (id, list) => list.forEach(t => opts.push({kind: id, t}));
+    for (const id of classBar) {
+      switch (id) {
+        case 'siphon': case 'shoot': case 'fire': at(id, reach); break;
+        case 'hex': at(id, reach.filter(t => !t.hex || t.hex.turns <= 1)); break;
+        case 'pact': if (p.hp > pactCost() + 1) at(id, reach); break;
+        case 'dread': at(id, reach.filter(t => !t.dreaded && !t.stunned)); break;
+        case 'pin': at(id, reach.filter(t => !t.pinned && !t.stunned)); break;
+        case 'snare': if (!snareLast) at(id, reach.filter(t => !t.stunned && t.next && SNARE_CATCH.includes(t.next))); break;
+        case 'ward': if (ward <= 0) opts.push({kind: id}); break;
+        case 'plague': if (live.filter(f => !f.hex).length >= 2) opts.push({kind: id}); break;
+        case 'burst': if (bodies > 0 && reach.length) opts.push({kind: id}); break;
+        case 'aim': if (!aimed) opts.push({kind: id}); break;
+        case 'volley': if (reach.length >= 2) opts.push({kind: id}); break;
+        case 'smoke': if (!smokeLast) opts.push({kind: id}); break;
+      }
+    }
+    if (potions > 0 && p.hp < p.max) opts.push({kind: 'potion'});
+    return opts;
+  }
+  function classExpertTurn() {
+    const live = foes.filter(f => f.hp > 0), opts = classOptions(live);
+    if (!opts.length) { armed = null; return act(classBar[0]); }
+    const base = (Math.random() * 1e9) | 0;
+    const costOf = o => { let c = 0; for (let k = 0; k < SAMPLES_C; k++) { seed = base + k * 7919; c += classPlayOut(o, live); } return c / SAMPLES_C; };
+    // the base action at its best target is the default; anything else has to beat it by a clear margin (MARGIN HP)
+    let best = null, bestCost = Infinity;
+    for (const o of opts.filter(o => o.kind === classBar[0])) { const c = costOf(o); if (c < bestCost) { bestCost = c; best = o; } }
+    const plain = bestCost;
+    for (const o of opts.filter(o => o.kind !== classBar[0])) {
+      const c = costOf(o) + (o.kind === 'potion' ? 2 : 0);
+      if (c < bestCost && (best === null || c < plain - MARGIN)) { bestCost = c; best = o; }
+    }
+    if (!best) best = opts[0];
+    const A = ST.acts || (ST.acts = {});
+    A[best.kind] = (A[best.kind] || 0) + 1;
+    if (best.kind === 'potion') { ST.potFight++; return drinkPotion(); }
+    ST.turns++;
+    if (best.t) target = best.t;
+    armed = null;
+    act(best.kind);
+  }
+  // play one class option out once; returns its cost in HP
+  function classPlayOut(opt, live) {
+    const st = new Map(live.map(f => [f, {f, hp: f.hp, stunned: f.stunned, hex: f.hex ? {...f.hex} : null, burn: f.burn > 0 ? f.burnDmg : 0}]));
+    let hp = p.hp, cost = 0, wardLeft = ward, smokeOn = false, snareT = null, aimNext = aimed, dealt = 0;
+    const reach = live.filter(f => reachable(f)), k = opt.kind, t = opt.t;
+    const hitFoe = (f, d, crit) => {
+      const s = st.get(f); if (!s) return; s.hp -= d; dealt += d;
+      if (s.hp <= 0 && f.reassemble && !f.rose && !crit && R() < REASSEMBLE_CHANCE) s.hp = Math.round(f.max * REASSEMBLE_HP);
+    };
+    const single = share => { const sure = aimNext, x = aimNext ? SHOT.aim.mult : 1; aimNext = false; return classSwingAt(t, {arrow: true, share: share * x, sure}, st.get(t).hp); };
+    if (k === 'siphon') {
+      const s = classSwingAt(t, {share: SPELL.siphon.share, spell: true}, t.hp);
+      if (s.hit) { hitFoe(t, s.dmg, s.crit); const heal = Math.min(Math.round(s.dmg * SPELL.siphon.heal), p.max - hp); hp += heal; cost -= heal; }
+    } else if (k === 'hex') st.get(t).hex = {turns: SPELL.hex.turns, cut: SPELL.hex.cut[rankOf('hex')], doom: SPELL.hex.doom[rankOf('hex')]};
+    else if (k === 'pact') {
+      const c = pactCost(); hp -= c; cost += c;
+      const s = classSwingAt(t, {share: SPELL.pact.mult, sure: true, pierce: true, spell: true}, t.hp); hitFoe(t, s.dmg, s.crit);
+      const sh = st.get(t); if (sh.hex) { sh.hp -= sh.hex.doom * sh.hex.turns; sh.hex = null; }
+    } else if (k === 'ward') wardLeft = SPELL.ward.soak[rankOf('ward')];
+    else if (k === 'dread') st.get(t).stunned = true;
+    else if (k === 'plague') { for (const s of st.values()) if (!s.hex) s.hex = {turns: SPELL.plague.turns, cut: 0, doom: SPELL.plague.doom[rankOf('plague')]}; }
+    else if (k === 'burst') { for (const f of reach) { const s = classSwingAt(f, {share: SPELL.burst.share, spell: true}, f.hp); if (s.hit) hitFoe(f, s.dmg, s.crit); } }
+    else if (k === 'shoot') { const s = single(1); if (s.hit) hitFoe(t, s.dmg, s.crit); }
+    else if (k === 'fire') { const s = single(SHOT.fire.share); if (s.hit) { hitFoe(t, s.dmg, s.crit); const sh = st.get(t); if (sh.hp > 0) { sh.burn = Math.max(sh.burn, SHOT.fire.burn[rankOf('fire')]); sh.fresh = true; } } }
+    else if (k === 'pin') { const s = single(SHOT.pin.share); if (s.hit) { hitFoe(t, s.dmg, s.crit); st.get(t).stunned = true; } }
+    else if (k === 'aim') aimNext = true;
+    else if (k === 'volley') { for (const f of reach) { const s = classSwingAt(f, {arrow: true, share: volleyShare()}, st.get(f).hp); if (s.hit) hitFoe(f, s.dmg, s.crit); } }
+    else if (k === 'snare') snareT = t;
+    else if (k === 'smoke') smokeOn = true;
+    else if (k === 'potion') { hp = Math.min(p.max, hp + potionHeal()); cost -= Math.min(potionHeal(), p.max - p.hp) - potionHeal(); }
+    hp += Math.min(Math.round(dealt * enchSum('vampiric')), p.max - hp); cost -= Math.round(dealt * enchSum('vampiric'));
+    // the enemies' turn, in order
+    const crierAlive = () => [...st.values()].some(s => s.f.cry && s.hp > 0);
+    for (const f of live) {
+      const s = st.get(f); if (!s || s.hp <= 0) continue;
+      if (s.hex) { s.hp -= s.hex.doom; if (s.hp <= 0) continue; }
+      if (s.burn) { s.hp -= s.burn; if (s.hp <= 0) continue; }
+      if (s.stunned) continue;
+      const move = f.next || 'attack', M = MOVES[move] || MOVES.attack;
+      if (move === 'lick' && !s.burn && !s.hex) s.hp = Math.min(f.max, s.hp + f.regen * LICK_REGENS);
+      if (move === 'feast') s.hp = Math.min(f.max, s.hp + FEAST_HEAL);
+      if (move === 'roar') st.set({k: 'servant'}, {f: types.find(x => x.name === 'Goblin'), hp: 40});
+      if (M.hit) {
+        const caught = snareT === f && SNARE_CATCH.includes(move);
+        if (!(caught && !f.boss) && !(smokeOn && R() < SHOT.smoke.miss)) {
+          const cry = crierAlive() && !f.cry ? WARCRY_BONUS : 0;
+          let d = blowAt(f, caught ? 0.5 : 1, move, cry);
+          if (s.hex && s.hex.cut) d = Math.max(1, Math.round(d * (1 - s.hex.cut)));
+          if (wardLeft > 0) { const soak = Math.min(wardLeft, d); wardLeft -= soak; d -= soak; }
+          if (d > 0) {
+            hp -= d; cost += d;
+            if (f.drain) s.hp = Math.min(f.max, s.hp + Math.round(d * f.drain * purityKeep()));
+            if (f.poison && R() < POISON_CHANCE) cost += Math.max(1, poisonTurns() - enchSum('purity')) * poisonDmg() * 0.8;
+            if (enchSum('thorns')) s.hp -= enchSum('thorns');
+            if (move === 'snatch' && !f.stolen && coins > 0 && !perkN('purse')) cost += 4;
+            if (move === 'sunder' || move === 'acid') cost += 3;
+          }
+        }
+      }
+      if (s.hex && --s.hex.turns <= 0) s.hex = null;
+      if (hp <= 0) break;
+    }
+    if (poison && k !== 'potion') { hp -= poisonDmg(); cost += poisonDmg() * poison; }
+    if (hp <= 0) { if (secondWinds > 0) { cost += SW_COST; hp = Math.max(1, Math.round(p.max * SECOND_WIND_SHARE)); } else return cost + DEATH_COST; }
+    const rest = Math.max(0, classRestCost([...st.values()], aimNext) - wardLeft), avail = healAvail() - (k === 'potion' ? potionHeal() : 0);
+    const next = nextTurn([...st.values()]);
+    if (potions - (k === 'potion' ? 1 : 0) > 0 && hp < next * 1.5) cost += (next * 1.5 - hp) * 2.5;
+    cost += rest + (rest > hp + avail ? (rest - hp - avail) * 2 : 0);
+    return cost;
+  }
+  // what the rest of a fight should cost a Warlock or a Ranger in HP, from a state: like restCost, with its own attack
+  // (Siphon heals as it hits), a hex softening and eating at its enemy, fire eating at it, an aimed arrow waiting
+  function classRestCost(state, aimNext) {
+    const alive = state.filter(s => s.hp > 0);
+    if (!alive.length) return 0;
+    const crier = alive.some(s => s.f.cry), warlock = cls === 'warlock';
+    const per = s => { const f = s.f;
+      const cry = crier && !f.cry ? WARCRY_BONUS : 0;
+      const raw = (f.dmg[0] + f.dmg[1]) / 2 + (f.bonus || 0) + (f.raged ? RAGE_BONUS : 0) + (f.bloodlust && p.hp < p.max / 2 ? f.bloodlust : 0) + cry;
+      return afterArmor(raw, armorNow(), capMe()) * (1 - missMe()) * (1 + FOE_CRIT * (FOE_CRIT_MULT - 1)) * (f.boss ? 1.12 : 1) * (s.hex && s.hex.cut ? 1 - s.hex.cut * 0.6 : 1); };
+    const thornsEach = enchSum('thorns') * (1 - missMe());
+    const eff = s => { const f = s.f, base = myAvg(f, false) * (warlock ? SPELL.siphon.share : 1 + RANGER.crit * (PLAYER_CRIT_MULT - 1) * 0.5);
+      const regen = f.regen && !s.burn && !s.hex && !enchSum('flaming') ? f.regen * 0.8 : 0;
+      const drain = f.drain ? per(s) * f.drain * purityKeep() : 0;
+      return Math.max(2, base - regen - drain + thornsEach + (s.hex ? s.hex.doom * 0.7 : 0) + (s.burn ? s.burn * 0.6 : 0)); };
+    const hpOf = s => s.hp + (s.f.reassemble && !s.f.rose ? s.f.max * REASSEMBLE_HP * REASSEMBLE_CHANCE : 0) + (s.f.split ? 14 * 2 * 0.8 : 0);
+    const order = alive.slice().sort((a, b) => per(b) / Math.max(1, hpOf(b) / eff(b)) - per(a) / Math.max(1, hpOf(a) / eff(a)));
+    if (aimNext && order.length) order[0] = {...order[0], hp: Math.max(1, order[0].hp - myAvg(order[0].f, false))};
+    let incoming = order.reduce((a, s) => a + per(s), 0), cost = 0, healed = 0;
+    for (const s of order) { const rounds = hpOf(s) / eff(s); cost += rounds * incoming; incoming -= per(s); if (warlock) healed += rounds * eff(s) * SPELL.siphon.heal * 0.8; }
+    return Math.max(0, cost * (1 - enchSum('vampiric') * 0.6) - healed);
+  }
+  // a spellbook or kit found: learn it if there is room or it raises one; with the bar full, swap out the weakest
+  function bookChoice() {
+    const b = pending, fit = bookFit(b);
+    if (fit === 'learn' || fit === 'rank') return finishBook(null);
+    if (fit === 'full') {
+      const learned = classBar.filter(id => id !== BASE_ACTION[cls]), worst = learned.slice().sort((a, c) => (ACT_VAL[a] || 0) - (ACT_VAL[c] || 0))[0];
+      if (worst && (ACT_VAL[b.id] || 0) > (ACT_VAL[worst] || 0) + 0.5) return finishBook(worst);
+    }
+    leaveItem(); leaveItem();
+  }
+
   function fightTurn() {
+    if (isClass()) return classExpertTurn();
     if (P.tactics !== 'old') return expertTurn();
     const live = foes.filter(f => f.hp > 0);
     target = pickTarget(live);
@@ -498,6 +677,7 @@
   const gearVal = (it, slot) => it ? it.power * (slot === 'shield' ? P.shieldWeight * 1.4 : 1) + wtVal(it, slot) : -1;
   const gearScore = it => it ? gearVal(it, it.slot || Object.keys(worn).find(k => worn[k] === it)) + enchVal(it.ench) : -1;
   function lootChoice() {
+    if (pending && pending.type === 'book') return bookChoice();
     const cur = worn[pending.slot];
     const a = gearVal(pending, pending.slot) + enchVal(pending.ench);
     const b = cur ? gearVal(cur, pending.slot) + enchVal(cur.ench) : -1;
@@ -537,6 +717,7 @@
     for (let g = 0; g < 40; g++) {
       let done = false;
       if (potions < P.potionsKeep) done = buy(idx(s => s.type === 'potion'));
+      if (!done && isClass()) { const bi = idx(s => s.type === 'book' && canBuy(s) && (ACT_VAL[s.id] || 0) >= (P.bookMin ?? 5)); if (bi >= 0) done = buy(bi); }   // a spellbook or kit worth having
       if (!done) {
         const trade = s => worn[s.slot] ? sellValue(gearRetail(worn[s.slot])) : 0;
         const ups = shopStock.map((s, i) => ({s, i}))
