@@ -3957,17 +3957,17 @@ const RT_BODY = [[-16, 0], [-6, 0], [-5, -26], [-2, -34], [2, -34], [5, -26], [6
 // his bow, upright in his right hand (the side away from you), gripped at its middle: its limbs curve away from him
 // into a tall D, the tips flicking back; the string runs straight between them
 const RT_BOW = (() => {
-  const x = 30, top = -122, bot = 4, bend = 10, n = 8;
+  const x = 24, top = -122, bot = 4, bend = 10, n = 8;                    // (its grip, the middle of the limbs, at x + bend)
   const pts = Array.from({length: n + 1}, (_, i) => { const t = i / n; return [x + bend * Math.sin(Math.PI * t), top + (bot - top) * t]; });
   return {pts, tips: [[[x, top], [x - 4, top - 5]], [[x, bot], [x - 4, bot + 4]]], top: [x - 1.5, top + 1], bot: [x - 1.5, bot - 1]};
 })();
 const RT_STRING = tube(RT_BOW.top, RT_BOW.bot, 0.9, 0.9);
 const RT_WOOD = [...RT_BOW.pts.slice(1).map((q, i) => { const w = 3.4 + 1.6 * Math.sin(Math.PI * (i + 0.5) / 8); return tube(RT_BOW.pts[i], q, w, w); }),
   ...RT_BOW.tips.map(([a, c]) => tube(a, c, 2.6, 2))];
-const RT_HAND = ellipsePts(31.5, -59, 4.2, 5, 10);                       // his bow hand, over the grip
+const RT_HAND = ellipsePts(34, -59, 4.2, 5, 10);                         // his bow hand, closed on the grip
 const rangerShapes = () => [RT_BODY,
   tube([-19, -95], [-22, -74], 7, 6.5), tube([-22, -74], [-21, -55], 6.5, 5.5), ellipsePts(-21, -53, 3.8, 4, 10),     // the left arm, relaxed at his side
-  tube([19, -95], [26, -76], 7, 6.5), tube([26, -76], [31, -60], 6.5, 5.5),                                            // the right arm, out a little to the bow
+  tube([19, -95], [26, -76], 7, 6.5), tube([26, -76], [33, -61], 6.5, 5.5),                                            // the right arm, out a little to the bow's grip
   ...RT_WOOD, RT_STRING, RT_HAND];                                                           // the bow, its string, his hand on its grip
 function titleKnight(b, low, pix) {
   titleFigure(b, pix, T_KNIGHT, knightShapes(), [[KN_BLADE, 'steel']], 26);
