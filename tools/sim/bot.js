@@ -462,7 +462,7 @@
         case 'ward': if (ward <= 0 && !(typeof wardWait === 'number' && wardWait > 0)) opts.push({kind: id}); break;
         case 'plague': if (live.filter(f => !f.hex).length >= 2) opts.push({kind: id}); break;
         case 'burst': if (bodies > 0 && reach.length) opts.push({kind: id}); break;
-        case 'aim': if (!aimed) opts.push({kind: id}); break;
+        case 'aim': if (aimed !== true) opts.push({kind: id}); break;
         case 'volley': if (reach.length >= 2) opts.push({kind: id}); break;
         case 'smoke': if (!smokeLast) opts.push({kind: id}); break;
       }
@@ -501,7 +501,7 @@
       const s = st.get(f); if (!s) return; s.hp -= d; dealt += d;
       if (s.hp <= 0 && f.reassemble && !f.rose && !crit && R() < REASSEMBLE_CHANCE) s.hp = Math.round(f.max * REASSEMBLE_HP);
     };
-    const single = share => { const sure = aimNext, x = aimNext ? SHOT.aim.mult : 1; aimNext = false; return classSwingAt(t, {arrow: true, share: share * x, sure}, st.get(t).hp); };
+    const single = share => { const sure = aimNext, x = aimNext === true ? SHOT.aim.mult : aimNext === 'sure' ? SHOT.smoke.mult : 1; aimNext = false; return classSwingAt(t, {arrow: true, share: share * x, sure}, st.get(t).hp); };
     if (k === 'siphon') {
       const s = classSwingAt(t, {share: SPELL.siphon.share, spell: true}, t.hp);
       if (s.hit) { hitFoe(t, s.dmg, s.crit); const heal = Math.min(Math.round(s.dmg * SPELL.siphon.heal), p.max - hp); hp += heal; cost -= heal; }
@@ -520,7 +520,7 @@
     else if (k === 'aim') aimNext = true;
     else if (k === 'volley') { for (const f of reach) { const s = classSwingAt(f, {arrow: true, share: volleyShare()}, st.get(f).hp); if (s.hit) hitFoe(f, s.dmg, s.crit); } }
     else if (k === 'snare') snareT = t;
-    else if (k === 'smoke') smokeOn = true;
+    else if (k === 'smoke') { smokeOn = true; if (SHOT.smoke.sure && !aimNext) aimNext = 'sure'; }
     else if (k === 'potion') { hp = Math.min(p.max, hp + potionHeal()); cost -= Math.min(potionHeal(), p.max - p.hp) - potionHeal(); }
     hp += Math.min(Math.round(dealt * enchSum('vampiric')), p.max - hp); cost -= Math.round(dealt * enchSum('vampiric'));
     // the enemies' turn, in order
@@ -579,7 +579,7 @@
       return Math.max(2, base - regen - drain + thornsEach + (s.hex ? s.hex.doom * 0.7 : 0) + (s.burn ? s.burn * 0.6 : 0)); };
     const hpOf = s => s.hp + (s.f.reassemble && !s.f.rose ? s.f.max * REASSEMBLE_HP * REASSEMBLE_CHANCE : 0) + (s.f.split ? 14 * 2 * 0.8 : 0);
     const order = alive.slice().sort((a, b) => per(b) / Math.max(1, hpOf(b) / eff(b)) - per(a) / Math.max(1, hpOf(a) / eff(a)));
-    if (aimNext && order.length) order[0] = {...order[0], hp: Math.max(1, order[0].hp - myAvg(order[0].f, false) * (SHOT.aim.mult - 1))};
+    if (aimNext && order.length) order[0] = {...order[0], hp: Math.max(1, order[0].hp - myAvg(order[0].f, false) * ((aimNext === true ? SHOT.aim.mult : SHOT.smoke.mult) - 1))};
     let incoming = order.reduce((a, s) => a + per(s), 0), cost = 0, healed = 0;
     for (const s of order) { const rounds = hpOf(s) / eff(s); cost += rounds * incoming; incoming -= per(s); if (warlock) healed += rounds * eff(s) * SPELL.siphon.heal * 0.8; }
     return Math.max(0, cost * (1 - enchSum('vampiric') * 0.6) - healed);

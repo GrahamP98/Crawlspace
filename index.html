@@ -186,8 +186,8 @@
       <summary>Classes</summary>
       <p>You choose a class before every run. Each finds only its own gear: a Knight finds swords and shields, a Warlock staffs and robes, a Ranger bows, quivers and leathers. While the game is being playtested, all three are open.</p>
       <p><b>Knight</b>: the class you know. <b>Normal</b>, <b>Heavy</b> and <b>Block</b> in a fight, a shield for blocking, and the heaviest armor.</p>
-      <p><b>Warlock</b>: a staff and spells, robes instead of armor, and no shield, so no Block. His bar holds up to four spells. He always has <b>Siphon</b> (a bolt for 85% of a hit that heals him <span data-g="siphonHeal">22%</span> of the damage) and starts with <b>Hex</b> (an enemy hits softer and takes damage every turn for 3 turns). <b>Spellbooks</b> turn up where a Knight would find a shield, and merchants sell one, teaching <b>Blood Pact</b> (pay 10% of your max HP for a sure double hit through armor), <b>Bone Ward</b> (soaks the next blows; once it breaks, <span data-g="wardWait">2</span> turns before another), <b>Dread</b> (an enemy loses its next move), <b>Pestilence</b> (damage every turn to every enemy) and <b>Corpse Burst</b> (a fallen enemy explodes, hurting the rest). Spells can't be blocked by shields or struck back at.</p>
-      <p><b>Ranger</b>: a bow from the first fight (an Ash Shortbow, the worst there is), a quiver in place of a shield, leather armor, and no Block. He always has <b>Shoot</b> (a hit, with 5% more chance to crit) and starts with <b>Aimed Shot</b> (spend a turn aiming: the next arrow can't miss and does <span data-g="aimMult">2.5</span> times the damage). <b>Arrow and trap kits</b> teach <b>Fire Arrow</b>, <b>Pinning Shot</b> (an enemy loses its next move), <b>Volley</b> (every enemy at once), <b>Snare</b> (catches an enemy's next melee blow) and <b>Smoke Bomb</b> (each blow at you this turn has a <span data-g="smokeMiss">60%</span> chance to miss). Arrows reach a Wyvern on the wing. A merchant won't buy his only bow; he can trade it in for a better one.</p>
+      <p><b>Warlock</b>: a staff and spells, robes instead of armor, and no shield, so no Block. His bar holds up to four spells. He always has <b>Siphon</b> (a bolt for 85% of a hit that heals him <span data-g="siphonHeal">22%</span> of the damage) and starts with <b>Hex</b> (an enemy hits softer and takes damage every turn for 3 turns). <b>Spellbooks</b> turn up where a Knight would find a shield, and merchants sell one, teaching <b>Blood Pact</b> (pay 10% of your max HP for a sure double hit through armor), <b>Bone Ward</b> (soaks the next blows; once it breaks, <span data-g="wardWait">2</span> turns before another), <b>Dread</b> (an enemy loses its next move), <b>Pestilence</b> (damage every turn to every enemy) and <b>Corpse Burst</b> (a fallen enemy explodes, hurting the rest). Spells can't be blocked by shields or struck back at. Since Siphon heals from the damage it does, perks and gear that make you hit harder keep a Warlock alive too.</p>
+      <p><b>Ranger</b>: a bow from the first fight (an Ash Shortbow, the worst there is), a quiver in place of a shield, leather armor, and no Block. He always has <b>Shoot</b> (a hit, with 5% more chance to crit) and starts with <b>Aimed Shot</b> (spend a turn aiming: the next arrow can't miss and does <span data-g="aimMult">2.5</span> times the damage). <b>Arrow and trap kits</b> teach <b>Fire Arrow</b>, <b>Pinning Shot</b> (an enemy loses its next move), <b>Volley</b> (every enemy at once), <b>Snare</b> (catches an enemy's next melee blow) and <b>Smoke Bomb</b> (each blow at you this turn has a <span data-g="smokeMiss">60%</span> chance to miss, and behind it you line up your next arrow so it can't miss and does <span data-g="smokeMult">1.5</span> times the damage; then <span data-g="smokeWait">3</span> turns before another). Arrows reach a Wyvern on the wing. A merchant won't buy his only bow; he can trade it in for a better one.</p>
       <p>A spellbook or kit can be <b>Poor</b>, <b>Fair</b> or <b>Superior</b>, like gear, and the rank makes some actions stronger (Hex, Bone Ward, Pestilence and Fire Arrow). Finding a better copy of one you know raises it. With a full bar, learning a new one means forgetting one (never Siphon or Shoot).</p>
       <p>In a fight, tap a Warlock's or Ranger's action once to read what it will do to your target, in numbers, and again to use it. You can turn that off in Settings. The buttons show numbers too: "≈14" is about how much a hit should do.</p>
     </details>
@@ -1472,16 +1472,18 @@ const SPELL = {
   pact:   {cost: 0.10, mult: 2},                              // pay 10% of max HP: a sure hit for double, through armor
   ward:   {soak: [11, 14, 18], wait: 2},                     // once it breaks, 2 of your turns before you can raise another
   dread:  {},
-  plague: {turns: 3, doom: [2, 3, 4]},
-  burst:  {share: 0.5}
+  plague: {turns: 4, doom: [2, 3, 4]},
+  burst:  {share: 0.65}
 };
 const SHOT = {
-  fire:  {share: 0.7, burn: [3, 4, 5], turns: 3},             // 70% of a hit, then it burns
+  fire:  {share: 0.8, burn: [3, 4, 5], turns: 3},             // 80% of a hit, then it burns
   pin:   {share: 0.5},                                         // half a hit, and it loses its next move
   aim:   {mult: 2.25},                                         // the next single arrow: sure, and 2.25 times as hard
-  smoke: {miss: 0.6}                                           // blows at you this turn: 60% of them miss
+  smoke: {miss: 0.6, sure: true, mult: 1.5, wait: 3}           // blows at you this turn: 60% of them miss, and your next arrow can't, for 1.5 times; then 3 turns before another
 };
-const RANGER = {crit: 0.05, flit: 0.35, volley: 0.40, perQuiver: 0.05, guardKeep: 0.5};
+// an arrow's multiplier: aimed (true) for SHOT.aim.mult, or just sure ('sure', from a smoke bomb) or as it comes
+const aimX = () => aimed === true ? SHOT.aim.mult : aimed === 'sure' ? SHOT.smoke.mult : 1;
+const RANGER = {crit: 0.05, flit: 0.35, volley: 0.50, perQuiver: 0.05, guardKeep: 0.5};
 const SNARE_CATCH = ['attack', 'charge', 'dive', 'crush', 'sunder', 'snatch'];   // blows a snare can catch (thrown and shouted moves pass it)
 const ACTION = {   // name: its full name; label: on its button
   siphon: {name: 'Siphon', label: 'Siphon'}, hex: {name: 'Hex', label: 'Hex'}, pact: {name: 'Blood Pact', label: 'Pact'},
@@ -1501,11 +1503,11 @@ const SHORT = {   // one line each
   plague: 'Every enemy takes a little damage every turn.', burst: 'Blow up a fallen enemy to hurt all the others.',
   fire: 'A hit that sets the enemy burning for three turns.', pin: 'A light hit that makes the enemy lose its next move.',
   aim: 'Spend a turn aiming: your next arrow can\'t miss and hits far harder.', volley: 'Arrows rain down on every enemy at once.',
-  snare: 'Catch the enemy\'s next melee blow before it lands.', smoke: 'Blows at you this turn will often miss.'
+  snare: 'Catch the enemy\'s next melee blow before it lands.', smoke: 'Blows at you this turn often miss, and your next arrow can\'t.'
 };
 const BAR_SIZE = 4;
 // the How to Play numbers for the classes come from the tuning above, so the guide can't go stale
-{ const G = {siphonHeal: pct(SPELL.siphon.heal), aimMult: String(SHOT.aim.mult), smokeMiss: pct(SHOT.smoke.miss), wardWait: String(SPELL.ward.wait)};
+{ const G = {siphonHeal: pct(SPELL.siphon.heal), aimMult: String(SHOT.aim.mult), smokeMiss: pct(SHOT.smoke.miss), smokeWait: String(SHOT.smoke.wait), smokeMult: String(SHOT.smoke.mult), wardWait: String(SPELL.ward.wait)};
   document.querySelectorAll('#howto [data-g]').forEach(el => { if (G[el.dataset.g]) el.textContent = G[el.dataset.g]; }); }
 const RANKED = ['hex', 'ward', 'plague', 'fire'];   // the actions a book's rank makes stronger (the rest get their strength from your weapon)
 const BOOK_PRICE = [20, 35, 55];                 // a spellbook or a kit at a merchant, by rank
@@ -6950,7 +6952,7 @@ function drawCombat() {
     ctx.textAlign = 'center';
     outlinedText(`${hp}/${p.max}`, hb.x, hb.y + 16, '#fff');
     // what the enemies have done to you this fight: armor eaten away, your nerve shaken by a Wail
-    const marks = [sunder ? `Armor −${sunder}` : '', weak ? 'Shaken' : '', shownWard() > 0 ? `Ward ${shownWard()}` : '', aimed ? 'Aiming' : ''].filter(Boolean).join(' · ');
+    const marks = [sunder ? `Armor −${sunder}` : '', weak ? 'Shaken' : '', shownWard() > 0 ? `Ward ${shownWard()}` : '', aimed ? (aimed === 'sure' ? 'Lined up' : 'Aiming') : ''].filter(Boolean).join(' · ');
     if (marks && !over) { ctx.font = `600 11px ${GAME_FONT}`; outlinedText(marks, hb.x, hb.y + 30, '#e8a070'); }
   }
   // each enemy's name over its head, with its green health bar under the name (kept on screen at the edges)
@@ -10112,21 +10114,21 @@ function spellSub(id) {
     case 'pact': { const c = pactCost(), ok = p.hp > c; return {tone: 'fight', enabled: ok, sub: ok ? `≈${hitOn(t, SPELL.pact.mult, true) + (t && t.hex ? t.hex.doom * t.hex.turns : 0)} for ${c}` : `need ${c + 1}HP`}; }
     case 'ward': return {tone: 'guard', enabled: ward <= 0 && wardWait <= 0, sub: ward > 0 ? `holds ${ward}` : wardWait > 0 ? `${wardWait} turn${wardWait === 1 ? '' : 's'}` : `blocks ${SPELL.ward.soak[R]}`};
     case 'dread': { const b = blowOf(t), used = t && t.dreaded; return {enabled: !used, sub: used ? 'used on it' : b ? `stops ${b.dmg}` : 'skips move'}; }
-    case 'plague': return {sub: `${SPELL.plague.doom[R]}×3 all`};
+    case 'plague': return {sub: `${SPELL.plague.doom[R]}×${SPELL.plague.turns} all`};
     case 'burst': return {enabled: bodies > 0, sub: bodies ? `≈${hitOn(t, SPELL.burst.share)} all` : 'no body'};
   }
   return {};
 }
 function rangerSub(id) {
-  const R = rankOf(id), t = liveTarget(), x = aimed ? SHOT.aim.mult : 1;
+  const R = rankOf(id), t = liveTarget(), x = aimX();
   switch (id) {
     case 'shoot': return {sub: aimed ? `≈${Math.round(hitOn(t) * x)} sure` : `≈${hitOn(t)}`};
-    case 'fire': return {tone: 'fight', sub: `≈${Math.round(hitOn(t, SHOT.fire.share) * x)} +${SHOT.fire.burn[R]}×3`};
+    case 'fire': return {tone: 'fight', sub: `≈${Math.round(hitOn(t, SHOT.fire.share) * x)} +${SHOT.fire.burn[R]}×${SHOT.fire.turns}`};
     case 'pin': { const used = t && t.pinned; return {enabled: !used, sub: used ? 'used on it' : `≈${Math.round(hitOn(t, SHOT.pin.share) * x)} +stop`}; }
-    case 'aim': return {tone: 'guard', enabled: !aimed, sub: aimed ? 'aimed' : `next ×${SHOT.aim.mult}`};
+    case 'aim': return {tone: 'guard', enabled: aimed !== true, sub: aimed === true ? 'aimed' : `next ×${SHOT.aim.mult}`};
     case 'volley': return {tone: 'fight', sub: `≈${hitOn(t, volleyShare())} each`};
     case 'snare': { const b = blowOf(t), ok = b && SNARE_CATCH.includes(b.move); return {tone: 'guard', enabled: !snareLast, sub: snareLast ? 'not twice' : ok ? `stops ${b.dmg}` : 'no blow'}; }
-    case 'smoke': return {tone: 'guard', enabled: !smokeLast, sub: smokeLast ? 'not twice' : `${pct(SHOT.smoke.miss)} miss`};
+    case 'smoke': return {tone: 'guard', enabled: !smokeLast, sub: smokeLast ? `wait ${smokeLast}` : `${pct(SHOT.smoke.miss)} miss`};
   }
   return {};
 }
@@ -10152,12 +10154,12 @@ function explainOf(id) {
     case 'dread': return t && t.dreaded ? `You have already used Dread on ${T} in this fight.` : `Terrify ${T}: it loses its next move${its}. You can do this once to each enemy in a fight.`;
     case 'plague': { const doom = SPELL.plague.doom[R]; return `Curse every enemy at once: each takes ${doom} damage at the start of each of its turns, for ${SPELL.plague.turns} turns (${doom * SPELL.plague.turns} each in all). Unlike Hex, it doesn't soften their blows.`; }
     case 'burst': return bodies ? `Blow up the body of an enemy that fell: every enemy still standing takes about ${hitOn(t, SPELL.burst.share)}. Bodies you can use: ${bodies}.` : 'Needs an enemy that has fallen in this fight. Kill one first.';
-    case 'shoot': return (aimed ? `Loose your aimed arrow at ${T}: it can't miss and does ${SHOT.aim.mult} times as much, about ${Math.round(hitOn(t) * SHOT.aim.mult)}.` : `Shoot ${T} for about ${hitOn(t)}, with a ${pct(critChance() + RANGER.crit)} chance to crit.`) +
+    case 'shoot': return (aimed === 'sure' ? `Shoot ${T} from the smoke: it can't miss, and does ${SHOT.smoke.mult} times as much, about ${Math.round(hitOn(t) * SHOT.smoke.mult)}.` : aimed ? `Loose your aimed arrow at ${T}: it can't miss and does ${SHOT.aim.mult} times as much, about ${Math.round(hitOn(t) * SHOT.aim.mult)}.` : `Shoot ${T} for about ${hitOn(t)}, with a ${pct(critChance() + RANGER.crit)} chance to crit.`) +
       (t && t.next === 'wing' ? ' It is up in the air, but your arrows still reach it.' : '') + (t && t.next === 'flit' ? ` It is flitting about: it dodges arrows ${pct(RANGER.flit)} of the time.` : '');
-    case 'fire': { const burn = SHOT.fire.burn[R]; return `Shoot a burning arrow at ${T} for about ${Math.round(hitOn(t, SHOT.fire.share) * (aimed ? SHOT.aim.mult : 1))}${aimed ? ' (aimed: it can\'t miss)' : ''}. Then it burns for ${burn} at the start of each of its turns, for ${SHOT.fire.turns} turns (${burn * SHOT.fire.turns} in all). A burning Troll can't regenerate.`; }
+    case 'fire': { const burn = SHOT.fire.burn[R]; return `Shoot a burning arrow at ${T} for about ${Math.round(hitOn(t, SHOT.fire.share) * aimX())}${aimed ? ' (it can\'t miss)' : ''}. Then it burns for ${burn} at the start of each of its turns, for ${SHOT.fire.turns} turns (${burn * SHOT.fire.turns} in all). A burning Troll can't regenerate.`; }
     case 'pin': return t && t.pinned ? `You have already pinned ${T} in this fight.`
-      : `Shoot ${T} for about ${Math.round(hitOn(t, SHOT.pin.share) * (aimed ? SHOT.aim.mult : 1))}. If the arrow hits, ${T} is pinned and loses its next move${its}. ${aimed ? 'You are aimed, so it can\'t miss.' : 'It can miss.'} Once per enemy in a fight.`;
-    case 'aim': return aimed ? 'You are already aiming. Use Shoot, Fire or Pin to loose the arrow.'
+      : `Shoot ${T} for about ${Math.round(hitOn(t, SHOT.pin.share) * aimX())}. If the arrow hits, ${T} is pinned and loses its next move${its}. ${aimed ? 'You have it lined up, so it can\'t miss.' : 'It can miss.'} Once per enemy in a fight.`;
+    case 'aim': return aimed === true ? 'You are already aiming. Use Shoot, Fire or Pin to loose the arrow.'
       : `Spend this turn drawing and holding your aim (enemies still act). Your next Shoot, Fire Arrow or Pinning Shot can't miss and does ${SHOT.aim.mult} times the damage.`;
     case 'volley': return `Shoot high so the arrows fall on every enemy you can reach: about ${hitOn(t, volleyShare())} each (${pct(volleyShare())} of a hit, more with a better quiver). Each one can miss or crit on its own.`;
     case 'snare': {
@@ -10167,7 +10169,7 @@ function explainOf(id) {
       return t.boss ? `Lay a snare at the Ogre King's feet. He is too big to hold: he tears free, and his ${b.name} does half (about ${Math.round(b.dmg / 2)}).`
         : `Lay a snare at the feet of ${T}. Its ${b.name} for ${b.dmg} would never land, and it would be left off balance, so your next hit on it can't miss.`;
     }
-    case 'smoke': return smokeLast ? 'You just threw one. Not twice in a row.' : `Throw a smoke bomb at your feet. Every blow at you this turn has a ${pct(SHOT.smoke.miss)} chance to miss, even a Charge or a Crushing Blow.`;
+    case 'smoke': return smokeLast ? `You threw one a moment ago: ${smokeLast} more turn${smokeLast === 1 ? '' : 's'} before the next.` : `Throw a smoke bomb at your feet. Every blow at you this turn has a ${pct(SHOT.smoke.miss)} chance to miss, even a Charge or a Crushing Blow.` + (SHOT.smoke.sure ? ` Behind the smoke you line up your next arrow: it can't miss and does ${SHOT.smoke.mult} times the damage.` : '');
   }
   return '';
 }
@@ -10290,7 +10292,7 @@ function classTurn(kind) {
   } else {
     // the next single arrow: aimed (can't miss, SHOT.aim.mult times as hard), or as it comes
     const single = (share, words) => {
-      const sure = aimed, x = aimed ? SHOT.aim.mult : 1;
+      const sure = aimed, x = aimX();
       if (aimed) { aimed = false; msg.textContent += 'You loose the arrow you held. '; }
       return classHit(t, {arrow: true, share: share * x, sure, shaken, ...words});
     };
@@ -10302,8 +10304,9 @@ function classTurn(kind) {
       at = null;
     } else if (kind === 'smoke') {
       smoke = true;
+      if (SHOT.smoke.sure && !aimed) aimed = 'sure';
       cue('smoke', {len: 0.6}); after(0.3);
-      msg.textContent = `You smash a smoke bomb at your feet. Every blow at you this turn has a ${pct(SHOT.smoke.miss)} chance to miss.`;
+      msg.textContent = `You smash a smoke bomb at your feet. Every blow at you this turn has a ${pct(SHOT.smoke.miss)} chance to miss` + (SHOT.smoke.sure ? ', and behind it you line up your next arrow.' : '.');
       react = 'block'; at = null;
     } else if (kind === 'snare') {
       if (t) { snareOn = t; cue('snareLay', {who: t, len: 0.45}); after(0.3); msg.textContent = `You lay a snare in front of the ${t.name}.`; }
@@ -10337,7 +10340,7 @@ function classTurn(kind) {
       for (const f of foes.filter(f => f.hp > 0 && reachable(f))) { cue('arrowRain', {who: f, len: 0.3}); after(0.12); classHit(f, {arrow: true, share: volleyShare(), shaken, hit: 'Arrows rain on', miss: 'The arrows miss'}); msg.textContent += ' '; after(0.04); }
     }
     snareLast = kind === 'snare';
-    smokeLast = kind === 'smoke';
+    smokeLast = kind === 'smoke' ? SHOT.smoke.wait : Math.max(0, (smokeLast | 0) - 1);   // (turns before the next smoke bomb)
   }
   lastAct = {kind: react, at};                                             // (enemies answer a Pact like a Heavy swing, a ward, snare or smoke like a Block)
   if (foes.some(f => f.hp > 0)) foesAttack(1, false);
