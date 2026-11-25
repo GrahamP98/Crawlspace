@@ -3946,17 +3946,25 @@ const WT_BODY = [[-23, 0], [-9, 2], [0, 1], [9, 2], [23, 0], [18, -28], [15, -56
   [13, -116], [10, -126], [4, -133], [-3, -132], [-9, -127], [-13, -117], [-12, -104], [-21, -101], [-26, -95], [-21, -88], [-15, -76], [-15, -56], [-18, -28]];
 const WT_CRYSTAL = [[-38, -165], [-33.5, -155], [-38, -145], [-42.5, -155]];
 const warlockShapes = () => [WT_BODY,
-  tube([-21, -94], [-31, -76], 9, 10), tube([-31, -76], [-36, -62], 9, 8), ellipsePts(-37, -60, 4.4, 4.6, 10),    // the staff arm, its sleeve wide
-  tube([21, -94], [27, -72], 9, 10), tube([27, -72], [28, -52], 9, 7), ellipsePts(28, -49, 4.2, 4.4, 10),        // the other arm, hanging
+  tube([-21, -94], [-31, -76], 9, 10), tube([-31, -76], [-36, -62], 9, 8), ellipsePts(-37, -60, 4.4, 4.6, 10),    // the staff arm, bent, its sleeve wide
+  tube([21, -94], [27, -75], 9, 10), tube([27, -75], [22, -63], 10, 9),                                          // the other arm bent forward, its hand lost in the sleeve
   tube([-38.5, 2], [-37.5, -146], 3, 2.6), [[-41, -143], [-34, -143], [-32, -150], [-43, -150]], WT_CRYSTAL];    // the staff, its head and crystal
-const RT_BODY = [[-16, 0], [-6, 0], [-5, -26], [-2, -34], [2, -34], [5, -26], [6, 0], [16, 0], [13, -28], [14, -46], [19, -50], [16, -72],
+// the Ranger: slighter than the knight (his outline drawn narrower)
+const RT_BODY = [[-16, 0], [-6, 0], [-5, -26], [-2, -34], [2, -34], [5, -26], [6, 0], [16, 0], [13, -28], [14, -46], [18, -50], [16, -72],
   [18, -86], [24, -92], [26, -98], [19, -103], [11, -104], [12, -114], [9, -124], [3, -129], [-4, -129], [-10, -123], [-12, -113], [-11, -104],
-  [-19, -103], [-26, -98], [-24, -92], [-18, -86], [-16, -72], [-19, -50], [-14, -46], [-13, -28]];
-const RT_STRING = tube([35, -106], [35, -4], 0.9, 0.9);
+  [-19, -103], [-26, -98], [-24, -92], [-18, -86], [-16, -72], [-18, -50], [-14, -46], [-13, -28]].map(([x, y]) => [x * 0.82, y]);
+// his bow, held loosely in his right hand (the side away from you): tilted, its top toward him, its limbs curving away; its string
+const RT_BOW = (() => {
+  const top = [17, -110], bot = [37, 0], dx = bot[0] - top[0], dy = bot[1] - top[1], l = Math.hypot(dx, dy);
+  const ox = dy / l, oy = -dx / l;                                         // square to the bow, pointing away from him (to the right)
+  const pts = Array.from({length: 7}, (_, i) => { const t = i / 6, bend = 7 * Math.sin(Math.PI * t); return [top[0] + dx * t + ox * bend, top[1] + dy * t + oy * bend]; });
+  return {pts, top, bot};
+})();
+const RT_STRING = tube(RT_BOW.top, RT_BOW.bot, 0.9, 0.9);
 const rangerShapes = () => [RT_BODY,
-  tube([-23, -95], [-28, -72], 8, 7), tube([-28, -72], [-29, -52], 7, 6), ellipsePts(-29, -49, 4, 4.2, 10),      // the left arm, hanging
-  tube([23, -95], [31, -74], 8, 7), tube([31, -74], [37, -57], 7, 6), ellipsePts(38, -55, 4, 4.2, 10),           // the right arm, the bow in its hand
-  tube([35, -106], [41, -82], 2.4, 2.8), tube([41, -82], [43, -55], 2.8, 3.2), tube([43, -55], [41, -28], 3.2, 2.8), tube([41, -28], [35, -4], 2.8, 2.4), RT_STRING];
+  tube([-19, -95], [-27, -77], 7, 6.5), tube([-27, -77], [-15, -63], 6.5, 5.5), ellipsePts(-14, -62, 3.8, 4, 10),    // the left arm, his hand on his hip
+  tube([19, -95], [24, -74], 7, 6.5), tube([24, -74], [26.5, -54], 6.5, 5.5), ellipsePts(27, -52, 3.8, 4, 10),          // the right arm, hanging, the bow in its hand
+  ...RT_BOW.pts.slice(1).map((q, i) => { const w = 2.2 + 1.2 * Math.sin(Math.PI * (i + 0.5) / (RT_BOW.pts.length - 1)); return tube(RT_BOW.pts[i], q, w, w); }), RT_STRING];
 function titleKnight(b, low, pix) {
   titleFigure(b, pix, T_KNIGHT, knightShapes(), [[KN_BLADE, 'steel']], 26);
 }
@@ -4038,7 +4046,7 @@ function titleEyes(g, t, open, room) {
     g.globalAlpha = 0.35 * fade; g.imageSmoothingEnabled = false; g.drawImage(sheen, 0, 0, W, H); g.imageSmoothingEnabled = true; g.globalAlpha = 1;
   }
 }
-let titleSheen = null;
+let titleSheen = null, titlePuddle = null;
 // dust hanging in the cold light over the arch: where each mote drifts to, slowly
 const T_DUST = Array.from({length: 16}, (_, i) => ({x: 64 + ((i * 97) % 160), y: 26 + ((i * 53) % 96), ph: i * 1.7, sp: 0.12 + (i % 5) * 0.03}));
 // one frame of the title picture, in play units (288 x 352): drawn the way a fight is, with the same light, embers and
@@ -4077,13 +4085,13 @@ function drawTitle(g, t, e = 99) {
     const fg = fr.getContext('2d');
     fg.setTransform(1, 0, 0, 1, 0, 0); fg.globalCompositeOperation = 'source-over'; fg.drawImage(room.low, 0, 0);
     T_BANNERS.forEach(b => titleBanner(fg, b, ts));                       // his banners, stirring
-    fg.drawImage(room.sides, 0, 0);                                        // the classes beside you, in front of the banners
     if (open > 0) { fg.globalAlpha = open; fg.drawImage(room.crown, 0, 0); fg.globalAlpha = 1; }   // his crown, coming out of the dark with his eyes
     room.flames.forEach((f, i) => { fg.setTransform(f.m); liveFlame(fg, f.x, f.y, f.s, ts, i); });
     fg.setTransform(1, 0, 0, 1, 0, 0);
     if (ignite > 0.02) liveFlame(fg, T_KTORCH[0], T_KTORCH[1], 0.55 * ignite, ts, 9, flameOf().c);   // your torch
     const top = TG.spring - Math.sqrt(TG.r1 * TG.r1 - (T_PUDDLE[0] - TG.cx) ** 2), q = (ts % T_DRIP) / 0.8;
     if (q < 1) { fg.fillStyle = '#a8bccc'; fg.fillRect(Math.round(T_PUDDLE[0]), Math.round(top + (T_PUDDLE[1] - 1 - top) * q * q), 1, 2); }   // a drop falling from the arch
+    fg.drawImage(room.sides, 0, 0);                                        // the classes beside you, nearest of all: over the banners and the drop
   }
   // the light: the room's still light (fading in at first), your torch's light flickering with its flame, and the red
   // of his eyes on the bars and his crown
@@ -4116,10 +4124,15 @@ function drawTitle(g, t, e = 99) {
     g.globalAlpha = 1;
   }
   driftMotes(g, room, ts, ignite);
-  const [px, py, prx] = T_PUDDLE;                                          // the torch, shivering in the puddle; rings where the drop lands
-  if (ignite > 0) { g.globalAlpha = ignite * (0.55 + 0.25 * Math.sin(t * 5.3)); stamp(g, flameOf().glow, 0.7, px - 10 + Math.sin(t * 3.1) * 1.4, py, 6, 1.5); g.globalAlpha = 1; }
+  // the torch, shivering in the puddle; rings where the drop lands. Drawn on their own, then cut where the classes beside
+  // you stand in front of the puddle (they hide it), and laid on
+  const [px, py, prx] = T_PUDDLE, pc = titlePuddle || (titlePuddle = (() => { const cv = document.createElement('canvas'); cv.width = W; cv.height = H; return cv; })()), pg = pc.getContext('2d');
+  pg.globalCompositeOperation = 'source-over'; pg.clearRect(0, 0, W, H);
+  if (ignite > 0) { pg.globalAlpha = ignite * (0.55 + 0.25 * Math.sin(t * 5.3)); stamp(pg, flameOf().glow, 0.7, px - 10 + Math.sin(t * 3.1) * 1.4, py, 6, 1.5); pg.globalAlpha = 1; }
   const rq = ((t % T_DRIP) - 0.8) / 1.1;
-  if (rq > 0 && rq < 1) { g.strokeStyle = `rgba(150,170,190,${0.5 * (1 - rq) * Math.max(0.3, reveal)})`; g.lineWidth = 0.8; g.beginPath(); g.ellipse(px, py, 2 + rq * (prx - 4), 0.6 + rq * 2.4, 0, 0, Math.PI * 2); g.stroke(); }
+  if (rq > 0 && rq < 1) { pg.strokeStyle = `rgba(150,170,190,${0.5 * (1 - rq) * Math.max(0.3, reveal)})`; pg.lineWidth = 0.8; pg.beginPath(); pg.ellipse(px, py, 2 + rq * (prx - 4), 0.6 + rq * 2.4, 0, 0, Math.PI * 2); pg.stroke(); }
+  if (T_SHOWN.length) { pg.globalCompositeOperation = 'destination-out'; pg.imageSmoothingEnabled = false; pg.drawImage(room.sides, 0, 0, W, H); pg.globalCompositeOperation = 'source-over'; }
+  g.drawImage(pc, 0, 0);
   for (const d of T_DUST) {                                                // dust in the cold light from above
     const x = d.x + Math.sin(t * d.sp + d.ph) * 10, y = d.y + Math.cos(t * d.sp * 0.8 + d.ph) * 7, a = (0.25 + 0.2 * Math.sin(t * 0.7 + d.ph)) * reveal;
     g.fillStyle = `rgba(200,210,255,${a})`; g.fillRect(Math.round(x), Math.round(y), 1, 1);
