@@ -3936,23 +3936,37 @@ const knightShapes = () => [KN_BODY, KN_PLUME,
 // the classes you have unlocked, as silhouettes from behind, a step behind you (nearer us, so lower and larger, drawn
 // over you) on either side: the Warlock on your left, his staff out at his side and its crystal glowing violet; the
 // Ranger on your right, his bow low, his quiver on his back
-const T_SIDES = {warlock: {x: 86, y: 388, s: 1.2, reach: 260}, ranger: {x: 204, y: 388, s: 1.2, reach: 260}};   // (reach: how far your torch lights their edges)
+const T_SIDES = {warlock: {x: 84, y: 366, s: 1.12, reach: 260}, ranger: {x: 205, y: 366, s: 1.12, reach: 260}};   // (reach: how far your torch lights their edges)
 let T_SHOWN = [];                                     // (set from the game: the classes unlocked)
-const WT_BODY = [[-18, 0], [-9, 1], [0, 0], [9, 1], [18, 0], [15, -22], [13, -50], [12, -66], [15, -80], [19, -90], [17, -97], [11, -101], [9, -108],
-  [10, -117], [7, -125], [1, -131], [-5, -131], [-10, -125], [-12, -116], [-11, -108], [-12, -101], [-17, -97], [-19, -90], [-15, -80], [-12, -66], [-13, -50], [-15, -22]];
-const WT_CRYSTAL = [[-26, -161], [-21.5, -150], [-26, -141], [-30.5, -150]];
-const warlockShapes = () => [WT_BODY, tube([-16, -92], [-24, -82], 8, 7), tube([-24, -82], [-27, -98], 7, 6), ellipsePts(-27, -100, 4, 4.2, 10),
-  tube([-29, 0], [-26, -146], 3, 2.6), [[-29, -142], [-23, -142], [-21, -148], [-31, -148]], WT_CRYSTAL];
-const RT_BODY = [[-15, 0], [-6, 0], [-5, -28], [-2, -34], [2, -34], [5, -28], [6, 0], [15, 0], [12, -30], [14, -46], [15, -70], [18, -88], [14, -98], [9, -102],
-  [10, -112], [7, -122], [1, -126], [-5, -125], [-9, -118], [-10, -108], [-9, -102], [-14, -98], [-18, -88], [-15, -70], [-14, -46], [-12, -30]];
-const RT_STRING = tube([25, -110], [25, -14], 0.9, 0.9);
-const rangerShapes = () => [RT_BODY, tube([12, -68], [-15, -104], 6.5, 7), [[-11, -103], [-19, -113], [-24, -109], [-16, -99]],
-  tube([15, -92], [24, -76], 8, 7), tube([24, -76], [28, -62], 7, 6), ellipsePts(29, -61, 4.2, 4, 10),
-  tube([25, -110], [31, -86], 2.6, 2.8), tube([31, -86], [32, -62], 2.8, 3), tube([32, -62], [31, -38], 3, 2.8), tube([31, -38], [25, -14], 2.8, 2.6), RT_STRING];
+// both are built like the knight: a body outline (feet at 0, 0; shoulders near -98, head near -128), arms as tubes
+// from the shoulders, and what they hold. The Warlock: a hooded robe to the ground, a wide sleeve on each arm, his left
+// hand on a staff planted at his side. The Ranger: legs apart under a short cloak, a hood, his
+// left arm hanging, his right hand holding his bow low (the bow is enough to know him by: no quiver)
+const WT_BODY = [[-23, 0], [-9, 2], [0, 1], [9, 2], [23, 0], [18, -28], [15, -56], [15, -76], [21, -88], [26, -95], [21, -101], [12, -104],
+  [13, -116], [10, -126], [4, -133], [-3, -132], [-9, -127], [-13, -117], [-12, -104], [-21, -101], [-26, -95], [-21, -88], [-15, -76], [-15, -56], [-18, -28]];
+const WT_CRYSTAL = [[-38, -165], [-33.5, -155], [-38, -145], [-42.5, -155]];
+const warlockShapes = () => [WT_BODY,
+  tube([-21, -94], [-31, -76], 9, 10), tube([-31, -76], [-36, -62], 9, 8), ellipsePts(-37, -60, 4.4, 4.6, 10),    // the staff arm, its sleeve wide
+  tube([21, -94], [27, -72], 9, 10), tube([27, -72], [28, -52], 9, 7), ellipsePts(28, -49, 4.2, 4.4, 10),        // the other arm, hanging
+  tube([-38.5, 2], [-37.5, -146], 3, 2.6), [[-41, -143], [-34, -143], [-32, -150], [-43, -150]], WT_CRYSTAL];    // the staff, its head and crystal
+const RT_BODY = [[-16, 0], [-6, 0], [-5, -26], [-2, -34], [2, -34], [5, -26], [6, 0], [16, 0], [13, -28], [14, -46], [19, -50], [16, -72],
+  [18, -86], [24, -92], [26, -98], [19, -103], [11, -104], [12, -114], [9, -124], [3, -129], [-4, -129], [-10, -123], [-12, -113], [-11, -104],
+  [-19, -103], [-26, -98], [-24, -92], [-18, -86], [-16, -72], [-19, -50], [-14, -46], [-13, -28]];
+const RT_STRING = tube([35, -106], [35, -4], 0.9, 0.9);
+const rangerShapes = () => [RT_BODY,
+  tube([-23, -95], [-28, -72], 8, 7), tube([-28, -72], [-29, -52], 7, 6), ellipsePts(-29, -49, 4, 4.2, 10),      // the left arm, hanging
+  tube([23, -95], [31, -74], 8, 7), tube([31, -74], [37, -57], 7, 6), ellipsePts(38, -55, 4, 4.2, 10),           // the right arm, the bow in its hand
+  tube([35, -106], [41, -82], 2.4, 2.8), tube([41, -82], [43, -55], 2.8, 3.2), tube([43, -55], [41, -28], 3.2, 2.8), tube([41, -28], [35, -4], 2.8, 2.4), RT_STRING];
 function titleKnight(b, low, pix) {
   titleFigure(b, pix, T_KNIGHT, knightShapes(), [[KN_BLADE, 'steel']], 26);
-  for (const c of ['warlock', 'ranger']) if (T_SHOWN.includes(c))         // (nearer us than you: drawn after, over you)
+}
+// the classes beside you, on a layer of their own: they stand nearer us than you and than his banners, so the title
+// draws them after the banners, which stir every frame (pix: the title picture's units per pixel)
+function titleSides(pix) {
+  const cv = lowCanvas(pix), b = cv.getContext('2d');
+  for (const c of ['warlock', 'ranger']) if (T_SHOWN.includes(c))
     titleFigure(b, pix, T_SIDES[c], c === 'warlock' ? warlockShapes() : rangerShapes(), c === 'warlock' ? [[WT_CRYSTAL, 'violet']] : [[RT_STRING, 'pale']], 30);
+  return cv;
 }
 // a silhouette at the title's pixel size: black, its edges lit gold where they face your torch (brighter the nearer
 // they are), and a faint cold edge elsewhere so the shape still reads in the dark. marks: parts painted on their own
@@ -3993,6 +4007,10 @@ function titleEyes(g, t, open, room) {
   if (open <= 0) return;
   const blink = open >= 1 && t % 6.3 < 0.16, narrow = 0.75 + 0.25 * Math.sin(t * 0.45), flare = 1 + 0.9 * Math.sin(Math.min(1, open) * Math.PI);
   const pulse = (0.85 + 0.15 * Math.sin(t * 1.9)) * Math.min(1, open * 1.6);
+  g.save();                                                                // only in the gaps between the bars (and between the cross bars)
+  g.beginPath();
+  for (let x = TG.cx - TG.r1 + 8; x < TG.cx + TG.r1 - 2 - T_BAR; x += T_BAR) g.rect(x + 1.5, 107, T_BAR - 3, 186 - 107);
+  g.clip();
   for (const [ex, ey] of T_EYES_AT) {
     g.globalAlpha = Math.min(1, pulse * flare); stamp(g, '255,60,25', 0.85, ex, ey, 15 * Math.min(1.5, flare));
     g.globalAlpha = 1;
@@ -4002,6 +4020,7 @@ function titleEyes(g, t, open, room) {
     g.fillStyle = '#ff4a1c'; g.fill();
     if (open > 0.4) { g.fillStyle = '#ffe2a0'; g.fillRect(ex - 1.8, ey + 0.2, 3.6, 1.8 * open); }   // the bright of each eye, low: he is looking down at you
   }
+  g.restore();
   // torchlight moving over his crown: a slanted band of light slides across it from left to right, lighting only the
   // crown's own pixels (the bars still cover theirs). Once as the crown comes out of the dark, then every 12 seconds, softly
   const q = open > 0.5 && open < 1 ? (open - 0.5) / 0.5 : open >= 1 && t % 12 < 1.1 ? (t % 12) / 1.1 : -1;
@@ -4044,7 +4063,7 @@ function buildTitleRoom() {
   const [letters, lg, li] = layer(), GOLD = [[224, 80, 28, 170], [255, 228, 150, 255], [255, 154, 42, 255]];   // the default torch's flame: ember edge, hot core, orange rim
   for (const [i, k] of T_LETTER_PIX) { const o = i * 4, c = GOLD[k]; li.data[o] = c[0]; li.data[o + 1] = c[1]; li.data[o + 2] = c[2]; li.data[o + 3] = c[3]; }
   lg.putImageData(li, 0, 0);
-  return {...room, low: bare.low, crown, letters};
+  return {...room, low: bare.low, crown, letters, sides: titleSides(W / w)};
 }
 function drawTitle(g, t, e = 99) {
   const room = titleRoom || (titleRoom = buildTitleRoom()), ts = Math.floor(t / STEP) * STEP;
@@ -4058,6 +4077,7 @@ function drawTitle(g, t, e = 99) {
     const fg = fr.getContext('2d');
     fg.setTransform(1, 0, 0, 1, 0, 0); fg.globalCompositeOperation = 'source-over'; fg.drawImage(room.low, 0, 0);
     T_BANNERS.forEach(b => titleBanner(fg, b, ts));                       // his banners, stirring
+    fg.drawImage(room.sides, 0, 0);                                        // the classes beside you, in front of the banners
     if (open > 0) { fg.globalAlpha = open; fg.drawImage(room.crown, 0, 0); fg.globalAlpha = 1; }   // his crown, coming out of the dark with his eyes
     room.flames.forEach((f, i) => { fg.setTransform(f.m); liveFlame(fg, f.x, f.y, f.s, ts, i); });
     fg.setTransform(1, 0, 0, 1, 0, 0);
@@ -4088,6 +4108,13 @@ function drawTitle(g, t, e = 99) {
   g.globalCompositeOperation = 'lighter';
   g.globalAlpha = ignite * (0.86 + 0.14 * (fl - 0.85) / 0.3); g.drawImage(room.bl, 0, 0, W, H); g.globalAlpha = 1;
   if (ignite > 0) stamp(g, flameOf().title, 0.26 * ignite, T_KTORCH[0], T_KTORCH[1] - 6, 15 * fl);
+  if (T_SHOWN.includes('warlock') && reveal > 0) {                       // the Warlock's crystal, glowing softly violet and slowly pulsing
+    const {x, y, s} = T_SIDES.warlock, pulse = 0.8 + 0.2 * Math.sin(t * 1.7);
+    g.globalAlpha = reveal * pulse;                                        // (the glows' own strength fixed: they are cached)
+    stamp(g, '170,90,255', 0.5, x - 38 * s, y - 155 * s, 13 * (0.9 + 0.1 * pulse));
+    stamp(g, '225,190,255', 0.35, x - 38 * s, y - 155 * s, 4);
+    g.globalAlpha = 1;
+  }
   driftMotes(g, room, ts, ignite);
   const [px, py, prx] = T_PUDDLE;                                          // the torch, shivering in the puddle; rings where the drop lands
   if (ignite > 0) { g.globalAlpha = ignite * (0.55 + 0.25 * Math.sin(t * 5.3)); stamp(g, flameOf().glow, 0.7, px - 10 + Math.sin(t * 3.1) * 1.4, py, 6, 1.5); g.globalAlpha = 1; }
