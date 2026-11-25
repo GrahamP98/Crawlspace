@@ -3941,7 +3941,7 @@ let T_SHOWN = [];                                     // (set from the game: the
 // both are built like the knight: a body outline (feet at 0, 0; shoulders near -98, head near -128), arms as tubes
 // from the shoulders, and what they hold. The Warlock: a hooded robe to the ground, a wide sleeve on each arm, his left
 // hand on a staff planted at his side. The Ranger: legs apart under a short cloak, a hood, his
-// left arm hanging, his right hand holding his bow low (the bow is enough to know him by: no quiver)
+// left arm relaxed, his right hand holding his bow upright at its grip (the bow is enough to know him by: no quiver)
 const WT_BODY = [[-23, 0], [-9, 2], [0, 1], [9, 2], [23, 0], [18, -28], [15, -56], [15, -76], [21, -88], [26, -95], [21, -101], [12, -104],
   [13, -116], [10, -126], [4, -133], [-3, -132], [-9, -127], [-13, -117], [-12, -104], [-21, -101], [-26, -95], [-21, -88], [-15, -76], [-15, -56], [-18, -28]];
 const WT_TIP = [-32, -155];                                               // the crystal's middle (its glow is drawn there)
@@ -3954,18 +3954,21 @@ const warlockShapes = () => [WT_BODY,
 const RT_BODY = [[-16, 0], [-6, 0], [-5, -26], [-2, -34], [2, -34], [5, -26], [6, 0], [16, 0], [13, -28], [14, -46], [18, -50], [16, -72],
   [18, -86], [24, -92], [26, -98], [19, -103], [11, -104], [12, -114], [9, -124], [3, -129], [-4, -129], [-10, -123], [-12, -113], [-11, -104],
   [-19, -103], [-26, -98], [-24, -92], [-18, -86], [-16, -72], [-18, -50], [-14, -46], [-13, -28]].map(([x, y]) => [x * 0.82, y]);
-// his bow, held loosely in his right hand (the side away from you): tilted, its top toward him, its limbs curving away; its string
+// his bow, upright in his right hand (the side away from you), gripped at its middle: its limbs curve away from him
+// into a tall D, the tips flicking back; the string runs straight between them
 const RT_BOW = (() => {
-  const top = [17, -110], bot = [37, 0], dx = bot[0] - top[0], dy = bot[1] - top[1], l = Math.hypot(dx, dy);
-  const ox = dy / l, oy = -dx / l;                                         // square to the bow, pointing away from him (to the right)
-  const pts = Array.from({length: 7}, (_, i) => { const t = i / 6, bend = 7 * Math.sin(Math.PI * t); return [top[0] + dx * t + ox * bend, top[1] + dy * t + oy * bend]; });
-  return {pts, top, bot};
+  const x = 30, top = -122, bot = 4, bend = 10, n = 8;
+  const pts = Array.from({length: n + 1}, (_, i) => { const t = i / n; return [x + bend * Math.sin(Math.PI * t), top + (bot - top) * t]; });
+  return {pts, tips: [[[x, top], [x - 4, top - 5]], [[x, bot], [x - 4, bot + 4]]], top: [x - 1.5, top + 1], bot: [x - 1.5, bot - 1]};
 })();
 const RT_STRING = tube(RT_BOW.top, RT_BOW.bot, 0.9, 0.9);
+const RT_WOOD = [...RT_BOW.pts.slice(1).map((q, i) => { const w = 3.4 + 1.6 * Math.sin(Math.PI * (i + 0.5) / 8); return tube(RT_BOW.pts[i], q, w, w); }),
+  ...RT_BOW.tips.map(([a, c]) => tube(a, c, 2.6, 2))];
+const RT_HAND = ellipsePts(31.5, -59, 4.2, 5, 10);                       // his bow hand, over the grip
 const rangerShapes = () => [RT_BODY,
-  tube([-19, -95], [-27, -77], 7, 6.5), tube([-27, -77], [-15, -63], 6.5, 5.5), ellipsePts(-14, -62, 3.8, 4, 10),    // the left arm, his hand on his hip
-  tube([19, -95], [24, -74], 7, 6.5), tube([24, -74], [26.5, -54], 6.5, 5.5), ellipsePts(27, -52, 3.8, 4, 10),          // the right arm, hanging, the bow in its hand
-  ...RT_BOW.pts.slice(1).map((q, i) => { const w = 2.2 + 1.2 * Math.sin(Math.PI * (i + 0.5) / (RT_BOW.pts.length - 1)); return tube(RT_BOW.pts[i], q, w, w); }), RT_STRING];
+  tube([-19, -95], [-22, -74], 7, 6.5), tube([-22, -74], [-21, -55], 6.5, 5.5), ellipsePts(-21, -53, 3.8, 4, 10),     // the left arm, relaxed at his side
+  tube([19, -95], [26, -76], 7, 6.5), tube([26, -76], [31, -60], 6.5, 5.5),                                            // the right arm, out a little to the bow
+  ...RT_WOOD, RT_STRING, RT_HAND];                                                           // the bow, its string, his hand on its grip
 function titleKnight(b, low, pix) {
   titleFigure(b, pix, T_KNIGHT, knightShapes(), [[KN_BLADE, 'steel']], 26);
 }
@@ -3974,7 +3977,7 @@ function titleKnight(b, low, pix) {
 function titleSides(pix) {
   const cv = lowCanvas(pix), b = cv.getContext('2d');
   for (const c of ['warlock', 'ranger']) if (T_SHOWN.includes(c))
-    titleFigure(b, pix, T_SIDES[c], c === 'warlock' ? warlockShapes() : rangerShapes(), c === 'warlock' ? [[WT_CRYSTAL, 'violet']] : [[RT_STRING, 'pale']], 30);
+    titleFigure(b, pix, T_SIDES[c], c === 'warlock' ? warlockShapes() : rangerShapes(), c === 'warlock' ? [[WT_CRYSTAL, 'violet']] : [...RT_WOOD.map(q => [q, 'wood']), [RT_STRING, 'pale'], [RT_HAND, 'body']], 30);
   return cv;
 }
 // a silhouette at the title's pixel size: black, its edges lit gold where they face your torch (brighter the nearer
@@ -3985,11 +3988,12 @@ function titleFigure(b, pix, spot, shapes, marks, shadow) {
   g.scale(1 / pix, 1 / pix);
   g.fillStyle = '#fff';
   for (const pts of shapes) { path(g, pts.map(T)); g.fill(); }
-  const MARK = {steel: '#f00', violet: '#00f', pale: '#0f0'};
+  const MARK = {steel: '#f00', violet: '#00f', pale: '#0f0', wood: '#ff0', body: '#fff'};   // (body: back to the figure, over a mark)
   for (const [pts, kind] of marks) { g.fillStyle = MARK[kind]; path(g, pts.map(T)); g.fill(); }
   const w = cv.width, h = cv.height, img = g.getImageData(0, 0, w, h), d = img.data;
   const at = (px, py) => px >= 0 && py >= 0 && px < w && py < h && d[(py * w + px) * 4 + 3] >= 128;
   const blade = (px, py) => d[(py * w + px) * 4 + 1] < 100 && d[(py * w + px) * 4] > 128 && d[(py * w + px) * 4 + 2] < 100;
+  const wood = (px, py) => d[(py * w + px) * 4] > 128 && d[(py * w + px) * 4 + 1] > 128 && d[(py * w + px) * 4 + 2] < 100;
   const violet = (px, py) => d[(py * w + px) * 4] < 100 && d[(py * w + px) * 4 + 2] > 128, pale = (px, py) => d[(py * w + px) * 4] < 100 && d[(py * w + px) * 4 + 1] > 128 && d[(py * w + px) * 4 + 2] < 100;
   const [tx, ty] = T_KTORCH, paint = [];
   for (let py = 0; py < h; py++) for (let px = 0; px < w; px++) {
@@ -4000,7 +4004,8 @@ function titleFigure(b, pix, spot, shapes, marks, shadow) {
     const v = face * Math.max(0, 1 - dist / reach);
     if (blade(px, py)) { paint.push([px, py, !at(px + 1, py) ? PALETTE[7] : PALETTE[5]]); continue; }   // cold steel, its edge bright
     if (violet(px, py)) { paint.push([px, py, edge ? [200, 144, 255] : [138, 80, 200]]); continue; }       // the Warlock's crystal
-    if (pale(px, py)) { paint.push([px, py, [150, 140, 120]]); continue; }                              // the Ranger's bowstring
+    if (pale(px, py)) { paint.push([px, py, [200, 190, 166]]); continue; }                              // the Ranger's bowstring
+    if (wood(px, py)) { paint.push([px, py, edge ? (v > 0.1 ? [236, 166, 88] : [196, 128, 64]) : [112, 72, 40]]); continue; }   // his bow: dark wood, its edges catching the light
     paint.push([px, py, !edge ? [11, 9, 13] : v > 0.42 ? PALETTE[20] : v > 0.2 ? PALETTE[19] : v > 0.06 ? PALETTE[11] : !at(px, py - 1) ? PALETTE[4] : PALETTE[3]]);
   }
   d.fill(0);
