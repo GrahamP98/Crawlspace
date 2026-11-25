@@ -3933,9 +3933,10 @@ const knightShapes = () => [KN_BODY, KN_PLUME,
   tube([40.6, -112], [43, -136], 3, 3.6), tube([42.3, -131], [43.2, -138], 5, 5.4),                                             // the torch
   tube([-25, -92], [-30, -72], 10, 9), tube([-30, -72], [-31, -58], 9, 8), ellipsePts(-31, -57, 4.6, 4.4, 10),                  // the sword arm
   [[-37, -55], [-25, -55], [-25, -52.5], [-37, -52.5]], KN_BLADE];                                                              // its guard and blade
-// the classes you have unlocked, as silhouettes from behind a step back on either side of you: the Warlock on your left,
-// his staff out at his side and its crystal glowing violet; the Ranger on your right, his bow low, his quiver on his back
-const T_SIDES = {warlock: {x: 92, y: 328, s: 0.9}, ranger: {x: 197, y: 328, s: 0.9}};
+// the classes you have unlocked, as silhouettes from behind, a step behind you (nearer us, so lower and larger, drawn
+// over you) on either side: the Warlock on your left, his staff out at his side and its crystal glowing violet; the
+// Ranger on your right, his bow low, his quiver on his back
+const T_SIDES = {warlock: {x: 86, y: 388, s: 1.2, reach: 260}, ranger: {x: 204, y: 388, s: 1.2, reach: 260}};   // (reach: how far your torch lights their edges)
 let T_SHOWN = [];                                     // (set from the game: the classes unlocked)
 const WT_BODY = [[-18, 0], [-9, 1], [0, 0], [9, 1], [18, 0], [15, -22], [13, -50], [12, -66], [15, -80], [19, -90], [17, -97], [11, -101], [9, -108],
   [10, -117], [7, -125], [1, -131], [-5, -131], [-10, -125], [-12, -116], [-11, -108], [-12, -101], [-17, -97], [-19, -90], [-15, -80], [-12, -66], [-13, -50], [-15, -22]];
@@ -3945,19 +3946,19 @@ const warlockShapes = () => [WT_BODY, tube([-16, -92], [-24, -82], 8, 7), tube([
 const RT_BODY = [[-15, 0], [-6, 0], [-5, -28], [-2, -34], [2, -34], [5, -28], [6, 0], [15, 0], [12, -30], [14, -46], [15, -70], [18, -88], [14, -98], [9, -102],
   [10, -112], [7, -122], [1, -126], [-5, -125], [-9, -118], [-10, -108], [-9, -102], [-14, -98], [-18, -88], [-15, -70], [-14, -46], [-12, -30]];
 const RT_STRING = tube([25, -110], [25, -14], 0.9, 0.9);
-const rangerShapes = () => [RT_BODY, tube([12, -68], [-15, -104], 6.5, 7), [[-13, -104], [-24, -110], [-16, -100]], [[-15, -101], [-26, -103], [-17, -97]], [[-11, -106], [-20, -115], [-13, -103]],
+const rangerShapes = () => [RT_BODY, tube([12, -68], [-15, -104], 6.5, 7), [[-11, -103], [-19, -113], [-24, -109], [-16, -99]],
   tube([15, -92], [24, -76], 8, 7), tube([24, -76], [28, -62], 7, 6), ellipsePts(29, -61, 4.2, 4, 10),
   tube([25, -110], [31, -86], 2.6, 2.8), tube([31, -86], [32, -62], 2.8, 3), tube([32, -62], [31, -38], 3, 2.8), tube([31, -38], [25, -14], 2.8, 2.6), RT_STRING];
 function titleKnight(b, low, pix) {
-  for (const c of ['warlock', 'ranger']) if (T_SHOWN.includes(c))
-    titleFigure(b, pix, T_SIDES[c], c === 'warlock' ? warlockShapes() : rangerShapes(), c === 'warlock' ? [[WT_CRYSTAL, 'violet']] : [[RT_STRING, 'pale']], 22);
   titleFigure(b, pix, T_KNIGHT, knightShapes(), [[KN_BLADE, 'steel']], 26);
+  for (const c of ['warlock', 'ranger']) if (T_SHOWN.includes(c))         // (nearer us than you: drawn after, over you)
+    titleFigure(b, pix, T_SIDES[c], c === 'warlock' ? warlockShapes() : rangerShapes(), c === 'warlock' ? [[WT_CRYSTAL, 'violet']] : [[RT_STRING, 'pale']], 30);
 }
 // a silhouette at the title's pixel size: black, its edges lit gold where they face your torch (brighter the nearer
 // they are), and a faint cold edge elsewhere so the shape still reads in the dark. marks: parts painted on their own
 // (the knight's blade like steel, the Warlock's crystal violet, the Ranger's bowstring pale)
 function titleFigure(b, pix, spot, shapes, marks, shadow) {
-  const cv = lowCanvas(pix), g = cv.getContext('2d'), {x, y, s} = spot, T = p => [x + p[0] * s, y + p[1] * s];
+  const cv = lowCanvas(pix), g = cv.getContext('2d'), {x, y, s, reach = 160} = spot, T = p => [x + p[0] * s, y + p[1] * s];
   g.scale(1 / pix, 1 / pix);
   g.fillStyle = '#fff';
   for (const pts of shapes) { path(g, pts.map(T)); g.fill(); }
@@ -3973,7 +3974,7 @@ function titleFigure(b, pix, spot, shapes, marks, shadow) {
     const ux = (px + 0.5) * pix, uy = (py + 0.5) * pix, dx = tx - ux, dy = ty - uy, dist = Math.hypot(dx, dy) || 1;
     let face = -1, edge = false;
     for (const [nx, ny] of [[1, 0], [-1, 0], [0, -1], [0, 1], [1, -1], [-1, -1]]) if (!at(px + nx, py + ny)) { edge = true; face = Math.max(face, (nx * dx + ny * dy) / (Math.hypot(nx, ny) * dist)); }
-    const v = face * Math.max(0, 1 - dist / 160);
+    const v = face * Math.max(0, 1 - dist / reach);
     if (blade(px, py)) { paint.push([px, py, !at(px + 1, py) ? PALETTE[7] : PALETTE[5]]); continue; }   // cold steel, its edge bright
     if (violet(px, py)) { paint.push([px, py, edge ? [200, 144, 255] : [138, 80, 200]]); continue; }       // the Warlock's crystal
     if (pale(px, py)) { paint.push([px, py, [150, 140, 120]]); continue; }                              // the Ranger's bowstring
