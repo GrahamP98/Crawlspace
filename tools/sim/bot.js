@@ -427,7 +427,7 @@
   // catching a melee blow, smoke making blows miss, pins and freezes costing an enemy its move), then what the rest of the fight should
   // cost from there. pol.actVal says what each learnable action is worth when a spellbook or kit turns up
   const isClass = () => typeof cls === 'string' && cls !== 'knight';
-  const ACT_VAL = Object.assign({flame: 7, frost: 6.5, lightning: 6.8, ward: 8, fire: 6, pin: 7, aim: 9, volley: 6, snare: 7, smoke: 6}, P.actVal || {});
+  const ACT_VAL = Object.assign({flame: 7, frost: 6.5, lightning: 6.8, water: 6.4, earth: 6.9, wind: 6.2, ward: 8, fire: 6, pin: 7, aim: 9, volley: 6, snare: 7, smoke: 6}, P.actVal || {});
   const SAMPLES_C = P.samples || 120;   // (fewer samples: a sloppier player)
   function classSwingAt(t, o, hp) {
     const evade = t.next === 'flit' ? (cls === 'ranger' ? RANGER.flit : FLIT_EVADE) : (t.evasion ?? PLAYER_MISS);
@@ -453,7 +453,7 @@
     const reach = live.filter(f => reachable(f)), opts = [], at = (id, list) => list.forEach(t => opts.push({kind: id, t}));
     for (const id of classBar) {
       switch (id) {
-        case 'strike': case 'flame': case 'frost': case 'lightning': case 'shoot': case 'fire': at(id, reach); break;
+        case 'strike': case 'flame': case 'frost': case 'lightning': case 'water': case 'earth': case 'wind': case 'shoot': case 'fire': at(id, reach); break;
         case 'pin': at(id, reach.filter(t => !t.pinned && !t.stunned)); break;
         case 'snare': if (!snareLast) at(id, reach.filter(t => !t.stunned && t.next && SNARE_CATCH.includes(t.next))); break;
         case 'ward': if (ward <= 0 && !(typeof wardWait === 'number' && wardWait > 0)) opts.push({kind: id}); break;
@@ -472,7 +472,7 @@
     const costOf = o => { let c = 0; for (let k = 0; k < SAMPLES_C; k++) { seed = base + k * 7919; c += classPlayOut(o, live); } return c / SAMPLES_C; };
     // the base action at its best target is the default (for a Warlock, any of his bolts: Strike is only the weakest);
     // anything else has to beat it by a clear margin (MARGIN HP)
-    const plainKind = o => o.kind === classBar[0] || (cls === 'warlock' && ['flame', 'frost', 'lightning'].includes(o.kind));
+    const plainKind = o => o.kind === classBar[0] || (cls === 'warlock' && BOLTS.includes(o.kind));
     let best = null, bestCost = Infinity;
     for (const o of opts.filter(plainKind)) { const c = costOf(o); if (c < bestCost) { bestCost = c; best = o; } }
     const plain = bestCost;
@@ -491,7 +491,7 @@
   }
   // play one class option out once; returns its cost in HP
   function classPlayOut(opt, live) {
-    const st = new Map(live.map(f => [f, {f, hp: f.hp, stunned: f.stunned, burn: f.burn > 0 ? f.burnDmg : 0}]));
+    const st = new Map(live.map(f => [f, {f, hp: f.hp, stunned: f.stunned, gust: !!f.gust, burn: f.burn > 0 ? f.burnDmg : 0}]));
     let hp = p.hp, cost = 0, wardLeft = ward, smokeOn = false, snareT = null, aimNext = aimed, dealt = 0;
     const reach = live.filter(f => reachable(f)), k = opt.kind, t = opt.t;
     const hitFoe = (f, d, crit) => {
@@ -499,15 +499,25 @@
       if (s.hp <= 0 && f.reassemble && !f.rose && !crit && R() < REASSEMBLE_CHANCE) s.hp = Math.round(f.max * REASSEMBLE_HP);
     };
     const single = share => { const sure = aimNext, x = aimNext === true ? SHOT.aim.mult : aimNext === 'sure' ? SHOT.smoke.mult : 1; aimNext = false; return classSwingAt(t, {arrow: true, share: share * x, sure}, st.get(t).hp); };
-    const bolt = share => classSwingAt(t, {share, spell: true}, st.get(t).hp);
+    // (an element: Focus, a weakness, a Thermal Shock or a Shatter, as the game reckons them)
+    const bolt = (share, pierce = false) => classSwingAt(t, {share: share * (typeof elemMult === 'function' ? elemMult(k, t) : 1), spell: true, pierce}, st.get(t).hp);
+    const combo = typeof comboOf === 'function' ? comboOf(k, t) : null;
     if (k === 'strike') { const s = bolt(SPELL.strike.share); if (s.hit) hitFoe(t, s.dmg, s.crit); }
     else if (k === 'flame') { const s = bolt(SPELL.flame.share); if (s.hit) { hitFoe(t, s.dmg, s.crit); const sh = st.get(t); if (sh.hp > 0) sh.burn = Math.max(sh.burn, SPELL.flame.burn[rankOf('flame')]); } }
     else if (k === 'frost') {
       const s = bolt(SPELL.frost.share);
-      if (s.hit) { hitFoe(t, s.dmg, s.crit); const sh = st.get(t); if (sh.hp > 0) { sh.chill = true; if (!t.stunned && !t.stunProof && R() < SPELL.frost.freeze) sh.stunned = true; } }
+      if (s.hit) { hitFoe(t, s.dmg, s.crit); const sh = st.get(t);
+        if (combo === 'quench' && sh.hp > 0) { hitFoe(t, (t.burnDmg || 0) * (t.burn || 0), false); sh.burn = 0; }
+        if (sh.hp > 0) { sh.chill = true; if (!t.stunned && !t.stunProof && (combo === 'deepfreeze' || R() < SPELL.frost.freeze)) sh.stunned = true; } }
     } else if (k === 'lightning') {
       const s = bolt(SPELL.lightning.share);
-      if (s.hit) { hitFoe(t, s.dmg, s.crit); for (const f of reach) if (f !== t && st.get(f).hp > 0 && R() < SPELL.lightning.chance) hitFoe(f, Math.max(1, Math.round(s.dmg * SPELL.lightning.jump)), false); }
+      if (s.hit) { hitFoe(t, s.dmg, s.crit); for (const f of reach) if (f !== t && st.get(f).hp > 0 && (combo === 'conduct' || R() < SPELL.lightning.chance)) hitFoe(f, Math.max(1, Math.round(s.dmg * SPELL.lightning.jump)), false); }
+    } else if (k === 'water') { const s = bolt(SPELL.water.share); if (s.hit) hitFoe(t, s.dmg, s.crit); }
+    else if (k === 'earth') { const s = bolt(SPELL.earth.share, true); if (s.hit) hitFoe(t, s.dmg, s.crit); }
+    else if (k === 'wind') {
+      const s = bolt(SPELL.wind.share);
+      if (s.hit) { hitFoe(t, s.dmg, s.crit); const sh = st.get(t); if (sh.hp > 0) sh.gust = true;
+        if (combo === 'wildfire') for (const f of reach) { const o = st.get(f); if (f !== t && o.hp > 0) o.burn = Math.max(o.burn, t.burnDmg || 0); } }
     } else if (k === 'ward') wardLeft = SPELL.ward.soak[rankOf('ward')];
     else if (k === 'shoot') { const s = single(1); if (s.hit) hitFoe(t, s.dmg, s.crit); }
     else if (k === 'fire') { const s = single(SHOT.fire.share); if (s.hit) { hitFoe(t, s.dmg, s.crit); const sh = st.get(t); if (sh.hp > 0) { sh.burn = Math.max(sh.burn, SHOT.fire.burn[rankOf('fire')]); sh.fresh = true; } } }
@@ -530,7 +540,7 @@
       if (move === 'roar') st.set({k: 'servant'}, {f: types.find(x => x.name === 'Goblin'), hp: 40});
       if (M.hit) {
         const caught = snareT === f && SNARE_CATCH.includes(move);
-        if (!(caught && !f.boss) && !(smokeOn && R() < SHOT.smoke.miss)) {
+        if (!(caught && !f.boss) && !(smokeOn && R() < SHOT.smoke.miss) && !(s.gust && !M.big && R() < SPELL.wind.miss)) {
           const cry = crierAlive() && !f.cry ? WARCRY_BONUS : 0;
           let d = blowAt(f, caught ? 0.5 : 1, move, cry);
           if (wardLeft > 0) { const soak = Math.min(wardLeft, d); wardLeft -= soak; d -= soak; }
@@ -561,7 +571,8 @@
     if (!alive.length) return 0;
     const crier = alive.some(s => s.f.cry), warlock = cls === 'warlock', has = id => classBar.includes(id);
     // a Warlock's bolt from here on: his best on the bar, lightning also chipping at the others, his fire kept burning
-    const wShare = !warlock ? 0 : Math.max(SPELL.strike.share, has('lightning') ? SPELL.lightning.share : 0, has('frost') ? SPELL.frost.share * (1 + SPELL.frost.chill) : 0, has('flame') ? SPELL.flame.share : 0)
+    const wShare = !warlock ? 0 : Math.max(SPELL.strike.share, has('lightning') ? SPELL.lightning.share : 0, has('frost') ? SPELL.frost.share * (1 + SPELL.frost.chill) : 0, has('flame') ? SPELL.flame.share : 0,
+        has('earth') ? SPELL.earth.share * 1.1 : 0, has('water') ? SPELL.water.share : 0, has('wind') ? SPELL.wind.share * 1.15 : 0)
       * (has('lightning') ? 1 + SPELL.lightning.chance * SPELL.lightning.jump * Math.max(0, alive.length - 1) : 1);
     const wBurn = warlock && has('flame') ? SPELL.flame.burn[rankOf('flame')] * 0.6 : 0;
     const per = s => { const f = s.f;
@@ -585,7 +596,7 @@
     const b = pending, fit = bookFit(b);
     if (fit === 'learn' || fit === 'rank') return finishBook(null);
     if (fit === 'full') {
-      const learned = classBar.filter(id => id !== BASE_ACTION[cls]), worst = learned.slice().sort((a, c) => (ACT_VAL[a] || 0) - (ACT_VAL[c] || 0))[0];
+      const learned = classBar.filter(id => !(typeof keepsAction === 'function' ? keepsAction(id) : id === BASE_ACTION[cls])), worst = learned.slice().sort((a, c) => (ACT_VAL[a] || 0) - (ACT_VAL[c] || 0))[0];
       if (worst && (ACT_VAL[b.id] || 0) > (ACT_VAL[worst] || 0) + 0.5) return finishBook(worst);
     }
     leaveItem(); leaveItem();
