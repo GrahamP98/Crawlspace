@@ -659,7 +659,8 @@
 
   // ---------------------------------------------------------------- level-ups
   function pickPerk() {
-    const score = id => (P.perk[id] || 0) - ((P.decay || {})[id] || 0) * perkN(id) + (id === 'secondwind' && secondWinds > 0 ? -1 : 0);
+    const score = id => (P.perk[id] ?? (PERKS[id] && PERKS[id].el ? 7 : 0)) -   // (a Warlock's elemental perks: middling, unless the policy says)
+       ((P.decay || {})[id] || 0) * perkN(id) + (id === 'secondwind' && secondWinds > 0 ? -1 : 0);
     const best = hand.slice().sort((a, b) => score(b) - score(a))[0];
     if (P.redraw && score(best) < P.redraw && coins >= redrawCost() + P.redrawReserve) { ST.redraws++; return redraw(); }
     takePerk(best);

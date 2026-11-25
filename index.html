@@ -194,7 +194,7 @@
         <li><b>Water</b>: <span data-g="waterShare">70%</span> of a hit, and the enemy is soaked for your next <span data-g="waterTurns">2</span> turns.</li>
         <li><b>Earth</b>: <span data-g="earthShare">90%</span> of a hit that goes straight through armor.</li>
         <li><b>Wind</b>: <span data-g="windShare">60%</span> of a hit, and the enemy's next blow is <span data-g="windMiss">25%</span> more likely to miss (a big move like a Charge still lands).</li>
-        <li><b>Bone Ward</b> (his from the start, at Poor): soaks up the next <span data-g="wardSoak">11/14/18</span> damage (by rank) from blows aimed at you. Once it breaks, <span data-g="wardWait">2</span> turns before another.</li>
+        <li><b>Bone Ward</b> (his from the start, at Poor): soaks up the next <span data-g="wardSoak">11/14/18</span> damage (by rank) from blows aimed at you. When it breaks, its shards hit whoever broke it for <span data-g="wardBite">4/6/8</span>. Once it breaks, <span data-g="wardWait">2</span> turns before another.</li>
       </ul>
       <p><b>Focus</b>: each Strike that lands stores 1 Focus, up to <span data-g="focusMax">3</span> (violet sparks round his hand). His next element spends it all, for +<span data-g="focusEach">15%</span> damage each.</p>
       <p><b>Reactions</b>: the elements work together.</p>
@@ -206,6 +206,8 @@
         <li><b>Shatter</b>: Earth on a frozen enemy, +<span data-g="shatter">50%</span> damage. The ice stays on an enemy until the end of your turn after it froze, so Frost then Earth works.</li>
         <li><b>Wildfire</b>: Wind on a burning enemy spreads its fire to every other enemy you can reach.</li>
       </ul>
+      <p><b>Streaks</b>: cast the same element three times in a row and the third unleashes its finisher. <b>Inferno</b> (Fire): every enemy you can reach catches fire. <b>Blizzard</b> (Frost): every enemy is chilled. <b>Storm</b> (Lightning): lightning strikes every other enemy. <b>Flood</b> (Water): every enemy is soaked. <b>Quake</b> (Earth): a hit through armor on every other enemy. <b>Tempest</b> (Wind): every enemy's next blow is likelier to miss. Strike, Bone Ward and potions don't break a streak; casting another element does. Diamonds by his hand count the streak.</p>
+      <p><b>Staffs</b> may be bound to an element ("of Embers", "of Ice", "of Storms", "of Tides", "of Stone", "of Winds"): that element's spells hit <span data-g="staffEl">15%</span> harder, and the staff glows its colour. A Warlock also finds <b>elemental perks</b> among his level-up cards, one for each element on his bar: Pyromancer (fires burn a turn longer), Cryomancer (Frost freezes more), Stormcaller (Lightning jumps more), Tidecaller (soakings last longer), Earthshaper (Earth hits harder) and Windcaller (Wind throws blows off more). Each can be taken once.</p>
       <p><b>Weaknesses</b>: every kind of enemy is weak to one element and takes +<span data-g="weak">20%</span> from it. A Warlock sees the element's sign by its name.</p>
       <p>Spells can't be blocked by shields or struck back at. The numbers on the buttons include Focus, weaknesses and reactions. No spell heals a Warlock, so keep potions for the deep floors.</p>
       <p><b>Ranger</b>: a bow from the first fight (an Ash Shortbow, the worst there is), a quiver in place of a shield, leather armor, and no Block. He always has <b>Shoot</b> (a plain hit) and starts with <b>Aimed Shot</b> (spend a turn aiming: the next arrow can't miss and does <span data-g="aimMult">2.5</span> times the damage). <b>Arrow and trap kits</b> teach <b>Fire Arrow</b>, <b>Pinning Shot</b> (an enemy loses its next move), <b>Volley</b> (every enemy at once), <b>Snare</b> (catches an enemy's next melee blow) and <b>Smoke Bomb</b> (each blow at you this turn has a <span data-g="smokeMiss">60%</span> chance to miss, and behind it you line up your next arrow so it can't miss and does <span data-g="smokeMult">1.5</span> times the damage; then <span data-g="smokeWait">3</span> turns before another). Arrows reach a Wyvern on the wing, but a Dark Knight's raised guard catches half of each one. Leathers are light, so perks that give him more health (Vitality, Second Wind) carry a Ranger further than ones that make him hit harder. A merchant won't buy his only bow; he can trade it in for a better one.</p>
@@ -256,6 +258,7 @@
       <summary>Enemies and their tricks</summary>
       <p>Every enemy has a special ability, and most have a move or two besides their attack. They <b>choose</b> their moves as the fight goes, so you can't count turns, but each has its habits: what it tends to do when it is hurt, or when you have just swung a Heavy at it. A special move can't come back straight away, and the big ones always come round again before long. The badge over each enemy shows its next move, and a move it shows always happens (only a stun stops it). With Pathfinder you also see the move after it. Some moves need gear: only an enemy with a shield can Brace, Guard or Cower, and only a Dark Knight with a steel weapon can Sunder. The message log tells you when anything happens.</p>
       <p>Each floor has its own kinds in its first half and tougher ones past the merchant or campfire. Some groups in the far half are led by a <b>veteran</b> of the first half's kinds: the same enemy, with more health and a harder hit. A veteran has a red <b>V</b> after its name and glows red in the fight. The enemy guarding the stairs is always one of the floor's tougher kind.</p>
+      <p><b>Elemental enemies</b>: from Floor 3 on, some enemies come <b>Burning</b> (an orange glow), <b>Frostbound</b> (blue) or <b>Stormtouched</b> (yellow), with the word before their name. Each is immune to its own element and weak to another in place of its usual weakness: Burning to Water, Frostbound to Fire, Stormtouched to Earth. Nothing can set a Burning enemy alight. A blow of theirs that gets through may carry the element: a Burning enemy may set you alight (<span data-g="pburnDmg">3</span> a turn for <span data-g="pburnTurns">2</span> turns), a Frostbound one may chill you (your next attack is <span data-g="pchill">10%</span> likelier to miss), and a Stormtouched one may stun you (you lose your next move, never twice in a row). It all ends with the fight.</p>
       <p><b>Sundered</b>: acid and a Sundering blow take 1 off your Defense each (2 at most, so your armor cuts up to 7% less) until the fight ends. <b>Shaken</b>: after a Wail your next attack does 30% less. Both show under your health in a fight.</p>
       <h4>Floors <span class="num">1-2</span></h4>
       <ul>
@@ -1291,6 +1294,25 @@ const PERKS = {
     brief: k => `Survive one deadly blow with ${pct(SECOND_WIND_SHARE)} HP. Once only.`,
     card: k => 'Cheat death once',
     info: k => `The first blow that would kill you leaves you at ${pct(SECOND_WIND_SHARE)} of your max HP instead. You can only take it once.`},
+  // a Warlock's, one for each element, dealt only while that element is on his bar (see dealHand)
+  pyromancer: {name: 'Pyromancer', rarity: 'uncommon', once: true, cls: 'warlock', el: 'flame',
+    brief: k => 'Your fires burn a turn longer. Once only.', card: k => `Burns +${PERK_EL.burn} turn`,
+    info: k => `Every fire you start (Fire, Inferno, Wildfire) burns for ${PERK_EL.burn} more turn. You can only take it once.`},
+  cryomancer: {name: 'Cryomancer', rarity: 'uncommon', once: true, cls: 'warlock', el: 'frost',
+    brief: k => 'Frost freezes more often. Once only.', card: k => `Freeze +${pct(PERK_EL.freeze)}`,
+    info: k => `Frost freezes its target ${pct(SPELL.frost.freeze + PERK_EL.freeze)} of the time instead of ${pct(SPELL.frost.freeze)}. You can only take it once.`},
+  stormcaller: {name: 'Stormcaller', rarity: 'uncommon', once: true, cls: 'warlock', el: 'lightning',
+    brief: k => 'Lightning jumps more often. Once only.', card: k => `Jumps +${pct(PERK_EL.jump)}`,
+    info: k => `Lightning jumps to each other enemy ${pct(SPELL.lightning.chance + PERK_EL.jump)} of the time instead of ${pct(SPELL.lightning.chance)}. You can only take it once.`},
+  tidecaller: {name: 'Tidecaller', rarity: 'uncommon', once: true, cls: 'warlock', el: 'water',
+    brief: k => 'Soakings last a turn longer. Once only.', card: k => `Soak +${PERK_EL.soak} turn`,
+    info: k => `Enemies you soak (Water, Flood) stay soaked for ${PERK_EL.soak} more turn. You can only take it once.`},
+  earthshaper: {name: 'Earthshaper', rarity: 'uncommon', once: true, cls: 'warlock', el: 'earth',
+    brief: k => 'Earth hits harder. Once only.', card: k => `Earth +${pct(PERK_EL.earth)}`,
+    info: k => `Your Earth spells hit ${pct(PERK_EL.earth)} harder. You can only take it once.`},
+  windcaller: {name: 'Windcaller', rarity: 'uncommon', once: true, cls: 'warlock', el: 'wind',
+    brief: k => 'Wind throws blows off more. Once only.', card: k => `Gust +${pct(PERK_EL.gust)}`,
+    info: k => `An enemy you hit with Wind (or a Tempest) is ${pct(SPELL.wind.miss + PERK_EL.gust)} more likely to miss with its next blow, instead of ${pct(SPELL.wind.miss)}. You can only take it once.`},
   purse: {name: 'Tight Purse', rarity: 'uncommon', once: true,
     brief: k => 'No theft. More gold. Coins add damage. Once only.',
     card: k => `Gold +${pct(purseBonus(k))}, coins hit`,
@@ -1537,7 +1559,7 @@ const SPELL = {
   water:     {share: 0.70, turns: 2},                              // 70%, and soaked for your next 2 turns (see the reactions)
   earth:     {share: 0.90},                                        // 90%, through its armor
   wind:      {share: 0.60, miss: 0.25},                            // 60%, and its next blow is 25% more likely to miss
-  ward:      {soak: [11, 14, 18], wait: 2}                         // once it breaks, 2 of your turns before you can raise another
+  ward:      {soak: [11, 14, 18], wait: 2, bite: [4, 6, 8]}        // once it breaks, 2 of your turns before you can raise another; as it breaks, its shards hit the breaker (by rank)
 };
 // 2026-11-25, the elements working together (from the Warlock Lab):
 // FOCUS: a Strike that lands stores 1 Focus (up to 3); his next element spends it all for +15% damage each.
@@ -1558,17 +1580,66 @@ let focus = 0, lastEl = null;   // (this fight's Focus, and the last element cas
 const isFrozen = t => !!(t && (t.iced || (t.frozen && t.stunned)));   // (iced: frozen solid, its lost move behind it, until your next turn ends)
 // the reaction this spell would set off on t (null: none)
 function comboOf(kind, t) {
-  if (!t) return null;
+  if (!t || immuneTo(t, kind)) return null;
   if (kind === 'flame') return t.chill > 0 ? 'shock' : null;
   if (kind === 'frost') return t.soak > 0 ? 'deepfreeze' : t.burn > 0 ? 'quench' : null;
   if (kind === 'lightning') return t.soak > 0 ? 'conduct' : null;
   if (kind === 'earth') return isFrozen(t) ? 'shatter' : null;
-  if (kind === 'wind') return t.burn > 0 && foes.some(f => f !== t && f.hp > 0 && reachable(f)) ? 'wildfire' : null;
+  if (kind === 'wind') return t.burn > 0 && foes.some(f => f !== t && f.hp > 0 && reachable(f) && canBurn(f)) ? 'wildfire' : null;
   return null;
 }
 // how much harder an element hits t: the Focus it spends, a weakness, a Thermal Shock or a Shatter
-const elemMult = (kind, t) => !BOLTS.includes(kind) ? 1 : (1 + ELEM.focus * focus) * (t && WEAK[t.name] === kind ? 1 + ELEM.weak : 1) *
+const elemMult = (kind, t) => !BOLTS.includes(kind) ? 1 : immuneTo(t, kind) ? 0 : (1 + ELEM.focus * focus) * (t && weakOf(t) === kind ? 1 + ELEM.weak : 1) *
+  (staffEl() === kind ? 1 + STAFF_EL_BONUS : 1) * (kind === 'earth' && perkN('earthshaper') ? 1 + PERK_EL.earth : 1) *
   (comboOf(kind, t) === 'shock' ? 1 + ELEM.shock : comboOf(kind, t) === 'shatter' ? 1 + ELEM.shatter : 1);
+// ---- 2026-11-25, pass 2 ----
+// STREAKS: the third cast of the same element in a row unleashes its finisher (Strike, the Bone Ward and potions don't break
+// a streak; another element does): Inferno (every enemy you can reach burns), Blizzard (every one chilled), Storm (lightning
+// strikes every other one), Flood (every one soaked), Quake (a hit through armor on every other one), Tempest (every one's
+// next blow likelier to miss)
+const STREAK = {need: 3, storm: 0.60, quake: 0.35};
+const FINISHER = {flame: 'Inferno', frost: 'Blizzard', lightning: 'Storm', water: 'Flood', earth: 'Quake', wind: 'Tempest'};
+const FINISHER_SAY = {flame: 'every enemy you can reach catches fire', frost: 'every enemy you can reach is chilled', lightning: 'lightning strikes every other enemy you can reach',
+  water: 'every enemy you can reach is soaked', earth: 'the ground heaves under every other enemy you can reach, through armor', wind: 'a gale throws off every enemy\'s next blow'};
+let streak = {el: null, n: 0};
+// STAFFS: a staff found or sold may be bound to an element (STAFF_EL_CHANCE): that element's spells hit STAFF_EL_BONUS
+// harder, and the staff's crystal (or the bird skull's eye) glows its colour
+const STAFF_EL_CHANCE = 0.35, STAFF_EL_BONUS = 0.15;
+const STAFF_OF = {flame: 'Embers', frost: 'Ice', lightning: 'Storms', water: 'Tides', earth: 'Stone', wind: 'Winds'};
+const staffEl = () => cls === 'warlock' && worn.weapon && worn.weapon.el || null;
+function alignStaff(k, g) {
+  if (cls !== 'warlock' || k !== 'weapon' || !(Math.random() < STAFF_EL_CHANCE)) return g;
+  const el = BOLTS[roll(0, BOLTS.length - 1)];
+  return {...g, el, name: `${g.name} of ${STAFF_OF[el]}`};
+}
+// WARLOCK PERKS: one for each element, dealt only to a Warlock with that element on his bar, once only (see PERKS)
+const PERK_EL = {burn: 1, freeze: 0.10, jump: 0.20, soak: 1, earth: 0.15, gust: 0.10};
+// a spell's numbers with your elemental perks in them
+function spellOf(kind) {
+  const S = SPELL[kind] || SPELL.strike;
+  if (kind === 'flame' && perkN('pyromancer')) return {...S, turns: S.turns + PERK_EL.burn};
+  if (kind === 'frost' && perkN('cryomancer')) return {...S, freeze: S.freeze + PERK_EL.freeze};
+  if (kind === 'lightning' && perkN('stormcaller')) return {...S, chance: S.chance + PERK_EL.jump};
+  if (kind === 'water' && perkN('tidecaller')) return {...S, turns: S.turns + PERK_EL.soak};
+  if (kind === 'wind' && perkN('windcaller')) return {...S, miss: S.miss + PERK_EL.gust};
+  return S;
+}
+// ELEMENTAL ENEMIES: from floor 3 on, ASPECT_CHANCE of the ordinary enemies come Burning, Frostbound or Stormtouched:
+// immune to their element, weak to another (in place of their own kind's weakness), with a glow of their colour, and a
+// blow of theirs that gets through may carry it (chance): Burning sets you alight (PBURN), Frostbound chills you (your
+// next attack misses PCHILL_MISS more often), Stormtouched stuns you (you lose your next move, never twice in a row)
+const ASPECT_CHANCE = 0.20, ASPECT_FLOOR = 2;
+const ASPECT = {
+  burning:      {name: 'Burning', el: 'flame', weak: 'water', col: '255,120,40', bit: 'ember', chance: 0.30},
+  frostbound:   {name: 'Frostbound', el: 'frost', weak: 'flame', col: '140,200,255', bit: 'frost', chance: 0.35},
+  stormtouched: {name: 'Stormtouched', el: 'lightning', weak: 'earth', col: '255,230,100', bit: 'zap', chance: 0.12}
+};
+const PBURN = {dmg: 3, turns: 2}, PCHILL_MISS = 0.10;
+let pburn = 0, pchill = 0, pstun = false, stunGuard = false;   // (you: burning, chilled, stunned; stunGuard: no stun the turn after one)
+const weakOf = f => f ? (f.aspect ? ASPECT[f.aspect].weak : WEAK[f.name]) : null;
+const immuneTo = (f, el) => !!(f && f.aspect && ASPECT[f.aspect].el === el);
+const canBurn = f => !immuneTo(f, 'flame');
+const foeLabel = f => (f.aspect ? ASPECT[f.aspect].name + ' ' : '') + f.name;
 const SHOT = {
   fire:  {share: 0.8, burn: [3, 4, 5], turns: 3},             // 80% of a hit, then it burns
   pin:   {share: 0.5},                                         // half a hit, and it loses its next move
@@ -1607,7 +1678,8 @@ const keepsAction = id => id === BASE_ACTION[cls] || (cls === 'warlock' && id ==
 // the How to Play numbers for the classes come from the tuning above, so the guide can't go stale
 { const G = {strikeShare: pct(SPELL.strike.share), flameShare: pct(SPELL.flame.share), flameBurn: SPELL.flame.burn.join('/'), flameTurns: String(SPELL.flame.turns),
     frostShare: pct(SPELL.frost.share), frostChill: pct(SPELL.frost.chill), frostTurns: String(SPELL.frost.turns), frostFreeze: pct(SPELL.frost.freeze),
-    boltShare: pct(SPELL.lightning.share), boltChance: pct(SPELL.lightning.chance), boltJump: pct(SPELL.lightning.jump), wardSoak: SPELL.ward.soak.join('/'), waterShare: pct(SPELL.water.share), waterTurns: String(SPELL.water.turns),
+    boltShare: pct(SPELL.lightning.share), boltChance: pct(SPELL.lightning.chance), boltJump: pct(SPELL.lightning.jump), wardSoak: SPELL.ward.soak.join('/'), waterShare: pct(SPELL.water.share), waterTurns: String(SPELL.water.turns), wardBite: SPELL.ward.bite.join('/'), staffEl: pct(STAFF_EL_BONUS),
+    pburnDmg: String(PBURN.dmg), pburnTurns: String(PBURN.turns), pchill: pct(PCHILL_MISS),
     earthShare: pct(SPELL.earth.share), windShare: pct(SPELL.wind.share), windMiss: pct(SPELL.wind.miss), focusEach: pct(ELEM.focus), focusMax: String(ELEM.focusMax),
     weak: pct(ELEM.weak), shock: pct(ELEM.shock), shatter: pct(ELEM.shatter),
     aimMult: String(SHOT.aim.mult), smokeMiss: pct(SHOT.smoke.miss), smokeWait: String(SHOT.smoke.wait), smokeMult: String(SHOT.smoke.mult), wardWait: String(SPELL.ward.wait)};
@@ -1687,7 +1759,7 @@ function gearOf(k, tier, wt) {
 const rollWeight = k => { if (k === 'shield' || cls !== 'knight') return undefined; const r = Math.random(); return r < WEIGHT_CHANCE ? 'light' : r < 2 * WEIGHT_CHANCE ? 'heavy' : undefined; };
 const wtOf = k => worn[k] && worn[k].wt;
 const weaponCrit = () => wtOf('weapon') ? WEIGHTS[wtOf('weapon')].weapon.crit : 0;
-const weaponMiss = () => wtOf('weapon') ? WEIGHTS[wtOf('weapon')].weapon.miss : 0;
+const weaponMiss = () => (wtOf('weapon') ? WEIGHTS[wtOf('weapon')].weapon.miss : 0) + (pchill > 0 ? PCHILL_MISS : 0);   // (chilled by a Frostbound enemy: you miss more)
 const armorDodge = () => armor.reduce((sum, k) => sum + (wtOf(k) ? WEIGHTS[wtOf(k)].dodge : 0), 0);
 const armorCapNow = () => ARMOR_CAP + armor.reduce((sum, k) => sum + (wtOf(k) ? WEIGHTS[wtOf(k)].cap : 0), 0);
 const armorExtra = () => armor.reduce((sum, k) => sum + (wtOf(k) ? WEIGHTS[wtOf(k)].cut : 0), 0);   // light and heavy armor's share, on top of Defense
@@ -1721,7 +1793,7 @@ const makeStock = tier => [
   ...BAGS.filter(b => b.tier <= tier),
   {type: 'satchel', name: 'Scroll Satchel', price: SATCHEL_PRICE},
   ...classSlots().map(k => {
-    const g = gearOf(k, tier, rollWeight(k));   // (each slot's piece may be light or heavy)
+    const g = alignStaff(k, gearOf(k, tier, rollWeight(k)));   // (each slot's piece may be light or heavy; a Warlock's staff may be bound to an element)
     return {type: 'gear', slot: k, ...g, price: gearPrice(g)};
   }),
   ...(cls === 'knight' ? [] : [(() => {                                  // a Warlock's merchant has a spellbook; a Ranger's, a kit
@@ -2067,6 +2139,7 @@ function makeGroup(zone, e) {
     const t = pick(i === 0 ? (mixLead ? zone - 1 : zone) : roll(Math.max(0, zone - 1), zone)), hp = Math.round(t.hp * hpX * (vet ? VETERAN_HP : 1));
     const f = {...t, hp, max: hp, dmg: t.dmg.map(v => Math.round(v * dmgX * (vet ? VETERAN_DMG : 1))), bonus: 0, def: 0, items: [], gear: {}};
     if (vet) f.vet = true;                                                // (a V by its name and a red glow round it in fights)
+    if (floor >= ASPECT_FLOOR && Math.random() < ASPECT_CHANCE) { const A = Object.keys(ASPECT); f.aspect = A[roll(0, A.length - 1)]; }   // (an elemental enemy, see ASPECT)
     if (t.gearTier !== undefined) equipFoe(f, t);
     return f;
   });
@@ -2197,7 +2270,7 @@ function shopNote(it) {
   if (it.type === 'book') { const f = bookFit(it); return SHORT[it.id] + (f === 'known' ? ' You know it already' : f === 'full' ? ' Your bar is full' : f === 'rank' ? ` Raises yours to ${TIERS[it.t]}` : ''); }
   if (it.type === 'gear') {
     const cur = worn[it.slot];
-    return `+${it.power}` + (it.slot !== 'shield' && cls === 'knight' ? ` ${weightTag(it).word.toLowerCase()}` : '') + (cur ? (cur.ench ? `, you lose ${enchLabel(cur.ench)}` : '') +
+    return `+${it.power}` + (it.el ? `, ${ACTION[it.el].name} +${pct(STAFF_EL_BONUS)}` : '') + (it.slot !== 'shield' && cls === 'knight' ? ` ${weightTag(it).word.toLowerCase()}` : '') + (cur ? (cur.ench ? `, you lose ${enchLabel(cur.ench)}` : '') +
       `, trade-in ${tradeIn(it)}, yours is ${cur.name} +${cur.power}` : ', slot empty');
   }
   if (it.type === 'bag') return `carry ${it.to} potions` + (maxPotions >= it.to ? ', owned'
@@ -2236,7 +2309,7 @@ function loot() {
   const keys = cls === 'warlock' ? [...classSlots(), 'book'] : cls === 'ranger' ? [...classSlots(), 'book'] : Object.keys(slots), k = keys[roll(0, keys.length - 1)];
   if (k === 'book') return bookLoot();
   const tier = lootTier(k);
-  pending = {slot: k, ...gearOf(k, tier, rollWeight(k))};   // (it may be light or heavy)
+  pending = {slot: k, ...alignStaff(k, gearOf(k, tier, rollWeight(k)))};   // (it may be light or heavy; a Warlock's staff may be bound to an element)
   if (Math.random() < ENCHANT_DROP_CHANCE)
     pending.ench = {id: randomEnchant(k), t: Math.min(tier, floorTier())};
   phase = 'loot';
@@ -2370,7 +2443,8 @@ function gainXp(amount) {
 // deal a hand: one random basic, then cards drawn by rarity (no duplicates in a hand)
 function dealHand() {
   const basic = BASICS[roll(0, BASICS.length - 1)];
-  const pool = Object.keys(PERKS).filter(id => id !== basic && !(PERKS[id].once && perkN(id)) && (id !== 'shieldbash' || cls === 'knight'));   // (Shield Bash needs a shield and Block)
+  const pool = Object.keys(PERKS).filter(id => id !== basic && !(PERKS[id].once && perkN(id)) && (id !== 'shieldbash' || cls === 'knight') &&   // (Shield Bash needs a shield and Block)
+    (!PERKS[id].cls || PERKS[id].cls === cls) && (!PERKS[id].el || classBar.includes(PERKS[id].el)));   // (a Warlock's elemental perks: only for an element he knows)
   hand = [basic];
   while (hand.length < HAND_SIZE && pool.length) {
     const weights = pool.map(id => RARITY_WEIGHT[PERKS[id].rarity] *
@@ -2528,6 +2602,7 @@ function heroLook() {
   for (const k of Object.keys(slots)) if (worn[k]) { gear[k] = worn[k].tier; if (worn[k].ench) glows[k] = ENCH_GLOW[worn[k].ench.id]; if (worn[k].wt && armor.includes(k)) (gear.wt || (gear.wt = {}))[k] = worn[k].wt; }
   if (wtOf('weapon')) gear.wkind = wtOf('weapon') === 'light' ? 'dagger' : 'mace';   // (light and heavy pieces look their own way)
   if (cls === 'warlock' && lastEl && combatView) gear.el = lastEl;
+  if (cls === 'warlock' && staffEl()) gear.staffEl = staffEl();
   if (cls !== 'knight') { gear.cls = cls; if (cls === 'ranger' && gear.shield !== undefined) gear.offhand = gear.shield; delete gear.shield; delete gear.wt; delete gear.wkind; }
   return {gear, glows, weapon: worn.weapon ? {tier: worn.weapon.tier, ench: worn.weapon.ench && worn.weapon.ench.id} : {}};
 }
@@ -2828,6 +2903,7 @@ function statusFx(now) {
     if (!b || shownHp(f) <= 0) continue;
     if (f.burn > 0) burst(now, b.x0 + Math.random() * (b.x1 - b.x0), b.y0 + (b.y1 - b.y0) * (0.3 + Math.random() * 0.6), 'ember', 1);
     if (f.chill > 0 && Math.random() < 0.6) burst(now, b.x0 + Math.random() * (b.x1 - b.x0), b.y0 + (b.y1 - b.y0) * (0.1 + Math.random() * 0.5), 'frost', 1);   // (chilled: frost drifts off it)
+    if (f.aspect && Math.random() < 0.5) burst(now, b.x0 + Math.random() * (b.x1 - b.x0), b.y0 + (b.y1 - b.y0) * (0.15 + Math.random() * 0.6), ASPECT[f.aspect].bit, 1);   // (an elemental enemy: embers, frost or sparks off it)
     if (f.stunned && !f.frozen && !fx.some(e => e.kind === 'stars' && e.f === f && now - e.t0 < 700)) fx.push({kind: 'stars', f, t0: now, x: (b.x0 + b.x1) / 2, y: b.y0 - 4, ms: 900});
   }
   const hb = fightBoxes.hero;
@@ -5671,7 +5747,7 @@ function heroParts(gear, rest = false, pose = null) {
   const k = JSON.stringify(gear) + (rest ? '|rest' : '') + (pose ? '|' + pose : '');
   if (!heroCache.has(k)) {
     if (heroCache.size > 12) heroCache.clear();
-    CLS_GLOW = EL_GLOW[gear.el] || CLS_GLOW0;
+    CLS_GLOW = EL_GLOW[gear.el] || CLS_GLOW0; CLS_STAFF = EL_GLOW[gear.staffEl] || CLS_GLOW;
     heroCache.set(k, gear.cls === 'warlock' ? warlockOf(gear, LOOK, rest ? 'sit' : pose) : gear.cls === 'ranger' ? rangerOf(gear, LOOK, rest ? 'sit' : pose) : heroOf(gear, LOOK, rest, pose));
   }
   return heroCache.get(k);
@@ -5839,6 +5915,22 @@ function drawFight(g, spec) {
     rg.ellipse(b.x, b.y + 1, Math.max(14, Math.min(46, (b.x1 - b.x0) * 0.36)) + 4, 5.5, 0, 0, Math.PI * 2); rg.stroke();
     rg.setTransform(1, 0, 0, 1, 0, 0); rg.globalCompositeOperation = 'destination-out'; rg.drawImage(figs, 0, 0);
     g.imageSmoothingEnabled = false; g.drawImage(rc, 0, 0, W, H);
+  }
+  // an elemental enemy: a glow of its element round its figure, like a veteran's (below)
+  const asp = spec.foes.filter(o => o.f.aspect && !o.fall && !o.gone && boxes.has(o.f));
+  if (asp.length) {
+    const ac = LOWS.asp || (LOWS.asp = lowCanvas()), ag = ac.getContext('2d');
+    ag.setTransform(1, 0, 0, 1, 0, 0); ag.globalCompositeOperation = 'source-over'; ag.clearRect(0, 0, ac.width, ac.height);
+    ag.setTransform(1 / PIX, 0, 0, 1 / PIX, 0, 0);
+    for (const o of asp) {
+      const b = boxes.get(o.f), w = b.x1 - b.x0, h = b.y1 - b.y0;
+      ag.globalAlpha = 0.8 + 0.2 * Math.sin(t * 3.4 + (o.f.animPhase || 0));
+      stamp(ag, ASPECT[o.f.aspect].col, 1, (b.x0 + b.x1) / 2, b.y0 + h * 0.5, w * 0.5 + 24, h * 0.5 + 20);   // (wide: a bulky figure hides most of it)
+      stamp(ag, ASPECT[o.f.aspect].col, 0.8, (b.x0 + b.x1) / 2, b.y0 + h * 0.5, w * 0.5 + 10, h * 0.5 + 8);
+    }
+    ag.globalAlpha = 1;
+    ag.setTransform(1, 0, 0, 1, 0, 0); ag.globalCompositeOperation = 'destination-out'; ag.drawImage(figs, 0, 0);
+    g.globalCompositeOperation = 'lighter'; g.imageSmoothingEnabled = false; g.drawImage(ac, 0, 0, W, H); g.globalCompositeOperation = 'source-over';
   }
   // a veteran: a slow-pulsing blood-red glow round its figure, on the pixel grid and behind it (the figures cut it out)
   const vets = spec.foes.filter(o => o.f.vet && !o.fall && !o.gone && boxes.has(o.f));
@@ -6420,6 +6512,7 @@ const drawWagon = (g, x, y, s) => { g.save(); g.translate(x, y); g.scale(s, s); 
 // ======================================================================
 const CLS_EYE = [176, 118, 238], CLS_GLOW0 = [212, 156, 255];
 let CLS_GLOW = CLS_GLOW0;   // (his palm light, his eyes, his belt gem: violet, or the last element he cast in this fight)
+let CLS_STAFF = CLS_GLOW0;  // (his staff's crystal: the element it is bound to, or as CLS_GLOW)
 const EL_GLOW = {flame: [255, 150, 60], frost: [150, 215, 255], lightning: [255, 236, 120], water: [110, 230, 220], earth: [240, 180, 90], wind: [190, 245, 170]};
 const FACE = [[-7, -2], [-6.5, -7], [-3, -10.5], [2, -11.2], [6, -9.5], [8.2, -6], [8.6, -2.5], [9.6, 0.5], [8.4, 2], [8.6, 4.5], [7, 7.5], [3.5, 9.6], [-0.5, 9.2], [-4.5, 6.5], [-6.8, 2.5]];
 const HIP = {L: [5, -61], R: [-5, -59]}, KNEE = {L: [16, -35], R: [-9, -32]}, ANK = {L: [20, -7], R: [-15, -6]};
@@ -6711,6 +6804,7 @@ const warlockOf = (gear = {}, look = LOOK, pose = null) => being({...WL_PAL, hai
     add(chain([[-21.6, -133], [-20, -140], [-15.6, -143.6], [-11.6, -141.4], [-11.4, -137], [-14, -135]], [3.8, 3.4, 3, 2.6, 2.2, 1.4]), 'gnarl');
     line([[-12.4, -137], [-12, -130.6]], 0.6, WL_PAL.rope);
     add(ellipsePts(-11.6, -127.6, 2.4, 2, 8), 'bone'); add([[-9.8, -128.2], [-6, -126.4], [-9.8, -126.2]], 'bone', 0, 1); add(ellipsePts(-11, -128, 0.7, 0.7, 6), 'void', 0, 1);
+    if (gear.staffEl) P.push({eye: [-11, -128], r: 0.9, col: CLS_STAFF});   // (bound to an element: the skull's eye burns its colour)
   } else if (tW === 1) {                                                   // Ebony Staff: black wood banded in iron, a violet crystal caged in iron claws
     add(tube([-26, 0], [staffX(-136), -136], 3.4, 3), 'ebony');
     for (const y of [-56, -112, -132]) add(tube([staffX(y) - 0.1, y + 1.3], [staffX(y) + 0.1, y - 1.3], 4.6, 4.6), 'iron');
@@ -6718,7 +6812,7 @@ const warlockOf = (gear = {}, look = LOOK, pose = null) => being({...WL_PAL, hai
     add(chain([[-17.6, -133], [-15, -140], [-15.4, -148], [-17.8, -152.6]], [1.8, 1.8, 1.5, 1]), 'iron');
     add([[-19.6, -156.4], [-16.2, -146.6], [-19.6, -138.4], [-23, -146.6]], 'crystal', 0, 1);
     line([[-19.6, -154], [-17.4, -146.6]], 0.6, [240, 220, 255]);
-    P.push({eye: [-19.6, -147], r: 1.5, col: CLS_GLOW});
+    P.push({eye: [-19.6, -147], r: 1.5, col: CLS_STAFF});
   } else if (tW === 2) {                                                   // Obsidian Staff: gold-banded black glass, crowned with a horned skull
     add(tube([-26, 0], [staffX(-140), -140], 3.6, 3.2), 'obsid');
     for (const y of [-40, -116, -138]) add(tube([staffX(y) - 0.1, y + 1.4], [staffX(y) + 0.1, y - 1.4], 5, 5), 'gold');
@@ -6729,7 +6823,7 @@ const warlockOf = (gear = {}, look = LOOK, pose = null) => being({...WL_PAL, hai
     add(ellipsePts(-21.1, -150.2, 1.5, 1.3, 8), 'void', 0, 1); add(ellipsePts(-17.1, -150.4, 1.5, 1.3, 8), 'void', 0, 1);
     add([[-19.8, -147.6], [-18.4, -147.6], [-19.1, -145.6]], 'void', 0, 1);
     for (const x of [-21.2, -19.6, -18]) line([[x, -144], [x, -142.2]], 0.5, WL_PAL.boneDk);
-    P.push({eye: [-21.1, -150.2], r: 0.85, col: CLS_GLOW}); P.push({eye: [-17.1, -150.4], r: 0.85, col: CLS_GLOW});
+    P.push({eye: [-21.1, -150.2], r: 0.85, col: CLS_STAFF}); P.push({eye: [-17.1, -150.4], r: 0.85, col: CLS_STAFF});
     line([[-16.4, -139], [-12.8, -133], [-13.6, -127]], 0.6, GEAR.gold); add(ellipsePts(-13.6, -125.8, 1.2, 1.4, 8), 'gold', 0, 1);
   }
   fist(add, hdR, 3.2, 'skin', 0);
@@ -7115,7 +7209,7 @@ function drawCombat() {
     ctx.textAlign = 'center';
     outlinedText(`${hp}/${p.max}`, hb.x, hb.y + 16, '#fff');
     // what the enemies have done to you this fight: armor eaten away, your nerve shaken by a Wail
-    const marks = [sunder ? `Armor −${sunder}` : '', weak ? 'Shaken' : '', shownWard() > 0 ? `Ward ${shownWard()}` : '', aimed ? (aimed === 'sure' ? 'Lined up' : 'Aiming') : ''].filter(Boolean).join(' · ');
+    const marks = [sunder ? `Armor −${sunder}` : '', weak ? 'Shaken' : '', pburn ? 'Burning' : '', pchill ? 'Chilled' : '', pstun ? 'Stunned' : '', shownWard() > 0 ? `Ward ${shownWard()}` : '', aimed ? (aimed === 'sure' ? 'Lined up' : 'Aiming') : ''].filter(Boolean).join(' · ');
     if (marks && !over) { ctx.font = `600 11px ${GAME_FONT}`; outlinedText(marks, hb.x, hb.y + 30, '#e8a070'); }
   }
   // each enemy's name over its head, with its green health bar under the name (kept on screen at the edges)
@@ -7123,7 +7217,7 @@ function drawCombat() {
   for (const f of (F && F.T >= 0) || intro < 1 ? [] : sceneFoes) {         // (no labels while the Ogre King falls, or as they step in)
     const b = fightBoxes.boxes.get(f);
     if (!b || f.bornAt > now) continue;
-    const fh = shownHp(f), dead = fh <= 0, label = f.name + (f.items.length ? '*' : '') + (f.vet ? ' V' : '') + (f.burn > 0 && !dead ? ' (burning)' : '') +
+    const fh = shownHp(f), dead = fh <= 0, label = foeLabel(f) + (f.items.length ? '*' : '') + (f.vet ? ' V' : '') + (f.burn > 0 && !dead ? ' (burning)' : '') +
       (f.off && !dead ? ' (off balance)' : '') + (f.chill > 0 && !dead ? ' (chilled)' : '') + (f.soak > 0 && !dead ? ' (soaked)' : '') + (f.iced && !dead ? ' (frozen)' : '');
     const half = ctx.measureText(label).width / 2, cx = Math.max(half + 4, Math.min(284 - half, (b.x0 + b.x1) / 2)), top = Math.max(b.y0, dead ? 26 : 44);
     if (!dead && phase !== 'loot') { drawIntent(f, Math.max(30, Math.min(258, cx)), top - 26); ctx.font = `600 11px ${GAME_FONT}`; }
@@ -7131,11 +7225,11 @@ function drawCombat() {
       const pw = Math.max(54, ctx.measureText(label).width + 12), px = Math.max(2, Math.min(286 - pw, cx - pw / 2));
       chamfer(px, top - 24, pw, 22, 3); ctx.fillStyle = 'rgba(14,10,16,0.62)'; ctx.fill(); ctx.strokeStyle = 'rgba(214,170,80,0.55)'; ctx.lineWidth = 0.8; ctx.stroke();
       bar(Math.max(4, Math.min(236, cx - 24)), top - 9, 48, 5, fh, f.max, 'hp', f);
-      const el = cls === 'warlock' && WEAK[f.name];                       // a Warlock reads its weakness: the element's sign by its name
+      const el = cls === 'warlock' && weakOf(f);                          // a Warlock reads its weakness: the element's sign by its name
       if (el) { const ix = px - 7, iy = top - 13; chamfer(ix - 6, iy - 7, 13, 14, 2); ctx.fillStyle = 'rgba(14,10,16,0.85)'; ctx.fill(); ctx.strokeStyle = EL_COL[el]; ctx.lineWidth = 0.8; ctx.stroke(); elSign(el, ix, iy); }
     }
     if (f.vet && !dead) {                                                  // a veteran: its name in white, then a blood-red V
-      const pre = f.name + (f.items.length ? '*' : '') + ' ', post = label.slice(pre.length + 1), x0 = cx - half, xv = x0 + ctx.measureText(pre).width;
+      const pre = foeLabel(f) + (f.items.length ? '*' : '') + ' ', post = label.slice(pre.length + 1), x0 = cx - half, xv = x0 + ctx.measureText(pre).width;
       ctx.textAlign = 'left';
       outlinedText(pre, x0, top - 12, '#fff');
       outlinedText('V', xv, top - 12, '#ff5040');
@@ -8042,6 +8136,7 @@ function lootCardBody() {
   drawVerdict(v, cx, y + 36, 14);
   centerText(V.word, cx, y + 68, textFont(13), V.col);
   if (dp) centerText(`${dp > 0 ? '+' : '\u2212'}${Math.abs(dp)} ${statWord(pending.slot)}`, cx, y + 80, textFont(10, 400), '#9a9080');
+  if (pending.el) centerText(`${ACTION[pending.el].name} +${pct(STAFF_EL_BONUS)}`, cx, y + 92, textFont(10, 600), EL_COL[pending.el]);   // (a staff bound to an element)
 }
 // ---- symbols in the game's look: each one is painted on a small canvas of its own at twice the size it will have,
 // every 2 x 2 of that becomes one big square pixel (two units across, like the pictures of you and the creatures),
@@ -8118,7 +8213,7 @@ const GLYPHS = (() => {
     disc(c, x, y, r) { g.fillStyle = c; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); },
     ell(c, x, y, rx, ry, rot = 0) { g.fillStyle = c; g.beginPath(); g.ellipse(x, y, rx, ry, rot, 0, Math.PI * 2); g.fill(); },
     box(c, x, y, w, h) { g.fillStyle = c; g.fillRect(x, y, w, h); },
-    ring(c, w, x, y, r, a0 = 0, a1 = Math.PI * 2) { g.strokeStyle = c; g.lineWidth = w; g.beginPath(); g.arc(x, y, r, a0, a1); g.stroke(); },
+    ring(c, w, x, y, r, a0 = 0, a1 = Math.PI * 2, ccw = false) { g.strokeStyle = c; g.lineWidth = w; g.beginPath(); g.arc(x, y, r, a0, a1, ccw); g.stroke(); },
     path(c, f) { g.fillStyle = c; g.beginPath(); f(); g.fill(); },
     star(c, x, y, r) { g.fillStyle = c; g.beginPath(); for (let k = 0; k < 10; k++) { const a = -Math.PI / 2 + k * Math.PI / 5, rr = k % 2 ? r * 0.45 : r; g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } g.closePath(); g.fill(); },
     burst(c, x, y, r, core) { g.fillStyle = c; g.beginPath(); for (let k = 0; k < 16; k++) { const a = k * Math.PI / 8 + 0.2, rr = k % 2 ? r * 0.38 : (k % 4 ? r * 0.75 : r); g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } g.closePath(); g.fill();
@@ -8199,6 +8294,31 @@ const GLYPHS = (() => {
         g.lineTo(3.4, -0.6); g.lineTo(4.4, 2.2); g.lineTo(0.8, 2.6); g.lineTo(1.4, 5.4); g.lineTo(-2.6, 5.2); g.lineTo(-2.2, 7.8); g.closePath(); });
       h.line('#d8b860', 1, [[-6.4, 2.4], [7.6, -7.2]]);
       h.line(K, 0.8, [[0, -2.6], [3.4, -0.6]]); h.line(K, 0.8, [[-2.6, -0.4], [0.8, 2.6]]); h.line(K, 0.8, [[-5, 1.6], [-2.6, 5.2]]);
+    } else if (id === 'pyromancer') {                                       // a flame in a ring of embers
+      h.path('#ff7a20', () => { g.moveTo(0, -7.6); g.quadraticCurveTo(6.2, -1, 4.4, 3.6); g.quadraticCurveTo(2.8, 7.4, 0, 7.4); g.quadraticCurveTo(-2.8, 7.4, -4.4, 3.6); g.quadraticCurveTo(-5.6, -0.4, -1.4, -2.8); g.quadraticCurveTo(-0.8, -5.2, 0, -7.6); });
+      h.path('#ffd060', () => { g.moveTo(0, -2); g.quadraticCurveTo(3, 2, 2, 4.4); g.quadraticCurveTo(1, 6.2, 0, 6.2); g.quadraticCurveTo(-1.4, 6.2, -2, 4.4); g.quadraticCurveTo(-2.4, 1.6, 0, -2); });
+      h.ell('#fff6d0', 0, 4.6, 0.9, 1.2);
+    } else if (id === 'cryomancer') {                                       // a six-armed snowflake
+      for (let k = 0; k < 3; k++) { const a = k * Math.PI / 3 + Math.PI / 2, c = Math.cos(a) * 7.2, d = Math.sin(a) * 7.2; h.line('#cfeeff', 1.8, [[-c, -d], [c, d]]); }
+      for (let k = 0; k < 6; k++) { const a = k * Math.PI / 3 + Math.PI / 2, x = Math.cos(a) * 4.6, y = Math.sin(a) * 4.6;
+        h.line('#ffffff', 1, [[x, y], [x + Math.cos(a + 0.8) * 2.2, y + Math.sin(a + 0.8) * 2.2]]); h.line('#ffffff', 1, [[x, y], [x + Math.cos(a - 0.8) * 2.2, y + Math.sin(a - 0.8) * 2.2]]); }
+      h.disc('#8ccaf0', 0, 0, 1.6);
+    } else if (id === 'stormcaller') {                                      // a forked bolt out of a dark cloud
+      h.disc('#5a5e7a', -3, -4.6, 3.4); h.disc('#5a5e7a', 1.6, -5.4, 3.8); h.disc('#5a5e7a', 4.8, -3.6, 2.6); h.box('#5a5e7a', -5.6, -4.6, 12, 3);
+      h.poly('#ffe45a', [[1.2, -1.6], [-3.4, 4], [-0.4, 4], [-2.4, 8.6], [3.4, 1.8], [0.4, 1.8], [2.6, -1.6]]);
+    } else if (id === 'tidecaller') {                                       // a curling wave
+      h.path('#3aa8b4', () => { g.moveTo(-8, 5); g.quadraticCurveTo(-6, -6, 3, -6.4); g.quadraticCurveTo(8.4, -6, 7.2, -1); g.quadraticCurveTo(6, 2.4, 2.6, 0.6); g.quadraticCurveTo(4.6, -2.6, 1.8, -3); g.quadraticCurveTo(-3, -2, -2.6, 5); g.closePath(); });
+      h.line('#c8fbf8', 1.1, [[-6.6, 3], [-5, -2.4], [-1, -4.8], [3.4, -5]]);
+      h.box('#2a7e8c', -8, 5, 16, 2.4);
+    } else if (id === 'earthshaper') {                                      // a mountain of stone, split by a crack
+      h.poly('#a07e52', [[-8, 6.6], [-3, -3.4], [-0.8, -0.4], [2.6, -7.8], [8, 6.6]]);
+      h.poly('#d8b47c', [[2.6, -7.8], [4.2, -3.6], [1.6, -2.4]]);
+      h.line(K, 0.9, [[2.2, -4], [0.8, 0.8], [2.4, 4.6]]);
+      h.box('#6e5434', -8, 6.6, 16, 1.6);
+    } else if (id === 'windcaller') {                                       // three gusts curling away
+      h.line('#e4f8de', 1.6, [[-7.6, -3.6], [2, -3.6]]); h.ring('#e4f8de', 1.6, 2, -6, 2.4, Math.PI / 2, -Math.PI * 0.9, true);
+      h.line('#a8dca0', 1.6, [[-7.6, 0.8], [4.6, 0.8]]); h.ring('#a8dca0', 1.6, 4.6, -1.8, 2.6, Math.PI / 2, -Math.PI * 0.9, true);
+      h.line('#e4f8de', 1.6, [[-6, 5.2], [0.6, 5.2]]); h.ring('#e4f8de', 1.6, 0.6, 7.4, 2.2, -Math.PI / 2, Math.PI * 0.9);
     } else if (id === 'purse') {                                            // a leather purse, tied with gold cord, coins spilling
       h.disc('#9a6232', -0.6, 3, 6.2);
       h.poly('#9a6232', [[-3.4, -3.4], [2.2, -3.4], [3.8, -7.4], [-5, -7.4]]);
@@ -8819,6 +8939,7 @@ function heroDetail(pick) {
     const k = pick.slice(5), it = worn[k];
     if (!it) return `${slots[k].label}: nothing worn.`;
     return `${itemName(it)} +${it.power}` + (it.ench ? `: ${ENCHANTS[it.ench.id].desc}.` : '.') + weightText(k, it) +
+      (it.el ? ` It is bound to ${ACTION[it.el].name}: your ${ACTION[it.el].name} spells hit ${pct(STAFF_EL_BONUS)} harder.` : '') +
       (k === 'weapon' ? ' Its number adds to every hit.'
         : k === 'shield' && cls === 'ranger' ? ` Each point adds ${pct(RANGER.perQuiver)} to every Volley arrow (${pct(volleyShare())} of a shot now).`
         : k === 'shield' ? ` When you Block, Block stops ${pct(blockStops())} of each hit (${pct(BLOCK_BASE)} without a shield), and the chance to stun the attacker rises by ${pct(SHIELD_STUN * it.power)}.`
@@ -9577,6 +9698,19 @@ function checkDeath(killer, text) {
   return false;
 }
 
+// set alight by a Burning enemy: it burns once per combat turn, after the enemies' turn
+function tickBurnMe() {
+  if (!pburn) return true;
+  pburn--;
+  const hurt = Math.min(PBURN.dmg, p.hp);
+  p.hp -= hurt;
+  run.taken += hurt;
+  if (turnOpen()) { after(0.15); cue('meBurn', {len: 0.3}); }
+  popup('player', hurt, 'dmg');
+  msg.textContent += ` The flames burn you for ${hurt}` + (pburn ? ` (${pburn} more).` : '. The flames die out.');
+  refresh();
+  return checkDeath('the flames', 'The flames were too much. You collapse.');
+}
 // poison ticks once per combat turn and once per step
 function tickPoison() {
   if (!poison) return true;
@@ -9601,7 +9735,7 @@ function foeStrike(f, mult, blocking = false, move = 'attack') {
   if (crush) f.crushAt = f.swings;   // (the Ogre King's next one is a few swings away, see CRUSH_GAP)
   // a big move (the Crushing Blow, the Charge, a Dive...) always lands, and never crits
   // (Fleetfoot, Pathfinder and light armor dodge plain blows, not big moves; an enemy's Dagger or Mace moves its miss and crit)
-  const gust = f.gust ? SPELL.wind.miss : 0; f.gust = false;            // (a Warlock's Wind threw this blow off)
+  const gust = f.gust ? spellOf('wind').miss : 0; f.gust = false;       // (a Warlock's Wind threw this blow off)
   const result = smokeMiss() ? 'miss' : big ? 'hit' : swingResult(Math.max(0, foeMiss() + gust + (f.wMiss || 0)), Math.max(0, FOE_CRIT + (f.wCrit || 0)));   // (lost in a Ranger's smoke)
   f.landed = result !== 'miss';
   after(turnOpen() && turn.beats.length ? TURN.gap - TURN.foeSwing : 0);  // each enemy steps in after the last
@@ -9670,6 +9804,17 @@ function foeStrike(f, mult, blocking = false, move = 'attack') {
       msg.textContent += ` Thorns cut the ${f.name} for ${Math.min(thorns, f.hp)}.`;
       after(0.08); cue('hit', {who: f});
       damageFoe(f, thorns, false);
+    }
+    if (soaked && !ward && cls === 'warlock' && p.hp > 0 && f.hp > 0) {   // the Bone Ward broke on this blow: its shards fly back at the breaker
+      const bite = SPELL.ward.bite[rankOf('ward')];
+      after(0.08); cue('wardBite', {who: f, len: 0.3});
+      msg.textContent += ` The shards of your ward tear into the ${f.name} for ${Math.min(bite, f.hp)}.`;
+      damageFoe(f, bite, false);
+    }
+    if (f.aspect && hurt > 0 && p.hp > 0 && Math.random() < ASPECT[f.aspect].chance) {   // an elemental enemy's blow carries its element
+      if (f.aspect === 'burning') { pburn = PBURN.turns; popup('player', 'BURNING', 'dmg'); after(0.05); cue('meBurn', {len: 0.3}); msg.textContent += ` You catch fire: ${PBURN.dmg} a turn for ${PBURN.turns} turns.`; }
+      else if (f.aspect === 'frostbound') { pchill = 2; popup('player', 'CHILLED', 'frost'); after(0.05); cue('meChill', {len: 0.3}); msg.textContent += ` The cold bites into you: your next attack is ${pct(PCHILL_MISS)} likelier to miss.`; }
+      else if (!pstun && !stunGuard) { pstun = true; popup('player', 'STUNNED', 'stun'); after(0.05); cue('meShock', {len: 0.3}); msg.textContent += ' The shock stuns you: you lose your next move!'; }
     }
     refresh();
   }
@@ -9805,6 +9950,7 @@ function foesAttack(mult = 1, blocking = false) {
   }
   snareOn = null; smoke = false;                                            // (a snare or smoke lasts for one turn of theirs)
   if (!tickPoison()) return;
+  if (!tickBurnMe()) return;
   if (!foes.some(f => f.hp > 0)) endFight();
 }
 
@@ -9844,6 +9990,7 @@ function endFight() {
   const killedAny = foes.some(f => !f.fled);
   current.dead = true;
   sunder = 0; weak = false;          // your armor is whole again, your nerve back
+  pburn = pchill = 0; pstun = false;  // (and an elemental enemy's fire, cold and shock leave you)
   const mend = Math.min(enchSum('mending') + VITALITY_MEND * perkN('vitality'), p.max - p.hp);
   if (killedAny && mend > 0) {
     p.hp += mend;
@@ -9946,7 +10093,7 @@ function strike(t, heavy, label) {
   cue('hit', {who: t, heavy, crit: result === 'crit', caught});
   const dealt = damageFoe(t, dmg, result === 'crit');
   const burn = enchSum('flaming');
-  if (burn && t.hp > 0) {
+  if (burn && t.hp > 0 && canBurn(t)) {
     if (!t.burn) { msg.textContent += ` The ${t.name} catches fire!`; cue('ignite', {who: t}); }
     t.burn = BURN_TURNS;
     t.burnDmg = burn;
@@ -9964,10 +10111,13 @@ function strike(t, heavy, label) {
 function act(kind) {
   if (over || phase !== 'fight') return;
   beginTurn();
-  try { takeTurn(kind); } finally { closeTurn(); }
+  if (pstun) { pstun = false; stunGuard = true; kind = 'stunned'; }       // (stunned by a Stormtouched enemy: this move is lost, and it can't stun you again at once)
+  try { takeTurn(kind); } finally { closeTurn(); stunGuard = false; }
+  if (pchill > 0) pchill--;                                                // (a chill lasts for your next attack)
   draw();
 }
 function takeTurn(kind) {
+  if (kind === 'stunned') return stunnedTurn();
   if (cls !== 'knight') return classTurn(kind);
   const reach = kind === 'block' || liveTarget();    // every enemy out of reach (a Wyvern on the wing...): you guard instead
   lastAct = {kind: kind === 'block' || !reach ? 'block' : kind, at: kind === 'block' || !reach ? null : liveTarget()};   // (the enemies may answer it, see planMove)
@@ -10281,7 +10431,7 @@ const barLine = () => classBar.map(id => ACTION[id].name + (RANKED.includes(id) 
 
 // ---- a fight for a Warlock or a Ranger: everything that lasts a fight starts over ----
 function classFightStart() {
-  focus = 0; lastEl = null;
+  focus = 0; lastEl = null; streak = {el: null, n: 0};
   ward = wardMax = wardWait = 0; snareOn = null; snareLast = false; smoke = false; smokeLast = false; aimed = false; armed = null;
 }
 const volleyShare = () => RANGER.volley + RANGER.perQuiver * power('shield');
@@ -10312,8 +10462,10 @@ function spellSub(id) {
     case 'strike': return {sub: `≈${hitOn(t, SPELL.strike.share)} ` + (focus >= ELEM.focusMax ? 'F max' : `+F${focus ? ' ' + focus : ''}`)};
   }
   if (BOLTS.includes(id)) {                                                // an element: its number with Focus, a weakness and a reaction in it
-    const S = SPELL[id], c = comboOf(id, t), n = `≈${hitOn(t, S.share * elemMult(id, t), id === 'earth')}`;
+    const S = spellOf(id), c = comboOf(id, t), n = `≈${hitOn(t, S.share * elemMult(id, t), id === 'earth')}`;
     const tone = {flame: 'fire', frost: 'frost', lightning: 'storm', water: 'tide', earth: 'stone', wind: 'gale'}[id];
+    if (immuneTo(t, id)) return {tone, size: id === 'lightning' ? 17 : undefined, sub: 'immune'};
+    if (streak.el === id && streak.n === STREAK.need - 1) return {tone, size: id === 'lightning' ? 17 : undefined, hot: true, sub: `${n} ${FINISHER[id].toLowerCase()}`};   // (the third in a row)
     // (a reaction it would set off: its name, in gold)
     const tag = c === 'shock' ? 'shock' : c === 'quench' ? 'quench' : c === 'conduct' ? 'all' : c === 'deepfreeze' ? 'freeze' : c === 'shatter' ? 'shatter' : c === 'wildfire' ? 'spread'
       : id === 'flame' ? `+${S.burn[R]}×${S.turns}` : id === 'frost' ? 'chill' : id === 'lightning' ? 'jump' : id === 'water' ? 'soak' : id === 'earth' ? 'pierce' : 'gust';
@@ -10341,36 +10493,41 @@ function rangerSub(id) {
 function explainOf(id) {
   const base = explainBase(id);
   if (!BOLTS.includes(id)) return base;
-  const t = liveTarget(), T = t ? `the ${t.name}` : 'your target', c = comboOf(id, t), w = [];
+  const t = liveTarget(), T = t ? `the ${foeLabel(t)}` : 'your target', c = comboOf(id, t), w = [];
+  if (immuneTo(t, id)) return `${T[0].toUpperCase() + T.slice(1)} is immune to ${ACTION[id].name}: it would do nothing to it.` + (streak.el === id && streak.n === STREAK.need - 1 ? ` It would still unleash ${FINISHER[id]}: ${FINISHER_SAY[id]}.` : '');
   if (focus) w.push(`It spends your ${focus} Focus: +${pct(ELEM.focus * focus)} damage.`);
-  if (t && WEAK[t.name] === id) w.push(`${T[0].toUpperCase() + T.slice(1)} is weak to ${ACTION[id].name}: +${pct(ELEM.weak)} damage.`);
+  if (t && weakOf(t) === id) w.push(`${T[0].toUpperCase() + T.slice(1)} is weak to ${ACTION[id].name}: +${pct(ELEM.weak)} damage.`);
+  if (staffEl() === id) w.push(`Your staff is bound to ${ACTION[id].name}: +${pct(STAFF_EL_BONUS)} damage.`);
   if (c === 'shock') w.push(`It is chilled, so this is a Thermal Shock: +${pct(ELEM.shock)} damage, and the chill is used up.`);
   if (c === 'quench') w.push(`It is burning, so this quenches the fire: the ${(t.burnDmg || 0) * t.burn} burn damage left lands at once.`);
   if (c === 'conduct') w.push('It is soaked, so the water conducts the lightning: it jumps to every other enemy.');
   if (c === 'deepfreeze') w.push(t.stunned || t.stunProof ? 'It is soaked, but it can\'t freeze again just now.' : 'It is soaked, so this is a Deep Freeze: it freezes solid for sure. The water is used up.');
   if (c === 'shatter') w.push(`It is frozen, so the stone shatters it: +${pct(ELEM.shatter)} damage.`);
   if (c === 'wildfire') w.push('It is burning, so the wind fans the fire onto every other enemy you can reach.');
-  return base + (w.length ? ' ' + w.join(' ') + ' (The number on the button includes all of this.)' : '');
+  const more = streak.el === id ? STREAK.need - streak.n : STREAK.need;   // (casts of it still to go for its finisher, this one included)
+  const tail = more === 1 ? ` Your third ${ACTION[id].name} in a row: ${FINISHER[id]}! ${FINISHER_SAY[id][0].toUpperCase() + FINISHER_SAY[id].slice(1)}.`
+    : ` ${STREAK.need} ${ACTION[id].name} casts in a row unleash ${FINISHER[id]}` + (more < STREAK.need ? ` (${more} to go, this one included).` : '.');
+  return base + (w.length ? ' ' + w.join(' ') + ' (The number on the button includes all of this.)' : '') + tail;
 }
 function explainBase(id) {
   const R = rankOf(id), t = liveTarget(), T = t ? `the ${t.name}` : 'your target', b = blowOf(t), its = b ? ` (its ${b.name} for ${b.dmg})` : '';
   switch (id) {
     case 'strike': return `Hit ${T} with a bolt of magic for about ${hitOn(t, SPELL.strike.share)}. Shields can't block it, and nothing can strike back at it. If it lands it stores 1 Focus (you have ${focus} of ${ELEM.focusMax}): your next element spends it all, for +${pct(ELEM.focus)} damage each.`;
     case 'flame': {
-      const burn = SPELL.flame.burn[R];
-      return `Hit ${T} with a bolt of fire for about ${hitOn(t, SPELL.flame.share)}. Then it burns for ${burn} at the start of each of its turns, for ${SPELL.flame.turns} turns (${burn * SPELL.flame.turns} in all)` +
-        (t && t.burn > 0 ? `: it is burning already, so its ${SPELL.flame.turns} turns start over.` : '.') + ' A burning Troll can\'t regenerate.';
+      const burn = SPELL.flame.burn[R], turns = spellOf('flame').turns;
+      return `Hit ${T} with a bolt of fire for about ${hitOn(t, SPELL.flame.share)}. Then it burns for ${burn} at the start of each of its turns, for ${turns} turns (${burn * turns} in all)` +
+        (t && t.burn > 0 ? `: it is burning already, so its ${turns} turns start over.` : '.') + ' A burning Troll can\'t regenerate.';
     }
     case 'frost': return `Hit ${T} with a shard of ice for about ${hitOn(t, SPELL.frost.share)}. It is chilled for your next ${SPELL.frost.turns} turns: your spells miss it ${pct(SPELL.frost.chill)} less often. ` +
-      (t && t.stunProof ? `It was just stunned, so this time it can't freeze.` : `And ${pct(SPELL.frost.freeze)} of the time it freezes solid and loses its next move${its}. It can't freeze twice in a row.`);
+      (t && t.stunProof ? `It was just stunned, so this time it can't freeze.` : `And ${pct(spellOf('frost').freeze)} of the time it freezes solid and loses its next move${its}. It can't freeze twice in a row.`);
     case 'lightning': {
       const d = hitOn(t, SPELL.lightning.share), more = foes.filter(f => f !== t && reachable(f)).length;
-      return `Strike ${T} with lightning for about ${d}. Then it may jump to each other enemy: each has a ${pct(SPELL.lightning.chance)} chance to take ${pct(SPELL.lightning.jump)} of what it did (about ${Math.max(1, Math.round(d * SPELL.lightning.jump))}).` +
+      return `Strike ${T} with lightning for about ${d}. Then it may jump to each other enemy: each has a ${pct(spellOf('lightning').chance)} chance to take ${pct(SPELL.lightning.jump)} of what it did (about ${Math.max(1, Math.round(d * SPELL.lightning.jump))}).` +
         (more ? '' : ' There is no other enemy here for it to jump to.');
     }
-    case 'water': return `Hit ${T} with a burst of water for about ${hitOn(t, SPELL.water.share)}. It is soaked for your next ${SPELL.water.turns} turns: Lightning on it jumps to every other enemy, and Frost on it freezes it for sure.`;
+    case 'water': return `Hit ${T} with a burst of water for about ${hitOn(t, SPELL.water.share)}. It is soaked for your next ${spellOf('water').turns} turns: Lightning on it jumps to every other enemy, and Frost on it freezes it for sure.`;
     case 'earth': return `Hurl a stone at ${T} for about ${hitOn(t, SPELL.earth.share, true)}. It goes straight through armor. On a frozen enemy it shatters the ice for +${pct(ELEM.shatter)}.`;
-    case 'wind': return `Hit ${T} with a gust of wind for about ${hitOn(t, SPELL.wind.share)}. Its next blow is ${pct(SPELL.wind.miss)} more likely to miss (a big move like a Charge still lands). On a burning enemy the wind fans the fire onto every other enemy.`;
+    case 'wind': return `Hit ${T} with a gust of wind for about ${hitOn(t, SPELL.wind.share)}. Its next blow is ${pct(spellOf('wind').miss)} more likely to miss (a big move like a Charge still lands). On a burning enemy the wind fans the fire onto every other enemy.`;
     case 'ward': return ward > 0 ? `Your ward still holds ${ward} damage. You can't raise another until it breaks.`
       : wardWait > 0 ? `Your last ward broke. You can raise another in ${wardWait} turn${wardWait === 1 ? '' : 's'}.`
       : `Raise a ward that soaks up the next ${SPELL.ward.soak[R]} damage from blows aimed at you. It stays up between turns until it breaks or the fight ends.`;
@@ -10435,7 +10592,7 @@ function classHit(t, o) {
   cue('hit', {who: t, heavy: !!o.heavy, crit: result === 'crit', caught, ranged: true});   // (no sword's arc for a spell or an arrow)
   const dealt = damageFoe(t, dmg, result === 'crit');
   const burn = enchSum('flaming');
-  if (burn && t.hp > 0) { if (!t.burn) { msg.textContent += ` The ${t.name} catches fire!`; cue('ignite', {who: t}); } t.burn = BURN_TURNS; t.burnDmg = burn; }
+  if (burn && t.hp > 0 && canBurn(t)) { if (!t.burn) { msg.textContent += ` The ${t.name} catches fire!`; cue('ignite', {who: t}); } t.burn = BURN_TURNS; t.burnDmg = burn; }
   const leech = Math.min(Math.round(dealt * enchSum('vampiric')), p.max - p.hp);
   if (leech > 0) { p.hp += leech; popup('player', `+${leech}`, 'heal'); msg.textContent += ` You drain ${leech} HP.`; }
   return {result, dealt, dmg};
@@ -10460,8 +10617,13 @@ function classTurn(kind) {
   const t = liveTarget(), shaken = weak, R = rankOf(kind);
   msg.textContent = '';
   armed = null;
-  let react = 'normal', at = t, chilled = null, soaked = null;
-  if (cls === 'warlock') {
+  let react = 'normal', at = t;
+  const chilledNow = new Set(), soakedNow = new Set();                    // (chilled or soaked this turn: their turns start now)
+  if (kind === 'stunned') {                                               // stunned by a Stormtouched enemy: this move is lost
+    msg.textContent = 'You are stunned and can\'t act!';
+    popup('player', 'STUNNED', 'stun'); cue('meStunned', {len: 0.4});
+    at = null;
+  } else if (cls === 'warlock') {
     if (kind === 'ward') {
       ward = wardMax = SPELL.ward.soak[R];
       cue('cast', {len: 0.3}); after(0.22); cue('wardUp', {ward, len: 0.55});
@@ -10471,15 +10633,17 @@ function classTurn(kind) {
       msg.textContent = 'Nothing is in reach. You gather your power.';
       react = 'block'; at = null;
     } else {                                                               // a bolt: plain (Strike), of fire, of ice, or lightning
-      const S = SPELL[kind] || SPELL.strike, words = WARLOCK_WORDS[kind] || WARLOCK_WORDS.strike, el = BOLTS.includes(kind);
-      const combo = comboOf(kind, t), weakHit = el && WEAK[t.name] === kind, spent = el ? focus : 0;
+      const S = spellOf(kind), words = WARLOCK_WORDS[kind] || WARLOCK_WORDS.strike, el = BOLTS.includes(kind);
+      const combo = comboOf(kind, t), weakHit = el && weakOf(t) === kind, spent = el ? focus : 0, immune = el && immuneTo(t, kind);
       cue('cast', {len: 0.25}); after(0.16);
       if (kind === 'lightning') { cue('zap', {who: t, len: 0.35}); after(0.08); }
       else { cue('bolt', {who: t, el: kind, len: 0.3}); after(0.2); }
       weak = false;
-      const o = {share: S.share * elemMult(kind, t), spell: true, pierce: kind === 'earth', shaken, hit: words[0], miss: words[1]}, first = classHit(t, o);
+      const o = {share: S.share * elemMult(kind, t), spell: true, pierce: kind === 'earth', shaken, hit: words[0], miss: words[1]};
+      const first = immune ? {result: 'immune', dealt: 0, dmg: 0} : classHit(t, o);
+      if (immune) { popup(t, 'IMMUNE', 'miss'); msg.textContent += `The ${foeLabel(t)} is immune to your ${ACTION[kind].name}.`; }
       if (el) { lastEl = kind; if (spent) { focus = 0; msg.textContent += ` (Focus ×${spent})`; } }
-      if (first.result !== 'miss') {
+      if (first.result !== 'miss' && !immune) {
         if (weakHit) { popup(t, 'WEAK!', EL_POP[kind]); msg.textContent += ` It is weak to ${ACTION[kind].name}!`; }
         if (combo) { after(0.05); popup(t, COMBO_NAME[combo].toUpperCase(), EL_POP[kind], true); }
         if (kind === 'strike') { focus = Math.min(ELEM.focusMax, focus + 1); msg.textContent += ` Focus ${focus}/${ELEM.focusMax}.`; }
@@ -10497,7 +10661,7 @@ function classTurn(kind) {
             msg.textContent += ` Quench! The fire bursts out for ${Math.min(q, t.hp)}.`; damageFoe(t, q, false);
           }
           if (t.hp > 0) {
-            t.chill = S.turns; chilled = t;
+            t.chill = S.turns; chilledNow.add(t);
             after(0.06); cue('chill', {who: t, len: 0.4});
             msg.textContent += ` It is chilled: your spells miss it less.`;
             const deep = combo === 'deepfreeze';
@@ -10509,7 +10673,7 @@ function classTurn(kind) {
             }
           }
         } else if (kind === 'water' && t.hp > 0) {                         // soaked: Lightning and Frost will do more to it
-          t.soak = S.turns; soaked = t;
+          t.soak = S.turns; soakedNow.add(t);
           after(0.06); cue('soak', {who: t, len: 0.4});
           msg.textContent += ' It is soaked: Lightning will jump from it to them all, and Frost will freeze it.';
         } else if (kind === 'earth') {                                     // a heavy thud; on ice, the ice bursts
@@ -10521,9 +10685,9 @@ function classTurn(kind) {
           msg.textContent += ' Its next blow is more likely to miss.';
           if (combo === 'wildfire') {
             msg.textContent += ' Wildfire! The wind fans its flames onto';
-            for (const f of foes.filter(f => f !== t && f.hp > 0 && reachable(f))) {
+            for (const f of foes.filter(f => f !== t && f.hp > 0 && reachable(f) && canBurn(f))) {
               after(0.08); if (!(f.burn > 0)) cue('ignite', {who: f});
-              f.burnDmg = Math.max(f.burnDmg || 0, t.burnDmg || 0); f.burn = Math.max(f.burn || 0, SPELL.flame.turns);
+              f.burnDmg = Math.max(f.burnDmg || 0, t.burnDmg || 0); f.burn = Math.max(f.burn || 0, spellOf('flame').turns);
               msg.textContent += ` the ${f.name}`;
             }
             msg.textContent += '.';
@@ -10531,7 +10695,7 @@ function classTurn(kind) {
         }
         if (kind === 'lightning') {                                        // it may jump to each of the others (soaked: to every one)
           if (combo === 'conduct') msg.textContent += ' Conduct! The water carries it to them all.';
-          for (const f of foes.filter(f => f !== t && f.hp > 0 && reachable(f))) {
+          for (const f of foes.filter(f => f !== t && f.hp > 0 && reachable(f) && !immuneTo(f, 'lightning'))) {
             if (!(combo === 'conduct' || Math.random() < S.chance)) continue;
             const d = Math.max(1, Math.round(first.dmg * S.jump));
             after(0.09); cue('arc', {who: f, from: t, len: 0.3});
@@ -10539,6 +10703,10 @@ function classTurn(kind) {
             damageFoe(f, d, false, 'zap');
           }
         }
+      }
+      if (el) {                                                            // the streak: the third of one element in a row unleashes its finisher
+        streak = streak.el === kind ? {el: kind, n: streak.n + 1} : {el: kind, n: 1};
+        if (streak.n >= STREAK.need) { streak = {el: null, n: 0}; unleash(kind, t, chilledNow, soakedNow); }
       }
       if (kind === 'strike') classSwift(t, first, {...o, shaken: false});
     }
@@ -10574,7 +10742,7 @@ function classTurn(kind) {
     } else if (kind === 'fire') {
       loose(true);
       const r = single(SHOT.fire.share, {hit: 'Your fire arrow strikes', miss: 'Your fire arrow misses'});
-      if (r.result !== 'miss' && t.hp > 0) {
+      if (r.result !== 'miss' && t.hp > 0 && canBurn(t)) {
         if (!t.burn) cue('ignite', {who: t});
         t.burn = SHOT.fire.turns; t.burnDmg = Math.max(t.burnDmg || 0, SHOT.fire.burn[R]);
         msg.textContent += ` It burns: ${t.burnDmg} a turn for ${t.burn} turns.`;
@@ -10595,10 +10763,38 @@ function classTurn(kind) {
     snareLast = kind === 'snare';
     smokeLast = kind === 'smoke' ? SHOT.smoke.wait : Math.max(0, (smokeLast | 0) - 1);   // (turns before the next smoke bomb)
   }
-  for (const f of foes) if (f.chill > 0 && f !== chilled) f.chill--;      // (a chill lasts for your next turns: one of them has gone)
-  for (const f of foes) if (f.soak > 0 && f !== soaked) f.soak--;          // (and so does a soaking)
+  for (const f of foes) if (f.chill > 0 && !chilledNow.has(f)) f.chill--;   // (a chill lasts for your next turns: one of them has gone)
+  for (const f of foes) if (f.soak > 0 && !soakedNow.has(f)) f.soak--;     // (and so does a soaking)
   for (const f of foes) if (f.iced) { f.iced = false; if (f.hp > 0) { after(0.1); cue('thaw', {who: f}); msg.textContent += ` The ice on the ${f.name} cracks away.`; } }
   lastAct = {kind: react, at};                                             // (enemies answer a Pact like a Heavy swing, a ward, snare or smoke like a Block)
+  if (foes.some(f => f.hp > 0)) foesAttack(1, false);
+  else endFight();
+}
+// a streak's finisher (see STREAK): t was the target of the cast that set it off
+function unleash(kind, t, chilledNow, soakedNow) {
+  const name = FINISHER[kind], them = foes.filter(f => f.hp > 0 && reachable(f)), R = rankOf('flame');
+  after(0.12); cue('finisher', {el: kind, len: 0.6}); popup('player', name.toUpperCase() + '!', EL_POP[kind], true);
+  msg.textContent += ` ${name}! ` + FINISHER_SAY[kind][0].toUpperCase() + FINISHER_SAY[kind].slice(1) + '.';
+  for (const f of them) {
+    if (kind === 'flame' && canBurn(f)) { if (!(f.burn > 0)) cue('ignite', {who: f}); f.burnDmg = Math.max(f.burnDmg || 0, SPELL.flame.burn[R]); f.burn = Math.max(f.burn || 0, spellOf('flame').turns); }
+    else if (kind === 'frost' && !immuneTo(f, 'frost')) { f.chill = Math.max(f.chill || 0, SPELL.frost.turns); chilledNow.add(f); cue('chill', {who: f, len: 0.25}); }
+    else if (kind === 'water') { f.soak = Math.max(f.soak || 0, spellOf('water').turns); soakedNow.add(f); cue('soak', {who: f, len: 0.25}); }
+    else if (kind === 'wind') { f.gust = true; cue('gust', {who: f, len: 0.25}); }
+    else if (kind === 'lightning' && f !== t && !immuneTo(f, 'lightning')) {
+      const d = hitOn(f, SPELL.lightning.share * STREAK.storm); after(0.08); cue('arc', {who: f, from: t, len: 0.3});
+      msg.textContent += ` It strikes the ${f.name} for ${Math.min(d, f.hp)}.`; damageFoe(f, d, false, 'zap');
+    } else if (kind === 'earth' && f !== t) {
+      const d = hitOn(f, STREAK.quake, true); after(0.06); cue('quake', {who: f, len: 0.3});
+      msg.textContent += ` The ${f.name} takes ${Math.min(d, f.hp)}.`; damageFoe(f, d, false);
+    }
+  }
+}
+// you, stunned by a Stormtouched enemy's blow: the move you chose is lost (a Knight's turn; see classTurn for the others)
+function stunnedTurn() {
+  if (cls !== 'knight') return classTurn('stunned');
+  msg.textContent = 'You are stunned and can\'t act!';
+  popup('player', 'STUNNED', 'stun'); cue('meStunned', {len: 0.4});
+  lastAct = {kind: 'normal', at: null};
   if (foes.some(f => f.hp > 0)) foesAttack(1, false);
   else endFight();
 }
@@ -10660,6 +10856,12 @@ function classSound(b, at, o) {
     case 'shatterIce': SND.fx('quake', o, at); SND.fx('shatter', o, at + 0.03); break;
     case 'gust': SND.fx('gust', o, at); break;
     case 'shock': SND.fx('shatter', o, at); SND.fx('ignite', o, at + 0.04); break;
+    case 'finisher': SND.fx('magic', {gain: 0.9}, at); SND.fx({flame: 'ignite', frost: 'freeze', lightning: 'zap', water: 'splash', earth: 'quake', wind: 'gust'}[b.el], {gain: 0.9}, at + 0.08); break;
+    case 'wardBite': SND.fx('rattle', o, at); SND.fx('hit', {...o, mat: 'bone'}, at + 0.03); break;
+    case 'meBurn': SND.fx('ignite', {pan: -0.45, gain: 0.6}, at); break;
+    case 'meChill': SND.fx('frost', {pan: -0.45}, at); break;
+    case 'meShock': SND.fx('zap', {pan: -0.45}, at); SND.fx('stun', {pan: -0.45}, at + 0.05); break;
+    case 'meStunned': SND.fx('stun', {pan: -0.45}, at); break;
     case 'zap': SND.fx('zap', o, at); break;
     case 'arc': SND.fx('zap', {...o, gain: 0.5}, at); break;
     case 'chill': SND.fx('frost', o, at); break;
@@ -10702,6 +10904,14 @@ function classBeat(b, t0, foe, box, at, hb) {
     case 'quake': if (at && box) { burst(t0, at.x, box.y1 - 4, 'rock', 10, null, true); shakeAt(t0, 3); } break;
     case 'shatterIce': if (at && box) { burst(t0, at.x, at.y + 10, 'ice', 30); burst(t0, at.x, at.y, 'rock', 14); fx.push({kind: 'flash', t0, col: '200,235,255', a: 0.3, ms: 220}); shakeAt(t0, 5); } break;
     case 'gust': if (at) { fx.push({kind: 'clsGust', t0, x: at.x, y: at.y, ms: 500}); burst(t0, at.x - 10, at.y, 'leaf', 10); } break;
+    case 'finisher': { const C = {flame: '255,140,40', frost: '170,220,255', lightning: '255,240,150', water: '110,220,220', earth: '220,170,90', wind: '200,245,190'}[b.el];
+      fx.push({kind: 'flash', t0, col: C, a: 0.35, ms: 420}); shakeAt(t0, b.el === 'earth' ? 7 : 4);
+      if (hb) burst(t0, handSpot(hb).x, handSpot(hb).y, {flame: 'ember', frost: 'frost', lightning: 'zap', water: 'water', earth: 'rock', wind: 'leaf'}[b.el], 24); } break;
+    case 'wardBite': if (at) { burst(t0, at.x, at.y, 'bone', 18); shakeAt(t0, 2); } break;
+    case 'meBurn': if (hb) burst(t0, hb.x, hb.y0 + 50, 'ember', 14); break;
+    case 'meChill': if (hb) burst(t0, hb.x, hb.y0 + 40, 'frost', 16); break;
+    case 'meShock': if (hb) { burst(t0, hb.x, hb.y0 + 40, 'zap', 16); fx.push({kind: 'flash', t0, col: '255,250,210', a: 0.2, ms: 160}); } break;
+    case 'meStunned': if (hb) burst(t0, hb.x, hb.y0 + 10, 'spark', 10); break;
     case 'shock': if (at) { burst(t0, at.x, at.y, 'frost', 16); burst(t0, at.x, at.y, 'ember', 16); burst(t0, at.x, at.y - 8, 'smoke', 12, null, true); fx.push({kind: 'flash', t0, col: '255,240,220', a: 0.3, ms: 220}); shakeAt(t0, 3); } break;
     case 'freeze': if (at) { burst(t0, at.x, at.y + 10, 'frost', 22); fx.push({kind: 'flash', t0, col: '170,220,255', a: 0.25, ms: 300}); shakeAt(t0, 2); } break;
     case 'thaw': if (at && box) { burst(t0, at.x, at.y + 16, 'ice', 24); burst(t0, at.x, at.y, 'frost', 10); } break;
@@ -10845,6 +11055,14 @@ function drawClassMarks(now) {
     FROST_SIGIL.forEach((row, j) => [...row].forEach((c, i) => { if (c === '#') clsPx(cx + i * 2, cy + j * 2, (i + j) % 3 ? '#cdeaff' : '#ffffff', 0.92 * pulse); }));
     for (let n = 0; n < f.chill; n++) clsPx(cx + 3 + n * 5, cy + 22, '#a8d8ff');      // one pip for each of your turns it stays chilled
   }
+  if (cls === 'warlock' && streak.n > 0 && fightBoxes.hero) {             // a streak: a diamond of the element's colour for each cast in a row
+    const hand = handSpot(fightBoxes.hero), col = EL_COL[streak.el];
+    for (let i = 0; i < STREAK.need - 1; i++) {
+      const x = hand.x - 6 + i * 8, y = hand.y - 16, on = i < streak.n;
+      if (on) clsGlow(x, y, 8, '255,255,255', 0.25);
+      for (const [dx, dy] of [[0, -2], [-2, 0], [2, 0], [0, 2], [0, 0]]) clsPx(x + dx, y + dy, on ? (dx || dy ? col : '#ffffff') : '#3a3440', on ? 1 : 0.7);
+    }
+  }
   if (cls === 'warlock' && focus > 0 && fightBoxes.hero) {                // Focus: violet sparks circling your hand
     const hand = handSpot(fightBoxes.hero);
     for (let i = 0; i < focus; i++) { const a = t * 2.4 + i / ELEM.focusMax * Math.PI * 2, x = hand.x + Math.cos(a) * 9, y = hand.y + Math.sin(a) * 5;
@@ -10917,7 +11135,7 @@ function tryFlee() {
       f.stunned = f.frozen = f.noRegen = f.raged = f.off = f.cry = f.licked = false;
       f.swings = 0;
     }
-    sunder = 0; weak = false;
+    sunder = 0; weak = false; pburn = pchill = 0; pstun = false;
     foes = [];
     current = null;
     phase = 'explore';
@@ -11562,12 +11780,12 @@ const journalCount = () => journalLoad().runs.length + (journalRun && !journalRu
 // It is written after every tap and whenever the game goes out of sight, and thrown away the moment the run ends, so
 // there is only ever one, and it always holds what has already happened: reopening the game never undoes a bad turn.
 // Continue on the title screen picks it up. Bump SAVE_V whenever what is saved changes shape: older saves are then dropped
-const SAVE_KEY = 'crawlspace:run', SAVE_V = 5;   // 2: enemy moves (each enemy's next, then, acts...), sunder and weak; 3: classes; 4: the Warlock's elements; 5: Focus, Water/Earth/Wind
+const SAVE_KEY = 'crawlspace:run', SAVE_V = 6;   // 2: enemy moves (each enemy's next, then, acts...), sunder and weak; 3: classes; 4: the Warlock's elements; 5: Focus, Water/Earth/Wind; 6: streaks, elemental enemies
 function runSnapshot() {
   return {v: SAVE_V, floor, map, opened: [...opened], visited: [...visited], enemies, p, prev, worn, perks,
     level, xp, levelUps, bonusDmg, hand, redraws, secondWinds, coins, potions, maxPotions, shopPotionsLeft, poison, sunder, weak,
     scrolls, bagSlots, scrollNow, pending, shopStock, shopTitle, shopMode, combatView, fightSeed,
-    cls, classBar, ranks, ward, wardMax, wardWait, snareLast, smokeLast, aimed, focus, lastEl,
+    cls, classBar, ranks, ward, wardMax, wardWait, snareLast, smokeLast, aimed, focus, lastEl, streak, pburn, pchill, pstun,
     phase: finale ? 'won' : phase,                                        // (the Ogre King is falling: the win is already yours)
     current: enemies.indexOf(current), scene: enemies.findIndex(e => e.group === sceneFoes), target: sceneFoes.indexOf(target),
     run: {...run, start: undefined, elapsed: Date.now() - run.start},     // the clock stops while the game is closed
@@ -11598,7 +11816,7 @@ function restoreRun(s) {
   ({level, xp, levelUps, bonusDmg, hand, redraws, secondWinds, coins, potions, maxPotions, shopPotionsLeft, poison, sunder, weak,
     scrolls, bagSlots, scrollNow, pending, shopStock, shopTitle, shopMode, combatView, fightSeed, phase,
     cls, classBar, ranks, ward, wardMax, wardWait, snareLast, smokeLast, aimed} = s);
-  focus = s.focus || 0; lastEl = s.lastEl || null;
+  focus = s.focus || 0; lastEl = s.lastEl || null; streak = s.streak || {el: null, n: 0}; pburn = s.pburn || 0; pchill = s.pchill || 0; pstun = !!s.pstun;
   slots.shield.label = cls === 'ranger' ? 'Quiver' : 'Shield';
   // the fight on screen: the enemy you walked into, its group, and your target (saved by position, so they are the same objects)
   current = enemies[s.current] || null;
