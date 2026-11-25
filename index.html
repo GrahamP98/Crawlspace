@@ -3958,10 +3958,12 @@ const RT_BODY = [[-16, 0], [-6, 0], [-5, -26], [-2, -34], [2, -34], [5, -26], [6
 // into a tall D, the tips flicking back; the string runs straight between them
 const RT_BOW = (() => {
   const x = 24, top = -122, bot = 4, bend = 10, n = 8;                    // (its grip, the middle of the limbs, at x + bend)
-  const pts = Array.from({length: n + 1}, (_, i) => { const t = i / n; return [x + bend * Math.sin(Math.PI * t), top + (bot - top) * t]; });
-  return {pts, tips: [[[x, top], [x - 4, top - 5]], [[x, bot], [x - 4, bot + 4]]], top: [x - 1.5, top + 1], bot: [x - 1.5, bot - 1]};
+  const gx = x + bend, gy = (top + bot) / 2, a = 0.2, ca = Math.cos(a), sa = Math.sin(a);   // tilted a little, its top out, about the grip
+  const R = ([px, py]) => [gx + (px - gx) * ca - (py - gy) * sa, gy + (px - gx) * sa + (py - gy) * ca];
+  const pts = Array.from({length: n + 1}, (_, i) => { const t = i / n; return R([x + bend * Math.sin(Math.PI * t), top + (bot - top) * t]); });
+  return {pts, tips: [[R([x, top]), R([x - 4, top - 5])], [R([x, bot]), R([x - 4, bot + 4])]], top: R([x - 1, top + 1]), bot: R([x - 1, bot - 1])};
 })();
-const RT_STRING = tube(RT_BOW.top, RT_BOW.bot, 0.9, 0.9);
+const RT_STRING = tube(RT_BOW.top, RT_BOW.bot, 0.7, 0.7);
 const RT_WOOD = [...RT_BOW.pts.slice(1).map((q, i) => { const w = 3.4 + 1.6 * Math.sin(Math.PI * (i + 0.5) / 8); return tube(RT_BOW.pts[i], q, w, w); }),
   ...RT_BOW.tips.map(([a, c]) => tube(a, c, 2.6, 2))];
 const RT_HAND = ellipsePts(34, -59, 4.2, 5, 10);                         // his bow hand, closed on the grip
@@ -4004,7 +4006,7 @@ function titleFigure(b, pix, spot, shapes, marks, shadow) {
     const v = face * Math.max(0, 1 - dist / reach);
     if (blade(px, py)) { paint.push([px, py, !at(px + 1, py) ? PALETTE[7] : PALETTE[5]]); continue; }   // cold steel, its edge bright
     if (violet(px, py)) { paint.push([px, py, edge ? [200, 144, 255] : [138, 80, 200]]); continue; }       // the Warlock's crystal
-    if (pale(px, py)) { paint.push([px, py, [200, 190, 166]]); continue; }                              // the Ranger's bowstring
+    if (pale(px, py)) { paint.push([px, py, [150, 140, 122]]); continue; }                              // the Ranger's bowstring
     if (wood(px, py)) { paint.push([px, py, edge ? (v > 0.1 ? [236, 166, 88] : [196, 128, 64]) : [112, 72, 40]]); continue; }   // his bow: dark wood, its edges catching the light
     paint.push([px, py, !edge ? [11, 9, 13] : v > 0.42 ? PALETTE[20] : v > 0.2 ? PALETTE[19] : v > 0.06 ? PALETTE[11] : !at(px, py - 1) ? PALETTE[4] : PALETTE[3]]);
   }
