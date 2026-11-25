@@ -63,7 +63,7 @@ The win-rate target is 7.5–10%.
 
 ## Bug fuzzer
 
-The bots press only sensible buttons and switch drawing off, so they can't find drawing crashes or odd taps. The fuzzer plays like a careless player instead: it taps random buttons, map spots and enemies through the same path as a real tap, with the game drawing normally and its clock running 6x faster. Some runs start on a later floor with random gear and enchantments, some resume the last saved run through Continue, and some taps are doubled or made while a turn is still playing out.
+The bots press only sensible buttons and switch drawing off, so they can't find drawing crashes or odd taps. The fuzzer plays like a careless player instead: it taps random buttons, map spots and enemies through the same path as a real tap, with the game drawing normally and its clock running 6x faster. Each new run is a class picked at random (Knight, Warlock or Ranger; `cls` in the options fixes one). Some runs start on a later floor with random gear and enchantments, some resume the last saved run through Continue, and some taps are doubled or made while a turn is still playing out.
 
 After every tap it checks: no uncaught error and nothing fails to draw; health, max health, coins, potions, XP, level and floor are real numbers; health never above max (or at 0 while alive); coins never below 0; potions within the bag; you never stand in a wall; no enemy above its max health; no fight with every enemy down; gear tiers valid; a double tap never pays out twice. Now and then it saves the run and restores it, and the run must come back exactly the same. 400 taps in a row that change nothing count as a soft lock.
 

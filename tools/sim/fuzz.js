@@ -71,7 +71,11 @@
     const chain = +(sessionStorage.getItem('fz:chain') || 0);
     let how = 'new', deep = 0;
     if (savedRun && chain < 3 && Math.random() < 0.5) { sessionStorage.setItem('fz:chain', chain + 1); how = 'continue'; contBtn.click(); }
-    else { sessionStorage.setItem('fz:chain', 0); playBtn.click(); if (!title.hidden) playBtn.click(); }
+    else {                                                                   // a new run, as a class picked at random (or pol.cls)
+      sessionStorage.setItem('fz:chain', 0);
+      if (typeof beginRun === 'function') beginRun(O.cls || pick(typeof CLASS_IDS !== 'undefined' ? CLASS_IDS : ['knight']));
+      else { playBtn.click(); if (!title.hidden) playBtn.click(); }
+    }
     await sleep(300);
     if (!title.hidden) V('start', 'still on the title after Play/Continue');
     if (how === 'new' && Math.random() < O.deep) deep = deepStart();
@@ -139,7 +143,7 @@
       if (h === lastHash) { if (++same > 400) { V('stuck', `phase ${phase}, buttons: ${items.map(i => i.id).join(' ')}`); break; } } else { same = 0; lastHash = h; }
     }
     const top = Object.entries(econ).sort((a, b) => b[1] - a[1]).slice(0, 6);
-    return {how, deep, steps: step, checks, floor: floor + 1, over: !!over, won: !!(runSummary && runSummary.won), phase,
+    return {how, cls: typeof cls === 'string' ? cls : 'knight', deep, steps: step, checks, floor: floor + 1, over: !!over, won: !!(runSummary && runSummary.won), phase,
             ms: Math.round(performance.now() - t0), viol, econ: Object.fromEntries(top)};
   }
 })();
