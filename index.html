@@ -186,8 +186,8 @@
       <summary>Classes</summary>
       <p>You choose a class before every run. Each finds only its own gear: a Knight finds swords and shields, a Warlock staffs and robes, a Ranger bows, quivers and leathers. While the game is being playtested, all three are open.</p>
       <p><b>Knight</b>: the class you know. <b>Normal</b>, <b>Heavy</b> and <b>Block</b> in a fight, a shield for blocking, and the heaviest armor.</p>
-      <p><b>Warlock</b>: a staff and spells, robes instead of armor, and no shield, so no Block. His bar holds up to four spells. He always has <b>Siphon</b> (a bolt for 85% of a hit that heals him 30% of the damage) and starts with <b>Hex</b> (an enemy hits softer and takes damage every turn for 3 turns). <b>Spellbooks</b> turn up where a Knight would find a shield, and merchants sell one, teaching <b>Blood Pact</b> (pay 10% of your max HP for a sure double hit through armor), <b>Bone Ward</b> (soaks the next blows), <b>Dread</b> (an enemy loses its next move), <b>Pestilence</b> (damage every turn to every enemy) and <b>Corpse Burst</b> (a fallen enemy explodes, hurting the rest). Spells can't be blocked by shields or struck back at.</p>
-      <p><b>Ranger</b>: a bow from the first fight (an Ash Shortbow, the worst there is), a quiver in place of a shield, leather armor, and no Block. He always has <b>Shoot</b> (a hit, with 5% more chance to crit) and starts with <b>Aimed Shot</b> (spend a turn aiming: the next arrow can't miss and does double). <b>Arrow and trap kits</b> teach <b>Fire Arrow</b>, <b>Pinning Shot</b> (an enemy loses its next move), <b>Volley</b> (every enemy at once), <b>Snare</b> (catches an enemy's next melee blow) and <b>Smoke Bomb</b> (blows at you miss half the time this turn). Arrows reach a Wyvern on the wing. A merchant won't buy his only bow; he can trade it in for a better one.</p>
+      <p><b>Warlock</b>: a staff and spells, robes instead of armor, and no shield, so no Block. His bar holds up to four spells. He always has <b>Siphon</b> (a bolt for 85% of a hit that heals him <span data-g="siphonHeal">22%</span> of the damage) and starts with <b>Hex</b> (an enemy hits softer and takes damage every turn for 3 turns). <b>Spellbooks</b> turn up where a Knight would find a shield, and merchants sell one, teaching <b>Blood Pact</b> (pay 10% of your max HP for a sure double hit through armor), <b>Bone Ward</b> (soaks the next blows; once it breaks, <span data-g="wardWait">2</span> turns before another), <b>Dread</b> (an enemy loses its next move), <b>Pestilence</b> (damage every turn to every enemy) and <b>Corpse Burst</b> (a fallen enemy explodes, hurting the rest). Spells can't be blocked by shields or struck back at.</p>
+      <p><b>Ranger</b>: a bow from the first fight (an Ash Shortbow, the worst there is), a quiver in place of a shield, leather armor, and no Block. He always has <b>Shoot</b> (a hit, with 5% more chance to crit) and starts with <b>Aimed Shot</b> (spend a turn aiming: the next arrow can't miss and does <span data-g="aimMult">2.5</span> times the damage). <b>Arrow and trap kits</b> teach <b>Fire Arrow</b>, <b>Pinning Shot</b> (an enemy loses its next move), <b>Volley</b> (every enemy at once), <b>Snare</b> (catches an enemy's next melee blow) and <b>Smoke Bomb</b> (each blow at you this turn has a <span data-g="smokeMiss">60%</span> chance to miss). Arrows reach a Wyvern on the wing. A merchant won't buy his only bow; he can trade it in for a better one.</p>
       <p>A spellbook or kit can be <b>Poor</b>, <b>Fair</b> or <b>Superior</b>, like gear, and the rank makes some actions stronger (Hex, Bone Ward, Pestilence and Fire Arrow). Finding a better copy of one you know raises it. With a full bar, learning a new one means forgetting one (never Siphon or Shoot).</p>
       <p>In a fight, tap a Warlock's or Ranger's action once to read what it will do to your target, in numbers, and again to use it. You can turn that off in Settings. The buttons show numbers too: "≈14" is about how much a hit should do.</p>
     </details>
@@ -1467,10 +1467,10 @@ const power = k => worn[k] ? worn[k].power : 0;
 const CLASS_IDS = ['knight', 'warlock', 'ranger'];
 const CLASS_NAME = {knight: 'Knight', warlock: 'Warlock', ranger: 'Ranger'};
 const SPELL = {
-  siphon: {share: 0.85, heal: 0.30},                          // a bolt for 85% of a hit; you heal 30% of what it does
+  siphon: {share: 0.85, heal: 0.20},                          // a bolt for 85% of a hit; you heal 20% of what it does
   hex:    {turns: 3, cut: [0.20, 0.25, 0.30], doom: [3, 4, 5]},   // by rank: Poor, Fair, Superior
   pact:   {cost: 0.10, mult: 2},                              // pay 10% of max HP: a sure hit for double, through armor
-  ward:   {soak: [12, 16, 20]},
+  ward:   {soak: [11, 14, 18], wait: 2},                     // once it breaks, 2 of your turns before you can raise another
   dread:  {},
   plague: {turns: 3, doom: [2, 3, 4]},
   burst:  {share: 0.5}
@@ -1478,8 +1478,8 @@ const SPELL = {
 const SHOT = {
   fire:  {share: 0.7, burn: [3, 4, 5], turns: 3},             // 70% of a hit, then it burns
   pin:   {share: 0.5},                                         // half a hit, and it loses its next move
-  aim:   {mult: 2},                                            // the next single arrow: sure, and double
-  smoke: {miss: 0.5}                                           // blows at you this turn: half of them miss
+  aim:   {mult: 2.25},                                         // the next single arrow: sure, and 2.25 times as hard
+  smoke: {miss: 0.6}                                           // blows at you this turn: 60% of them miss
 };
 const RANGER = {crit: 0.05, flit: 0.35, volley: 0.40, perQuiver: 0.05, guardKeep: 0.5};
 const SNARE_CATCH = ['attack', 'charge', 'dive', 'crush', 'sunder', 'snatch'];   // blows a snare can catch (thrown and shouted moves pass it)
@@ -1500,10 +1500,13 @@ const SHORT = {   // one line each
   ward: 'A ward that soaks up the next blows aimed at you.', dread: 'One enemy loses its next move.',
   plague: 'Every enemy takes a little damage every turn.', burst: 'Blow up a fallen enemy to hurt all the others.',
   fire: 'A hit that sets the enemy burning for three turns.', pin: 'A light hit that makes the enemy lose its next move.',
-  aim: 'Spend a turn aiming: your next arrow can\'t miss and does double.', volley: 'Arrows rain down on every enemy at once.',
-  snare: 'Catch the enemy\'s next melee blow before it lands.', smoke: 'Blows at you this turn miss half the time.'
+  aim: 'Spend a turn aiming: your next arrow can\'t miss and hits far harder.', volley: 'Arrows rain down on every enemy at once.',
+  snare: 'Catch the enemy\'s next melee blow before it lands.', smoke: 'Blows at you this turn will often miss.'
 };
 const BAR_SIZE = 4;
+// the How to Play numbers for the classes come from the tuning above, so the guide can't go stale
+{ const G = {siphonHeal: pct(SPELL.siphon.heal), aimMult: String(SHOT.aim.mult), smokeMiss: pct(SHOT.smoke.miss), wardWait: String(SPELL.ward.wait)};
+  document.querySelectorAll('#howto [data-g]').forEach(el => { if (G[el.dataset.g]) el.textContent = G[el.dataset.g]; }); }
 const RANKED = ['hex', 'ward', 'plague', 'fire'];   // the actions a book's rank makes stronger (the rest get their strength from your weapon)
 const BOOK_PRICE = [20, 35, 55];                 // a spellbook or a kit at a merchant, by rank
 const bookNoun = () => cls === 'ranger' ? 'Kit' : 'Spellbook';
@@ -1517,14 +1520,14 @@ const CLASS_GEAR = {
   ranger:  {weapon: ['Ash Shortbow', 'Yew Longbow', 'Blackwood Warbow'], shield: ['Rawhide Quiver', 'Leather Quiver', 'Black Quiver'],
             helmet: ['Hide Cap', "Hunter's Hood", 'Wolf Pelt'], chest: ['Hide Jerkin', 'Leather Jack', 'Shadow Coat'],
             bracers: ['Rawhide Wraps', "Archer's Bracers", 'Horn Vambraces'], greaves: ['Hide Boots', 'Riding Boots', 'Stalker Boots'],
-            power: {weapon: [2, 4, 6], shield: [1, 2, 3], helmet: [1, 1, 2], chest: [1, 2, 3], bracers: [1, 1, 2], greaves: [1, 2, 2]}}
+            power: {weapon: [3, 5, 6], shield: [1, 2, 3], helmet: [1, 1, 2], chest: [2, 2, 3], bracers: [1, 1, 2], greaves: [1, 2, 3]}}
 };
 // what a run starts with: the Knight and the Warlock nothing at all; the Ranger the worst bow there is, so he can shoot
 const CLASS_START = {knight: {}, warlock: {}, ranger: {weapon: 0}};
 // you, as a class: which it is, its bar of actions and the rank of each (0 Poor, 1 Fair, 2 Superior), and what a Warlock
 // or a Ranger has going in the fight on now (the Bone Ward, a snare laid, the last trick, an arrow aimed, bodies fallen)
 let cls = 'knight', classBar = [], ranks = {};
-let ward = 0, wardMax = 0, snareOn = null, snareLast = false, smoke = false, smokeLast = false, aimed = false, bodies = 0;
+let ward = 0, wardMax = 0, wardWait = 0, snareOn = null, snareLast = false, smoke = false, smokeLast = false, aimed = false, bodies = 0;
 let armed = null;                                 // the action tapped once: its card is up, a second tap uses it
 const EXPLAIN_KEY = 'crawlspace:explain';
 let explainFirst = (() => { try { return localStorage.getItem(EXPLAIN_KEY) !== 'off'; } catch (e) { return true; } })();
@@ -2087,7 +2090,7 @@ function shopNote(it) {
   if (it.type === 'book') { const f = bookFit(it); return SHORT[it.id] + (f === 'known' ? ' You know it already' : f === 'full' ? ' Your bar is full' : f === 'rank' ? ` Raises yours to ${TIERS[it.t]}` : ''); }
   if (it.type === 'gear') {
     const cur = worn[it.slot];
-    return `+${it.power}` + (it.slot !== 'shield' ? ` ${weightTag(it).word.toLowerCase()}` : '') + (cur ? (cur.ench ? `, you lose ${enchLabel(cur.ench)}` : '') +
+    return `+${it.power}` + (it.slot !== 'shield' && cls === 'knight' ? ` ${weightTag(it).word.toLowerCase()}` : '') + (cur ? (cur.ench ? `, you lose ${enchLabel(cur.ench)}` : '') +
       `, trade-in ${tradeIn(it)}, yours is ${cur.name} +${cur.power}` : ', slot empty');
   }
   if (it.type === 'bag') return `carry ${it.to} potions` + (maxPotions >= it.to ? ', owned'
@@ -5506,7 +5509,7 @@ function heroParts(gear, rest = false, pose = null) {
   const k = JSON.stringify(gear) + (rest ? '|rest' : '') + (pose ? '|' + pose : '');
   if (!heroCache.has(k)) {
     if (heroCache.size > 12) heroCache.clear();
-    heroCache.set(k, gear.cls === 'warlock' ? warlockOf(gear, LOOK, pose) : gear.cls === 'ranger' ? rangerOf(gear, LOOK, pose) : heroOf(gear, LOOK, rest, pose));
+    heroCache.set(k, gear.cls === 'warlock' ? warlockOf(gear, LOOK, rest ? 'sit' : pose) : gear.cls === 'ranger' ? rangerOf(gear, LOOK, rest ? 'sit' : pose) : heroOf(gear, LOOK, rest, pose));
   }
   return heroCache.get(k);
 }
@@ -6373,6 +6376,10 @@ const WL_POSE = {ready: {elL: [25, -84], hdL: [34, -96], fing: [0.36, -0.93]}, c
 const STAFF_B = [-26, 0], STAFF_T = [-19, -146];
 const staffX = y => STAFF_B[0] + (STAFF_T[0] - STAFF_B[0]) * (-y / -STAFF_T[1]);
 
+// sitting by the campfire (pose 'sit'): the legs bent forward on the floor, everything above them lowered onto the hips
+const SIT = {shift: 41, L: {hip: [5, -20], kn: [26, -27], an: [30, -6], d: [10, 1]}, R: {hip: [-5, -18], kn: [16, -24], an: [20, -5], d: [35, 1]}};
+const sitDown = (P, pose) => { if (pose === 'sit') for (let i = 0; i < P.length; i++) if (!P[i].noShift) P[i] = movePart(P[i], ([x, y]) => [x, y + SIT.shift]); };
+const legsOf = (P, pose, leg) => { for (const [s, far] of [['L', 1], ['R', 0]]) { const n0 = P.length; leg(s, far); if (pose === 'sit') for (let i = n0; i < P.length; i++) P[i].noShift = true; } };
 const warlockOf = (gear = {}, look = LOOK, pose = null) => being({...WL_PAL, hair: lookOf('hair', look), tunic: lookOf('rags', look)[0], tunicDk: lookOf('rags', look)[1],
                                                                   patch: [106, 80, 46]}, (add, P) => {
   const line = lineOf(P), T = k => gear[k], has = k => T(k) !== undefined;
@@ -6382,8 +6389,8 @@ const warlockOf = (gear = {}, look = LOOK, pose = null) => being({...WL_PAL, hai
 
   // ---- the legs: dark hose, and whatever is on the feet
   const leg = (s, far) => {
-    const kn = KNEE[s], an = ANK[s], foot = FOOT[s];
-    add(member(HIP[s], kn, an, [11, 11.8, 8.8, 8.2, 6.4]), 'pants', far);
+    const sit = pose === 'sit' && SIT[s], kn = sit ? sit.kn : KNEE[s], an = sit ? sit.an : ANK[s], foot = sit ? FOOT[s].map(([x, y]) => [x + sit.d[0], y + sit.d[1]]) : FOOT[s];
+    add(member(sit ? sit.hip : HIP[s], kn, an, [11, 11.8, 8.8, 8.2, 6.4]), 'pants', far);
     const t = T('greaves');
     if (t === undefined) return bareShin(add, kn, an, foot, far);
     if (t === 0) bootOn(add, line, kn, an, foot, 8.2, far, 'wrap', 'wrapW', null, GEAR.wrapsDk);
@@ -6427,8 +6434,7 @@ const warlockOf = (gear = {}, look = LOOK, pose = null) => being({...WL_PAL, hai
   forearm(elL, hdL, qL || 0.2, 1);
   if (PO.torch) { heldTorch(add, P, hdL); fist(add, hdL, 3.2, 'skin', 1); }
   else { openHand(add, hdL, PO.fing, 'skin', 1); P.push({eye: toward(hdL, PO.fing, pose === 'cast' ? 9 : 8), r: pose === 'cast' ? 2.2 : 1.5, col: CLS_GLOW, spell: true}); }   // the spell over the palm
-  leg('L', 1);
-  leg('R', 0);
+  legsOf(P, pose, leg);
 
   // ---- the robe: skirt, body, belt, the spellbook on its chain
   if (robe) {
@@ -6533,7 +6539,7 @@ const warlockOf = (gear = {}, look = LOOK, pose = null) => being({...WL_PAL, hai
     if (trim) line([[c[0] - 5.8, c[1] - 1], [c[0] + 5.6, c[1] - 1.6]], 1, trim);
   } else add(limb(shR, mid(shR, elR, 0.5), 9.4, 9.6, 8.8), 'tunic');
   forearm(elR, hdR, robe ? 0.36 : 0.1, 0);
-  const tW = T('weapon');
+  const tW = pose === 'sit' ? undefined : T('weapon');   // (sitting, the staff lies by)
   if (tW === 0) {                                                          // Gnarled Staff: a crooked branch, a bird's skull tied to its hook
     add(chain([[-26, 0], [-25, -34], [-23.2, -70], [-21.4, -104], [-20.6, -124], [-21.6, -134]], [3.4, 3.2, 3.4, 3.2, 3.6, 3.8]), 'gnarl');
     add(ellipsePts(-23.4, -66, 2.4, 3, 8), 'gnarlDk'); add(ellipsePts(-20.8, -116, 2.2, 2.8, 8), 'gnarlDk');
@@ -6562,6 +6568,7 @@ const warlockOf = (gear = {}, look = LOOK, pose = null) => being({...WL_PAL, hai
     line([[-16.4, -139], [-12.8, -133], [-13.6, -127]], 0.6, GEAR.gold); add(ellipsePts(-13.6, -125.8, 1.2, 1.4, 8), 'gold', 0, 1);
   }
   fist(add, hdR, 3.2, 'skin', 0);
+  sitDown(P, pose);
 });
 
 // ---------------------------------------------------------------- the Ranger
@@ -6653,16 +6660,15 @@ const rangerOf = (gear = {}, look = LOOK, pose = null) => being({...HERO_PAL, ..
   };
   arm(shL, elL, hdL, 1, PO.torch ? () => heldTorch(add, P, hdL) : drawBow);
   const leg = (s, far) => {
-    const kn = KNEE[s], an = ANK[s], foot = FOOT[s];
-    add(member(HIP[s], kn, an, [11, 11.8, 8.8, 8.2, 6.4]), 'pants', far);
+    const sit = pose === 'sit' && SIT[s], kn = sit ? sit.kn : KNEE[s], an = sit ? sit.an : ANK[s], foot = sit ? FOOT[s].map(([x, y]) => [x + sit.d[0], y + sit.d[1]]) : FOOT[s];
+    add(member(sit ? sit.hip : HIP[s], kn, an, [11, 11.8, 8.8, 8.2, 6.4]), 'pants', far);
     const t = T('greaves');
     if (t === undefined) return bareShin(add, kn, an, foot, far);
     if (t === 0) bootOn(add, line, kn, an, foot, 8.2, far, 'fur', 'hide', 'fur', RG_PAL.hideDk);
     else if (t === 1) bootOn(add, line, kn, an, foot, 8.2, far, 'riding', 'jerk', 'jerkDk', null);
     else bootOn(add, line, kn, an, foot, 8.2, far, 'tall', 'coatDk', null, GEAR.steel);
   };
-  leg('L', 1);
-  leg('R', 0);
+  legsOf(P, pose, leg);
 
   // ---- the body
   if (tC === undefined) { tunicTorso(add); ropeBelt(add); }
@@ -6742,6 +6748,7 @@ const rangerOf = (gear = {}, look = LOOK, pose = null) => being({...HERO_PAL, ..
     const dir = unit(nock, hdL), len = Math.hypot(hdL[0] - nock[0], hdL[1] - nock[1]) + (PO.drawn >= 1 ? 8 : 10);
     arrowAt(add, line, nock, dir, len, tQ === 2 ? 'fletchRd' : 'fletch');
   });
+  sitDown(P, pose);
 });
 
 // ---------------------------------------------------------------- effects drawn as figures (so they sit in the scene)
@@ -7807,8 +7814,8 @@ function lootSide(it, slot, ax, y, label, right) {
   }
   const col = TIER_EDGE[it.tier];
   ctx.font = textFont(11);                                                 // its weight over the number (a shield says what its number does)
-  ctx.fillStyle = slot === 'shield' ? '#9a9080' : weightTag(it).col;
-  ctx.fillText(slot === 'shield' ? statWord(slot) : weightTag(it).word, ax + dir * 34, y + 29);
+  ctx.fillStyle = slot === 'shield' || cls !== 'knight' ? '#9a9080' : weightTag(it).col;
+  ctx.fillText(slot === 'shield' || cls !== 'knight' ? statWord(slot) : weightTag(it).word, ax + dir * 34, y + 29);
   drawSlotIcon(slot, ix, iy, 13, it.tier, null, it.wt);
   ctx.textAlign = align;
   ctx.font = textFont(26); ctx.fillStyle = '#f4ead4';
@@ -8430,9 +8437,34 @@ function armorGlyph(ctx, slot, t, wv, tint) {
   ctx.restore();
 }
 function drawSlotIcon(slot, x, y, r, tier, tint, wt) {
+  const own = cls === 'warlock' && slot === 'weapon' ? 'staff' : cls === 'ranger' && slot === 'weapon' ? 'bow' : cls === 'ranger' && slot === 'shield' ? 'quiver' : null;
+  if (own) return pixelIcon(`slot:${own}:${tier}:${tint || ''}`, r, g => classGlyph(g, own, tier, tint), x, y);   // a Warlock's staff, a Ranger's bow and quiver
   const paint = !wt || slot === 'shield' ? g => slotGlyph(g, slot, tier, tint)
     : slot === 'weapon' ? g => weaponGlyph(g, wt === 'light' ? 'dagger' : 'mace', tier, tint) : g => armorGlyph(g, slot, tier, wt, tint);
   pixelIcon(`slot:${slot}:${tier}:${tint || ''}:${wt || ''}`, r, paint, x, y);
+}
+// a Warlock's staff (a knotted branch, a caged crystal, a horned skull), a Ranger's bow (ash, yew, blackwood with steel
+// tips) and his quiver, by tier; tint: the faded outline of an empty slot
+function classGlyph(ctx, kind, t, tint) {
+  const c = (v) => tint || v, line = (col, w, pts) => { ctx.strokeStyle = col; ctx.lineWidth = w; ctx.lineCap = 'round'; ctx.beginPath(); pts.forEach(([a, b], i) => i ? ctx.lineTo(a, b) : ctx.moveTo(a, b)); ctx.stroke(); };
+  const poly = (col, pts) => { ctx.fillStyle = col; ctx.beginPath(); pts.forEach(([a, b], i) => i ? ctx.lineTo(a, b) : ctx.moveTo(a, b)); ctx.closePath(); ctx.fill(); };
+  const disc = (col, x, y, r) => { ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); };
+  if (kind === 'staff') {
+    line(c(['#8a6038', '#3a2c34', '#2c2638'][t]), 2.6, [[-7, 9.5], [5, -4]]);
+    if (t === 0) { line(c('#8a6038'), 2.4, [[5, -4], [7, -8], [4, -9.5]]); disc(c('#e8dcc0'), 3.5, -6.5, 1.6); }
+    else if (t === 1) { line(c('#9aa0aa'), 1.2, [[3.5, -3.5], [3, -9]]); line(c('#9aa0aa'), 1.2, [[6.5, -4.5], [8, -9]]); poly(c('#c08cff'), [[5.5, -12], [8, -7.5], [5.5, -4], [3, -7.5]]); }
+    else { line(c('#e0b850'), 1.6, [[2.2, -2.2], [4.2, -4.2]]); disc(c('#e8dcc0'), 6, -7, 3.6); disc('#1a1020', 4.8, -7.4, 0.9); disc('#1a1020', 7.4, -7.6, 0.9); line(c('#e8dcc0'), 1.2, [[3, -9], [1.5, -11.5]]); line(c('#e8dcc0'), 1.2, [[8.6, -9.4], [10, -11.8]]); }
+  } else if (kind === 'bow') {
+    const wood = c(['#c8a878', '#c07038', '#7a3a30'][t]);
+    ctx.strokeStyle = wood; ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(-3, -10); ctx.quadraticCurveTo(9, 0, -3, 10); ctx.stroke();
+    line(c('#e8e0cc'), 0.7, [[-3, -10], [-3, 10]]);
+    line(c('#5a3a1e'), 3, [[2.4, -1.6], [2.6, 1.6]]);
+    if (t === 2) { disc(c('#d8dde6'), -3, -10, 1.3); disc(c('#d8dde6'), -3, 10, 1.3); }
+  } else {
+    poly(c(['#9a7850', '#7a4a28', '#3a3238'][t]), [[-6, 8], [-2, 10], [5, -5], [1, -7]]);
+    line(c(t === 2 ? '#c8ccd8' : '#4a2e18'), 1.4, [[-4.4, 6], [-0.6, 7.8]]);
+    for (const [x, y, col] of [[2, -8, '#e8e4dc'], [4.4, -7, t === 2 ? '#b02020' : '#e8e4dc'], [-0.2, -9, '#e8e4dc']]) poly(c(col), [[x, y], [x + 1.6, y - 4], [x + 2.4, y - 0.6]]);
+  }
 }
 function slotGlyph(ctx, slot, t, tint) {                                       // (ctx: the icon's own canvas)
   const M = tint ? {base: tint, dark: shade(tint, 0.5), trim: tint, leather: tint, wood: tint, cloth: tint, hilt: shade(tint, 0.7), blade: tint}
@@ -10047,7 +10079,7 @@ const barLine = () => classBar.map(id => ACTION[id].name + (RANKED.includes(id) 
 
 // ---- a fight for a Warlock or a Ranger: everything that lasts a fight starts over ----
 function classFightStart() {
-  ward = wardMax = 0; snareOn = null; snareLast = false; smoke = false; smokeLast = false; aimed = false; bodies = 0; armed = null;
+  ward = wardMax = wardWait = 0; snareOn = null; snareLast = false; smoke = false; smokeLast = false; aimed = false; bodies = 0; armed = null;
 }
 const pactCost = () => Math.ceil(p.max * SPELL.pact.cost);
 const volleyShare = () => RANGER.volley + RANGER.perQuiver * power('shield');
@@ -10078,7 +10110,7 @@ function spellSub(id) {
     case 'siphon': { const d = hitOn(t, SPELL.siphon.share); return {sub: `≈${d} +${Math.round(d * SPELL.siphon.heal)}HP`}; }
     case 'hex': { const b = blowOf(t); return {tone: 'guard', sub: t && t.hex ? 'renew it' : b ? `hits ${b.dmg}→${Math.max(1, Math.round(b.dmg * (1 - SPELL.hex.cut[R])))}` : `−${pct(SPELL.hex.cut[R])} hits`}; }
     case 'pact': { const c = pactCost(), ok = p.hp > c; return {tone: 'fight', enabled: ok, sub: ok ? `≈${hitOn(t, SPELL.pact.mult, true) + (t && t.hex ? t.hex.doom * t.hex.turns : 0)} for ${c}` : `need ${c + 1}HP`}; }
-    case 'ward': return {tone: 'guard', enabled: ward <= 0, sub: ward > 0 ? `holds ${ward}` : `blocks ${SPELL.ward.soak[R]}`};
+    case 'ward': return {tone: 'guard', enabled: ward <= 0 && wardWait <= 0, sub: ward > 0 ? `holds ${ward}` : wardWait > 0 ? `${wardWait} turn${wardWait === 1 ? '' : 's'}` : `blocks ${SPELL.ward.soak[R]}`};
     case 'dread': { const b = blowOf(t), used = t && t.dreaded; return {enabled: !used, sub: used ? 'used on it' : b ? `stops ${b.dmg}` : 'skips move'}; }
     case 'plague': return {sub: `${SPELL.plague.doom[R]}×3 all`};
     case 'burst': return {enabled: bodies > 0, sub: bodies ? `≈${hitOn(t, SPELL.burst.share)} all` : 'no body'};
@@ -10088,10 +10120,10 @@ function spellSub(id) {
 function rangerSub(id) {
   const R = rankOf(id), t = liveTarget(), x = aimed ? SHOT.aim.mult : 1;
   switch (id) {
-    case 'shoot': return {sub: aimed ? `≈${hitOn(t) * x} sure` : `≈${hitOn(t)}`};
-    case 'fire': return {tone: 'fight', sub: `≈${hitOn(t, SHOT.fire.share) * x} +${SHOT.fire.burn[R]}×3`};
-    case 'pin': { const used = t && t.pinned; return {enabled: !used, sub: used ? 'used on it' : `≈${hitOn(t, SHOT.pin.share) * x} +stop`}; }
-    case 'aim': return {tone: 'guard', enabled: !aimed, sub: aimed ? 'aimed' : 'next ×2'};
+    case 'shoot': return {sub: aimed ? `≈${Math.round(hitOn(t) * x)} sure` : `≈${hitOn(t)}`};
+    case 'fire': return {tone: 'fight', sub: `≈${Math.round(hitOn(t, SHOT.fire.share) * x)} +${SHOT.fire.burn[R]}×3`};
+    case 'pin': { const used = t && t.pinned; return {enabled: !used, sub: used ? 'used on it' : `≈${Math.round(hitOn(t, SHOT.pin.share) * x)} +stop`}; }
+    case 'aim': return {tone: 'guard', enabled: !aimed, sub: aimed ? 'aimed' : `next ×${SHOT.aim.mult}`};
     case 'volley': return {tone: 'fight', sub: `≈${hitOn(t, volleyShare())} each`};
     case 'snare': { const b = blowOf(t), ok = b && SNARE_CATCH.includes(b.move); return {tone: 'guard', enabled: !snareLast, sub: snareLast ? 'not twice' : ok ? `stops ${b.dmg}` : 'no blow'}; }
     case 'smoke': return {tone: 'guard', enabled: !smokeLast, sub: smokeLast ? 'not twice' : `${pct(SHOT.smoke.miss)} miss`};
@@ -10115,17 +10147,18 @@ function explainOf(id) {
         (t && t.hex ? ` ${T[0].toUpperCase() + T.slice(1)} is hexed, so the curse ends and its last ${t.hex.doom * t.hex.turns} damage lands at once too.` : ' On a hexed enemy the curse would also burst, dealing all its damage at once.');
     }
     case 'ward': return ward > 0 ? `Your ward still holds ${ward} damage. You can't raise another until it breaks.`
+      : wardWait > 0 ? `Your last ward broke. You can raise another in ${wardWait} turn${wardWait === 1 ? '' : 's'}.`
       : `Raise a ward that soaks up the next ${SPELL.ward.soak[R]} damage from blows aimed at you. It stays up between turns until it breaks or the fight ends.`;
     case 'dread': return t && t.dreaded ? `You have already used Dread on ${T} in this fight.` : `Terrify ${T}: it loses its next move${its}. You can do this once to each enemy in a fight.`;
     case 'plague': { const doom = SPELL.plague.doom[R]; return `Curse every enemy at once: each takes ${doom} damage at the start of each of its turns, for ${SPELL.plague.turns} turns (${doom * SPELL.plague.turns} each in all). Unlike Hex, it doesn't soften their blows.`; }
     case 'burst': return bodies ? `Blow up the body of an enemy that fell: every enemy still standing takes about ${hitOn(t, SPELL.burst.share)}. Bodies you can use: ${bodies}.` : 'Needs an enemy that has fallen in this fight. Kill one first.';
-    case 'shoot': return (aimed ? `Loose your aimed arrow at ${T}: it can't miss and does double, about ${hitOn(t) * SHOT.aim.mult}.` : `Shoot ${T} for about ${hitOn(t)}, with a ${pct(critChance() + RANGER.crit)} chance to crit.`) +
+    case 'shoot': return (aimed ? `Loose your aimed arrow at ${T}: it can't miss and does ${SHOT.aim.mult} times as much, about ${Math.round(hitOn(t) * SHOT.aim.mult)}.` : `Shoot ${T} for about ${hitOn(t)}, with a ${pct(critChance() + RANGER.crit)} chance to crit.`) +
       (t && t.next === 'wing' ? ' It is up in the air, but your arrows still reach it.' : '') + (t && t.next === 'flit' ? ` It is flitting about: it dodges arrows ${pct(RANGER.flit)} of the time.` : '');
-    case 'fire': { const burn = SHOT.fire.burn[R]; return `Shoot a burning arrow at ${T} for about ${hitOn(t, SHOT.fire.share) * (aimed ? 2 : 1)}${aimed ? ' (aimed: it can\'t miss)' : ''}. Then it burns for ${burn} at the start of each of its turns, for ${SHOT.fire.turns} turns (${burn * SHOT.fire.turns} in all). A burning Troll can't regenerate.`; }
+    case 'fire': { const burn = SHOT.fire.burn[R]; return `Shoot a burning arrow at ${T} for about ${Math.round(hitOn(t, SHOT.fire.share) * (aimed ? SHOT.aim.mult : 1))}${aimed ? ' (aimed: it can\'t miss)' : ''}. Then it burns for ${burn} at the start of each of its turns, for ${SHOT.fire.turns} turns (${burn * SHOT.fire.turns} in all). A burning Troll can't regenerate.`; }
     case 'pin': return t && t.pinned ? `You have already pinned ${T} in this fight.`
-      : `Shoot ${T} for about ${hitOn(t, SHOT.pin.share) * (aimed ? 2 : 1)}. If the arrow hits, ${T} is pinned and loses its next move${its}. ${aimed ? 'You are aimed, so it can\'t miss.' : 'It can miss.'} Once per enemy in a fight.`;
+      : `Shoot ${T} for about ${Math.round(hitOn(t, SHOT.pin.share) * (aimed ? SHOT.aim.mult : 1))}. If the arrow hits, ${T} is pinned and loses its next move${its}. ${aimed ? 'You are aimed, so it can\'t miss.' : 'It can miss.'} Once per enemy in a fight.`;
     case 'aim': return aimed ? 'You are already aiming. Use Shoot, Fire or Pin to loose the arrow.'
-      : `Spend this turn drawing and holding your aim (enemies still act). Your next Shoot, Fire Arrow or Pinning Shot can't miss and does double damage.`;
+      : `Spend this turn drawing and holding your aim (enemies still act). Your next Shoot, Fire Arrow or Pinning Shot can't miss and does ${SHOT.aim.mult} times the damage.`;
     case 'volley': return `Shoot high so the arrows fall on every enemy you can reach: about ${hitOn(t, volleyShare())} each (${pct(volleyShare())} of a hit, more with a better quiver). Each one can miss or crit on its own.`;
     case 'snare': {
       if (snareLast) return 'You just laid a snare. You can\'t lay one twice in a row.';
@@ -10195,6 +10228,7 @@ function classSwift(t, first, o) {
 
 // ---- a Warlock's or a Ranger's turn ----
 function classTurn(kind) {
+  if (wardWait > 0) wardWait--;
   const t = liveTarget(), shaken = weak, R = rankOf(kind);
   msg.textContent = '';
   armed = null;
@@ -10254,7 +10288,7 @@ function classTurn(kind) {
       msg.textContent = `The ${t.name} freezes in terror. It will lose its next move.`;
     }
   } else {
-    // the next single arrow: aimed (can't miss, double), or as it comes
+    // the next single arrow: aimed (can't miss, SHOT.aim.mult times as hard), or as it comes
     const single = (share, words) => {
       const sure = aimed, x = aimed ? SHOT.aim.mult : 1;
       if (aimed) { aimed = false; msg.textContent += 'You loose the arrow you held. '; }
@@ -10264,7 +10298,7 @@ function classTurn(kind) {
     if (kind === 'aim') {
       aimed = true;
       cue('aim', {len: 0.4});
-      msg.textContent = 'You draw and hold your aim. Your next arrow can\'t miss and does double damage.';
+      msg.textContent = `You draw and hold your aim. Your next arrow can't miss and does ${SHOT.aim.mult} times the damage.`;
       at = null;
     } else if (kind === 'smoke') {
       smoke = true;
@@ -10334,6 +10368,7 @@ function wardSoak(hurt) {
   if (ward <= 0 || hurt <= 0) return {hurt, soaked: 0};
   const soaked = Math.min(ward, hurt);
   ward -= soaked;
+  if (ward <= 0) wardWait = SPELL.ward.wait;
   cue(ward > 0 ? 'wardHit' : 'wardBreak', {ward, len: 0.4});
   return {hurt: hurt - soaked, soaked};
 }
@@ -11187,7 +11222,7 @@ function runSnapshot() {
   return {v: SAVE_V, floor, map, opened: [...opened], visited: [...visited], enemies, p, prev, worn, perks,
     level, xp, levelUps, bonusDmg, hand, redraws, secondWinds, coins, potions, maxPotions, shopPotionsLeft, poison, sunder, weak,
     scrolls, bagSlots, scrollNow, pending, shopStock, shopTitle, shopMode, combatView, fightSeed,
-    cls, classBar, ranks, ward, wardMax, snareLast, smokeLast, aimed, bodies,
+    cls, classBar, ranks, ward, wardMax, wardWait, snareLast, smokeLast, aimed, bodies,
     phase: finale ? 'won' : phase,                                        // (the Ogre King is falling: the win is already yours)
     current: enemies.indexOf(current), scene: enemies.findIndex(e => e.group === sceneFoes), target: sceneFoes.indexOf(target),
     run: {...run, start: undefined, elapsed: Date.now() - run.start},     // the clock stops while the game is closed
@@ -11217,7 +11252,7 @@ function restoreRun(s) {
   Object.assign(perks, s.perks);
   ({level, xp, levelUps, bonusDmg, hand, redraws, secondWinds, coins, potions, maxPotions, shopPotionsLeft, poison, sunder, weak,
     scrolls, bagSlots, scrollNow, pending, shopStock, shopTitle, shopMode, combatView, fightSeed, phase,
-    cls, classBar, ranks, ward, wardMax, snareLast, smokeLast, aimed, bodies} = s);
+    cls, classBar, ranks, ward, wardMax, wardWait, snareLast, smokeLast, aimed, bodies} = s);
   slots.shield.label = cls === 'ranger' ? 'Quiver' : 'Shield';
   // the fight on screen: the enemy you walked into, its group, and your target (saved by position, so they are the same objects)
   current = enemies[s.current] || null;

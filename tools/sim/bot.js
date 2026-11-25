@@ -427,8 +427,8 @@
   // smoke making blows miss, burning, pins and Dread costing an enemy its move), then what the rest of the fight should
   // cost from there. pol.actVal says what each learnable action is worth when a spellbook or kit turns up
   const isClass = () => typeof cls === 'string' && cls !== 'knight';
-  const ACT_VAL = Object.assign({hex: 6, pact: 7, ward: 8, dread: 5, plague: 4, burst: 3, fire: 6, pin: 7, aim: 5, volley: 6, snare: 7, smoke: 6}, P.actVal || {});
-  const SAMPLES_C = 120;
+  const ACT_VAL = Object.assign({hex: 6, pact: 7, ward: 8, dread: 5, plague: 4, burst: 3, fire: 6, pin: 7, aim: 9, volley: 6, snare: 7, smoke: 6}, P.actVal || {});
+  const SAMPLES_C = P.samples || 120;   // (fewer samples: a sloppier player)
   function classSwingAt(t, o, hp) {
     const evade = t.next === 'flit' ? (cls === 'ranger' ? RANGER.flit : FLIT_EVADE) : (t.evasion ?? PLAYER_MISS);
     const miss = o.sure || t.off ? 0 : Math.min(0.95, Math.max(0, evade + wMiss() + (t.dodge || 0)) * missKeep());
@@ -459,7 +459,7 @@
         case 'dread': at(id, reach.filter(t => !t.dreaded && !t.stunned)); break;
         case 'pin': at(id, reach.filter(t => !t.pinned && !t.stunned)); break;
         case 'snare': if (!snareLast) at(id, reach.filter(t => !t.stunned && t.next && SNARE_CATCH.includes(t.next))); break;
-        case 'ward': if (ward <= 0) opts.push({kind: id}); break;
+        case 'ward': if (ward <= 0 && !(typeof wardWait === 'number' && wardWait > 0)) opts.push({kind: id}); break;
         case 'plague': if (live.filter(f => !f.hex).length >= 2) opts.push({kind: id}); break;
         case 'burst': if (bodies > 0 && reach.length) opts.push({kind: id}); break;
         case 'aim': if (!aimed) opts.push({kind: id}); break;
@@ -579,7 +579,7 @@
       return Math.max(2, base - regen - drain + thornsEach + (s.hex ? s.hex.doom * 0.7 : 0) + (s.burn ? s.burn * 0.6 : 0)); };
     const hpOf = s => s.hp + (s.f.reassemble && !s.f.rose ? s.f.max * REASSEMBLE_HP * REASSEMBLE_CHANCE : 0) + (s.f.split ? 14 * 2 * 0.8 : 0);
     const order = alive.slice().sort((a, b) => per(b) / Math.max(1, hpOf(b) / eff(b)) - per(a) / Math.max(1, hpOf(a) / eff(a)));
-    if (aimNext && order.length) order[0] = {...order[0], hp: Math.max(1, order[0].hp - myAvg(order[0].f, false))};
+    if (aimNext && order.length) order[0] = {...order[0], hp: Math.max(1, order[0].hp - myAvg(order[0].f, false) * (SHOT.aim.mult - 1))};
     let incoming = order.reduce((a, s) => a + per(s), 0), cost = 0, healed = 0;
     for (const s of order) { const rounds = hpOf(s) / eff(s); cost += rounds * incoming; incoming -= per(s); if (warlock) healed += rounds * eff(s) * SPELL.siphon.heal * 0.8; }
     return Math.max(0, cost * (1 - enchSum('vampiric') * 0.6) - healed);
